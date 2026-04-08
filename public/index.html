@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>SERVIRED</title></head>
+<body>
+<h1>MI APLICACION FUNCIONA</h1>
+<p>SERVIRED - Tu red de servicios</p>
+</body>
+</html>
+const express = require('express');
+const app = express();
+
+// Esto es CLAVE - sirve la carpeta public
+app.use(express.static('public'));
+
+app.listen(8080, () => {
+    console.log('🚀 SERVIRED en http://localhost:8080');
+});
+

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>SERVired | Admin</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0b0e16;color:#d9eaff;height:100vh;display:flex;flex-direction:column;}.header{background:#07090fcc;padding:12px20px;border-bottom:1px solid cyan;display:flex;justify-content:space-between;}.main{display:flex;flex:1;gap:8px;padding:8px;}#map{flex:3;border-radius:20px;}.lista{flex:1;background:#0e111bdd;border-radius:20px;padding:12px;overflow-y:auto;}.item{background:#181e2c;margin-bottom:10px;padding:12px;border-radius:16px;border-left:4px solid #0ff;}</style>
+</head>
+<body>
+<div class="header"><span>📡 SERVired Admin</span><span id="counter">🟢 Activos: 0</span></div>
+<div class="main"><div id="map"></div><div class="lista"><h3>📋 Pedidos</h3><div id="pedidosLista"></div></div></div>
+<script>
+const socket=io();let map=L.map('map').setView([-34.6037,-58.3816],12);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM'}).addTo(map);let markers={c:{},w:{}};
+function update(data){let pedidos=data.pedidos,container=document.getElementById('pedidosLista'),count=0,html='';for(let id in pedidos){count++;html+=`<div class="item"><b>#${id.slice(-6)}</b><br>📍 ${pedidos[id].direccion}<br>Estado: ${pedidos[id].estado}</div><hr>`;}container.innerHTML=html||'<div>✨ Sin pedidos</div>';document.getElementById('counter').innerHTML=`🟢 Activos: ${count}`;for(let i in markers.c)map.removeLayer(markers.c[i]);for(let i in markers.w)map.removeLayer(markers.w[i]);markers={c:{},w:{}};for(let id in pedidos){let p=pedidos[id];if(p.clienteLat&&p.clienteLng)markers.c[id]=L.marker([p.clienteLat,p.clienteLng],{icon:L.divIcon({html:'📍',iconSize:[24,24]})}).addTo(map);if(p.workerLat&&p.workerLng&&p.estado!=='completado')markers.w[id]=L.marker([p.workerLat,p.workerLng],{icon:L.divIcon({html:'🔧',iconSize:[28,28]})}).addTo(map);}}
+socket.on('admin_update',update);
+</script>
+</body>
+</html>
