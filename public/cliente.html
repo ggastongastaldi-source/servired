@@ -1,21 +1,214 @@
 <!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SERVired | Cliente</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',system-ui;background:#0a0c12;color:#eef5ff;height:100vh;display:flex;flex-direction:column;}.header{background:rgba(10,12,18,0.95);padding:14px20px;display:flex;justify-content:space-between;border-bottom:1px solid rgba(0,255,255,0.3);}.logo{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#0ff,#0a8);-webkit-background-clip:text;background-clip:text;color:transparent;}#map{flex:1;}.order-panel{background:rgba(18,22,32,0.95);padding:20px;display:flex;gap:12px;}input,button{padding:12px18px;border-radius:60px;border:none;}input{background:#0f1119;border:1px solid #2a2f3f;color:#fff;flex:2;}button{background:linear-gradient(95deg,#0ff,#0a8);color:#0a0c12;font-weight:bold;cursor:pointer;}</style>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cliente - ServiRed</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f0f2f5; }
+        .header { background: #2563eb; color: white; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: bold; }
+        .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+        .card { background: white; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .servicio-btn { background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; margin: 0.5rem 0; cursor: pointer; transition: all 0.2s; }
+        .servicio-btn.selected { border-color: #2563eb; background: #eff6ff; }
+        .btn { background: #2563eb; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 1rem; }
+        .btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .map { height: 300px; border-radius: 0.75rem; margin: 1rem 0; }
+        .estado { padding: 0.75rem; border-radius: 0.5rem; margin: 1rem 0; text-align: center; font-weight: bold; }
+        .estado-pendiente { background: #fef3c7; color: #92400e; }
+        .estado-aceptado { background: #dbeafe; color: #1e40af; }
+        .estado-en camino { background: #c7d2fe; color: #3730a3; }
+        .estado-completado { background: #d1fae5; color: #065f46; }
+        .hidden { display: none; }
+        .precio { font-size: 1.5rem; font-weight: bold; color: #2563eb; }
+        input, textarea { width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin: 0.5rem 0; font-size: 1rem; }
+        label { font-weight: 500; color: #374151; }
+    </style>
 </head>
 <body>
-<div class="header"><div class="logo">⚡ SERVired · Cliente</div><div id="status">🔌 Conectando...</div></div>
-<div id="map"></div>
-<div class="order-panel"><input type="text" id="direccion" placeholder="📍 Tu dirección"><button id="solicitarBtn">🚀 Solicitar</button></div>
-<script>
-const socket=io();let map=L.map('map').setView([-34.6037,-58.3816],13);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM'}).addTo(map);let workerMarker=null;
-async function geocode(a){let r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(a)}&limit=1`);let d=await r.json();if(d&&d.length)return{lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)};return null;}
-document.getElementById('solicitarBtn').onclick=async()=>{let dir=document.getElementById('direccion').value;if(!dir)return;let c=await geocode(dir);if(!c)return;L.marker([c.lat,c.lng]).addTo(map).bindPopup(dir).openPopup();socket.emit('solicitar_servicio',{direccion:dir,lat:c.lat,lng:c.lng});};
-socket.on('connect',()=>document.getElementById('status').innerHTML='🟢 Conectado');
-socket.on('trabajador_asignado',(d)=>{if(d.workerLat&&d.workerLng){if(workerMarker)map.removeLayer(workerMarker);workerMarker=L.marker([d.workerLat,d.workerLng],{icon:L.divIcon({html:'🚚',iconSize:[28,28]})}).addTo(map);}});
-</script>
+    <div class="header">🚗 ServiRed - Cliente</div>
+    <div class="container" id="app">
+        <div id="loginPanel" class="card">
+            <h2>Ingresar</h2>
+            <input type="email" id="email" placeholder="Email" value="cliente@test.com">
+            <input type="password" id="password" placeholder="Contraseña" value="123456">
+            <button class="btn" onclick="login()">Iniciar Sesión</button>
+            <p style="text-align:center; margin-top:1rem; font-size:0.875rem; color:#6b7280;">Demo: cliente@test.com / 123456</p>
+        </div>
+        
+        <div id="pedidoPanel" class="hidden">
+            <div id="mapaPanel" class="card">
+                <div id="map" class="map"></div>
+            </div>
+            
+            <div class="card">
+                <h3>📍 ¿Dónde estás?</h3>
+                <button class="btn" onclick="usarMiUbicacion()" style="background:#10b981;">Usar mi ubicación actual</button>
+                <input type="text" id="direccionManual" placeholder="O escribí tu dirección">
+            </div>
+            
+            <div class="card">
+                <h3>🛠️ Elegí un servicio</h3>
+                <div id="serviciosLista"></div>
+            </div>
+            
+            <div class="card">
+                <h3>💰 Monto a pagar</h3>
+                <input type="number" id="precio" placeholder="$ Precio estimado" value="5000">
+                <button class="btn" id="solicitarBtn" onclick="solicitarPedido()" disabled>Solicitar Servicio</button>
+            </div>
+        </div>
+        
+        <div id="seguimientoPanel" class="hidden">
+            <div class="card">
+                <div id="estadoPedido" class="estado estado-pendiente">🕒 Buscando trabajador...</div>
+                <div id="trabajadorInfo"></div>
+                <div id="mapaSeguimiento" class="map"></div>
+                <button class="btn" onclick="cancelarPedido()" style="background:#ef4444;">Cancelar Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let token = null;
+        let userId = null;
+        let pedidoActivo = null;
+        let map = null;
+        let marker = null;
+        let trabajadorMarker = null;
+        let servicios = ['Plomería', 'Electricidad', 'Cerrajería', 'Limpieza', 'Mudanzas', 'Pintor'];
+        let servicioSeleccionado = null;
+        let ubicacionSeleccionada = null;
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.token) {
+                    token = data.token;
+                    userId = data.user.id;
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('userId', userId);
+                    conectarSocket();
+                    document.getElementById('loginPanel').classList.add('hidden');
+                    document.getElementById('pedidoPanel').classList.remove('hidden');
+                    cargarServicios();
+                    initMap();
+                } else {
+                    alert('Error: ' + (data.error || 'Credenciales inválidas'));
+                }
+            } catch(e) { alert('Error de conexión'); }
+        }
+        
+        function conectarSocket() {
+            socket = io();
+            socket.emit('cliente_conectado', { token });
+            socket.on('pedido_aceptado', (data) => {
+                pedidoActivo = data.pedidoId;
+                document.getElementById('pedidoPanel').classList.add('hidden');
+                document.getElementById('seguimientoPanel').classList.remove('hidden');
+                document.getElementById('estadoPedido').innerHTML = '✅ Pedido aceptado! Un trabajador viene hacia vos';
+                document.getElementById('estadoPedido').className = 'estado estado-aceptado';
+                document.getElementById('trabajadorInfo').innerHTML = `<p>👨‍🔧 Trabajador: ${data.trabajador.nombre}</p><p>⏱️ ETA: ${data.eta} minutos</p>`;
+                iniciarMapaSeguimiento(data.trabajador.lat, data.trabajador.lng);
+            });
+            socket.on('ubicacion_trabajador', (data) => {
+                if (trabajadorMarker) {
+                    trabajadorMarker.setLatLng([data.lat, data.lng]);
+                } else if (mapSeguimiento) {
+                    trabajadorMarker = L.marker([data.lat, data.lng]).addTo(mapSeguimiento).bindPopup('Trabajador').openPopup();
+                }
+            });
+            socket.on('estado_pedido_actualizado', (data) => {
+                const estados = { 'EN_CAMINO': '🚚 En camino a tu ubicación', 'COMPLETADO': '✅ Servicio completado!' };
+                if (estados[data.estado]) {
+                    document.getElementById('estadoPedido').innerHTML = estados[data.estado];
+                }
+                if (data.estado === 'PAGADA') {
+                    setTimeout(() => { alert('🎉 Pedido completado! Gracias por usar ServiRed'); location.reload(); }, 2000);
+                }
+            });
+            socket.on('pedido_cancelado', () => { alert('Pedido cancelado'); location.reload(); });
+        }
+        
+        function cargarServicios() {
+            const container = document.getElementById('serviciosLista');
+            servicios.forEach(s => {
+                const btn = document.createElement('div');
+                btn.className = 'servicio-btn';
+                btn.innerHTML = s;
+                btn.onclick = () => {
+                    document.querySelectorAll('.servicio-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    servicioSeleccionado = s;
+                    validarFormulario();
+                };
+                container.appendChild(btn);
+            });
+        }
+        
+        function usarMiUbicacion() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    ubicacionSeleccionada = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    if (marker) marker.setLatLng([ubicacionSeleccionada.lat, ubicacionSeleccionada.lng]);
+                    else marker = L.marker([ubicacionSeleccionada.lat, ubicacionSeleccionada.lng]).addTo(map).bindPopup('Tu ubicación').openPopup();
+                    map.setView([ubicacionSeleccionada.lat, ubicacionSeleccionada.lng], 15);
+                    validarFormulario();
+                });
+            }
+        }
+        
+        function validarFormulario() {
+            const btn = document.getElementById('solicitarBtn');
+            btn.disabled = !(servicioSeleccionado && ubicacionSeleccionada);
+        }
+        
+        function solicitarPedido() {
+            const precio = document.getElementById('precio').value;
+            const direccion = document.getElementById('direccionManual').value || `Lat: ${ubicacionSeleccionada.lat}, Lng: ${ubicacionSeleccionada.lng}`;
+            socket.emit('nuevo_pedido', {
+                token,
+                servicio: servicioSeleccionado,
+                direccion,
+                precio: parseInt(precio),
+                ubicacion: ubicacionSeleccionada
+            });
+            document.getElementById('solicitarBtn').disabled = true;
+            document.getElementById('solicitarBtn').innerText = 'Buscando trabajador...';
+        }
+        
+        function cancelarPedido() {
+            if (confirm('¿Cancelar el pedido?')) {
+                socket.emit('cancelar_pedido', { token, pedidoId: pedidoActivo });
+            }
+        }
+        
+        let mapSeguimiento = null;
+        function iniciarMapaSeguimiento(lat, lng) {
+            mapSeguimiento = L.map('mapaSeguimiento').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapSeguimiento);
+            trabajadorMarker = L.marker([lat, lng]).addTo(mapSeguimiento).bindPopup('Trabajador').openPopup();
+        }
+        
+        function initMap() {
+            map = L.map('map').setView([-34.6037, -58.3816], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        }
+        
+        const tokenStorage = localStorage.getItem('token');
+        if (tokenStorage) { token = tokenStorage; userId = localStorage.getItem('userId'); conectarSocket(); document.getElementById('loginPanel').classList.add('hidden'); document.getElementById('pedidoPanel').classList.remove('hidden'); cargarServicios(); initMap(); }
+    </script>
 </body>
 </html>

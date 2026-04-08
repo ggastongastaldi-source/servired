@@ -1,23 +1,218 @@
 <!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><title>SERVired | Trabajador</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0a0c12;color:#eef5ff;height:100vh;display:flex;flex-direction:column;}#map{flex:1;}.card{background:#121624;margin:12px;padding:16px;border-radius:24px;}button{padding:10px;margin:5px;border-radius:40px;border:none;cursor:pointer;}.aceptar{background:#0a8;color:#000;}.rechazar{background:#a33;color:#fff;}.finalizar{background:#f0b90b;color:#000;width:100%;}.hidden{display:none;}</style>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabajador - ServiRed</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #f0f2f5; padding-bottom: 80px; }
+        .header { background: #10b981; color: white; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: bold; }
+        .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+        .card { background: white; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .btn { background: #10b981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 0.5rem; }
+        .btn-danger { background: #ef4444; }
+        .btn-warning { background: #f59e0b; }
+        .online { background: #d1fae5; color: #065f46; padding: 0.5rem; border-radius: 0.5rem; text-align: center; margin-bottom: 1rem; }
+        .offline { background: #fee2e2; color: #991b1b; padding: 0.5rem; border-radius: 0.5rem; text-align: center; margin-bottom: 1rem; }
+        .pedido-card { border: 2px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; margin: 1rem 0; cursor: pointer; transition: all 0.2s; }
+        .pedido-card:hover { border-color: #10b981; background: #f0fdf4; }
+        .map { height: 250px; border-radius: 0.75rem; margin: 1rem 0; }
+        .estado-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; margin-left: 0.5rem; }
+        .pendiente { background: #fef3c7; color: #92400e; }
+        .aceptado { background: #dbeafe; color: #1e40af; }
+        .hidden { display: none; }
+        h3 { margin-bottom: 0.5rem; }
+        .precio { font-size: 1.25rem; font-weight: bold; color: #10b981; }
+    </style>
 </head>
 <body>
-<div style="padding:12px;background:#0a0c12;"><b>🔧 SERVired Trabajador</b> <span id="status">⚪ Libre</span></div>
-<div id="map"></div>
-<div id="pedidoCard" class="card hidden"><div><strong>📦 Nuevo pedido</strong></div><div id="dir"></div><button id="aceptar" class="aceptar">✅ Aceptar</button><button id="rechazar" class="rechazar">❌ Rechazar</button></div>
-<div id="activoCard" class="card hidden"><div><strong>🚀 En curso</strong></div><div id="actDir"></div><button id="finalizar" class="finalizar">🏁 Finalizar</button></div>
-<script>
-const socket=io();let map=L.map('map').setView([-34.6037,-58.3816],13);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM'}).addTo(map);let currentOrder=null,marker=null;
-if(navigator.geolocation)navigator.geolocation.watchPosition((p)=>{let{latitude:lat,longitude:lng}=p.coords;if(marker)map.removeLayer(marker);marker=L.marker([lat,lng],{icon:L.divIcon({html:'🔧',iconSize:[28,28]})}).addTo(map);map.setView([lat,lng],15);socket.emit('worker_moved',{lat,lng});});
-socket.on('nuevo_pedido',(d)=>{if(currentOrder)return;document.getElementById('dir').innerHTML=`📍 ${d.direccion}`;currentOrder=d.orderId;document.getElementById('pedidoCard').classList.remove('hidden');});
-document.getElementById('aceptar').onclick=()=>{socket.emit('aceptar_pedido',{orderId:currentOrder});document.getElementById('pedidoCard').classList.add('hidden');document.getElementById('activoCard').classList.remove('hidden');document.getElementById('actDir').innerHTML=document.getElementById('dir').innerHTML;document.getElementById('status').innerHTML='🚚 En ruta';};
-document.getElementById('rechazar').onclick=()=>{socket.emit('rechazar_pedido',{orderId:currentOrder});currentOrder=null;document.getElementById('pedidoCard').classList.add('hidden');document.getElementById('status').innerHTML='⚪ Libre';};
-document.getElementById('finalizar').onclick=()=>{socket.emit('finalizar_servicio',{orderId:currentOrder});currentOrder=null;document.getElementById('activoCard').classList.add('hidden');document.getElementById('status').innerHTML='✅ Completado';setTimeout(()=>document.getElementById('status').innerHTML='⚪ Libre',3000);};
-</script>
+    <div class="header">🔧 ServiRed - Trabajador</div>
+    <div class="container" id="app">
+        <div id="loginPanel" class="card">
+            <h2>Ingresar como Trabajador</h2>
+            <input type="email" id="email" placeholder="Email" value="trabajador@test.com">
+            <input type="password" id="password" placeholder="Contraseña" value="123456">
+            <button class="btn" onclick="login()">Iniciar Sesión</button>
+            <p style="text-align:center; margin-top:1rem; font-size:0.875rem; color:#6b7280;">Demo: trabajador@test.com / 123456</p>
+        </div>
+        
+        <div id="mainPanel" class="hidden">
+            <div class="card">
+                <div id="estadoToggle"></div>
+                <button id="toggleBtn" class="btn" onclick="toggleOnline()">🟢 Activarse</button>
+                <div id="ubicacionInfo" style="font-size:0.875rem; color:#6b7280; margin-top:0.5rem;"></div>
+            </div>
+            
+            <div class="card">
+                <h3>📋 Pedidos disponibles</h3>
+                <div id="pedidosLista">Esperando pedidos...</div>
+            </div>
+            
+            <div id="pedidoActivoCard" class="hidden card">
+                <h3>🚀 Pedido activo</h3>
+                <div id="pedidoActivoInfo"></div>
+                <div id="mapaPedido" class="map"></div>
+                <div id="botonesEstado"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null, token = null, userId = null, online = false;
+        let pedidoActual = null;
+        let map = null, ubicacionActual = { lat: -34.6037, lng: -58.3816 };
+        let ubicacionInterval = null;
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.token && data.user.rol === 'TRABAJADOR') {
+                    token = data.token;
+                    userId = data.user.id;
+                    localStorage.setItem('workerToken', token);
+                    conectarSocket();
+                    document.getElementById('loginPanel').classList.add('hidden');
+                    document.getElementById('mainPanel').classList.remove('hidden');
+                    iniciarUbicacion();
+                } else {
+                    alert('Solo trabajadores pueden acceder');
+                }
+            } catch(e) { alert('Error de conexión'); }
+        }
+        
+        function conectarSocket() {
+            socket = io();
+            socket.emit('worker_conectado', { token });
+            
+            socket.on('nuevo_pedido_disponible', (pedido) => {
+                agregarPedidoLista(pedido);
+            });
+            
+            socket.on('pedido_cancelado', () => {
+                alert('❌ El cliente canceló el pedido');
+                finalizarPedido();
+            });
+        }
+        
+        function iniciarUbicacion() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    ubicacionActual = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    document.getElementById('ubicacionInfo').innerHTML = `📍 Ubicación actual: ${ubicacionActual.lat.toFixed(4)}, ${ubicacionActual.lng.toFixed(4)}`;
+                    if (online) enviarUbicacion();
+                });
+                ubicacionInterval = setInterval(() => {
+                    if (online && pedidoActual) {
+                        navigator.geolocation.getCurrentPosition(pos => {
+                            ubicacionActual = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                            enviarUbicacion();
+                        });
+                    }
+                }, 5000);
+            }
+        }
+        
+        function enviarUbicacion() {
+            if (socket && online) {
+                socket.emit('ubicacion_trabajador', { token, lat: ubicacionActual.lat, lng: ubicacionActual.lng });
+            }
+        }
+        
+        function toggleOnline() {
+            online = !online;
+            socket.emit('cambiar_estado_trabajador', { token, online });
+            const btn = document.getElementById('toggleBtn');
+            const estadoDiv = document.getElementById('estadoToggle');
+            if (online) {
+                btn.innerHTML = '🔴 Desactivarse';
+                btn.style.background = '#ef4444';
+                estadoDiv.innerHTML = '<div class="online">✅ Estás ONLINE - Recibiendo pedidos</div>';
+                enviarUbicacion();
+            } else {
+                btn.innerHTML = '🟢 Activarse';
+                btn.style.background = '#10b981';
+                estadoDiv.innerHTML = '<div class="offline">⭕ Estás OFFLINE - No recibirás pedidos</div>';
+            }
+        }
+        
+        function agregarPedidoLista(pedido) {
+            if (pedidoActual) return;
+            const container = document.getElementById('pedidosLista');
+            const card = document.createElement('div');
+            card.className = 'pedido-card';
+            card.id = `pedido-${pedido.pedidoId}`;
+            card.innerHTML = `
+                <strong>🧾 ${pedido.servicio}</strong>
+                <p>📍 ${pedido.direccion}</p>
+                <p>💰 $${pedido.precio}</p>
+                <p>👤 Cliente: ${pedido.clienteNombre}</p>
+                <button class="btn" style="margin-top:0.5rem; background:#2563eb;" onclick="aceptarPedido('${pedido.pedidoId}')">✅ Aceptar</button>
+                <button class="btn btn-danger" style="margin-top:0.5rem;" onclick="rechazarPedido('${pedido.pedidoId}')">❌ Rechazar</button>
+            `;
+            container.appendChild(card);
+        }
+        
+        function aceptarPedido(pedidoId) {
+            socket.emit('aceptar_pedido', { token, pedidoId });
+            pedidoActual = pedidoId;
+            document.getElementById('pedidosLista').innerHTML = 'Pedido aceptado!';
+            document.getElementById('pedidoActivoCard').classList.remove('hidden');
+            document.getElementById('pedidoActivoInfo').innerHTML = `<p>✅ Pedido #${pedidoId}</p><div id="estadoActualPedido" class="estado-badge pendiente">PENDIENTE</div>`;
+            initMapaPedido();
+            actualizarBotonesEstado();
+        }
+        
+        function rechazarPedido(pedidoId) {
+            socket.emit('rechazar_pedido', { token, pedidoId });
+            document.getElementById(`pedido-${pedidoId}`)?.remove();
+        }
+        
+        function actualizarEstado(estado) {
+            socket.emit('cambiar_estado_pedido', { token, pedidoId: pedidoActual, estado });
+            const estadoSpan = document.getElementById('estadoActualPedido');
+            if (estadoSpan) {
+                estadoSpan.innerHTML = estado;
+                estadoSpan.className = `estado-badge ${estado.toLowerCase()}`;
+            }
+            if (estado === 'COMPLETADO') {
+                setTimeout(() => { finalizarPedido(); }, 2000);
+            }
+        }
+        
+        function actualizarBotonesEstado() {
+            const container = document.getElementById('botonesEstado');
+            container.innerHTML = `
+                <button class="btn btn-warning" onclick="actualizarEstado('EN_CAMINO')">🚚 En camino</button>
+                <button class="btn" onclick="actualizarEstado('COMPLETADO')">✅ Completar servicio</button>
+            `;
+        }
+        
+        function initMapaPedido() {
+            if (map) map.remove();
+            map = L.map('mapaPedido').setView([ubicacionActual.lat, ubicacionActual.lng], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            L.marker([ubicacionActual.lat, ubicacionActual.lng]).addTo(map).bindPopup('Tu ubicación').openPopup();
+        }
+        
+        function finalizarPedido() {
+            pedidoActual = null;
+            document.getElementById('pedidoActivoCard').classList.add('hidden');
+            document.getElementById('pedidosLista').innerHTML = 'Esperando pedidos...';
+        }
+        
+        const savedToken = localStorage.getItem('workerToken');
+        if (savedToken) { token = savedToken; conectarSocket(); document.getElementById('loginPanel').classList.add('hidden'); document.getElementById('mainPanel').classList.remove('hidden'); iniciarUbicacion(); }
+    </script>
 </body>
 </html>

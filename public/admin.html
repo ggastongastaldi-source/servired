@@ -1,18 +1,224 @@
 <!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><title>SERVired | Admin</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0b0e16;color:#d9eaff;height:100vh;display:flex;flex-direction:column;}.header{background:#07090fcc;padding:12px20px;border-bottom:1px solid cyan;display:flex;justify-content:space-between;}.main{display:flex;flex:1;gap:8px;padding:8px;}#map{flex:3;border-radius:20px;}.lista{flex:1;background:#0e111bdd;border-radius:20px;padding:12px;overflow-y:auto;}.item{background:#181e2c;margin-bottom:10px;padding:12px;border-radius:16px;border-left:4px solid #0ff;}</style>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - ServiRed</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #f0f2f5; }
+        .header { background: #7c3aed; color: white; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: bold; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+        .card { background: white; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem; border-radius: 0.75rem; text-align: center; }
+        .stat-card h3 { font-size: 0.875rem; opacity: 0.9; }
+        .stat-card .value { font-size: 2rem; font-weight: bold; }
+        .map { height: 400px; border-radius: 0.75rem; margin: 1rem 0; }
+        .tab { display: inline-block; padding: 0.5rem 1rem; cursor: pointer; background: #e5e7eb; border-radius: 0.5rem 0.5rem 0 0; margin-right: 0.25rem; }
+        .tab.active { background: white; font-weight: bold; border-bottom: 2px solid #7c3aed; }
+        .tab-content { display: none; background: white; border-radius: 0 0.75rem 0.75rem 0.75rem; padding: 1rem; }
+        .tab-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; font-weight: 600; }
+        .online-badge { color: #10b981; font-weight: bold; }
+        .offline-badge { color: #ef4444; }
+        .btn { background: #7c3aed; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
+        .btn-small { padding: 0.25rem 0.75rem; font-size: 0.875rem; }
+        .hidden { display: none; }
+        .pedido-estado { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500; }
+        .estado-PENDIENTE { background: #fef3c7; color: #92400e; }
+        .estado-ACEPTADA { background: #dbeafe; color: #1e40af; }
+        .estado-EN_CAMINO { background: #c7d2fe; color: #3730a3; }
+        .estado-COMPLETADO, .estado-PAGADA { background: #d1fae5; color: #065f46; }
+        .estado-CANCELADA { background: #fee2e2; color: #991b1b; }
+    </style>
 </head>
 <body>
-<div class="header"><span>📡 SERVired Admin</span><span id="counter">🟢 Activos: 0</span></div>
-<div class="main"><div id="map"></div><div class="lista"><h3>📋 Pedidos</h3><div id="pedidosLista"></div></div></div>
-<script>
-const socket=io();let map=L.map('map').setView([-34.6037,-58.3816],12);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OSM'}).addTo(map);let markers={c:{},w:{}};
-function update(data){let pedidos=data.pedidos,container=document.getElementById('pedidosLista'),count=0,html='';for(let id in pedidos){count++;html+=`<div class="item"><b>#${id.slice(-6)}</b><br>📍 ${pedidos[id].direccion}<br>Estado: ${pedidos[id].estado}</div><hr>`;}container.innerHTML=html||'<div>✨ Sin pedidos</div>';document.getElementById('counter').innerHTML=`🟢 Activos: ${count}`;for(let i in markers.c)map.removeLayer(markers.c[i]);for(let i in markers.w)map.removeLayer(markers.w[i]);markers={c:{},w:{}};for(let id in pedidos){let p=pedidos[id];if(p.clienteLat&&p.clienteLng)markers.c[id]=L.marker([p.clienteLat,p.clienteLng],{icon:L.divIcon({html:'📍',iconSize:[24,24]})}).addTo(map);if(p.workerLat&&p.workerLng&&p.estado!=='completado')markers.w[id]=L.marker([p.workerLat,p.workerLng],{icon:L.divIcon({html:'🔧',iconSize:[28,28]})}).addTo(map);}}
-socket.on('admin_update',update);
-</script>
+    <div class="header">📊 ServiRed - Panel de Administración</div>
+    <div class="container" id="app">
+        <div id="loginPanel" class="card">
+            <h2>Acceso Administrador</h2>
+            <input type="email" id="email" placeholder="Email" value="admin@servired.com">
+            <input type="password" id="password" placeholder="Contraseña" value="admin123">
+            <button class="btn" onclick="login()">Ingresar</button>
+        </div>
+        
+        <div id="adminPanel" class="hidden">
+            <div class="stats-grid" id="statsGrid"></div>
+            
+            <div class="card">
+                <div class="tabs">
+                    <span class="tab active" onclick="showTab('mapa')">🗺️ Mapa en vivo</span>
+                    <span class="tab" onclick="showTab('pedidos')">📦 Pedidos</span>
+                    <span class="tab" onclick="showTab('trabajadores')">👷 Trabajadores</span>
+                    <span class="tab" onclick="showTab('finanzas')">💰 Finanzas</span>
+                </div>
+                
+                <div id="tab-mapa" class="tab-content active">
+                    <div id="adminMap" class="map"></div>
+                    <div id="workersList"></div>
+                </div>
+                
+                <div id="tab-pedidos" class="tab-content">
+                    <div style="overflow-x: auto;">
+                        <table id="pedidosTable">
+                            <thead><tr><th>ID</th><th>Cliente</th><th>Servicio</th><th>Estado</th><th>Precio</th><th>Fecha</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="tab-trabajadores" class="tab-content">
+                    <div style="overflow-x: auto;">
+                        <table id="workersTable">
+                            <thead><tr><th>Nombre</th><th>Email</th><th>Estado</th><th>Verificado</th><th>Acciones</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="tab-finanzas" class="tab-content">
+                    <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+                    <div id="finanzasDetalle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null, token = null, map = null;
+        let workersMarkers = {};
+        let revenueChart = null;
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.token && data.user.rol === 'ADMIN') {
+                    token = data.token;
+                    localStorage.setItem('adminToken', token);
+                    conectarSocket();
+                    document.getElementById('loginPanel').classList.add('hidden');
+                    document.getElementById('adminPanel').classList.remove('hidden');
+                    cargarStats();
+                    cargarPedidos();
+                    cargarTrabajadores();
+                    initMap();
+                } else {
+                    alert('Acceso solo para administradores');
+                }
+            } catch(e) { alert('Error de conexión'); }
+        }
+        
+        function conectarSocket() {
+            socket = io();
+            socket.emit('admin_conectado', { token });
+            
+            socket.on('worker_online', (data) => {
+                actualizarWorkerMarker(data.nombre, true);
+                cargarTrabajadores();
+            });
+            socket.on('worker_offline', (data) => {
+                actualizarWorkerMarker(data.nombre, false);
+                cargarTrabajadores();
+            });
+            socket.on('ubicacion_trabajador', (data) => {
+                actualizarWorkerMarker(data.nombre, true, data.lat, data.lng);
+            });
+            socket.on('nuevo_pedido_admin', () => cargarPedidos());
+            socket.on('pedido_aceptado_admin', () => cargarPedidos());
+            socket.on('estado_pedido_admin', () => cargarPedidos());
+            socket.on('pedido_completado_admin', () => { cargarPedidos(); cargarStats(); });
+        }
+        
+        function initMap() {
+            map = L.map('adminMap').setView([-34.6037, -58.3816], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        }
+        
+        function actualizarWorkerMarker(nombre, online, lat, lng) {
+            if (!map) return;
+            if (workersMarkers[nombre]) {
+                if (online && lat && lng) workersMarkers[nombre].setLatLng([lat, lng]);
+                if (!online) workersMarkers[nombre].remove();
+            } else if (online && lat && lng) {
+                workersMarkers[nombre] = L.marker([lat, lng]).addTo(map).bindPopup(`👷 ${nombre}`);
+            }
+        }
+        
+        async function cargarStats() {
+            try {
+                const res = await fetch('/api/admin/stats', { headers: { 'Authorization': `Bearer ${token}` } });
+                const stats = await res.json();
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="stat-card"><h3>Pedidos Hoy</h3><div class="value">${stats.pedidosHoy}</div></div>
+                    <div class="stat-card"><h3>Trabajadores</h3><div class="value">${stats.totalWorkers}</div></div>
+                    <div class="stat-card"><h3>Ingresos</h3><div class="value">$${stats.revenue.toLocaleString()}</div></div>
+                    <div class="stat-card"><h3>Comisión (20%)</h3><div class="value">$${stats.comision.toLocaleString()}</div></div>
+                `;
+            } catch(e) { console.error(e); }
+        }
+        
+        async function cargarPedidos() {
+            try {
+                const res = await fetch('/api/admin/pedidos', { headers: { 'Authorization': `Bearer ${token}` } });
+                const pedidos = await res.json();
+                const tbody = document.querySelector('#pedidosTable tbody');
+                tbody.innerHTML = pedidos.map(p => `
+                    <tr>
+                        <td>${p._id.slice(-6)}</td><td>${p.cliente?.nombre || 'N/A'}</td>
+                        <td>${p.tipoServicio}</td>
+                        <td><span class="pedido-estado estado-${p.estado}">${p.estado}</span></td>
+                        <td>$${p.precio}</td>
+                        <td>${new Date(p.createdAt).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+        
+        async function cargarTrabajadores() {
+            try {
+                const res = await fetch('/api/admin/trabajadores', { headers: { 'Authorization': `Bearer ${token}` } });
+                const workers = await res.json();
+                const tbody = document.querySelector('#workersTable tbody');
+                tbody.innerHTML = workers.map(w => `
+                    <tr>
+                        <td>${w.nombre}</td><td>${w.email}</td>
+                        <td class="${w.estado === 'VERIFICADO' ? 'online-badge' : 'offline-badge'}">${w.estado || 'PENDIENTE'}</td>
+                        <td>${w.verificado ? '✅ Sí' : '❌ No'}</td>
+                        <td>${!w.verificado ? `<button class="btn btn-small" onclick="verificarWorker('${w._id}')">Verificar</button>` : '-'}</td>
+                    </tr>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+        
+        async function verificarWorker(id) {
+            await fetch(`/api/admin/trabajadores/${id}/verificar`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            cargarTrabajadores();
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if (tab === 'finanzas') cargarStats();
+        }
+        
+        const savedToken = localStorage.getItem('adminToken');
+        if (savedToken) { token = savedToken; conectarSocket(); document.getElementById('loginPanel').classList.add('hidden'); document.getElementById('adminPanel').classList.remove('hidden'); cargarStats(); cargarPedidos(); cargarTrabajadores(); initMap(); }
+    </script>
 </body>
 </html>
