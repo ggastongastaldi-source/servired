@@ -15,27 +15,24 @@ const io = socketio(server, { cors: { origin: '*' } });
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ggastonnet_db_user:servired2024@cluster0.fjqkqhf.mongodb.net/servired?retryWrites=true&w=majority';
 mongoose.connect(MONGO_URI, { family: 4 })
   .then(() => console.log('✅ MongoDB conectado'))
   .catch(e => console.error('❌ MongoDB error:', e.message));
 
-// Rutas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 
-// Healthcheck
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-// Frontend
-app.get('/*', (req, res) => {
+app.use((req, res) => {
   if (!req.path.startsWith('/api/')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } else {
+    res.status(404).json({ error: 'Not found' });
   }
 });
 
-// Socket.io
 const trabajadoresOnline = {};
 const pedidosActivos = {};
 
@@ -48,14 +45,12 @@ io.on('connection', (socket) => {
       trabajadoresOnline[socket.id] = { userId: decoded.id, nombre: decoded.nombre || 'Trabajador', online: false };
     } catch(e) {}
   });
-
   socket.on('cambiar_estado_trabajador', (data) => {
     if (trabajadoresOnline[socket.id]) {
       trabajadoresOnline[socket.id].online = data.online;
       io.to('admins').emit(data.online ? 'worker_online' : 'worker_offline', { nombre: trabajadoresOnline[socket.id].nombre });
     }
   });
-
   socket.on('ubicacion_trabajador', (data) => {
     if (trabajadoresOnline[socket.id]) {
       trabajadoresOnline[socket.id].lat = data.lat;
@@ -65,14 +60,12 @@ io.on('connection', (socket) => {
       io.to('admins').emit('ubicacion_trabajador', { trabajadorId: socket.id, nombre: trabajadoresOnline[socket.id].nombre, lat: data.lat, lng: data.lng });
     }
   });
-
   socket.on('admin_conectado', (data) => {
     try {
       const decoded = jwt.verify(data.token, process.env.JWT_SECRET || 'servired_secret');
       if (decoded.rol === 'ADMIN') socket.join('admins');
     } catch(e) {}
   });
-
   socket.on('disconnect', () => {
     if (trabajadoresOnline[socket.id]) {
       io.to('admins').emit('worker_offline', { nombre: trabajadoresOnline[socket.id].nombre });
