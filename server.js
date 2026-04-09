@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -81,6 +82,7 @@ app.post('/api/pedido', (req, res) => {
 
 // Obtener pedidos
 app.get('/api/pedidos', (req, res) => {
+app.use('/api/admin', require('./routes/admin'));
     res.json(pedidos.filter(p => p.estado === 'pendiente'));
 });
 

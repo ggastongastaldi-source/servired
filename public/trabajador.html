@@ -1,218 +1,286 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trabajador - ServiRed</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; background: #f0f2f5; padding-bottom: 80px; }
-        .header { background: #10b981; color: white; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: bold; }
-        .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
-        .card { background: white; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .btn { background: #10b981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 0.5rem; }
-        .btn-danger { background: #ef4444; }
-        .btn-warning { background: #f59e0b; }
-        .online { background: #d1fae5; color: #065f46; padding: 0.5rem; border-radius: 0.5rem; text-align: center; margin-bottom: 1rem; }
-        .offline { background: #fee2e2; color: #991b1b; padding: 0.5rem; border-radius: 0.5rem; text-align: center; margin-bottom: 1rem; }
-        .pedido-card { border: 2px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; margin: 1rem 0; cursor: pointer; transition: all 0.2s; }
-        .pedido-card:hover { border-color: #10b981; background: #f0fdf4; }
-        .map { height: 250px; border-radius: 0.75rem; margin: 1rem 0; }
-        .estado-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; margin-left: 0.5rem; }
-        .pendiente { background: #fef3c7; color: #92400e; }
-        .aceptado { background: #dbeafe; color: #1e40af; }
-        .hidden { display: none; }
-        h3 { margin-bottom: 0.5rem; }
-        .precio { font-size: 1.25rem; font-weight: bold; color: #10b981; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SERVired — Trabajador</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+:root{--cyan:#00E5FF;--orange:#FF6D00;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#0d1b2a;border-bottom:1px solid rgba(0,229,255,0.15);position:sticky;top:0;z-index:100;}
+.logo{font-size:1.4rem;font-weight:700;letter-spacing:2px;color:var(--cyan);}
+.logo span{color:var(--orange);}
+.status-pill{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-size:0.8rem;font-weight:700;cursor:pointer;border:none;font-family:'Rajdhani',sans-serif;transition:all 0.2s;}
+.status-pill.online{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid var(--success);}
+.status-pill.offline{background:rgba(100,116,139,0.15);color:var(--muted);border:1px solid var(--muted);}
+.sdot{width:8px;height:8px;border-radius:50%;}
+.sdot.online{background:var(--success);animation:pulse 1.5s infinite;}
+.sdot.offline{background:var(--muted);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+#mapa{width:100%;height:240px;}
+.panel{padding:16px 20px;display:flex;flex-direction:column;gap:14px;padding-bottom:80px;}
+.card{background:var(--surface);border:1px solid rgba(0,229,255,0.12);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--orange));}
+.card-title{font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;font-family:'Share Tech Mono',monospace;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stat-box{background:var(--surface2);border-radius:10px;padding:12px;text-align:center;}
+.stat-num{font-size:1.4rem;font-weight:700;color:var(--cyan);font-family:'Share Tech Mono',monospace;}
+.stat-lbl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.pedido-activo{display:none;flex-direction:column;gap:12px;background:var(--surface);border:1px solid rgba(0,229,255,0.25);border-radius:14px;padding:16px;}
+.pedido-activo.visible{display:flex;}
+.cli-row{display:flex;align-items:center;gap:12px;}
+.cli-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#ff8c00);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;}
+.fsm{display:flex;gap:4px;}
+.fsm-s{flex:1;padding:5px;border-radius:6px;text-align:center;font-size:0.6rem;font-weight:700;font-family:'Share Tech Mono',monospace;text-transform:uppercase;}
+.fsm-s.done{background:rgba(16,185,129,0.15);color:var(--success);}
+.fsm-s.active{background:rgba(0,229,255,0.15);color:var(--cyan);}
+.fsm-s.pending{background:var(--surface2);color:var(--muted);}
+.btn-sig{width:100%;padding:13px;background:linear-gradient(135deg,var(--cyan),#0080ff);border:none;border-radius:12px;color:#000;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;}
+.incoming{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:2px solid var(--orange);padding:20px;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);border-radius:20px 20px 0 0;}
+.incoming.show{transform:translateY(0);}
+.inc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.inc-title{font-size:1.2rem;font-weight:700;color:var(--orange);}
+.cdr{width:50px;height:50px;position:relative;}
+.cdr svg{transform:rotate(-90deg);}
+.cdr-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Share Tech Mono',monospace;font-size:1rem;font-weight:700;color:var(--orange);}
+.inc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.inc-lbl{color:var(--muted);font-size:0.85rem;}
+.inc-val{font-weight:700;}
+.inc-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.btn-aceptar{padding:14px;background:linear-gradient(135deg,var(--success),#059669);border:none;border-radius:12px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;}
+.btn-rechazar{padding:14px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:12px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;}
+.nav-bottom{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid rgba(255,255,255,0.07);display:flex;z-index:50;}
+.nav-btn{flex:1;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Rajdhani',sans-serif;}
+.nav-btn.active{color:var(--cyan);}
+.nav-btn .ni{font-size:1.4rem;}
+.nav-btn .nl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;}
+.pantalla{display:none;padding-bottom:70px;}
+.pantalla.active{display:block;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--cyan);border-radius:10px;padding:12px 20px;font-size:0.9rem;z-index:300;transition:transform 0.3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:10px;margin-bottom:8px;}
+.badge{padding:3px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;font-family:'Share Tech Mono',monospace;}
+.badge.PAGADA{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid var(--success);}
+.badge.EN_PROCESO{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid #a78bfa;}
+</style>
 </head>
 <body>
-    <div class="header">🔧 ServiRed - Trabajador</div>
-    <div class="container" id="app">
-        <div id="loginPanel" class="card">
-            <h2>Ingresar como Trabajador</h2>
-            <input type="email" id="email" placeholder="Email" value="trabajador@test.com">
-            <input type="password" id="password" placeholder="Contraseña" value="123456">
-            <button class="btn" onclick="login()">Iniciar Sesión</button>
-            <p style="text-align:center; margin-top:1rem; font-size:0.875rem; color:#6b7280;">Demo: trabajador@test.com / 123456</p>
-        </div>
-        
-        <div id="mainPanel" class="hidden">
-            <div class="card">
-                <div id="estadoToggle"></div>
-                <button id="toggleBtn" class="btn" onclick="toggleOnline()">🟢 Activarse</button>
-                <div id="ubicacionInfo" style="font-size:0.875rem; color:#6b7280; margin-top:0.5rem;"></div>
-            </div>
-            
-            <div class="card">
-                <h3>📋 Pedidos disponibles</h3>
-                <div id="pedidosLista">Esperando pedidos...</div>
-            </div>
-            
-            <div id="pedidoActivoCard" class="hidden card">
-                <h3>🚀 Pedido activo</h3>
-                <div id="pedidoActivoInfo"></div>
-                <div id="mapaPedido" class="map"></div>
-                <div id="botonesEstado"></div>
-            </div>
-        </div>
+<div class="header">
+  <div class="logo">SERV<span>ired</span> PRO</div>
+  <button class="status-pill online" id="status-btn" onclick="toggleStatus()">
+    <div class="sdot online" id="sdot"></div>
+    <span id="slbl">EN LÍNEA</span>
+  </button>
+</div>
+<div class="pantalla active" id="pant-mapa">
+  <div id="mapa"></div>
+  <div class="panel">
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" id="st-hoy">0</div><div class="stat-lbl">Hoy</div></div>
+      <div class="stat-box"><div class="stat-num" id="st-mes">0</div><div class="stat-lbl">Mes</div></div>
+      <div class="stat-box"><div class="stat-num" id="st-rat">—</div><div class="stat-lbl">Rating</div></div>
     </div>
+    <div class="pedido-activo" id="pedido-activo">
+      <div class="card-title">// PEDIDO ACTIVO</div>
+      <div class="cli-row">
+        <div class="cli-av" id="c-ini">C</div>
+        <div><div style="font-size:1.1rem;font-weight:700" id="c-nombre">—</div><div style="color:var(--muted);font-size:0.8rem" id="c-dir">—</div></div>
+      </div>
+      <div class="fsm" id="fsm"></div>
+      <button class="btn-sig" id="btn-sig" onclick="avanzar()">Siguiente →</button>
+    </div>
+    <div class="card">
+      <div class="card-title">// Estado</div>
+      <p style="color:var(--muted);font-size:0.9rem" id="estado-msg">Estás en línea. Esperando pedidos cercanos...</p>
+    </div>
+  </div>
+</div>
+<div class="pantalla" id="pant-historial">
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">// Mis trabajos</div>
+      <div id="lista-hist"><div style="color:var(--muted);text-align:center;padding:20px">Cargando...</div></div>
+    </div>
+  </div>
+</div>
+<div class="pantalla" id="pant-perfil">
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">// Mi perfil</div>
+      <div style="text-align:center;padding:16px 0;">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),#0080ff);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;margin:0 auto 12px" id="p-av">C</div>
+        <div style="font-size:1.3rem;font-weight:700" id="p-nombre">—</div>
+        <div style="color:var(--muted);font-size:0.85rem" id="p-email">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">// Ganancias del mes</div>
+      <div style="text-align:center;padding:10px 0;">
+        <div style="font-size:2.5rem;font-weight:700;color:var(--cyan);font-family:'Share Tech Mono',monospace" id="p-ganancia">$ 0</div>
+        <div style="color:var(--muted);font-size:0.8rem">80% de comisión</div>
+      </div>
+    </div>
+    <button onclick="window.location='/'" style="width:100%;padding:13px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:12px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">🚪 Cerrar sesión</button>
+  </div>
+</div>
+<div class="incoming" id="incoming">
+  <div class="inc-header">
+    <div class="inc-title">⚡ Pedido entrante</div>
+    <div class="cdr">
+      <svg width="50" height="50"><circle cx="25" cy="25" r="20" fill="none" stroke="#1a2236" stroke-width="4"/><circle id="cdr-circle" cx="25" cy="25" r="20" fill="none" stroke="#FF6D00" stroke-width="4" stroke-dasharray="125.6" stroke-dashoffset="0"/></svg>
+      <div class="cdr-num" id="cdr-num">30</div>
+    </div>
+  </div>
+  <div class="inc-row"><span class="inc-lbl">Servicio</span><span class="inc-val" id="inc-srv">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Dirección</span><span class="inc-val" id="inc-dir" style="font-size:0.85rem;text-align:right;max-width:60%">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Precio</span><span class="inc-val" style="color:var(--cyan);font-family:'Share Tech Mono',monospace" id="inc-precio">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Tu ganancia</span><span class="inc-val" style="color:var(--success);font-family:'Share Tech Mono',monospace" id="inc-gan">—</span></div>
+  <div class="inc-actions">
+    <button class="btn-rechazar" onclick="responder(false)">✕ Rechazar</button>
+    <button class="btn-aceptar" onclick="responder(true)">✓ Aceptar</button>
+  </div>
+</div>
+<nav class="nav-bottom">
+  <button class="nav-btn active" onclick="irPant('mapa',this)"><span class="ni">🗺️</span><span class="nl">Mapa</span></button>
+  <button class="nav-btn" onclick="irPant('historial',this);cargarHist()"><span class="ni">📋</span><span class="nl">Pedidos</span></button>
+  <button class="nav-btn" onclick="irPant('perfil',this)"><span class="ni">👤</span><span class="nl">Perfil</span></button>
+</nav>
+<div class="toast" id="toast"></div>
+<script>
+const TOKEN=localStorage.getItem('token');
+if(!TOKEN){window.location='/';}
+const payload=JSON.parse(atob(TOKEN.split('.')[1]));
+document.getElementById('p-nombre').textContent=payload.nombre||'—';
+document.getElementById('p-email').textContent=payload.email||'—';
+document.getElementById('p-av').textContent=(payload.nombre||'T')[0].toUpperCase();
+const socket=io();
+let mapa,markerYo,markerCli;
+let online=true,pedidoActualId=null,cdrInterval=null;
+let pedidoData=null,gananciaTotal=0,trabajosHoy=0;
+const ESTADOS=['ACEPTADA','EN_PROCESO','REALIZADA','PAGADA'];
+let estadoActual='ACEPTADA';
 
-    <script>
-        let socket = null, token = null, userId = null, online = false;
-        let pedidoActual = null;
-        let map = null, ubicacionActual = { lat: -34.6037, lng: -58.3816 };
-        let ubicacionInterval = null;
-        
-        async function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            try {
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-                if (data.token && data.user.rol === 'TRABAJADOR') {
-                    token = data.token;
-                    userId = data.user.id;
-                    localStorage.setItem('workerToken', token);
-                    conectarSocket();
-                    document.getElementById('loginPanel').classList.add('hidden');
-                    document.getElementById('mainPanel').classList.remove('hidden');
-                    iniciarUbicacion();
-                } else {
-                    alert('Solo trabajadores pueden acceder');
-                }
-            } catch(e) { alert('Error de conexión'); }
-        }
-        
-        function conectarSocket() {
-            socket = io();
-            socket.emit('worker_conectado', { token });
-            
-            socket.on('nuevo_pedido_disponible', (pedido) => {
-                agregarPedidoLista(pedido);
-            });
-            
-            socket.on('pedido_cancelado', () => {
-                alert('❌ El cliente canceló el pedido');
-                finalizarPedido();
-            });
-        }
-        
-        function iniciarUbicacion() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    ubicacionActual = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    document.getElementById('ubicacionInfo').innerHTML = `📍 Ubicación actual: ${ubicacionActual.lat.toFixed(4)}, ${ubicacionActual.lng.toFixed(4)}`;
-                    if (online) enviarUbicacion();
-                });
-                ubicacionInterval = setInterval(() => {
-                    if (online && pedidoActual) {
-                        navigator.geolocation.getCurrentPosition(pos => {
-                            ubicacionActual = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                            enviarUbicacion();
-                        });
-                    }
-                }, 5000);
-            }
-        }
-        
-        function enviarUbicacion() {
-            if (socket && online) {
-                socket.emit('ubicacion_trabajador', { token, lat: ubicacionActual.lat, lng: ubicacionActual.lng });
-            }
-        }
-        
-        function toggleOnline() {
-            online = !online;
-            socket.emit('cambiar_estado_trabajador', { token, online });
-            const btn = document.getElementById('toggleBtn');
-            const estadoDiv = document.getElementById('estadoToggle');
-            if (online) {
-                btn.innerHTML = '🔴 Desactivarse';
-                btn.style.background = '#ef4444';
-                estadoDiv.innerHTML = '<div class="online">✅ Estás ONLINE - Recibiendo pedidos</div>';
-                enviarUbicacion();
-            } else {
-                btn.innerHTML = '🟢 Activarse';
-                btn.style.background = '#10b981';
-                estadoDiv.innerHTML = '<div class="offline">⭕ Estás OFFLINE - No recibirás pedidos</div>';
-            }
-        }
-        
-        function agregarPedidoLista(pedido) {
-            if (pedidoActual) return;
-            const container = document.getElementById('pedidosLista');
-            const card = document.createElement('div');
-            card.className = 'pedido-card';
-            card.id = `pedido-${pedido.pedidoId}`;
-            card.innerHTML = `
-                <strong>🧾 ${pedido.servicio}</strong>
-                <p>📍 ${pedido.direccion}</p>
-                <p>💰 $${pedido.precio}</p>
-                <p>👤 Cliente: ${pedido.clienteNombre}</p>
-                <button class="btn" style="margin-top:0.5rem; background:#2563eb;" onclick="aceptarPedido('${pedido.pedidoId}')">✅ Aceptar</button>
-                <button class="btn btn-danger" style="margin-top:0.5rem;" onclick="rechazarPedido('${pedido.pedidoId}')">❌ Rechazar</button>
-            `;
-            container.appendChild(card);
-        }
-        
-        function aceptarPedido(pedidoId) {
-            socket.emit('aceptar_pedido', { token, pedidoId });
-            pedidoActual = pedidoId;
-            document.getElementById('pedidosLista').innerHTML = 'Pedido aceptado!';
-            document.getElementById('pedidoActivoCard').classList.remove('hidden');
-            document.getElementById('pedidoActivoInfo').innerHTML = `<p>✅ Pedido #${pedidoId}</p><div id="estadoActualPedido" class="estado-badge pendiente">PENDIENTE</div>`;
-            initMapaPedido();
-            actualizarBotonesEstado();
-        }
-        
-        function rechazarPedido(pedidoId) {
-            socket.emit('rechazar_pedido', { token, pedidoId });
-            document.getElementById(`pedido-${pedidoId}`)?.remove();
-        }
-        
-        function actualizarEstado(estado) {
-            socket.emit('cambiar_estado_pedido', { token, pedidoId: pedidoActual, estado });
-            const estadoSpan = document.getElementById('estadoActualPedido');
-            if (estadoSpan) {
-                estadoSpan.innerHTML = estado;
-                estadoSpan.className = `estado-badge ${estado.toLowerCase()}`;
-            }
-            if (estado === 'COMPLETADO') {
-                setTimeout(() => { finalizarPedido(); }, 2000);
-            }
-        }
-        
-        function actualizarBotonesEstado() {
-            const container = document.getElementById('botonesEstado');
-            container.innerHTML = `
-                <button class="btn btn-warning" onclick="actualizarEstado('EN_CAMINO')">🚚 En camino</button>
-                <button class="btn" onclick="actualizarEstado('COMPLETADO')">✅ Completar servicio</button>
-            `;
-        }
-        
-        function initMapaPedido() {
-            if (map) map.remove();
-            map = L.map('mapaPedido').setView([ubicacionActual.lat, ubicacionActual.lng], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            L.marker([ubicacionActual.lat, ubicacionActual.lng]).addTo(map).bindPopup('Tu ubicación').openPopup();
-        }
-        
-        function finalizarPedido() {
-            pedidoActual = null;
-            document.getElementById('pedidoActivoCard').classList.add('hidden');
-            document.getElementById('pedidosLista').innerHTML = 'Esperando pedidos...';
-        }
-        
-        const savedToken = localStorage.getItem('workerToken');
-        if (savedToken) { token = savedToken; conectarSocket(); document.getElementById('loginPanel').classList.add('hidden'); document.getElementById('mainPanel').classList.remove('hidden'); iniciarUbicacion(); }
-    </script>
+function initMapa(){
+  mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
+  const ic=L.divIcon({html:'<div style="background:#00E5FF;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(0,229,255,0.9)"></div>',className:'',iconSize:[16,16]});
+  markerYo=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Vos');
+  if(navigator.geolocation){
+    navigator.geolocation.watchPosition(p=>{
+      const lat=p.coords.latitude,lng=p.coords.longitude;
+      markerYo.setLatLng([lat,lng]);mapa.setView([lat,lng],14);
+      if(online)socket.emit('ubicacion_trabajador',{lat,lng,token:TOKEN});
+    },{enableHighAccuracy:true,maximumAge:5000});
+  }
+}
+
+function toggleStatus(){
+  online=!online;
+  const btn=document.getElementById('status-btn'),dot=document.getElementById('sdot'),lbl=document.getElementById('slbl');
+  if(online){btn.className='status-pill online';dot.className='sdot online';lbl.textContent='EN LÍNEA';}
+  else{btn.className='status-pill offline';dot.className='sdot offline';lbl.textContent='FUERA DE LÍNEA';}
+  socket.emit('cambiar_estado_trabajador',{online,token:TOKEN});
+  document.getElementById('estado-msg').textContent=online?'Estás en línea. Esperando pedidos...':'Estás fuera de línea.';
+}
+
+socket.on('nuevo_pedido_disponible',data=>{
+  if(!online)return;
+  pedidoData=data;
+  document.getElementById('inc-srv').textContent=(data.servicio||'').replace(/_/g,' ').toUpperCase();
+  document.getElementById('inc-dir').textContent=data.direccion||'—';
+  document.getElementById('inc-precio').textContent='$ '+(data.precio||0).toLocaleString('es-AR');
+  document.getElementById('inc-gan').textContent='$ '+Math.round((data.precio||0)*0.8).toLocaleString('es-AR');
+  document.getElementById('incoming').classList.add('show');
+  startCdr(30);
+});
+
+function startCdr(s){
+  clearInterval(cdrInterval);
+  let rem=s;
+  const circle=document.getElementById('cdr-circle'),num=document.getElementById('cdr-num');
+  cdrInterval=setInterval(()=>{
+    rem--;num.textContent=rem;
+    circle.style.strokeDashoffset=125.6-(125.6*(rem/s));
+    if(rem<=0){clearInterval(cdrInterval);responder(false);}
+  },1000);
+}
+
+function responder(aceptar){
+  clearInterval(cdrInterval);
+  document.getElementById('incoming').classList.remove('show');
+  if(aceptar&&pedidoData){
+    socket.emit('aceptar_pedido',{pedidoId:pedidoData.pedidoId,token:TOKEN});
+    pedidoActualId=pedidoData.pedidoId;
+    estadoActual='ACEPTADA';
+    document.getElementById('c-nombre').textContent=pedidoData.clienteNombre||'Cliente';
+    document.getElementById('c-ini').textContent=(pedidoData.clienteNombre||'C')[0];
+    document.getElementById('c-dir').textContent=pedidoData.direccion||'—';
+    document.getElementById('pedido-activo').classList.add('visible');
+    renderFSM();toast('✅ Pedido aceptado');
+  }else{
+    socket.emit('rechazar_pedido',{pedidoId:pedidoData?.pedidoId,token:TOKEN});
+  }
+}
+
+function renderFSM(){
+  const c=document.getElementById('fsm');c.innerHTML='';
+  ESTADOS.forEach(e=>{
+    const d=document.createElement('div');d.className='fsm-s';
+    const ci=ESTADOS.indexOf(estadoActual),ei=ESTADOS.indexOf(e);
+    if(ei<ci)d.classList.add('done');else if(ei===ci)d.classList.add('active');else d.classList.add('pending');
+    d.textContent=e.replace('_',' ');c.appendChild(d);
+  });
+  const btn=document.getElementById('btn-sig');
+  const idx=ESTADOS.indexOf(estadoActual);
+  btn.disabled=idx>=ESTADOS.length-1;
+  btn.textContent=idx>=ESTADOS.length-1?'✅ Completado':'Pasar a '+ESTADOS[idx+1]+' →';
+}
+
+function avanzar(){
+  const idx=ESTADOS.indexOf(estadoActual);
+  if(idx>=ESTADOS.length-1)return;
+  estadoActual=ESTADOS[idx+1];
+  socket.emit('cambiar_estado_pedido',{pedidoId:pedidoActualId,estado:estadoActual,token:TOKEN});
+  renderFSM();
+  if(estadoActual==='PAGADA'){
+    trabajosHoy++;gananciaTotal+=pedidoData?.precio*0.8||0;
+    document.getElementById('st-hoy').textContent=trabajosHoy;
+    document.getElementById('p-ganancia').textContent='$ '+Math.round(gananciaTotal).toLocaleString('es-AR');
+    setTimeout(()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('💰 Pago confirmado');},1500);
+  }
+}
+
+socket.on('pedido_cancelado',()=>{
+  document.getElementById('pedido-activo').classList.remove('visible');
+  pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');
+});
+
+async function cargarHist(){
+  try{
+    const r=await fetch('/api/pedidos/mis-trabajos',{headers:{Authorization:'Bearer '+TOKEN}});
+    const data=await r.json();
+    const lista=document.getElementById('lista-hist');
+    if(!data.length){lista.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">Sin trabajos aún</div>';return;}
+    lista.innerHTML=data.map(p=>`<div class="hist-item"><div><div style="font-weight:600">${(p.tipoServicio||'').replace(/_/g,' ')}</div><div style="font-size:0.75rem;color:var(--muted)">${new Date(p.createdAt).toLocaleDateString('es-AR')} · $${(p.precio||0).toLocaleString('es-AR')}</div></div><span class="badge ${p.estado}">${p.estado}</span></div>`).join('');
+  }catch(e){}
+}
+
+function irPant(id,btn){
+  document.querySelectorAll('.pantalla').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pant-'+id)?.classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='mapa')setTimeout(()=>mapa?.invalidateSize(),100);
+}
+
+function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+window.addEventListener('DOMContentLoaded',()=>{initMapa();socket.emit('worker_conectado',{token:TOKEN});});
+</script>
 </body>
 </html>
