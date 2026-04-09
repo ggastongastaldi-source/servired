@@ -29,7 +29,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Frontend
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   }
