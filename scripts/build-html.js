@@ -1,9 +1,12 @@
-<!DOCTYPE html>
+const fs = require('fs');
+const path = require('path');
+
+const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SERVired <!-- BUILD:1775753585573 --></title>
+<title>SERVired <!-- BUILD:${Date.now()} --></title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 :root{--cyan:#00E5FF;--orange:#FF6D00;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;}
@@ -280,4 +283,8 @@ const t=localStorage.getItem('token');
 if(t){try{const p=JSON.parse(atob(t.split('.')[1]));if(p.exp>Date.now()/1000){const rol=p.rol||p.role;if(rol==='ADMIN')window.location='/admin.html';else if(rol==='TRABAJADOR')window.location='/trabajador.html';else window.location='/cliente.html';}}catch(e){localStorage.removeItem('token');}}
 </script>
 </body>
-</html>
+</html>`;
+
+const outPath = path.join(__dirname, '..', 'public', 'index.html');
+fs.writeFileSync(outPath, html, 'utf8');
+console.log('✅ index.html generado con logo neuronal + triángulo de roles · build:', Date.now());
