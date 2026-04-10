@@ -1,5 +1,6 @@
 const router = require('express').Router();
+const { buscar } = require('../controllers/matchingController');
 
-router.get('/buscar', (req, res) => res.json({ ok: true, trabajadores: [] }));
+router.get('/buscar', buscar);
 
 module.exports = router;
