@@ -19,4 +19,4 @@ const perfilSchema = new mongoose.Schema({
 
 perfilSchema.index({ ubicacion: '2dsphere' });
 
-module.exports = mongoose.model('PerfilTrabajador', perfilSchema, 'perfilestrabajadores');
+module.exports = mongoose.model('PerfilTrabajador', perfilSchema, 'perfiltrabajadors');
