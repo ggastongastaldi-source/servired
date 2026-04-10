@@ -7,7 +7,7 @@ class GroqService {
   constructor() {
     this.apiKey = process.env.GROQ_API_KEY;
     this.url = 'https://api.groq.com/openai/v1/chat/completions';
-    this.model = 'llama3-8b-8192';
+    this.model = 'llama-3.1-8b-instant';
   }
 
   async inferir(prompt, maxTokens = 300) {
