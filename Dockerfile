@@ -3,5 +3,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-EXPOSE 3000
+ARG CACHE_BUST=1
+RUN echo "Cache bust: $CACHE_BUST"
 CMD ["node", "server.js"]
