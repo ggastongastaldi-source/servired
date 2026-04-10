@@ -1,41 +1,63 @@
-// ============================================
-// GLÓBULO ROJO - Motor de Infiltración v2
-// Filantropía Laboral: oxigena la economía del trabajador
-// Stack: Groq (velocidad) + Gemini (semántica) + Socket.io
-// ============================================
-
-const { haversine }          = require('./haversine');
+const { haversine }           = require('./haversine');
 const { rankearTrabajadores } = require('./briones');
 const groqService             = require('../services/groqService');
-const geminiService           = require('../services/geminiService');
 
-// Matching principal — llamado desde el endpoint HTTP
+const MAPA = {
+  'plomero':'plomeria','electricista':'electricidad','gasista':'gasista',
+  'pintor':'pintura','carpintero':'carpinteria','cerrajero':'cerrajeria',
+  'albanil':'albanileria','albañil':'albanileria','techista':'techista',
+  'herrero':'herreria','mecanico':'mecanica_ligera','mecánico':'mecanica_ligera',
+  'jardinero':'jardineria','limpieza':'limpieza_hogar','mudanza':'fletes_mudanzas',
+  'informatico':'servicio_tecnico_pc','yesero':'durlock','durlock':'durlock',
+  'cuidador':'cuidado_personas','domestico':'servicio_domestico',
+  'peluquero':'peluqueria_domicilio','zinguero':'zingueria','vidriero':'vidrieria',
+  'refrigeracion':'aire_acondicionado','desinfeccion':'desinfeccion_plagas',
+};
+
+function traducir(texto) {
+  const limpio = (texto||'').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z\s]/g,'').trim();
+  for (const [key, val] of Object.entries(MAPA)) {
+    const k = key.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if (limpio === k || limpio.includes(k)) return val;
+  }
+  return null;
+}
+
+async function clasificarConGroq(descripcion) {
+  const prompt = `Sos un clasificador de servicios para Servired Argentina. Respondé SOLO con una palabra de esta lista:
+plomero, electricista, gasista, pintor, carpintero, cerrajero, albanil, techista, herrero, mecanico, jardinero, limpieza, mudanza, informatico, yesero, cuidador, domestico, otro
+
+Mensaje: "${descripcion}"
+Respondé solo con una palabra:`;
+
+  const raw = await groqService.inferir(prompt, 10);
+  console.log('[Groq clasificador] raw:', JSON.stringify(raw));
+  const rubroKey = traducir(raw);
+  console.log('[Groq clasificador] rubroKey:', rubroKey);
+  return { rubroKey, categoriaRaw: (raw||'').trim() };
+}
+
 async function buscarTrabajadores({ descripcion, especialidad, lat, lon, radioKm = 15, zona = 'CABA' }) {
-  // 1. Gemini clasifica semánticamente si viene descripción libre
   let rubroFinal = especialidad;
-  let urgencia   = 'media';
-  let resumenGemini = null;
+  let urgencia = 'media';
+  let resumenGroq = null;
 
   if (descripcion && !especialidad) {
-    const clasificacion = await geminiService.clasificarPedido(descripcion);
-    rubroFinal    = clasificacion.rubroKey  || especialidad;
-    urgencia      = clasificacion.urgencia  || 'media';
-    resumenGemini = clasificacion.resumen   || null;
+    const { rubroKey, categoriaRaw } = await clasificarConGroq(descripcion);
+    rubroFinal = rubroKey;
+    resumenGroq = categoriaRaw ? `Servicio de ${categoriaRaw} en Argentina` : null;
   }
 
-  // 2. Buscar candidatos en DB
   let candidatos = [];
   try {
     const PerfilTrabajador = require('../models/PerfilTrabajador');
-    candidatos = await PerfilTrabajador.find({
-      especialidades: rubroFinal,
-      estado: 'ACTIVO',
-    }).lean();
-  } catch (e) {
-    console.warn('[GlobRojo] DB no disponible:', e.message);
-  }
+    if (rubroFinal) {
+      candidatos = await PerfilTrabajador.find({ especialidades: rubroFinal, estado: 'ACTIVO' }).lean();
+    }
+  } catch(e) { console.warn('[GlobRojo] DB:', e.message); }
 
-  // 3. Filtrar por radio geográfico
   if (lat && lon && candidatos.length) {
     candidatos = candidatos.filter(t => {
       if (!t.ubicacion?.coordinates) return true;
@@ -44,65 +66,48 @@ async function buscarTrabajadores({ descripcion, especialidad, lat, lon, radioKm
     });
   }
 
-  // 4. Rankear con Método Briones (matemático)
   let rankeados = rankearTrabajadores(candidatos);
 
-  // 5. Groq refina el ranking con IA si hay candidatos
   if (rankeados.length > 1) {
     rankeados = await groqService.rankearConIA(rankeados, rubroFinal, zona);
   }
 
-  // 6. Groq genera mensaje de infiltración para el top trabajador
   let mensajeInfiltracion = null;
   if (rankeados.length > 0) {
-    const top = rankeados[0];
     mensajeInfiltracion = await groqService.generarMensajeInfiltracion({
-      nombreTrabajador: top.nombre || 'trabajador',
-      rubro:            rubroFinal,
+      nombreTrabajador: rankeados[0].nombre || 'trabajador',
+      rubro: rubroFinal,
       zona,
-      scoreBriones:     top.scoreBriones || 0,
+      scoreBriones: rankeados[0].scoreBriones || 0,
     });
   }
 
   return {
-    rubro:               rubroFinal,
+    rubro: rubroFinal,
     urgencia,
-    resumen_gemini:      resumenGemini,
-    total:               rankeados.length,
-    trabajadores:        rankeados.slice(0, 10),
+    resumen_gemini: resumenGroq,
+    total: rankeados.length,
+    trabajadores: rankeados.slice(0, 10),
     mensaje_infiltracion: mensajeInfiltracion,
   };
 }
 
-// Infiltración proactiva — llamada cuando llega un pedido nuevo
-// Se conecta con Socket.io para notificar trabajadores online
 async function infiltrar({ pedido, trabajadoresOnline, io }) {
   if (!pedido?.especialidad && !pedido?.descripcion) return;
-
   const resultado = await buscarTrabajadores({
-    descripcion:  pedido.descripcion,
-    especialidad: pedido.especialidad,
-    lat:          pedido.lat,
-    lon:          pedido.lon,
-    zona:         pedido.zona || 'CABA',
+    descripcion: pedido.descripcion, especialidad: pedido.especialidad,
+    lat: pedido.lat, lon: pedido.lon, zona: pedido.zona || 'CABA',
   });
-
   resultado.trabajadores.forEach(t => {
-    const entry = Object.entries(trabajadoresOnline)
-      .find(([, v]) => v.userId === String(t._id));
+    const entry = Object.entries(trabajadoresOnline).find(([,v]) => v.userId === String(t._id));
     if (entry) {
-      const [socketId] = entry;
-      io.to(socketId).emit('oportunidad_trabajo', {
-        pedidoId: pedido._id,
-        rubro:    resultado.rubro,
-        zona:     pedido.zona,
-        mensaje:  resultado.mensaje_infiltracion || `Hay un pedido de ${resultado.rubro} cerca tuyo`,
-        score:    t.scoreBriones,
-        urgencia: resultado.urgencia,
+      io.to(entry[0]).emit('oportunidad_trabajo', {
+        pedidoId: pedido._id, rubro: resultado.rubro, zona: pedido.zona,
+        mensaje: resultado.mensaje_infiltracion || `Hay un pedido de ${resultado.rubro} cerca tuyo`,
+        score: t.scoreBriones, urgencia: resultado.urgencia,
       });
     }
   });
-
   return resultado;
 }
 
