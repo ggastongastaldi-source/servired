@@ -120,6 +120,7 @@ h1 span{color:var(--orange);}
   <button class="btn btn-cyan" onclick="abrirModal('cliente-login')">🔍 Busco un Servicio (Cliente)</button>
   <button class="btn btn-orange" onclick="abrirModal('worker-login')">🔧 Ofrezco mis Servicios (Trabajador)</button>
   <button class="btn btn-outline" onclick="abrirModal('registro-cliente')">📝 Registrarme como Cliente</button>
+  <button class="btn btn-green" onclick="abrirModal('registro-trabajador')">🔧 Registrarme como Trabajador</button>
   <button class="btn btn-green" onclick="abrirModal('login-gen')">🔑 Ya tengo cuenta</button>
   <button class="btn-admin" onclick="abrirModal('admin-login')">⚙️ Admin</button>
 </div>
@@ -173,6 +174,62 @@ h1 span{color:var(--orange);}
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
       <button class="btn-sm btn-sm-pri" onclick="registrar('CLIENTE')">Registrarme →</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-bg" id="modal-registro-trabajador">
+  <div class="modal" style="max-height:90vh;overflow-y:auto;">
+    <div class="modal-title">🔧 Registro de Trabajador</div>
+    <div class="field"><label>Nombre completo</label><input type="text" id="rt-nombre" placeholder="Juan García"></div>
+    <div class="field"><label>DNI</label><input type="text" id="rt-dni" placeholder="12345678" maxlength="8" inputmode="numeric"></div>
+    <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="rt-tel" placeholder="11 1234-5678" inputmode="tel"></div>
+    <div class="field"><label>Email</label><input type="email" id="rt-email" placeholder="tu@email.com"></div>
+    <div class="field"><label>Contraseña</label><input type="password" id="rt-pass" placeholder="Mínimo 6 caracteres"></div>
+    <div class="field"><label>CBU o CVU (22 dígitos)</label><input type="text" id="rt-cbu" placeholder="0000003100114236125474" maxlength="22" inputmode="numeric"><div style="font-size:0.7rem;color:#4a5568;margin-top:4px;">Para recibir tus pagos directamente</div></div>
+    <div class="field"><label>Alias bancario (opcional si tenés CBU)</label><input type="text" id="rt-alias" placeholder="mi.alias.mp"></div>
+    <div class="field"><label>Especialidad principal</label>
+      <select id="rt-esp" style="width:100%;padding:12px 14px;background:#111927;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e2e8f0;font-family:Rajdhani,sans-serif;font-size:1rem;">
+        <option value="">-- Seleccioná tu rubro --</option>
+        <option value="albanileria">Albañilería</option>
+        <option value="plomeria">Plomería</option>
+        <option value="electricidad">Electricidad</option>
+        <option value="limpieza_hogar">Limpieza de Hogar</option>
+        <option value="pintura">Pintura</option>
+        <option value="gasista">Gasista Matriculado</option>
+        <option value="cerrajeria">Cerrajería</option>
+        <option value="aire_acondicionado">Aire Acondicionado</option>
+        <option value="durlock">Durlock y Seco</option>
+        <option value="impermeabilizacion">Impermeabilización</option>
+        <option value="zingueria">Zinguería</option>
+        <option value="construccion_seco">Construcción en Seco</option>
+        <option value="pisos_revestimientos">Pisos y Revestimientos</option>
+        <option value="herreria">Herrería</option>
+        <option value="carpinteria">Carpintería</option>
+        <option value="vidrieria">Vidriería</option>
+        <option value="techista">Techista</option>
+        <option value="jardineria">Jardinería</option>
+        <option value="fletes_mudanzas">Fletes y Mudanzas</option>
+        <option value="reparacion_celulares">Reparación de Celulares</option>
+        <option value="servicio_tecnico_pc">Servicio Técnico PC</option>
+        <option value="cuidado_personas">Cuidado de Personas</option>
+        <option value="peluqueria_domicilio">Peluquería a Domicilio</option>
+        <option value="mecanica_ligera">Mecánica Ligera</option>
+        <option value="costura_arreglos">Costura y Arreglos</option>
+        <option value="desinfeccion_plagas">Desinfección / Plagas</option>
+      </select>
+    </div>
+    <div style="background:#111927;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;margin-bottom:12px;">
+      <div style="font-size:0.8rem;font-weight:600;margin-bottom:6px;">📄 Certificado de Antecedentes Penales</div>
+      <div style="font-size:0.72rem;color:#4a5568;margin-bottom:8px;">Podés subirlo ahora o después desde tu perfil. Obligatorio para trabajar.</div>
+      <a href="https://www.argentina.gob.ar/solicitar-certificado-antecedentes" target="_blank" style="display:block;text-align:center;padding:8px;background:rgba(0,229,255,0.08);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.75rem;text-decoration:none;margin-bottom:8px;">🇦🇷 Obtener en Mi Argentina (gratis)</a>
+      <div style="font-size:0.7rem;color:#f59e0b;text-align:center;">✓ Podés completar el registro sin el certificado y subirlo después</div>
+    </div>
+    <div class="err" id="rt-err">Error al registrar</div>
+    <div class="modal-btns">
+      <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
+      <button class="btn-sm btn-sm-pri" onclick="registrarTrabajador()">Registrarme →</button>
     </div>
   </div>
 </div>
@@ -235,6 +292,31 @@ async function registrar(rol){
 }
 
 const t=localStorage.getItem('token');
+
+async function registrarTrabajador(){
+  const nombre=document.getElementById('rt-nombre').value.trim();
+  const dni=document.getElementById('rt-dni').value.trim();
+  const tel=document.getElementById('rt-tel').value.trim();
+  const email=document.getElementById('rt-email').value.trim();
+  const pass=document.getElementById('rt-pass').value;
+  const cbu=document.getElementById('rt-cbu').value.trim();
+  const alias=document.getElementById('rt-alias').value.trim();
+  const esp=document.getElementById('rt-esp').value;
+  const err=document.getElementById('rt-err');
+  err.style.display='none';
+  if(!nombre||!email||!pass){err.textContent='Nombre, email y contraseña son obligatorios';err.style.display='block';return;}
+  if(!cbu&&!alias){err.textContent='Ingresá tu CBU, CVU o alias para recibir pagos';err.style.display='block';return;}
+  if(!esp){err.textContent='Seleccioná tu especialidad principal';err.style.display='block';return;}
+  try{
+    const r=await fetch('/api/auth/registro',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre,email,password:pass,rol:'TRABAJADOR',dni,telefono:tel,cbu,alias,especialidades:[esp]})});
+    const d=await r.json();
+    if(!r.ok){err.textContent=d.error||'Error al registrar';err.style.display='block';return;}
+    localStorage.setItem('token',d.token);
+    window.location='/trabajador.html';
+  }catch(e){err.textContent='Error de conexión';err.style.display='block';}
+}
+
 if(t){try{const p=JSON.parse(atob(t.split('.')[1]));if(p.exp>Date.now()/1000){const rol=p.rol||p.role;if(rol==='ADMIN')window.location='/admin.html';else if(rol==='TRABAJADOR')window.location='/trabajador.html';else window.location='/cliente.html';}}catch(e){localStorage.removeItem('token');}}
 </script>
 </body>
