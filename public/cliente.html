@@ -9,7 +9,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <style>
-:root{--cyan:#00E5FF;--orange:#FF6D00;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
+:root{--cyan:#00E5FF;--orange:#FF6D00;--green:#39ff14;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;}
 .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#0d1b2a;border-bottom:1px solid rgba(0,229,255,0.15);position:sticky;top:0;z-index:100;}
@@ -17,16 +17,16 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .logo span{color:var(--orange);}
 .user-pill{display:flex;align-items:center;gap:8px;background:var(--surface2);padding:6px 14px;border-radius:999px;font-size:0.85rem;border:1px solid rgba(0,229,255,0.2);}
 .avatar{width:28px;height:28px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;}
-#mapa{width:100%;height:260px;}
+#mapa{width:100%;height:240px;}
 .panel{padding:16px 20px;display:flex;flex-direction:column;gap:14px;padding-bottom:80px;}
 .card{background:var(--surface);border:1px solid rgba(0,229,255,0.12);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--orange));}
 .card-title{font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;font-family:'Share Tech Mono',monospace;}
 .servicios-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.srv-btn{background:var(--surface2);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:all 0.2s;color:var(--text);}
+.srv-btn{background:var(--surface2);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.2s;color:var(--text);}
 .srv-btn:hover,.srv-btn.active{border-color:var(--cyan);background:rgba(0,229,255,0.08);color:var(--cyan);}
-.srv-btn .icon{font-size:1.6rem;display:block;margin-bottom:4px;}
-.srv-btn .label{font-size:0.78rem;font-weight:600;}
+.srv-btn .icon{font-size:1.5rem;display:block;margin-bottom:3px;}
+.srv-btn .label{font-size:0.7rem;font-weight:600;}
 .dir-input{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;}
 .dir-input input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:1rem;}
 .dir-input input::placeholder{color:var(--muted);}
@@ -76,31 +76,24 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
   <div id="mapa"></div>
   <div class="panel">
     <div class="card">
-      <div class="card-title">// Tipo de servicio</div>
-      <div class="servicios-grid">
-        <button class="srv-btn active" data-tipo="servicio_domestico" data-precio="8000" onclick="selSrv(this)"><span class="icon">🧹</span><span class="label">Doméstico</span></button>
-        <button class="srv-btn" data-tipo="plomeria" data-precio="12000" onclick="selSrv(this)"><span class="icon">🔧</span><span class="label">Plomería</span></button>
-        <button class="srv-btn" data-tipo="electricidad" data-precio="14000" onclick="selSrv(this)"><span class="icon">⚡</span><span class="label">Electricidad</span></button>
-        <button class="srv-btn" data-tipo="pintura" data-precio="10000" onclick="selSrv(this)"><span class="icon">🎨</span><span class="label">Pintura</span></button>
-        <button class="srv-btn" data-tipo="jardineria" data-precio="9000" onclick="selSrv(this)"><span class="icon">🌿</span><span class="label">Jardín</span></button>
-        <button class="srv-btn" data-tipo="mudanza" data-precio="18000" onclick="selSrv(this)"><span class="icon">📦</span><span class="label">Mudanza</span></button>
-      </div>
+      <div class="card-title">// ¿Qué servicio necesitás?</div>
+      <div class="servicios-grid" id="servicios-grid"></div>
     </div>
     <div class="card">
-      <div class="card-title">// Dirección</div>
+      <div class="card-title">// Tu dirección</div>
       <div class="dir-input"><span style="color:var(--orange)">📍</span><input type="text" id="dir-input" placeholder="Av. Corrientes 1234, CABA"></div>
     </div>
     <div class="card">
-      <div class="card-title">// Precio estimado · Aladín</div>
-      <div class="precio-row"><span style="color:var(--muted)">Base</span><span class="precio-valor" id="precio-display">$ 8.000</span></div>
+      <div class="card-title">// Precio estimado · Motor Aladín</div>
+      <div class="precio-row"><span style="color:var(--muted)">Base estimada</span><span class="precio-valor" id="precio-display">$ —</span></div>
     </div>
     <button class="btn-pedir" id="btn-pedir" onclick="pedirServicio()">⚡ PEDIR AHORA</button>
     <div class="worker-card" id="worker-card">
       <div class="worker-header">
-        <div class="w-avatar" id="w-ini">C</div>
-        <div><div style="font-size:1.1rem;font-weight:700" id="w-nombre">—</div><div style="color:var(--muted);font-size:0.8rem">★★★★☆ Verificado</div></div>
+        <div class="w-avatar" id="w-ini">T</div>
+        <div><div style="font-size:1.1rem;font-weight:700" id="w-nombre">—</div><div style="color:var(--muted);font-size:0.8rem">★★★★☆ Verificado · SERVired</div></div>
       </div>
-      <div class="eta-box"><div class="eta-num" id="eta-num">—</div><div class="eta-lbl">minutos de llegada</div></div>
+      <div class="eta-box"><div class="eta-num" id="eta-num">—</div><div class="eta-lbl">minutos estimados de llegada</div></div>
       <button class="btn-cancelar" onclick="cancelarPedido()">✕ Cancelar pedido</button>
     </div>
   </div>
@@ -115,19 +108,69 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 </div>
 <nav class="nav-bottom">
   <button class="nav-btn active" onclick="irPant('pedir',this)"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
-  <button class="nav-btn" onclick="irPant('historial',this)"><span class="ni">📋</span><span class="nl">Pedidos</span></button>
-  <button class="nav-btn" onclick="window.location='/'"><span class="ni">🚪</span><span class="nl">Salir</span></button>
+  <button class="nav-btn" onclick="irPant('historial',this);cargarHistorial()"><span class="ni">📋</span><span class="nl">Pedidos</span></button>
+  <button class="nav-btn" onclick="cerrarSesion()"><span class="ni">🚪</span><span class="nl">Salir</span></button>
 </nav>
 <div class="toast" id="toast"></div>
+
 <script>
+const RUBROS=[
+  {id:'servicio_domestico',label:'Doméstico',icon:'🧹',precio:8000},
+  {id:'plomeria',label:'Plomería',icon:'🔧',precio:12000},
+  {id:'electricidad',label:'Electricidad',icon:'⚡',precio:14000},
+  {id:'pintura',label:'Pintura',icon:'🎨',precio:10000},
+  {id:'jardineria',label:'Jardín',icon:'🌿',precio:9000},
+  {id:'mudanza',label:'Mudanza',icon:'📦',precio:18000},
+  {id:'gasista',label:'Gasista',icon:'🔥',precio:13000},
+  {id:'carpintero',label:'Carpintería',icon:'🪚',precio:11000},
+  {id:'cerrajero',label:'Cerrajería',icon:'🔑',precio:9500},
+  {id:'albanil',label:'Albañilería',icon:'🧱',precio:15000},
+  {id:'techista',label:'Techista',icon:'🏚️',precio:16000},
+  {id:'herrero',label:'Herrería',icon:'⚒️',precio:12000},
+  {id:'mecanico',label:'Mecánico',icon:'🔩',precio:14000},
+  {id:'refrigeracion',label:'Refrigeración',icon:'❄️',precio:15000},
+  {id:'informatico',label:'Informático',icon:'💻',precio:10000},
+  {id:'yesero',label:'Yesero',icon:'🪣',precio:11000},
+  {id:'cuidador',label:'Cuidador/a',icon:'🧑‍⚕️',precio:9000},
+  {id:'enfermero',label:'Enfermero/a',icon:'💊',precio:12000},
+  {id:'instructor',label:'Instructor',icon:'🏋️',precio:10000},
+  {id:'fotografo',label:'Fotógrafo',icon:'📷',precio:11000},
+  {id:'chofer',label:'Chofer',icon:'🚗',precio:9000},
+  {id:'cocinero',label:'Cocinero/a',icon:'👨‍🍳',precio:10000},
+  {id:'delivery',label:'Delivery',icon:'🛵',precio:6000},
+  {id:'seguridad',label:'Seguridad',icon:'🛡️',precio:13000},
+  {id:'peluquero',label:'Peluquero/a',icon:'✂️',precio:8000},
+  {id:'masajista',label:'Masajista',icon:'💆',precio:10000},
+];
+
+// Construir grilla
+let servicioSel=RUBROS[0].id,precioSel=RUBROS[0].precio;
+const grid=document.getElementById('servicios-grid');
+RUBROS.forEach((r,i)=>{
+  const b=document.createElement('div');
+  b.className='srv-btn'+(i===0?' active':'');
+  b.dataset.tipo=r.id;b.dataset.precio=r.precio;
+  b.innerHTML=`<span class="icon">${r.icon}</span><span class="label">${r.label}</span>`;
+  b.onclick=()=>selSrv(b,r);
+  grid.appendChild(b);
+});
+document.getElementById('precio-display').textContent='$ '+RUBROS[0].precio.toLocaleString('es-AR');
+
+function selSrv(btn,r){
+  document.querySelectorAll('.srv-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  servicioSel=r.id;precioSel=r.precio;
+  document.getElementById('precio-display').textContent='$ '+r.precio.toLocaleString('es-AR');
+}
+
 const TOKEN=localStorage.getItem('token');
 if(!TOKEN){window.location='/';}
 const payload=JSON.parse(atob(TOKEN.split('.')[1]));
 document.getElementById('nombre-cliente').textContent=payload.nombre||'Cliente';
 document.getElementById('av').textContent=(payload.nombre||'C')[0].toUpperCase();
+
 const socket=io();
-let mapa,markerCli,markerTrab;
-let servicioSel='servicio_domestico',precioSel=8000,pedidoActivo=null;
+let mapa,markerCli,markerTrab,pedidoActivo=null;
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
@@ -137,19 +180,11 @@ function initMapa(){
   if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{markerCli.setLatLng([p.coords.latitude,p.coords.longitude]);mapa.setView([p.coords.latitude,p.coords.longitude],14);});
 }
 
-function selSrv(btn){
-  document.querySelectorAll('.srv-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  servicioSel=btn.dataset.tipo;
-  precioSel=parseInt(btn.dataset.precio);
-  document.getElementById('precio-display').textContent='$ '+precioSel.toLocaleString('es-AR');
-}
-
 function pedirServicio(){
   const dir=document.getElementById('dir-input').value.trim();
-  if(!dir){toast('Ingresá una dirección');return;}
+  if(!dir){toast('📍 Ingresá tu dirección');return;}
   const btn=document.getElementById('btn-pedir');
-  btn.disabled=true;btn.textContent='⏳ Buscando...';
+  btn.disabled=true;btn.textContent='⏳ Buscando trabajador...';
   document.getElementById('estado-bar').classList.add('visible');
   document.getElementById('estado-txt').textContent='Buscando trabajador disponible...';
   socket.emit('nuevo_pedido',{token:TOKEN,servicio:servicioSel,direccion:dir,precio:precioSel});
@@ -161,29 +196,31 @@ function cancelarPedido(){
 }
 
 function resetUI(){
-  document.getElementById('btn-pedir').disabled=false;
-  document.getElementById('btn-pedir').textContent='⚡ PEDIR AHORA';
+  const btn=document.getElementById('btn-pedir');
+  btn.disabled=false;btn.textContent='⚡ PEDIR AHORA';
   document.getElementById('estado-bar').classList.remove('visible');
   document.getElementById('worker-card').classList.remove('visible');
   if(markerTrab){mapa.removeLayer(markerTrab);markerTrab=null;}
   pedidoActivo=null;
 }
 
+function cerrarSesion(){localStorage.removeItem('token');window.location='/';}
+
 socket.on('pedido_aceptado',data=>{
   pedidoActivo=data.pedidoId;
-  document.getElementById('estado-txt').textContent='Trabajador en camino';
+  document.getElementById('estado-txt').textContent='✅ Trabajador en camino';
   document.getElementById('w-nombre').textContent=data.trabajador.nombre;
   document.getElementById('w-ini').textContent=data.trabajador.nombre[0];
-  document.getElementById('eta-num').textContent=data.eta||'—';
+  document.getElementById('eta-num').textContent=data.eta||'~15';
   document.getElementById('worker-card').classList.add('visible');
   const ic=L.divIcon({html:'<div style="background:#00E5FF;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(0,229,255,0.9)"></div>',className:'',iconSize:[14,14]});
   if(markerTrab)mapa.removeLayer(markerTrab);
-  markerTrab=L.marker([data.trabajador.lat,data.trabajador.lng],{icon:ic}).addTo(mapa);
-  toast('¡Trabajador asignado!');
+  markerTrab=L.marker([data.trabajador.lat||(-34.6037),data.trabajador.lng||(-58.3816)],{icon:ic}).addTo(mapa);
+  toast('¡Trabajador asignado! Viene en camino 🚀');
 });
 socket.on('ubicacion_trabajador',data=>{if(markerTrab)markerTrab.setLatLng([data.lat,data.lng]);});
-socket.on('estado_pedido_actualizado',data=>{document.getElementById('estado-txt').textContent='Estado: '+data.estado;});
-socket.on('pedido_completado',()=>{toast('✅ Servicio completado');resetUI();cargarHistorial();irPant('historial',null);});
+socket.on('estado_pedido_actualizado',data=>{document.getElementById('estado-txt').textContent='Estado: '+data.estado.replace(/_/g,' ');});
+socket.on('pedido_completado',()=>{toast('✅ Servicio completado. ¡Gracias!');resetUI();cargarHistorial();irPant('historial',null);});
 socket.on('pedido_cancelado',()=>{toast('Pedido cancelado');resetUI();});
 
 async function cargarHistorial(){
@@ -191,8 +228,9 @@ async function cargarHistorial(){
     const r=await fetch('/api/pedidos/mis-pedidos',{headers:{Authorization:'Bearer '+TOKEN}});
     const data=await r.json();
     const lista=document.getElementById('lista-hist');
+    const rmap=Object.fromEntries(RUBROS.map(x=>[x.id,x]));
     if(!data.length){lista.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">Sin pedidos aún</div>';return;}
-    lista.innerHTML=data.map(p=>`<div class="hist-item"><div><div style="font-weight:600">${p.tipoServicio?.replace(/_/g,' ')||'—'}</div><div style="font-size:0.75rem;color:var(--muted)">${new Date(p.createdAt).toLocaleDateString('es-AR')} · $${(p.precio||0).toLocaleString('es-AR')}</div></div><span class="badge ${p.estado}">${p.estado}</span></div>`).join('');
+    lista.innerHTML=data.map(p=>{const robj=rmap[p.tipoServicio]||{};return`<div class="hist-item"><div><div style="font-weight:600">${robj.icon||'🔨'} ${(p.tipoServicio||'—').replace(/_/g,' ')}</div><div style="font-size:0.75rem;color:var(--muted)">${new Date(p.createdAt).toLocaleDateString('es-AR')} · $${(p.precio||0).toLocaleString('es-AR')}</div></div><span class="badge ${p.estado}">${p.estado}</span></div>`;}).join('');
   }catch(e){}
 }
 
@@ -202,10 +240,9 @@ function irPant(id,btn){
   document.getElementById('pant-'+id)?.classList.add('active');
   if(btn)btn.classList.add('active');
   if(id==='mapa')setTimeout(()=>mapa?.invalidateSize(),100);
-  if(id==='historial')cargarHistorial();
 }
 
-function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function toast(msg,dur=3500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
 window.addEventListener('DOMContentLoaded',initMapa);
 </script>

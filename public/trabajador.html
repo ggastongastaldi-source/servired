@@ -9,7 +9,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <style>
-:root{--cyan:#00E5FF;--orange:#FF6D00;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
+:root{--cyan:#00E5FF;--orange:#FF6D00;--green:#39ff14;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;}
 .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#0d1b2a;border-bottom:1px solid rgba(0,229,255,0.15);position:sticky;top:0;z-index:100;}
@@ -19,9 +19,9 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .status-pill.online{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid var(--success);}
 .status-pill.offline{background:rgba(100,116,139,0.15);color:var(--muted);border:1px solid var(--muted);}
 .sdot{width:8px;height:8px;border-radius:50%;}
-.sdot.online{background:var(--success);animation:pulse 1.5s infinite;}
+.sdot.online{background:var(--success);animation:blink 1.5s infinite;}
 .sdot.offline{background:var(--muted);}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 #mapa{width:100%;height:240px;}
 .panel{padding:16px 20px;display:flex;flex-direction:column;gap:14px;padding-bottom:80px;}
 .card{background:var(--surface);border:1px solid rgba(0,229,255,0.12);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
@@ -67,9 +67,61 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .badge{padding:3px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;font-family:'Share Tech Mono',monospace;}
 .badge.PAGADA{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid var(--success);}
 .badge.EN_PROCESO{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid #a78bfa;}
+
+/* REGISTRO */
+.reg-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;display:none;}
+.reg-overlay.show{display:block;}
+.reg-inner{padding:24px 20px 40px;}
+.reg-title{font-size:1.6rem;font-weight:700;color:var(--cyan);margin-bottom:4px;}
+.reg-sub{color:var(--muted);font-size:0.88rem;margin-bottom:24px;}
+.reg-section{font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px;font-family:'Share Tech Mono',monospace;}
+.rubros-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px;}
+.rubro-btn{background:var(--surface);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.rubro-btn.sel{border-color:var(--cyan);background:rgba(0,229,255,0.08);}
+.rubro-btn .ri{font-size:1.6rem;}
+.rubro-btn .rl{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.rubro-btn.sel .rl{color:var(--cyan);}
+.reg-field{margin-bottom:14px;}
+.reg-field label{display:block;font-size:0.75rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;}
+.reg-field input{width:100%;padding:12px 14px;background:var(--surface);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:1rem;outline:none;}
+.reg-field input:focus{border-color:var(--cyan);}
+.reg-field input::placeholder{color:var(--muted);}
+.reg-nota{font-size:0.78rem;color:var(--muted);background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.1);border-radius:8px;padding:10px;margin-bottom:16px;}
+.btn-registrar{width:100%;padding:16px;background:linear-gradient(135deg,var(--orange),#ff8c00);border:none;border-radius:12px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;cursor:pointer;}
+.err-reg{color:var(--danger);font-size:0.82rem;margin-bottom:10px;display:none;}
+.err-reg.show{display:block;}
 </style>
 </head>
 <body>
+
+<!-- OVERLAY REGISTRO -->
+<div class="reg-overlay" id="reg-overlay">
+  <div class="reg-inner">
+    <div class="reg-title">🚀 Unirme a SERVired</div>
+    <div class="reg-sub">Registrate como trabajador verificado y empezá a recibir pedidos</div>
+
+    <div class="reg-section">// Tu nombre y datos</div>
+    <div class="reg-field"><label>Nombre completo</label><input type="text" id="r-nombre" placeholder="Juan García"></div>
+    <div class="reg-field"><label>Email</label><input type="email" id="r-email" placeholder="tu@email.com"></div>
+    <div class="reg-field"><label>Contraseña</label><input type="password" id="r-pass" placeholder="Mínimo 6 caracteres"></div>
+    <div class="reg-field"><label>Teléfono (WhatsApp)</label><input type="tel" id="r-tel" placeholder="11 1234-5678"></div>
+    <div class="reg-field"><label>Zona donde trabajás</label><input type="text" id="r-zona" placeholder="Ej: Flores, Caballito, Lanús"></div>
+
+    <div class="reg-section">// Tus rubros (elegí todos los que sabés hacer)</div>
+    <div class="rubros-grid" id="rubros-grid"></div>
+
+    <div class="reg-section">// Datos de cobro</div>
+    <div class="reg-field"><label>CBU o Alias (Mercado Pago / banco)</label><input type="text" id="r-cbu" placeholder="mi.alias.mp o 0000003100..."></div>
+
+    <div class="reg-nota">
+      🔐 Tu cuenta quedará en estado <strong>PENDIENTE DE VERIFICACIÓN</strong>. El administrador de SERVired revisará tus datos y te habilitará manualmente. Te avisamos por WhatsApp.
+    </div>
+
+    <div class="err-reg" id="err-reg">Completá todos los campos</div>
+    <button class="btn-registrar" onclick="registrarTrabajador()">🚀 Unirme a la red</button>
+  </div>
+</div>
+
 <div class="header">
   <div class="logo">SERV<span>ired</span> PRO</div>
   <button class="status-pill online" id="status-btn" onclick="toggleStatus()">
@@ -113,57 +165,168 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
     <div class="card">
       <div class="card-title">// Mi perfil</div>
       <div style="text-align:center;padding:16px 0;">
-        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),#0080ff);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;margin:0 auto 12px" id="p-av">C</div>
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),#0080ff);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;margin:0 auto 12px" id="p-av">T</div>
         <div style="font-size:1.3rem;font-weight:700" id="p-nombre">—</div>
         <div style="color:var(--muted);font-size:0.85rem" id="p-email">—</div>
+        <div style="color:var(--muted);font-size:0.8rem;margin-top:4px" id="p-zona">—</div>
       </div>
+    </div>
+    <div class="card">
+      <div class="card-title">// Mis rubros</div>
+      <div id="p-rubros" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
     </div>
     <div class="card">
       <div class="card-title">// Ganancias del mes</div>
       <div style="text-align:center;padding:10px 0;">
         <div style="font-size:2.5rem;font-weight:700;color:var(--cyan);font-family:'Share Tech Mono',monospace" id="p-ganancia">$ 0</div>
-        <div style="color:var(--muted);font-size:0.8rem">80% de comisión</div>
+        <div style="color:var(--muted);font-size:0.8rem">80% de comisión · SERVired retiene 20%</div>
       </div>
     </div>
-    <button onclick="window.location='/'" style="width:100%;padding:13px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:12px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">🚪 Cerrar sesión</button>
+    <div class="card" id="card-verificacion" style="display:none;">
+      <div class="card-title">// Estado de verificación</div>
+      <div style="color:var(--warn);font-size:0.9rem">⏳ Tu cuenta está pendiente de verificación. Te avisamos por WhatsApp cuando esté lista.</div>
+    </div>
+    <button onclick="cerrarSesion()" style="width:100%;padding:13px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:12px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">🚪 Cerrar sesión</button>
   </div>
 </div>
+<nav class="nav-bottom">
+  <button class="nav-btn active" onclick="irPant('mapa',this)"><span class="ni">🗺️</span><span class="nl">Mapa</span></button>
+  <button class="nav-btn" onclick="irPant('historial',this);cargarHist()"><span class="ni">📋</span><span class="nl">Trabajos</span></button>
+  <button class="nav-btn" onclick="irPant('perfil',this)"><span class="ni">👤</span><span class="nl">Perfil</span></button>
+</nav>
 <div class="incoming" id="incoming">
   <div class="inc-header">
-    <div class="inc-title">⚡ Pedido entrante</div>
-    <div class="cdr">
-      <svg width="50" height="50"><circle cx="25" cy="25" r="20" fill="none" stroke="#1a2236" stroke-width="4"/><circle id="cdr-circle" cx="25" cy="25" r="20" fill="none" stroke="#FF6D00" stroke-width="4" stroke-dasharray="125.6" stroke-dashoffset="0"/></svg>
-      <div class="cdr-num" id="cdr-num">30</div>
-    </div>
+    <div class="inc-title">⚡ NUEVO PEDIDO</div>
+    <div class="cdr"><svg width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,109,0,0.2)" stroke-width="4"/><circle id="cdr-circle" cx="25" cy="25" r="20" fill="none" stroke="#FF6D00" stroke-width="4" stroke-dasharray="125.6" stroke-dashoffset="0" stroke-linecap="round"/></svg><div class="cdr-num" id="cdr-num">30</div></div>
   </div>
   <div class="inc-row"><span class="inc-lbl">Servicio</span><span class="inc-val" id="inc-srv">—</span></div>
-  <div class="inc-row"><span class="inc-lbl">Dirección</span><span class="inc-val" id="inc-dir" style="font-size:0.85rem;text-align:right;max-width:60%">—</span></div>
-  <div class="inc-row"><span class="inc-lbl">Precio</span><span class="inc-val" style="color:var(--cyan);font-family:'Share Tech Mono',monospace" id="inc-precio">—</span></div>
-  <div class="inc-row"><span class="inc-lbl">Tu ganancia</span><span class="inc-val" style="color:var(--success);font-family:'Share Tech Mono',monospace" id="inc-gan">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Dirección</span><span class="inc-val" id="inc-dir">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Precio</span><span class="inc-val" id="inc-precio">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Tu ganancia (80%)</span><span class="inc-val" style="color:var(--success)" id="inc-gan">—</span></div>
   <div class="inc-actions">
     <button class="btn-rechazar" onclick="responder(false)">✕ Rechazar</button>
     <button class="btn-aceptar" onclick="responder(true)">✓ Aceptar</button>
   </div>
 </div>
-<nav class="nav-bottom">
-  <button class="nav-btn active" onclick="irPant('mapa',this)"><span class="ni">🗺️</span><span class="nl">Mapa</span></button>
-  <button class="nav-btn" onclick="irPant('historial',this);cargarHist()"><span class="ni">📋</span><span class="nl">Pedidos</span></button>
-  <button class="nav-btn" onclick="irPant('perfil',this)"><span class="ni">👤</span><span class="nl">Perfil</span></button>
-</nav>
 <div class="toast" id="toast"></div>
+
 <script>
+const RUBROS=[
+  {id:'servicio_domestico',label:'Serv. Doméstico',icon:'🧹'},
+  {id:'plomeria',label:'Plomería',icon:'🔧'},
+  {id:'electricidad',label:'Electricidad',icon:'⚡'},
+  {id:'pintura',label:'Pintura',icon:'🎨'},
+  {id:'jardineria',label:'Jardinería',icon:'🌿'},
+  {id:'mudanza',label:'Mudanza',icon:'📦'},
+  {id:'gasista',label:'Gasista',icon:'🔥'},
+  {id:'carpintero',label:'Carpintería',icon:'🪚'},
+  {id:'cerrajero',label:'Cerrajería',icon:'🔑'},
+  {id:'albanil',label:'Albañilería',icon:'🧱'},
+  {id:'techista',label:'Techista',icon:'🏚️'},
+  {id:'herrero',label:'Herrería',icon:'⚒️'},
+  {id:'mecanico',label:'Mecánico',icon:'🔩'},
+  {id:'refrigeracion',label:'Refrigeración',icon:'❄️'},
+  {id:'informatico',label:'Informático',icon:'💻'},
+  {id:'yesero',label:'Yesero/Durlock',icon:'🪣'},
+  {id:'cuidador',label:'Cuidador/a',icon:'🧑‍⚕️'},
+  {id:'enfermero',label:'Enfermero/a',icon:'💊'},
+  {id:'instructor',label:'Instructor',icon:'🏋️'},
+  {id:'fotografo',label:'Fotógrafo',icon:'📷'},
+  {id:'chofer',label:'Chofer',icon:'🚗'},
+  {id:'cocinero',label:'Cocinero/a',icon:'👨‍🍳'},
+  {id:'delivery',label:'Delivery',icon:'🛵'},
+  {id:'seguridad',label:'Seguridad',icon:'🛡️'},
+  {id:'peluquero',label:'Peluquero/a',icon:'✂️'},
+  {id:'masajista',label:'Masajista',icon:'💆'},
+];
+
+// Construir grilla de rubros en registro
+const grid=document.getElementById('rubros-grid');
+RUBROS.forEach(r=>{
+  const b=document.createElement('div');
+  b.className='rubro-btn';b.dataset.id=r.id;
+  b.innerHTML=`<span class="ri">${r.icon}</span><span class="rl">${r.label}</span>`;
+  b.onclick=()=>b.classList.toggle('sel');
+  grid.appendChild(b);
+});
+
 const TOKEN=localStorage.getItem('token');
-if(!TOKEN){window.location='/';}
-const payload=JSON.parse(atob(TOKEN.split('.')[1]));
-document.getElementById('p-nombre').textContent=payload.nombre||'—';
-document.getElementById('p-email').textContent=payload.email||'—';
-document.getElementById('p-av').textContent=(payload.nombre||'T')[0].toUpperCase();
-const socket=io();
-let mapa,markerYo,markerCli;
-let online=true,pedidoActualId=null,cdrInterval=null;
-let pedidoData=null,gananciaTotal=0,trabajosHoy=0;
+
+// Si no hay token → mostrar registro
+if(!TOKEN){
+  document.getElementById('reg-overlay').classList.add('show');
+} else {
+  try{
+    const p=JSON.parse(atob(TOKEN.split('.')[1]));
+    if(p.exp<Date.now()/1000){localStorage.removeItem('token');document.getElementById('reg-overlay').classList.add('show');}
+    else{
+      document.getElementById('p-nombre').textContent=p.nombre||'—';
+      document.getElementById('p-email').textContent=p.email||'—';
+      document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();
+      initApp();
+    }
+  }catch(e){document.getElementById('reg-overlay').classList.add('show');}
+}
+
+async function registrarTrabajador(){
+  const nombre=document.getElementById('r-nombre').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pass=document.getElementById('r-pass').value;
+  const tel=document.getElementById('r-tel').value.trim();
+  const zona=document.getElementById('r-zona').value.trim();
+  const cbu=document.getElementById('r-cbu').value.trim();
+  const rubros=[...document.querySelectorAll('.rubro-btn.sel')].map(b=>b.dataset.id);
+  const errEl=document.getElementById('err-reg');
+  errEl.classList.remove('show');
+  if(!nombre||!email||!pass||!zona){errEl.textContent='Completá nombre, email, contraseña y zona';errEl.classList.add('show');return;}
+  if(pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';errEl.classList.add('show');return;}
+  if(rubros.length===0){errEl.textContent='Seleccioná al menos un rubro';errEl.classList.add('show');return;}
+  try{
+    const r=await fetch('/api/auth/registro',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre,email,password:pass,rol:'TRABAJADOR',telefono:tel,zona,especialidades:rubros,cbu})});
+    const data=await r.json();
+    if(!r.ok){errEl.textContent=data.mensaje||data.error||'Error al registrar';errEl.classList.add('show');return;}
+    const token=data.token||data.data?.token;
+    if(token){
+      localStorage.setItem('token',token);
+      document.getElementById('reg-overlay').classList.remove('show');
+      const p=JSON.parse(atob(token.split('.')[1]));
+      document.getElementById('p-nombre').textContent=p.nombre||nombre;
+      document.getElementById('p-email').textContent=p.email||email;
+      document.getElementById('p-av').textContent=(nombre||'T')[0].toUpperCase();
+      document.getElementById('card-verificacion').style.display='block';
+      initApp();
+      toast('✅ Registro exitoso. Esperá la verificación.');
+    }
+  }catch(e){errEl.textContent='Error de conexión';errEl.classList.add('show');}
+}
+
+function cerrarSesion(){localStorage.removeItem('token');window.location='/';}
+
+let mapa,markerYo,online=true,pedidoActualId=null,cdrInterval=null,pedidoData=null,gananciaTotal=0,trabajosHoy=0;
 const ESTADOS=['ACEPTADA','EN_PROCESO','REALIZADA','PAGADA'];
 let estadoActual='ACEPTADA';
+let socket;
+
+function initApp(){
+  socket=io();
+  const payload=JSON.parse(atob(TOKEN.split('.')[1]));
+  // rubros en perfil
+  const rubrosEl=document.getElementById('p-rubros');
+  if(payload.especialidades){
+    payload.especialidades.forEach(r=>{
+      const robj=RUBROS.find(x=>x.id===r);
+      const s=document.createElement('span');
+      s.style.cssText='background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:999px;padding:4px 10px;font-size:0.72rem;color:var(--cyan);';
+      s.textContent=(robj?robj.icon+' ':'')+( robj?robj.label:r);
+      rubrosEl.appendChild(s);
+    });
+  }
+  initMapa();
+  socket.emit('worker_conectado',{token:TOKEN});
+  socket.on('nuevo_pedido_disponible',onNuevoPedido);
+  socket.on('pedido_cancelado',()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');});
+}
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
@@ -174,7 +337,7 @@ function initMapa(){
     navigator.geolocation.watchPosition(p=>{
       const lat=p.coords.latitude,lng=p.coords.longitude;
       markerYo.setLatLng([lat,lng]);mapa.setView([lat,lng],14);
-      if(online)socket.emit('ubicacion_trabajador',{lat,lng,token:TOKEN});
+      if(online&&socket)socket.emit('ubicacion_trabajador',{lat,lng,token:TOKEN});
     },{enableHighAccuracy:true,maximumAge:5000});
   }
 }
@@ -184,30 +347,26 @@ function toggleStatus(){
   const btn=document.getElementById('status-btn'),dot=document.getElementById('sdot'),lbl=document.getElementById('slbl');
   if(online){btn.className='status-pill online';dot.className='sdot online';lbl.textContent='EN LÍNEA';}
   else{btn.className='status-pill offline';dot.className='sdot offline';lbl.textContent='FUERA DE LÍNEA';}
-  socket.emit('cambiar_estado_trabajador',{online,token:TOKEN});
+  if(socket)socket.emit('cambiar_estado_trabajador',{online,token:TOKEN});
   document.getElementById('estado-msg').textContent=online?'Estás en línea. Esperando pedidos...':'Estás fuera de línea.';
 }
 
-socket.on('nuevo_pedido_disponible',data=>{
+function onNuevoPedido(data){
   if(!online)return;
   pedidoData=data;
-  document.getElementById('inc-srv').textContent=(data.servicio||'').replace(/_/g,' ').toUpperCase();
+  const robj=RUBROS.find(x=>x.id===data.servicio);
+  document.getElementById('inc-srv').textContent=(robj?robj.icon+' ':'')+( data.servicio||'').replace(/_/g,' ').toUpperCase();
   document.getElementById('inc-dir').textContent=data.direccion||'—';
   document.getElementById('inc-precio').textContent='$ '+(data.precio||0).toLocaleString('es-AR');
   document.getElementById('inc-gan').textContent='$ '+Math.round((data.precio||0)*0.8).toLocaleString('es-AR');
   document.getElementById('incoming').classList.add('show');
   startCdr(30);
-});
+}
 
 function startCdr(s){
-  clearInterval(cdrInterval);
-  let rem=s;
+  clearInterval(cdrInterval);let rem=s;
   const circle=document.getElementById('cdr-circle'),num=document.getElementById('cdr-num');
-  cdrInterval=setInterval(()=>{
-    rem--;num.textContent=rem;
-    circle.style.strokeDashoffset=125.6-(125.6*(rem/s));
-    if(rem<=0){clearInterval(cdrInterval);responder(false);}
-  },1000);
+  cdrInterval=setInterval(()=>{rem--;num.textContent=rem;circle.style.strokeDashoffset=125.6-(125.6*(rem/s));if(rem<=0){clearInterval(cdrInterval);responder(false);}},1000);
 }
 
 function responder(aceptar){
@@ -215,8 +374,7 @@ function responder(aceptar){
   document.getElementById('incoming').classList.remove('show');
   if(aceptar&&pedidoData){
     socket.emit('aceptar_pedido',{pedidoId:pedidoData.pedidoId,token:TOKEN});
-    pedidoActualId=pedidoData.pedidoId;
-    estadoActual='ACEPTADA';
+    pedidoActualId=pedidoData.pedidoId;estadoActual='ACEPTADA';
     document.getElementById('c-nombre').textContent=pedidoData.clienteNombre||'Cliente';
     document.getElementById('c-ini').textContent=(pedidoData.clienteNombre||'C')[0];
     document.getElementById('c-dir').textContent=pedidoData.direccion||'—';
@@ -255,18 +413,14 @@ function avanzar(){
   }
 }
 
-socket.on('pedido_cancelado',()=>{
-  document.getElementById('pedido-activo').classList.remove('visible');
-  pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');
-});
-
 async function cargarHist(){
   try{
     const r=await fetch('/api/pedidos/mis-trabajos',{headers:{Authorization:'Bearer '+TOKEN}});
     const data=await r.json();
     const lista=document.getElementById('lista-hist');
     if(!data.length){lista.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">Sin trabajos aún</div>';return;}
-    lista.innerHTML=data.map(p=>`<div class="hist-item"><div><div style="font-weight:600">${(p.tipoServicio||'').replace(/_/g,' ')}</div><div style="font-size:0.75rem;color:var(--muted)">${new Date(p.createdAt).toLocaleDateString('es-AR')} · $${(p.precio||0).toLocaleString('es-AR')}</div></div><span class="badge ${p.estado}">${p.estado}</span></div>`).join('');
+    const rmap=Object.fromEntries(RUBROS.map(x=>[x.id,x]));
+    lista.innerHTML=data.map(p=>{const robj=rmap[p.tipoServicio]||{};return`<div class="hist-item"><div><div style="font-weight:600">${robj.icon||''} ${(p.tipoServicio||'').replace(/_/g,' ')}</div><div style="font-size:0.75rem;color:var(--muted)">${new Date(p.createdAt).toLocaleDateString('es-AR')} · $${(p.precio||0).toLocaleString('es-AR')}</div></div><span class="badge ${p.estado}">${p.estado}</span></div>`;}).join('');
   }catch(e){}
 }
 
@@ -279,8 +433,6 @@ function irPant(id,btn){
 }
 
 function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-
-window.addEventListener('DOMContentLoaded',()=>{initMapa();socket.emit('worker_conectado',{token:TOKEN});});
 </script>
 </body>
 </html>
