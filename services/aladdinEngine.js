@@ -1,63 +1,76 @@
 // ============================================
-// ALADÍN v3.0 - Motor de Precios SERVired
-// Indexado al Combo Big Mac ARS (anti-inflación)
+// MOTOR ALADÍN - Método Briones
+// Presupuesto indexado al Combo Big Mac ARS
+// Protege el valor del trabajo contra la inflación
 // ============================================
 
-const COMBO_BIG_MAC_ARS = 8000;
+class AladdinEngine {
+  constructor() {
+    this.VALOR_BASE_COMBO_ARS = parseFloat(process.env.BIGMAC_ARS || '8500');
 
-const ESPECIALIDADES = {
-  plomeria:           { mult: 2.5, label: 'Plomería' },
-  electricidad:       { mult: 2.8, label: 'Electricidad' },
-  gasista:            { mult: 3.0, label: 'Gasista Matriculado' },
-  albanileria:        { mult: 2.2, label: 'Albañilería' },
-  pintura:            { mult: 1.8, label: 'Pintura' },
-  servicio_domestico: { mult: 1.5, label: 'Servicio Doméstico' },
-  jardineria:         { mult: 1.4, label: 'Jardinería' },
-  mudanza:            { mult: 2.0, label: 'Mudanza' },
-};
+    // Coeficientes por rubro y complejidad (baja/alta)
+    // 1.0 = 1 hora de trabajo estándar
+    this.COEFICIENTES = {
+      albanileria:            { baja: 2.0,  alta: 12.0 },
+      plomeria:               { baja: 1.2,  alta: 7.0  },
+      electricidad:           { baja: 1.5,  alta: 8.0  },
+      limpieza_hogar:         { baja: 1.0,  alta: 3.0  },
+      pintura:                { baja: 1.8,  alta: 6.0  },
+      gasista:                { baja: 2.0,  alta: 9.0  },
+      cerrajeria:             { baja: 1.2,  alta: 4.0  },
+      aire_acondicionado:     { baja: 2.5,  alta: 8.0  },
+      durlock:                { baja: 2.0,  alta: 7.0  },
+      impermeabilizacion:     { baja: 2.5,  alta: 10.0 },
+      zingueria:              { baja: 2.0,  alta: 8.0  },
+      construccion_seco:      { baja: 2.0,  alta: 10.0 },
+      pisos_revestimientos:   { baja: 2.5,  alta: 9.0  },
+      herreria:               { baja: 2.0,  alta: 8.0  },
+      carpinteria:            { baja: 1.8,  alta: 7.0  },
+      vidrieria:              { baja: 1.5,  alta: 5.0  },
+      techista:               { baja: 2.5,  alta: 11.0 },
+      jardineria:             { baja: 1.2,  alta: 4.0  },
+      fletes_mudanzas:        { baja: 2.0,  alta: 6.0  },
+      reparacion_celulares:   { baja: 1.0,  alta: 3.0  },
+      servicio_tecnico_pc:    { baja: 1.2,  alta: 4.0  },
+      cuidado_personas:       { baja: 1.0,  alta: 3.5  },
+      peluqueria_domicilio:   { baja: 1.0,  alta: 2.5  },
+      mecanica_ligera:        { baja: 1.5,  alta: 5.0  },
+      costura_arreglos:       { baja: 0.8,  alta: 2.5  },
+      desinfeccion_plagas:    { baja: 2.0,  alta: 6.0  },
+    };
+  }
 
-const ZONAS = {
-  CABA:      1.00,
-  GBA_NORTE: 0.95,
-  GBA_SUR:   0.85,
-  GBA_OESTE: 0.88,
-};
+  calcularPresupuesto(rubroKey, complejidad = 'baja', complejidadAdicional = 1.0) {
+    const rubro = this.COEFICIENTES[rubroKey];
+    if (!rubro) throw new Error(`Aladdín: rubro [${rubroKey}] no clasificado.`);
 
-const COMPLEJIDAD = {
-  basico:     1.0,
-  intermedio: 1.4,
-  complejo:   2.0,
-};
+    const nivel = complejidad === 'alta' ? 'alta' : 'baja';
+    const coef  = rubro[nivel];
 
-function calcularPresupuesto(rubroId, complejidad, { zona = 'CABA', horas = 1 } = {}) {
-  const esp  = ESPECIALIDADES[rubroId];
-  if (!esp) throw new Error(`Rubro desconocido: ${rubroId}`);
+    // FÓRMULA MAESTRA BRIONES
+    const precioTotal    = Math.round(this.VALOR_BASE_COMBO_ARS * coef * complejidadAdicional);
+    const comision       = Math.round(precioTotal * 0.20); // 20% plataforma
+    const pagoTrabajador = precioTotal - comision;
 
-  const multEsp  = esp.mult;
-  const multZona = ZONAS[zona]        || 0.90;
-  const multComp = COMPLEJIDAD[complejidad] || 1.0;
+    return {
+      rubro:           rubroKey,
+      complejidad:     nivel,
+      precio_total:    precioTotal,
+      comision:        comision,
+      pago_trabajador: pagoTrabajador,
+      big_mac_base:    this.VALOR_BASE_COMBO_ARS,
+      coeficiente:     coef,
+    };
+  }
 
-  const precioTotal       = Math.round(COMBO_BIG_MAC_ARS * multEsp * multZona * multComp * horas);
-  const comisionMinima    = Math.round(precioTotal * 0.10);
-  const comisionEstandar  = Math.round(precioTotal * 0.20);
-  const comision          = Math.max(comisionEstandar, comisionMinima);
-  const pagoTrabajador    = precioTotal - comision;
+  setValorBaseARS(nuevoValor) {
+    this.VALOR_BASE_COMBO_ARS = nuevoValor;
+    console.log(`[Aladdín] Índice Big Mac actualizado: ${nuevoValor} ARS`);
+  }
 
-  return {
-    rubro:           esp.label,
-    zona,
-    complejidad,
-    horas,
-    precio_total:    precioTotal,
-    comision:        comision,
-    pago_trabajador: pagoTrabajador,
-    big_mac_base:    COMBO_BIG_MAC_ARS,
-    detalle: { multEsp, multZona, multComp },
-  };
+  listarRubros() {
+    return Object.keys(this.COEFICIENTES);
+  }
 }
 
-function validarComision(precioTotal) {
-  return Math.max(precioTotal * 0.20, precioTotal * 0.10);
-}
-
-module.exports = { calcularPresupuesto, validarComision, ESPECIALIDADES, ZONAS };
+module.exports = new AladdinEngine();
