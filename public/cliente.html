@@ -15,6 +15,8 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#0d1b2a;border-bottom:1px solid rgba(0,229,255,0.15);position:sticky;top:0;z-index:100;}
 .logo{font-size:1.5rem;font-weight:700;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 12px rgba(0,229,255,0.5);}
 .logo span{color:var(--orange);}
+.btn-salir{background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:5px 12px;border-radius:6px;font-size:0.7rem;font-family:"Share Tech Mono",monospace;cursor:pointer;}
+.btn-modo{background:rgba(0,229,255,0.15);border:1px solid var(--cyan);color:var(--cyan);padding:5px 12px;border-radius:6px;font-size:0.7rem;font-family:"Share Tech Mono",monospace;cursor:pointer;margin-right:6px;}
 .user-pill{display:flex;align-items:center;gap:8px;background:var(--surface2);padding:6px 14px;border-radius:999px;font-size:0.85rem;border:1px solid rgba(0,229,255,0.2);}
 .avatar{width:28px;height:28px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;}
 #mapa{width:100%;height:240px;}
@@ -66,7 +68,11 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 <body>
 <div class="header">
   <div class="logo">SERV<span>ired</span></div>
-  <div class="user-pill"><div class="avatar" id="av">C</div><span id="nombre-cliente">Cliente</span></div>
+  <div style="display:flex;align-items:center;gap:6px;">
+  <button class="btn-modo" onclick="window.location='/trabajador.html'">🔧 Ir como Trabajador</button>
+  <button class="btn-salir" onclick="logout()">⏻ Salir</button>
+</div>
+<div class="user-pill"><div class="avatar" id="av">C</div><span id="nombre-cliente">Cliente</span></div>
 </div>
 <div class="estado-bar" id="estado-bar">
   <div class="pulse-dot"></div>
@@ -163,6 +169,7 @@ function selSrv(btn,r){
   document.getElementById('precio-display').textContent='$ '+r.precio.toLocaleString('es-AR');
 }
 
+function logout(){localStorage.removeItem('token');window.location='/';}
 const TOKEN=localStorage.getItem('token');
 if(!TOKEN){window.location='/';}
 const payload=JSON.parse(atob(TOKEN.split('.')[1]));
