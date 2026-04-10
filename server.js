@@ -15,15 +15,32 @@ const io = socketio(server, { cors: { origin: '*' } });
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://ggastonnet_db_user:servired2024@cluster0.fjqkqhf.mongodb.net/servired?retryWrites=true&w=majority';
+// ✅ Lee MONGODB_URI (Railway) con fallback a MONGO_URI y luego hardcoded
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb+srv://ggastonnet_db_user:servired2024@cluster0.fjqkqhf.mongodb.net/servired?retryWrites=true&w=majority';
+console.log('🔗 Conectando a:', MONGO_URI.replace(/:([^@]+)@/, ':***@'));
+
 mongoose.connect(MONGO_URI, { family: 4 })
   .then(() => console.log('✅ MongoDB conectado'))
   .catch(e => console.error('❌ MongoDB error:', e.message));
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/admin', require('./routes/admin'));
+// ✅ Rutas con manejo de error de importación
+try {
+  app.use('/api/auth', require('./routes/auth'));
+} catch(e) { console.error('❌ routes/auth falló:', e.message); }
 
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
+try {
+  app.use('/api/admin', require('./routes/admin'));
+} catch(e) { console.error('❌ routes/admin falló:', e.message); }
+
+try {
+  app.use('/api/pedidos', require('./routes/pedidos'));
+} catch(e) { console.error('❌ routes/pedidos falló:', e.message); }
+
+try {
+  app.use('/api/matching', require('./routes/matching'));
+} catch(e) { console.error('❌ routes/matching falló:', e.message); }
+
+app.get('/health', (req, res) => res.json({ status: 'ok', mongo: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' }));
 
 app.use((req, res) => {
   if (!req.path.startsWith('/api/')) {
@@ -74,5 +91,5 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => console.log(`🚀 SERVIRED en puerto ${PORT}`));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => console.log(`🚀 SERVIRED en puerto ${PORT}`));
