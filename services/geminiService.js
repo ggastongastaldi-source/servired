@@ -1,57 +1,109 @@
-// ============================================
-// GEMINI SERVICE - Cerebro Multimodal
-// Clasifica pedidos en los 26 rubros de Servired
-// ============================================
-
-const RUBROS = {
-  1: 'albanileria', 2: 'plomeria', 3: 'electricidad',
-  4: 'limpieza_hogar', 5: 'pintura', 6: 'gasista',
-  7: 'cerrajeria', 8: 'aire_acondicionado', 9: 'durlock',
-  10: 'impermeabilizacion', 11: 'zingueria', 12: 'construccion_seco',
-  13: 'pisos_revestimientos', 14: 'herreria', 15: 'carpinteria',
-  16: 'vidrieria', 17: 'techista', 18: 'jardineria',
-  19: 'fletes_mudanzas', 20: 'reparacion_celulares', 21: 'servicio_tecnico_pc',
-  22: 'cuidado_personas', 23: 'peluqueria_domicilio', 24: 'mecanica_ligera',
-  25: 'costura_arreglos', 26: 'desinfeccion_plagas',
+const MAPA_CATEGORIAS = {
+  'plomero':        'plomeria',
+  'electricista':   'electricidad',
+  'gasista':        'gasista',
+  'pintor':         'pintura',
+  'carpintero':     'carpinteria',
+  'cerrajero':      'cerrajeria',
+  'albañil':        'albanileria',
+  'albanil':        'albanileria',
+  'techista':       'techista',
+  'herrero':        'herreria',
+  'mecánico':       'mecanica_ligera',
+  'mecanico':       'mecanica_ligera',
+  'refrigeración':  'aire_acondicionado',
+  'refrigeracion':  'aire_acondicionado',
+  'jardinero':      'jardineria',
+  'limpieza':       'limpieza_hogar',
+  'mudanza':        'fletes_mudanzas',
+  'informático':    'servicio_tecnico_pc',
+  'informatico':    'servicio_tecnico_pc',
+  'yesero':         'durlock',
+  'durlock':        'durlock',
+  'cuidador':       'cuidado_personas',
+  'enfermero':      'cuidado_personas',
+  'serv. doméstico':'servicio_domestico',
+  'serv. domestico':'servicio_domestico',
+  'domestico':      'servicio_domestico',
+  'peluquero':      'peluqueria_domicilio',
+  'costura':        'costura_arreglos',
+  'desinfeccion':   'desinfeccion_plagas',
+  'plagas':         'desinfeccion_plagas',
+  'impermeabilizacion': 'impermeabilizacion',
+  'zinguero':       'zingueria',
+  'vidriero':       'vidrieria',
 };
 
-const RUBROS_LABELS = Object.entries(RUBROS).map(([id, key]) => `${id}:${key}`).join(', ');
+const PROMPT_CLASIFICADOR = `Sos un clasificador experto de servicios para la app Servired en Argentina. Tu única tarea es devolver exactamente el nombre de una sola categoría, nada más.
+
+Reglas estrictas:
+- Respondé solo con el nombre de la categoría, sin explicaciones, sin frases, sin puntos, sin comillas.
+- Las categorías posibles son: plomero, electricista, gasista, pintor, carpintero, cerrajero, albañil, techista, herrero, mecánico, refrigeración, jardinero, limpieza, mudanza, informático, yesero/durlock, cuidador, serv. doméstico.
+- Si no estás 100% seguro, respondé "otro".
+
+Lógica de precios internalizados (CABA/GBA):
+- Empleada doméstica: 8000 a 9500 pesos la hora
+- Servicio mínimo plomero/electricista: 80000 pesos
+- Arreglo simple de plomero: 45000 pesos
+- Con picado o rotura: hasta 130000 pesos
+- Cambio de térmica o disyuntor: 70000 a 80000 pesos
+
+Ejemplos:
+Usuario: Tengo una pérdida de agua debajo del lavabo → plomero
+Usuario: Se me está filtrando agua por el techo del living → techista
+Usuario: Se me rompió un enchufe y no funciona la luz → electricista
+Usuario: Huele fuerte a gas en la cocina → gasista
+Usuario: Se me inundó la cocina pero parece que viene de la pared → plomero
+Usuario: Necesito pintar las paredes del dormitorio → pintor
+
+Ahora clasificá este mensaje y respondé solo con la categoría exacta:`;
 
 class GeminiService {
   constructor() {
     this.apiKey = process.env.GEMINI_API_KEY;
-    this.url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent`;
+    this.url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+  }
+
+  traducirCategoria(texto) {
+    if (!texto) return null;
+    const limpio = texto.trim().toLowerCase()
+      .replace(/[^a-záéíóúüñ\s.]/gi, '')
+      .trim();
+    return MAPA_CATEGORIAS[limpio] || null;
   }
 
   async clasificarPedido(descripcionLibre) {
-    if (!this.apiKey) return { rubroId: null, rubroKey: null, error: 'Sin GEMINI_API_KEY' };
-
-    const prompt = `Sos el motor semántico de Servired, marketplace de servicios del hogar en GBA/CABA Argentina.
-El cliente describió su necesidad así: "${descripcionLibre}"
-
-Tenés estos 26 rubros disponibles: ${RUBROS_LABELS}
-
-Respondé SOLO con un JSON sin markdown, así:
-{"rubroId": <número>, "rubroKey": "<clave>", "urgencia": "baja|media|alta", "resumen": "<descripción corta del problema en 1 oración>"}`;
+    if (!this.apiKey) return { rubroKey: null, error: 'Sin GEMINI_API_KEY' };
 
     try {
       const res = await fetch(`${this.url}?key=${this.apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: PROMPT_CLASIFICADOR + '\n' + descripcionLibre }] }],
+        }),
       });
       const data = await res.json();
-      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-      const limpio = texto.replace(/```json|```/g, '').trim();
-      return JSON.parse(limpio);
+      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const categoria = texto.trim().toLowerCase().replace(/[^a-záéíóúüñ\s.\/]/gi, '').trim();
+      const rubroKey = this.traducirCategoria(categoria);
+
+      console.log(`[Gemini] "${descripcionLibre}" → "${categoria}" → "${rubroKey}"`);
+
+      return {
+        categoriaGemini: categoria,
+        rubroKey:        rubroKey,
+        resumen:         `Solicitud de ${categoria} en zona CABA/GBA`,
+        urgencia:        'media',
+      };
     } catch (e) {
       console.error('[Gemini]', e.message);
-      return { rubroId: null, rubroKey: null, error: e.message };
+      return { rubroKey: null, error: e.message };
     }
   }
 
   async chat(mensaje) {
-    if (!this.apiKey) return 'Sin GEMINI_API_KEY';
+    if (!this.apiKey) return null;
     try {
       const res = await fetch(`${this.url}?key=${this.apiKey}`, {
         method: 'POST',
@@ -59,10 +111,8 @@ Respondé SOLO con un JSON sin markdown, así:
         body: JSON.stringify({ contents: [{ parts: [{ text: mensaje }] }] }),
       });
       const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    } catch (e) {
-      return null;
-    }
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    } catch (e) { return null; }
   }
 }
 
