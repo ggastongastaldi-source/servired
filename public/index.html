@@ -325,7 +325,7 @@ async function registrarTrabajador(){
   }catch(e){err.textContent='Error de conexión';err.style.display='block';}
 }
 
-const t=localStorage.getItem('token');if(t){try{const p=JSON.parse(atob(t.split('.')[1]));if(p.exp>Date.now()/1000){const rol=p.rol||p.role;if(rol==='ADMIN')window.location.replace('/admin.html');else if(rol==='TRABAJADOR')window.location.replace('/trabajador.html');else window.location.replace('/cliente.html');}}catch(e){localStorage.removeItem('token');}}
+// auto-redirect deshabilitado
 </script>
 </body>
 </html>
