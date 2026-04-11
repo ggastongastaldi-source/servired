@@ -258,6 +258,8 @@ window.addEventListener('load',function(){
     b.onclick=()=>b.classList.toggle('sel');
     grid.appendChild(b);
   });}
+  const urlT=new URLSearchParams(window.location.search).get('t');
+  if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/trabajador.html');}
   const TOKEN=localStorage.getItem('token');
   if(!TOKEN){window.location='/';return;}
   try{
