@@ -48,6 +48,11 @@ try {
   app.use('/api/matching', require('./routes/matching'));
 } catch(e) { console.error('❌ routes/matching falló:', e.message); }
 
+app.get('/cliente.html',(req,res)=>res.sendFile(path.join(__dirname,'public','cliente.html')));
+app.get('/trabajador.html',(req,res)=>res.sendFile(path.join(__dirname,'public','trabajador.html')));
+app.get('/admin.html',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));
+app.get('/redir.html',(req,res)=>res.sendFile(path.join(__dirname,'public','redir.html')));
+app.get('/cliente2.html',(req,res)=>res.sendFile(path.join(__dirname,'public','cliente2.html')));
 app.get('/health', (req, res) => res.json({ status: 'ok', mongo: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' }));
 
 app.use((req, res) => {
