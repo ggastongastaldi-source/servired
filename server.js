@@ -43,8 +43,8 @@ try {
 app.get('/health', (req, res) => res.json({ status: 'ok', mongo: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' }));
 
 app.use((req, res) => {
-  if (!req.path.startsWith('/api/')) {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({ error: 'Not found' });
   } else {
     res.status(404).json({ error: 'Not found' });
   }
