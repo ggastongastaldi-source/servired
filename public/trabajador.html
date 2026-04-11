@@ -317,7 +317,7 @@ let socket;
 
 function initApp(){
   try{socket=io();}catch(ex){console.error('Socket error:',ex);}
-  initMapa();
+  try{initMapa();}catch(ex){console.error('Mapa error:',ex);}
   const payload=JSON.parse(atob(TOKEN.split('.')[1]));
   // rubros en perfil
   const rubrosEl=document.getElementById('p-rubros');
