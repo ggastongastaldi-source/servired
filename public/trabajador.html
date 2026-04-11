@@ -259,9 +259,9 @@ RUBROS.forEach(r=>{
 function logout(){localStorage.removeItem('token');window.location='/';}
 const TOKEN=localStorage.getItem('token');
 
-// Si no hay token → mostrar registro
+// Si no hay token → volver al inicio
 if(!TOKEN){
-  document.getElementById('reg-overlay').classList.add('show');
+  window.location='/';
 } else {
   try{
     const p=JSON.parse(atob(TOKEN.split('.')[1]));
