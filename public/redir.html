@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Cargando...</title>
+<style>body{background:#0a0e1a;color:#00E5FF;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;font-size:1.5rem;}</style>
+</head>
+<body>
+<div>⏳ Cargando SERVired...</div>
+<script>
+const token = localStorage.getItem('token');
+if(!token){window.location='/';} 
+else {
+  const p = JSON.parse(atob(token.split('.')[1]));
+  const rol = p.rol || p.role;
+  setTimeout(()=>{
+    if(rol==='ADMIN') window.location='/admin.html';
+    else if(rol==='TRABAJADOR') window.location='/trabajador.html';
+    else window.location='/cliente.html';
+  }, 500);
+}
+</script>
+</body>
+</html>
