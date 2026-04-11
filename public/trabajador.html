@@ -126,10 +126,14 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 
 <div class="header">
   <div class="logo">SERV<span>ired</span> PRO</div>
-  <button class="status-pill online" id="status-btn" onclick="toggleStatus()">
-    <div class="sdot online" id="sdot"></div>
-    <span id="slbl">EN LÍNEA</span>
-  </button>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <button class="status-pill online" id="status-btn" onclick="toggleStatus()">
+      <div class="sdot online" id="sdot"></div>
+      <span id="slbl">EN LÍNEA</span>
+    </button>
+    <button onclick="window.location='/cliente.html'" style="background:rgba(0,229,255,0.15);border:1px solid var(--cyan);color:var(--cyan);padding:5px 10px;border-radius:6px;font-size:0.7rem;cursor:pointer;">👤 Cliente</button>
+    <button onclick="localStorage.removeItem('token');window.location='/'" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:5px 10px;border-radius:6px;font-size:0.7rem;cursor:pointer;">⏻</button>
+  </div>
 </div>
 <div class="pantalla active" id="pant-mapa">
   <div id="mapa"></div>
