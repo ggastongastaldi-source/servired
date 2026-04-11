@@ -13,7 +13,15 @@ const server = http.createServer(app);
 const io = socketio(server, { cors: { origin: '*' } });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  etag: false,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+    }
+  }
+}));
 
 // ✅ Lee MONGODB_URI (Railway) con fallback a MONGO_URI y luego hardcoded
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb+srv://ggastonnet_db_user:servired2024@cluster0.fjqkqhf.mongodb.net/servired?retryWrites=true&w=majority';
