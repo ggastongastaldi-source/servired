@@ -268,8 +268,8 @@ if(!TOKEN){
     if(p.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';}
     else{
       document.getElementById('p-nombre').textContent=p.nombre||'—';
-      document.getElementById('p-email').textContent=p.email||'—';
-      document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();
+      try{document.getElementById('p-email').textContent=p.email||p.nombre||'—';}catch(ex){}
+      try{document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();}catch(ex){}
       initApp();
     }
   }catch(e){window.location='/';}
