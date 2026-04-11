@@ -170,16 +170,19 @@ function selSrv(btn,r){
 }
 
 function logout(){localStorage.removeItem('token');window.location='/';}
-const TOKEN=localStorage.getItem('token');
-if(!TOKEN){window.location='/';throw new Error('sin token');}
-let payload;
-try{payload=JSON.parse(atob(TOKEN.split('.')[1]));}catch(e){localStorage.removeItem('token');window.location='/';throw e;}
-if(payload.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';throw new Error('token expirado');}
-document.getElementById('nombre-cliente').textContent=payload.nombre||'Cliente';
-document.getElementById('av').textContent=(payload.nombre||'C')[0].toUpperCase();
+let TOKEN,payload,socket,mapa,markerCli,markerTrab,pedidoActivo=null;
 
-const socket=io();
-let mapa,markerCli,markerTrab,pedidoActivo=null;
+window.addEventListener('load',function(){
+  TOKEN=localStorage.getItem('token');
+  if(!TOKEN){window.location='/';return;}
+  try{payload=JSON.parse(atob(TOKEN.split('.')[1]));}
+  catch(e){localStorage.removeItem('token');window.location='/';return;}
+  if(payload.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';return;}
+  try{document.getElementById('nombre-cliente').textContent=payload.nombre||'Cliente';}catch(ex){}
+  try{document.getElementById('av').textContent=(payload.nombre||'C')[0].toUpperCase();}catch(ex){}
+  try{socket=io();}catch(ex){console.error('Socket:',ex);}
+  initMapa();
+});
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
