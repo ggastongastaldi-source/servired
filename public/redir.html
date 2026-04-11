@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><title>Cargando...</title>
-<style>body{background:#0a0e1a;color:#00E5FF;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;font-size:1.5rem;}</style>
+<style>body{background:#0a0e1a;color:#00E5FF;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;font-size:1.2rem;text-align:center;}</style>
 </head>
 <body>
-<div>⏳ Cargando SERVired...</div>
+<div id="msg">⏳ Verificando...</div>
 <script>
-const token = localStorage.getItem('token');
-if(!token){window.location='/';} 
-else {
-  const p = JSON.parse(atob(token.split('.')[1]));
-  const rol = p.rol || p.role;
-  setTimeout(()=>{
-    if(rol==='ADMIN') window.location='/admin.html';
-    else if(rol==='TRABAJADOR') window.location='/trabajador.html';
-    else window.location='/cliente2.html';
-  }, 500);
-}
+window.addEventListener('load', function(){
+  const token = localStorage.getItem('token');
+  const el = document.getElementById('msg');
+  if(!token){
+    el.textContent = '❌ Sin token';
+    setTimeout(()=>{window.location='/';}, 3000);
+    return;
+  }
+  try{
+    const p = JSON.parse(atob(token.split('.')[1]));
+    const rol = p.rol || p.role;
+    el.textContent = '✅ Rol: ' + rol + ' - redirigiendo...';
+    setTimeout(()=>{
+      if(rol==='ADMIN') window.location='/admin.html';
+      else if(rol==='TRABAJADOR') window.location='/trabajador.html';
+      else window.location='/cliente.html';
+    }, 3000);
+  }catch(e){
+    el.textContent = '❌ Error: ' + e.message;
+  }
+});
 </script>
 </body>
 </html>
