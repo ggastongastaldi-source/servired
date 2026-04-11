@@ -20,7 +20,7 @@ window.addEventListener('load', function(){
     el.textContent = '✅ Rol: ' + rol + ' - redirigiendo...';
     setTimeout(()=>{
       if(rol==='ADMIN') window.location='/admin.html';
-      else if(rol==='TRABAJADOR') window.location='/cliente2.html';
+      else if(rol==='TRABAJADOR') window.location='/trabajador.html';
       else window.location='/cliente.html';
     }, 3000);
   }catch(e){
