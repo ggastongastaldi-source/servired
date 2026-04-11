@@ -248,6 +248,11 @@ const RUBROS=[
 
 function logout(){localStorage.removeItem('token');window.location='/';}
 
+const urlT=new URLSearchParams(window.location.search).get('t');
+if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/trabajador.html');}
+const TOKEN=localStorage.getItem('token');
+if(!TOKEN){window.location='/';}
+
 window.addEventListener('load',function(){
   // Construir grilla de rubros en registro
   const grid=document.getElementById('rubros-grid');
@@ -258,10 +263,7 @@ window.addEventListener('load',function(){
     b.onclick=()=>b.classList.toggle('sel');
     grid.appendChild(b);
   });}
-  const urlT=new URLSearchParams(window.location.search).get('t');
-  if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/trabajador.html');}
-  const TOKEN=localStorage.getItem('token');
-  if(!TOKEN){window.location='/';return;}
+  if(!TOKEN){return;}
   try{
     const p=JSON.parse(atob(TOKEN.split('.')[1]));
     if(p.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';return;}
