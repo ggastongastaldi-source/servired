@@ -171,8 +171,10 @@ function selSrv(btn,r){
 
 function logout(){localStorage.removeItem('token');window.location='/';}
 const TOKEN=localStorage.getItem('token');
-if(!TOKEN){window.location='/';}
-const payload=JSON.parse(atob(TOKEN.split('.')[1]));
+if(!TOKEN){window.location='/';throw new Error('sin token');}
+let payload;
+try{payload=JSON.parse(atob(TOKEN.split('.')[1]));}catch(e){localStorage.removeItem('token');window.location='/';throw e;}
+if(payload.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';throw new Error('token expirado');}
 document.getElementById('nombre-cliente').textContent=payload.nombre||'Cliente';
 document.getElementById('av').textContent=(payload.nombre||'C')[0].toUpperCase();
 

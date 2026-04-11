@@ -248,7 +248,7 @@ h1 span{color:var(--orange);}
 </div>
 
 <script>
-let destinoLogin = null;
+let destinoLogin = null; sessionStorage.removeItem("destino");
 function abrirModalConDestino(destino){
   destinoLogin = destino;
   abrirModal('login-gen');
