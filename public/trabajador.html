@@ -265,14 +265,14 @@ if(!TOKEN){
 } else {
   try{
     const p=JSON.parse(atob(TOKEN.split('.')[1]));
-    if(p.exp<Date.now()/1000){localStorage.removeItem('token');document.getElementById('reg-overlay').classList.add('show');}
+    if(p.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';}
     else{
       document.getElementById('p-nombre').textContent=p.nombre||'—';
       document.getElementById('p-email').textContent=p.email||'—';
       document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();
       initApp();
     }
-  }catch(e){document.getElementById('reg-overlay').classList.add('show');}
+  }catch(e){window.location='/';}
 }
 
 async function registrarTrabajador(){
