@@ -257,23 +257,19 @@ RUBROS.forEach(r=>{
 });
 
 function logout(){localStorage.removeItem('token');window.location='/';}
-const TOKEN=localStorage.getItem('token');
 
-// Si no hay token → volver al inicio
-if(!TOKEN){
-  window.location='/';
-} else {
+window.addEventListener('load',function(){
+  const TOKEN=localStorage.getItem('token');
+  if(!TOKEN){window.location='/';return;}
   try{
     const p=JSON.parse(atob(TOKEN.split('.')[1]));
-    if(p.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';}
-    else{
-      document.getElementById('p-nombre').textContent=p.nombre||'—';
-      try{document.getElementById('p-email').textContent=p.email||p.nombre||'—';}catch(ex){}
-      try{document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();}catch(ex){}
-      initApp();
-    }
-  }catch(e){console.error('TOKEN ERROR:',e.message,e);alert('Error token: '+e.message);window.location='/';}
-}
+    if(p.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';return;}
+    try{document.getElementById('p-nombre').textContent=p.nombre||'—';}catch(ex){}
+    try{document.getElementById('p-email').textContent=p.email||p.nombre||'—';}catch(ex){}
+    try{document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();}catch(ex){}
+    initApp();
+  }catch(e){console.error('TOKEN ERROR:',e.message);window.location='/';}
+});
 
 async function registrarTrabajador(){
   const nombre=document.getElementById('r-nombre').value.trim();
