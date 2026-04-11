@@ -316,7 +316,8 @@ let estadoActual='ACEPTADA';
 let socket;
 
 function initApp(){
-  try{socket=io();}catch(ex){console.error('Socket error:',ex);return;}
+  try{socket=io();}catch(ex){console.error('Socket error:',ex);}
+  initMapa();
   const payload=JSON.parse(atob(TOKEN.split('.')[1]));
   // rubros en perfil
   const rubrosEl=document.getElementById('p-rubros');
@@ -329,8 +330,7 @@ function initApp(){
       rubrosEl.appendChild(s);
     });
   }
-  initMapa();
-  socket.emit('worker_conectado',{token:TOKEN});
+  if(socket)socket.emit('worker_conectado',{token:TOKEN});
   socket.on('nuevo_pedido_disponible',onNuevoPedido);
   socket.on('pedido_cancelado',()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');});
 }
