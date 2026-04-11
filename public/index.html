@@ -117,8 +117,8 @@ h1 span{color:var(--orange);}
 </div>
 
 <div class="btns">
-  <button class="btn btn-cyan" onclick="abrirModal('login-gen')">🔍 Busco un Servicio (Cliente)</button>
-  <button class="btn btn-orange" onclick="abrirModal('login-gen')">🔧 Ofrezco mis Servicios (Trabajador)</button>
+  <button class="btn btn-cyan" onclick="abrirModalConDestino('cliente')">🔍 Busco un Servicio (Cliente)</button>
+  <button class="btn btn-orange" onclick="abrirModalConDestino('trabajador')">🔧 Ofrezco mis Servicios (Trabajador)</button>
   <button class="btn btn-outline" onclick="abrirModal('registro-cliente')">📝 Registrarme como Cliente</button>
   <button class="btn btn-green" onclick="abrirModal('registro-trabajador')">🔧 Registrarme como Trabajador</button>
   <button class="btn btn-outline" onclick="abrirModal('login-gen')">🔑 Ya tengo cuenta</button>
@@ -248,6 +248,11 @@ h1 span{color:var(--orange);}
 </div>
 
 <script>
+let destinoLogin = null;
+function abrirModalConDestino(destino){
+  destinoLogin = destino;
+  abrirModal('login-gen');
+}
 function abrirModal(id){cerrarModals();document.getElementById('modal-'+id).classList.add('show');}
 function cerrarModals(){document.querySelectorAll('.modal-bg').forEach(m=>m.classList.remove('show'));}
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)cerrarModals();}));
@@ -267,9 +272,12 @@ async function login(rolEsperado,emailId,passId,errId){
     localStorage.setItem('token',token);
     const payload=JSON.parse(atob(token.split('.')[1]));
     const rol=payload.rol||payload.role;
-    if(rol==='ADMIN')window.location='/admin.html';
-    else if(rol==='TRABAJADOR')window.location='/trabajador.html';
-    else window.location='/cliente.html';
+    if(rol==='ADMIN'){window.location='/admin.html';}
+    else if(destinoLogin==='cliente'){window.location='/cliente.html';}
+    else if(destinoLogin==='trabajador'){window.location='/trabajador.html';}
+    else if(rol==='TRABAJADOR'){window.location='/trabajador.html';}
+    else{window.location='/cliente.html';}
+    destinoLogin=null;
   }catch(e){errEl.textContent='Error de conexión';errEl.classList.add('show');}
 }
 
