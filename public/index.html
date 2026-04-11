@@ -274,9 +274,8 @@ async function login(rolEsperado,emailId,passId,errId){
     const rol=payload.rol||payload.role;
     let destino='/cliente.html';
     if(rol==='ADMIN'){destino='/admin.html';}
-    else if(destinoLogin==='cliente'){destino='/cliente.html';}
-    else if(destinoLogin==='trabajador'){destino='/trabajador.html';}
     else if(rol==='TRABAJADOR'){destino='/trabajador.html';}
+    else{destino='/cliente.html';}
     destinoLogin=null;
     setTimeout(()=>{window.location=destino;},200);
   }catch(e){errEl.textContent='Error de conexión';errEl.classList.add('show');}
