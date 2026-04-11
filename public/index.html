@@ -272,12 +272,13 @@ async function login(rolEsperado,emailId,passId,errId){
     localStorage.setItem('token',token);
     const payload=JSON.parse(atob(token.split('.')[1]));
     const rol=payload.rol||payload.role;
-    if(rol==='ADMIN'){window.location='/admin.html';}
-    else if(destinoLogin==='cliente'){window.location='/cliente.html';}
-    else if(destinoLogin==='trabajador'){window.location='/trabajador.html';}
-    else if(rol==='TRABAJADOR'){window.location='/trabajador.html';}
-    else{window.location='/cliente.html';}
+    let destino='/cliente.html';
+    if(rol==='ADMIN'){destino='/admin.html';}
+    else if(destinoLogin==='cliente'){destino='/cliente.html';}
+    else if(destinoLogin==='trabajador'){destino='/trabajador.html';}
+    else if(rol==='TRABAJADOR'){destino='/trabajador.html';}
     destinoLogin=null;
+    setTimeout(()=>{window.location=destino;},200);
   }catch(e){errEl.textContent='Error de conexión';errEl.classList.add('show');}
 }
 
