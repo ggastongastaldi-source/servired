@@ -277,9 +277,7 @@ async function login(rolEsperado,emailId,passId,errId){
     else if(rol==='TRABAJADOR'){destino='/trabajador.html';}
     else{destino='/cliente.html';}
     destinoLogin=null;
-    const finalURL=destino+'?t='+encodeURIComponent(token);
-    alert('Redirigiendo a: '+finalURL.substring(0,50));
-    window.location.replace(finalURL);
+    window.location.replace(destino+'?t='+encodeURIComponent(token));
   }catch(e){errEl.textContent='Error de conexión';errEl.classList.add('show');}
 }
 
