@@ -173,6 +173,8 @@ function logout(){localStorage.removeItem('token');window.location='/';}
 let TOKEN,payload,socket,mapa,markerCli,markerTrab,pedidoActivo=null;
 
 window.addEventListener('load',function(){
+  const urlT=new URLSearchParams(window.location.search).get('t');
+  if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/cliente.html');}
   TOKEN=localStorage.getItem('token');
   if(!TOKEN){window.location='/';return;}
   try{payload=JSON.parse(atob(TOKEN.split('.')[1]));}
