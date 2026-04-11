@@ -272,7 +272,7 @@ if(!TOKEN){
       try{document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();}catch(ex){}
       initApp();
     }
-  }catch(e){console.error('TOKEN ERROR:',e.message,e);alert('Error: '+e.message);}
+  }catch(e){console.error('TOKEN ERROR:',e.message,e);alert('Error token: '+e.message);window.location='/';}
 }
 
 async function registrarTrabajador(){
@@ -316,7 +316,7 @@ let estadoActual='ACEPTADA';
 let socket;
 
 function initApp(){
-  socket=io();
+  try{socket=io();}catch(ex){console.error('Socket error:',ex);return;}
   const payload=JSON.parse(atob(TOKEN.split('.')[1]));
   // rubros en perfil
   const rubrosEl=document.getElementById('p-rubros');
