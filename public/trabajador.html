@@ -272,7 +272,7 @@ if(!TOKEN){
       try{document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();}catch(ex){}
       initApp();
     }
-  }catch(e){window.location='/';}
+  }catch(e){console.error('TOKEN ERROR:',e.message,e);alert('Error: '+e.message);}
 }
 
 async function registrarTrabajador(){
