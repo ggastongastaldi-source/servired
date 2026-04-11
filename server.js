@@ -48,6 +48,13 @@ try {
   app.use('/api/matching', require('./routes/matching'));
 } catch(e) { console.error('❌ routes/matching falló:', e.message); }
 
+app.get('/go',(req,res)=>{
+  res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><script>
+    const d=sessionStorage.getItem('destino')||'/';
+    sessionStorage.removeItem('destino');
+    window.location.replace(d);
+  </scr`+`ipt></body></html>`);
+});
 app.get('/cliente.html',(req,res)=>res.sendFile(path.join(__dirname,'public','cliente.html')));
 app.get('/trabajador.html',(req,res)=>res.sendFile(path.join(__dirname,'public','trabajador.html')));
 app.get('/admin.html',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));
