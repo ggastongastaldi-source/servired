@@ -246,19 +246,18 @@ const RUBROS=[
   {id:'masajista',label:'Masajista',icon:'💆'},
 ];
 
-// Construir grilla de rubros en registro
-const grid=document.getElementById('rubros-grid');
-RUBROS.forEach(r=>{
-  const b=document.createElement('div');
-  b.className='rubro-btn';b.dataset.id=r.id;
-  b.innerHTML=`<span class="ri">${r.icon}</span><span class="rl">${r.label}</span>`;
-  b.onclick=()=>b.classList.toggle('sel');
-  grid.appendChild(b);
-});
-
 function logout(){localStorage.removeItem('token');window.location='/';}
 
 window.addEventListener('load',function(){
+  // Construir grilla de rubros en registro
+  const grid=document.getElementById('rubros-grid');
+  if(grid){RUBROS.forEach(r=>{
+    const b=document.createElement('div');
+    b.className='rubro-btn';b.dataset.id=r.id;
+    b.innerHTML=`<span class="ri">${r.icon}</span><span class="rl">${r.label}</span>`;
+    b.onclick=()=>b.classList.toggle('sel');
+    grid.appendChild(b);
+  });}
   const TOKEN=localStorage.getItem('token');
   if(!TOKEN){window.location='/';return;}
   try{
