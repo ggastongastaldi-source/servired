@@ -175,8 +175,7 @@ if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/clien
 const urlT2=new URLSearchParams(window.location.search).get('t');
 if(urlT2){localStorage.setItem('token',urlT2);}
 const TOKEN=localStorage.getItem('token');
-if(!TOKEN){alert('SIN TOKEN');window.location='/';}
-else{alert('TOKEN OK: '+TOKEN.substring(0,20));}
+if(!TOKEN){window.location='/';throw new Error('sin token');}
 const payload=TOKEN?JSON.parse(atob(TOKEN.split('.')[1])):null;
 if(payload&&payload.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';}
 let socket,mapa,markerCli,markerTrab,pedidoActivo=null;
