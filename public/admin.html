@@ -129,7 +129,7 @@ let mapa,mWorkers={},revenue=0,comision=0,pedidosHoy=0,workersOnline=0,pedidosCo
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],12);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
 }
 
 function irTab(id,btn){
