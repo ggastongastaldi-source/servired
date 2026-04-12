@@ -225,11 +225,22 @@ async function pedirSmartQuote(){
   const btn = document.querySelector('#sq-modal button[onclick="pedirSmartQuote()"]');
   btn.textContent = '⏳ Analizando...';
   btn.disabled = true;
+
+  const txt = input.toLowerCase();
+  let rubro = 'servicio_domestico';
+  let complejidad = 'baja';
+  if(txt.includes('plomer')||txt.includes('cano')) rubro='plomeria';
+  else if(txt.includes('electric')||txt.includes('luz')) rubro='electricidad';
+  else if(txt.includes('pint')) rubro='pintura';
+  else if(txt.includes('albanil')||txt.includes('construc')) rubro='albanileria';
+  else if(txt.includes('gas')) rubro='gasista';
+  else if(txt.includes('limpieza')||txt.includes('limpi')) rubro='limpieza_hogar';
+  if(txt.includes('grande')||txt.includes('completo')||txt.includes('urgente')) complejidad='alta';
   try {
     const r = await fetch('/api/smart-quote', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-      body: JSON.stringify({request_text:input, property_type:'casa', urgency:'media'})
+      body: JSON.stringify({rubro, complejidad})
     });
     const d = await r.json();
     const el = document.getElementById('sq-content');
@@ -239,9 +250,9 @@ async function pedirSmartQuote(){
         <div style="font-size:0.8rem;color:#94a3b8;margin-bottom:8px;">${d.descripcion||''}</div>
         ${(d.materiales||[]).map(m=>`<div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span>${m.nombre}</span><span style="color:#10b981;">ARS ${(m.precio_estimado||0).toLocaleString('es-AR')}</span></div>`).join('')}
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
-          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Materiales</span><span>ARS ${(d.materiales_total||0).toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Materiales</span><span>ARS ${(d.materiales||0).toLocaleString('es-AR')}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Mano de obra</span><span>ARS ${(d.mano_de_obra||0).toLocaleString('es-AR')}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Flete estimado</span><span>ARS ${(d.flete_estimado||0).toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Comision plataforma</span><span>ARS ${(d.comision||0).toLocaleString('es-AR')}</span></div>
           <div style="display:flex;justify-content:space-between;font-weight:700;margin-top:6px;color:#00E5FF;"><span>TOTAL ESTIMADO</span><span>ARS ${(d.total_estimado||0).toLocaleString('es-AR')}</span></div>
         </div>
       </div>`;
