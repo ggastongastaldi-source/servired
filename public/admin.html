@@ -36,7 +36,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .leg-i{display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--muted);}
 .leg-d{width:8px;height:8px;border-radius:50%;}
 .tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.07);background:var(--surface);}
-.tab{flex:1;padding:10px;text-align:center;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Share Tech Mono',monospace;}
+.tab{flex:1;padding:10px;text-align:center;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:#cbd5e1;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Share Tech Mono',monospace;}
 .tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
 .tc{display:none;padding:12px 16px 30px;}
 .tc.active{display:block;}
@@ -129,7 +129,7 @@ let mapa,mWorkers={},revenue=0,comision=0,pedidosHoy=0,workersOnline=0,pedidosCo
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],12);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
 }
 
 function irTab(id,btn){
