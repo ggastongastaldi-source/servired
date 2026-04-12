@@ -80,7 +80,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 </div>
 <div class="pantalla active" id="pant-pedir">
   <div style="padding:10px 16px;background:#0d1b2a;border-bottom:1px solid rgba(255,255,255,0.05);">
-  <button onclick="document.getElementById('sq-modal').style.display='block'" style="width:100%;padding:10px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,58,237,0.15));border:1px solid #00E5FF;border-radius:10px;color:#00E5FF;font-size:0.9rem;font-weight:700;cursor:pointer;">🧠 Presupuesto Inteligente — ¿Cuánto me va a costar?</button>
+  <button onclick="abrirSmartQuote()" style="width:100%;padding:10px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,58,237,0.15));border:1px solid #00E5FF;border-radius:10px;color:#00E5FF;font-size:0.9rem;font-weight:700;cursor:pointer;">🧠 Presupuesto Inteligente — ¿Cuánto me va a costar?</button>
 </div>
 <div id="mapa"></div>
   <div class="panel">
@@ -218,6 +218,7 @@ function resetUI(){
   pedidoActivo=null;
 }
 
+function abrirSmartQuote(){document.getElementById('sq-modal').style.display='block';}
 async function pedirSmartQuote(){
   const input = document.getElementById('sq-input').value.trim();
   if(!input) return;
