@@ -65,3 +65,25 @@ Respondé SOLO JSON:
 });
 
 module.exports = router;
+
+
+// ===============================
+// 🔥 OVERRIDE FINAL REAL MERCADO
+// ===============================
+try {
+  if (typeof engine !== "undefined" && parsed?.rubro) {
+    const total_final = engine.calcularReal(
+      parsed.rubro,
+      parsed.nivel || 1,
+      parsed.metros || 1,
+      parsed.puntos || 1
+    );
+
+    return res.json({
+      total_estimado: total_final,
+      modo: "REAL_OVERRIDE_OK"
+    });
+  }
+} catch(e) {
+  console.log("override error", e);
+}
