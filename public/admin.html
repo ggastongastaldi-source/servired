@@ -228,6 +228,16 @@ socket.on('trabajador_nuevo', data => {
   });
   socket.on('worker_online',data=>{workersOnline++;updKPIs();addEv('🟢',`${data.nombre||'Trabajador'} entró en línea`);});
 socket.on('worker_offline',data=>{workersOnline=Math.max(0,workersOnline-1);updKPIs();addEv('🔴',`${data.nombre||'Trabajador'} salió`);});
+socket.on('worker_estado_actualizado',data=>{
+  const cards=document.querySelectorAll('.worker-card,[data-worker-id]');
+  cards.forEach(c=>{if(c.dataset.workerId===data.userId){
+    const dot=c.querySelector('.status-dot,.sdot');
+    const lbl=c.querySelector('.status-lbl,.status-text');
+    if(dot){dot.style.background=data.online?'#10b981':'#64748b';}
+    if(lbl){lbl.textContent=data.online?'Online':'Offline';}
+  }});
+  cargarWor();
+});
 
 function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
