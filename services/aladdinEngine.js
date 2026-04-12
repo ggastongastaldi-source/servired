@@ -43,6 +43,15 @@ class AladdinEngine {
       camaras_seguridad:      { baja: 3.0,   alta: 10.0  },
       alarmas:                { baja: 2.5,   alta: 8.0   },
       domotica_automatizacion:{ baja: 4.0,   alta: 15.0  },
+      techistas:              { baja: 2.5,   alta: 11.0  },
+      antihumedad:            { baja: 2.0,   alta: 8.0   },
+      revestimientos_pvc:     { baja: 1.5,   alta: 6.0   },
+      climatizacion:          { baja: 2.0,   alta: 7.0   },
+      mecanica_auxilio:       { baja: 1.5,   alta: 5.0   },
+      mantenimiento_consorcios:{ baja:1.2,   alta: 4.0   },
+      paneles_solares:        { baja: 8.0,   alta: 30.0  },
+      peluqueria_canina:      { baja: 0.8,   alta: 2.0   },
+      fumigacion:             { baja: 2.0,   alta: 6.0   },
     };
   }
 

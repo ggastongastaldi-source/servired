@@ -57,6 +57,15 @@ Responde SOLO JSON valido sin texto extra:
       camaras_seguridad:       { baja: 200000,  alta: 800000  },
       alarmas:                 { baja: 180000,  alta: 700000  },
       domotica_automatizacion: { baja: 300000,  alta: 1500000 },
+      techistas:               { baja: 200000,  alta: 600000  },
+      antihumedad:             { baja: 120000,  alta: 400000  },
+      revestimientos_pvc:      { baja: 100000,  alta: 350000  },
+      climatizacion:           { baja: 150000,  alta: 500000  },
+      mecanica_auxilio:        { baja: 50000,   alta: 200000  },
+      mantenimiento_consorcios:{ baja: 80000,   alta: 300000  },
+      paneles_solares:         { baja: 500000,  alta: 3000000 },
+      peluqueria_canina:       { baja: 15000,   alta: 50000   },
+      fumigacion:              { baja: 80000,   alta: 300000  },
     };
 
     const nivel = complejidad === "alta" ? "alta" : "baja";
