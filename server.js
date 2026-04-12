@@ -89,10 +89,17 @@ io.on('connection', (socket) => {
       trabajadoresOnline[socket.id] = { userId: decoded.id, nombre: decoded.nombre || 'Trabajador', online: false };
     } catch(e) {}
   });
-  socket.on('cambiar_estado_trabajador', (data) => {
+  socket.on('cambiar_estado_trabajador', async (data) => {
     if (trabajadoresOnline[socket.id]) {
       trabajadoresOnline[socket.id].online = data.online;
-      io.to('admins').emit(data.online ? 'worker_online' : 'worker_offline', { nombre: trabajadoresOnline[socket.id].nombre });
+      const nombre = trabajadoresOnline[socket.id].nombre;
+      io.to('admins').emit(data.online ? 'worker_online' : 'worker_offline', { nombre });
+      // Persistir en MongoDB
+      try {
+        const Usuario = require('./models/Usuario');
+        await Usuario.findByIdAndUpdate(trabajadoresOnline[socket.id].userId, { disponible: data.online });
+        io.to('admins').emit('worker_estado_actualizado', { userId: trabajadoresOnline[socket.id].userId, online: data.online, nombre });
+      } catch(e) { console.error('[Socket] Error actualizando disponible:', e.message); }
     }
   });
   socket.on('ubicacion_trabajador', (data) => {
