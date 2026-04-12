@@ -1,30 +1,25 @@
 const express = require("express");
 const router = express.Router();
-const { execSync } = require("child_process");
+const aladdin = require("../services/aladdinEngine");
 
-router.get("/", async (req, res) => {
+router.post("/", (req, res) => {
   try {
+    const { rubro, complejidad } = req.body;
+    if (!rubro) return res.json({ ok: false, error: "falta rubro", total_estimado: 0 });
 
-    // Ejecuta el motor bash (ruta relativa al repo)
-    const out = execSync("bash ./smart_quote.sh").toString();
-
-    console.log("SALIDA MOTOR:", out);
-
-    const parsed = JSON.parse(out);
+    const result = aladdin.calcularPresupuesto(rubro, complejidad || "baja");
 
     return res.json({
       ok: true,
-      total_estimado: parsed.total
+      total_estimado:  result.precio_total,
+      mano_de_obra:    result.pago_trabajador,
+      materiales:      Math.round(result.precio_total * 0.3),
+      comision:        result.comision,
+      big_mac_base:    result.big_mac_base,
+      coeficiente:     result.coeficiente,
     });
-
   } catch (e) {
-    console.log("ERROR MOTOR:", e.message);
-
-    return res.json({
-      ok: false,
-      total_estimado: 0,
-      error: "motor_fail"
-    });
+    return res.json({ ok: false, error: e.message, total_estimado: 0 });
   }
 });
 
