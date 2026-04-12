@@ -336,7 +336,7 @@ function initApp(){
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
   const ic=L.divIcon({html:'<div style="background:#00E5FF;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(0,229,255,0.9)"></div>',className:'',iconSize:[16,16]});
   markerYo=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Vos');
   if(navigator.geolocation){
