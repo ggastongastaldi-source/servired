@@ -6,20 +6,20 @@
 
 class AladdinEngine {
   constructor() {
-    this.VALOR_BASE_COMBO_ARS = parseFloat(process.env.BIGMAC_ARS || '8500');
+    this.VALOR_BASE_COMBO_ARS = parseFloat(process.env.BIGMAC_ARS || '7500');
 
     // Coeficientes por rubro y complejidad (baja/alta)
     // 1.0 = 1 hora de trabajo estándar
     this.COEFICIENTES = {
-      albanileria:            { baja: 2.0,  alta: 12.0 },
-      plomeria:               { baja: 1.2,  alta: 7.0  },
-      electricidad:           { baja: 1.5,  alta: 8.0  },
-      limpieza_hogar:         { baja: 1.0,  alta: 3.0  },
-      pintura:                { baja: 1.8,  alta: 6.0  },
-      gasista:                { baja: 2.0,  alta: 9.0  },
+      albanileria:            { baja: 15.0,  alta: 80.0 },
+      plomeria:               { baja: 12.0,  alta: 60.0  },
+      electricidad:           { baja: 12.0,  alta: 65.0  },
+      limpieza_hogar:         { baja: 1.5,  alta: 5.0  },
+      pintura:                { baja: 10.0,  alta: 40.0  },
+      gasista:                { baja: 14.0,  alta: 70.0  },
       cerrajeria:             { baja: 1.2,  alta: 4.0  },
       aire_acondicionado:     { baja: 2.5,  alta: 8.0  },
-      durlock:                { baja: 2.0,  alta: 7.0  },
+      durlock:                { baja: 14.0,  alta: 55.0  },
       impermeabilizacion:     { baja: 2.5,  alta: 10.0 },
       zingueria:              { baja: 2.0,  alta: 8.0  },
       construccion_seco:      { baja: 2.0,  alta: 10.0 },
