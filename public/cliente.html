@@ -218,51 +218,106 @@ function resetUI(){
   pedidoActivo=null;
 }
 
-function abrirSmartQuote(){var m=document.getElementById('sq-modal');if(m){m.style.display='block';m.style.zIndex='9999';}else{alert('Error: modal no encontrado');}}
+function abrirSmartQuote(){
+  var m=document.getElementById('sq-modal');
+  if(m){m.style.display='block';m.style.zIndex='9999';sqReset();}
+  else{alert('Error: modal no encontrado');}
+}
+
+const SQ_TRABAJOS={
+  limpieza:{label:'🧹 Limpieza',rubros:[{r:'limpieza_hogar',label:'Limpieza',coef:1}]},
+  plomeria:{label:'🔧 Plomería',rubros:[{r:'plomeria',label:'Plomería',coef:1}]},
+  electricidad:{label:'⚡ Electricidad',rubros:[{r:'electricidad',label:'Electricidad',coef:1}]},
+  pintura:{label:'🎨 Pintura',rubros:[{r:'pintura',label:'Pintura',coef:1}]},
+  gasista:{label:'🔥 Gasista',rubros:[{r:'gasista',label:'Gasista',coef:1}]},
+  cerrajeria:{label:'🔑 Cerrajería',rubros:[{r:'cerrajeria',label:'Cerrajería',coef:1}]},
+  jardineria:{label:'🌿 Jardinería',rubros:[{r:'jardineria',label:'Jardinería',coef:1}]},
+  mudanza:{label:'🚛 Mudanza',rubros:[{r:'fletes_mudanzas',label:'Flete',coef:1}]},
+  banio:{label:'🚿 Baño completo',rubros:[
+    {r:'plomeria',label:'Plomería',coef:4},
+    {r:'electricidad',label:'Electricidad',coef:3},
+    {r:'albanileria',label:'Albañilería/revoque',coef:6},
+    {r:'pisos_revestimientos',label:'Cerámicos',coef:4},
+    {r:'durlock',label:'Durlock/cielorraso',coef:3},
+    {r:'pintura',label:'Pintura final',coef:2},
+  ]},
+  cocina:{label:'🍳 Cocina completa',rubros:[
+    {r:'plomeria',label:'Plomería',coef:3},
+    {r:'electricidad',label:'Electricidad',coef:4},
+    {r:'albanileria',label:'Albañilería',coef:5},
+    {r:'pisos_revestimientos',label:'Revestimientos',coef:3},
+    {r:'pintura',label:'Pintura',coef:2},
+  ]},
+  reforma:{label:'🏗️ Reforma integral',rubros:[
+    {r:'albanileria',label:'Albañilería',coef:20},
+    {r:'plomeria',label:'Plomería',coef:8},
+    {r:'electricidad',label:'Electricidad',coef:8},
+    {r:'durlock',label:'Durlock',coef:6},
+    {r:'pisos_revestimientos',label:'Pisos',coef:6},
+    {r:'pintura',label:'Pintura',coef:5},
+  ]},
+};
+
+let sqTrabajo=null,sqM2=4,sqComplejidad='baja';
+
+function sqReset(){
+  sqTrabajo=null;
+  document.getElementById('sq-paso1').style.display='block';
+  document.getElementById('sq-paso2').style.display='none';
+  document.getElementById('sq-result').style.display='none';
+}
+
+function sqElegir(key){
+  sqTrabajo=key;
+  document.getElementById('sq-paso1').style.display='none';
+  document.getElementById('sq-paso2').style.display='block';
+  document.getElementById('sq-titulo-trabajo').textContent=SQ_TRABAJOS[key].label;
+  const esObra=['banio','cocina','reforma','pintura'].includes(key);
+  document.getElementById('sq-fila-m2').style.display=esObra?'block':'none';
+}
+
 async function pedirSmartQuote(){
-  const input = document.getElementById('sq-input').value.trim();
-  if(!input) return;
-  const btn = document.querySelector('#sq-modal button[onclick="pedirSmartQuote()"]');
-  btn.textContent = '⏳ Analizando...';
-  btn.disabled = true;
-
-  const txt = input.toLowerCase();
-  let rubro = 'servicio_domestico';
-  let complejidad = 'baja';
-  if(txt.includes('plomer')||txt.includes('cano')) rubro='plomeria';
-  else if(txt.includes('electric')||txt.includes('luz')) rubro='electricidad';
-  else if(txt.includes('pint')) rubro='pintura';
-  else if(txt.includes('albanil')||txt.includes('construc')) rubro='albanileria';
-  else if(txt.includes('gas')) rubro='gasista';
-  else if(txt.includes('limpieza')||txt.includes('limpi')) rubro='limpieza_hogar';
-  if(txt.includes('grande')||txt.includes('completo')||txt.includes('urgente')) complejidad='alta';
-  try {
-    const r = await fetch('/api/smart-quote', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-      body: JSON.stringify({rubro, complejidad})
-    });
-    const d = await r.json();
-    const el = document.getElementById('sq-content');
-    el.innerHTML = `
-      <div style="background:#1a2236;border-radius:8px;padding:12px;margin-bottom:8px;">
-        <div style="color:#00E5FF;font-weight:700;margin-bottom:6px;">📋 ${d.rubro||'Servicio'}</div>
-        <div style="font-size:0.8rem;color:#94a3b8;margin-bottom:8px;">${d.descripcion||''}</div>
-
-        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
-          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Materiales</span><span>ARS ${(d.materiales||0).toLocaleString('es-AR')}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Mano de obra</span><span>ARS ${(d.mano_de_obra||0).toLocaleString('es-AR')}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Comision plataforma</span><span>ARS ${(d.comision||0).toLocaleString('es-AR')}</span></div>
-          <div style="display:flex;justify-content:space-between;font-weight:700;margin-top:6px;color:#00E5FF;"><span>TOTAL ESTIMADO</span><span>ARS ${(d.total_estimado||0).toLocaleString('es-AR')}</span></div>
+  if(!sqTrabajo)return;
+  sqM2=parseFloat(document.getElementById('sq-m2').value)||4;
+  sqComplejidad=document.getElementById('sq-complejidad').value||'baja';
+  const btn=document.getElementById('sq-btn-calcular');
+  btn.textContent='⏳ Calculando...';btn.disabled=true;
+  try{
+    const trabajo=SQ_TRABAJOS[sqTrabajo];
+    let totalMat=0,totalMano=0,totalCom=0;
+    const lineas=[];
+    for(const item of trabajo.rubros){
+      const res=await fetch('/api/smart-quote',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+        body:JSON.stringify({rubro:item.r,complejidad:sqComplejidad})
+      });
+      const d=await res.json();
+      if(d.ok){
+        const sub=Math.round(d.total_estimado*item.coef);
+        totalMat+=Math.round(d.materiales*item.coef);
+        totalMano+=Math.round(d.mano_de_obra*item.coef);
+        totalCom+=Math.round(d.comision*item.coef);
+        lineas.push({label:item.label,sub});
+      }
+    }
+    const total=totalMat+totalMano+totalCom;
+    document.getElementById('sq-content').innerHTML=`
+      <div style="background:#1a2236;border-radius:8px;padding:12px;">
+        <div style="color:#00E5FF;font-weight:700;margin-bottom:8px;">${trabajo.label}</div>
+        <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:8px;">Calidad: ${sqComplejidad==='alta'?'Premium':'Económico'}</div>
+        ${lineas.map(l=>`<div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span>${l.label}</span><span style="color:#10b981;">ARS ${l.sub.toLocaleString('es-AR')}</span></div>`).join('')}
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);">
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Materiales</span><span>ARS ${totalMat.toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Mano de obra</span><span>ARS ${totalMano.toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Comisión SERVired</span><span>ARS ${totalCom.toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-weight:700;margin-top:6px;color:#00E5FF;font-size:1rem;"><span>TOTAL ESTIMADO</span><span>ARS ${total.toLocaleString('es-AR')}</span></div>
         </div>
+        <div style="font-size:0.7rem;color:#64748b;margin-top:8px;">* Estimación orientativa. Puede variar según materiales y condición del lugar.</div>
       </div>`;
     document.getElementById('sq-result').style.display='block';
-  } catch(e) {
-    alert('Error: ' + e.message);
-  } finally {
-    btn.textContent = '⚡ Estimar presupuesto';
-    btn.disabled = false;
-  }
+  }catch(e){alert('Error: '+e.message);}
+  finally{btn.textContent='⚡ Calcular presupuesto';btn.disabled=false;}
 }
 
 function cerrarSesion(){localStorage.removeItem('token');window.location='/';}
@@ -310,16 +365,50 @@ window.addEventListener('DOMContentLoaded',initMapa);
 
 <!-- SMART QUOTE MODAL -->
 <div id="sq-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;overflow-y:auto;padding:20px;">
-  <div style="background:#111827;border:1px solid #00E5FF;border-radius:16px;padding:20px;max-width:480px;margin:0 auto;margin-top:40px;">
+  <div style="background:#111827;border:1px solid #00E5FF;border-radius:16px;padding:20px;max-width:480px;margin:0 auto;margin-top:20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <div style="font-size:1.1rem;font-weight:700;color:#00E5FF;">🧠 Presupuesto Inteligente</div>
       <button onclick="document.getElementById('sq-modal').style.display='none'" style="background:none;border:none;color:#64748b;font-size:1.5rem;cursor:pointer;">✕</button>
     </div>
-    <textarea id="sq-input" placeholder="Describí qué necesitás... Ej: Quiero pintar mi living" style="width:100%;padding:12px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e2e8f0;font-size:0.95rem;resize:none;height:80px;margin-bottom:12px;"></textarea>
-    <button onclick="pedirSmartQuote()" style="width:100%;padding:12px;background:#00E5FF;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:16px;">⚡ Estimar presupuesto</button>
+    <!-- PASO 1: elegir trabajo -->
+    <div id="sq-paso1">
+      <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:12px;">¿Qué trabajo necesitás?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="sqElegir('limpieza')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🧹 Limpieza</button>
+        <button onclick="sqElegir('plomeria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔧 Plomería</button>
+        <button onclick="sqElegir('electricidad')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">⚡ Electricidad</button>
+        <button onclick="sqElegir('pintura')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🎨 Pintura</button>
+        <button onclick="sqElegir('gasista')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔥 Gasista</button>
+        <button onclick="sqElegir('cerrajeria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔑 Cerrajería</button>
+        <button onclick="sqElegir('jardineria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🌿 Jardinería</button>
+        <button onclick="sqElegir('mudanza')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🚛 Mudanza</button>
+        <button onclick="sqElegir('banio')" style="padding:10px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.8rem;cursor:pointer;font-weight:700;">🚿 Baño completo</button>
+        <button onclick="sqElegir('cocina')" style="padding:10px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.8rem;cursor:pointer;font-weight:700;">🍳 Cocina</button>
+        <button onclick="sqElegir('reforma')" style="padding:10px;background:rgba(255,109,0,0.1);border:1px solid #FF6D00;border-radius:8px;color:#FF6D00;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">🏗️ Reforma integral</button>
+      </div>
+    </div>
+    <!-- PASO 2: dimensiones y complejidad -->
+    <div id="sq-paso2" style="display:none;">
+      <button onclick="sqReset()" style="background:none;border:none;color:#64748b;font-size:0.8rem;cursor:pointer;margin-bottom:12px;">← Volver</button>
+      <div id="sq-titulo-trabajo" style="font-size:1rem;font-weight:700;color:#00E5FF;margin-bottom:12px;"></div>
+      <div id="sq-fila-m2" style="margin-bottom:12px;">
+        <label style="font-size:0.8rem;color:#94a3b8;">Metros cuadrados (m²)</label>
+        <input id="sq-m2" type="number" value="4" min="1" max="200" style="width:100%;padding:8px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:1rem;margin-top:4px;">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.8rem;color:#94a3b8;">Calidad de materiales</label>
+        <select id="sq-complejidad" style="width:100%;padding:8px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.9rem;margin-top:4px;">
+          <option value="baja">Económico</option>
+          <option value="alta">Premium</option>
+        </select>
+      </div>
+      <button id="sq-btn-calcular" onclick="pedirSmartQuote()" style="width:100%;padding:12px;background:#00E5FF;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:16px;">⚡ Calcular presupuesto</button>
+    </div>
+    <!-- RESULTADO -->
     <div id="sq-result" style="display:none;">
       <div id="sq-content"></div>
       <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="sqReset()" style="flex:1;padding:10px;background:rgba(100,116,139,0.2);border:1px solid #64748b;border-radius:8px;color:#94a3b8;font-size:0.85rem;cursor:pointer;">← Nuevo presupuesto</button>
         <button onclick="document.getElementById('sq-modal').style.display='none'" style="flex:1;padding:10px;background:rgba(0,229,255,0.15);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.85rem;cursor:pointer;">👷 Pedir profesional</button>
       </div>
     </div>
