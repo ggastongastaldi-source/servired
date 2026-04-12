@@ -40,6 +40,9 @@ class AladdinEngine {
       costura_arreglos:       { baja: 0.8,   alta: 2.5   },
       desinfeccion_plagas:    { baja: 2.0,   alta: 6.0   },
       servicio_domestico:     { baja: 1.5,   alta: 4.0   },
+      camaras_seguridad:      { baja: 3.0,   alta: 10.0  },
+      alarmas:                { baja: 2.5,   alta: 8.0   },
+      domotica_automatizacion:{ baja: 4.0,   alta: 15.0  },
     };
   }
 
