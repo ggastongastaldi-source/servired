@@ -1,10 +1,31 @@
-#!/usr/bin/env bash
+#!/data/data/com.termux/files/usr/bin/bash
 
+# =========================
+# INPUT
+# =========================
 calidad="$1"
 largo="$2"
 ancho="$3"
 zona="$4"
+shift 4
+extras=("$@")
 
+# =========================
+# DEFAULTS AUTOMATICOS
+# =========================
+[ -z "$calidad" ] && calidad="medio"
+[ -z "$largo" ] && largo="2.5"
+[ -z "$ancho" ] && ancho="1.8"
+[ -z "$zona" ] && zona="caba"
+
+# SI NO HAY EXTRAS → BAÑO COMPLETO AUTOMATICO
+if [ ${#extras[@]} -eq 0 ]; then
+  extras=("ducha" "wc" "mampara" "lavabo")
+fi
+
+# =========================
+# CONFIG
+# =========================
 case "$calidad" in
   economico) material_m2=18000; mano_m2=22000 ;;
   medio) material_m2=28000; mano_m2=35000 ;;
@@ -15,19 +36,41 @@ esac
 case "$zona" in
   caba) factor=1.3 ;;
   gba) factor=1.1 ;;
-  interior) factor=1 ;;
+  interior) factor=1.0 ;;
   *) factor=1 ;;
 esac
 
+# =========================
+# CALCULO
+# =========================
 m2=$(echo "$largo * $ancho" | bc)
 
 materiales=$(printf "%.0f" $(echo "$m2 * $material_m2" | bc))
 mano=$(printf "%.0f" $(echo "$m2 * $mano_m2" | bc))
 
-subtotal=$(echo "$materiales + $mano" | bc)
+total_extras=0
+for extra in "${extras[@]}"; do
+  case "$extra" in
+    ducha) val=120000 ;;
+    wc) val=80000 ;;
+    lavabo) val=70000 ;;
+    mampara) val=90000 ;;
+    iluminacion) val=40000 ;;
+    ventilacion) val=30000 ;;
+    pintura) val=50000 ;;
+    durlock) val=25000 ;;
+    *) val=0 ;;
+  esac
+  total_extras=$((total_extras + val))
+done
+
+subtotal=$(echo "$materiales + $mano + $total_extras" | bc)
 total=$(echo "$subtotal * $factor" | bc)
 
 margen=$(printf "%.0f" $(echo "$total * 0.15" | bc))
 total=$(echo "$total + $margen + 10000" | bc)
 
+# =========================
+# OUTPUT
+# =========================
 echo "{\"total\": $total}"
