@@ -248,7 +248,7 @@ async function pedirSmartQuote(){
       <div style="background:#1a2236;border-radius:8px;padding:12px;margin-bottom:8px;">
         <div style="color:#00E5FF;font-weight:700;margin-bottom:6px;">📋 ${d.rubro||'Servicio'}</div>
         <div style="font-size:0.8rem;color:#94a3b8;margin-bottom:8px;">${d.descripcion||''}</div>
-        ${(d.materiales||[]).map(m=>`<div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span>${m.nombre}</span><span style="color:#10b981;">ARS ${(m.precio_estimado||0).toLocaleString('es-AR')}</span></div>`).join('')}
+
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
           <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Materiales</span><span>ARS ${(d.materiales||0).toLocaleString('es-AR')}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Mano de obra</span><span>ARS ${(d.mano_de_obra||0).toLocaleString('es-AR')}</span></div>
