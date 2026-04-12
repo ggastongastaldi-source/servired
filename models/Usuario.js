@@ -17,5 +17,6 @@ const usuarioSchema = new mongoose.Schema({
   tarifaHora: Number,
   trabajosCompletados: { type: Number, default: 0 },
   rating: { type: Number, default: 0 },
+  disponible: { type: Boolean, default: false },
 }, { timestamps: true });
 module.exports = mongoose.model('Usuario', usuarioSchema, 'usuarios');
