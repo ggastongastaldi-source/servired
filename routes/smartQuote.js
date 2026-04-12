@@ -79,7 +79,25 @@ try {
       parsed.puntos || 1
     );
 
-    return res.json({
+    
+let total_final = result.total_estimado || 0;
+
+try {
+  if (typeof engine !== "undefined" && parsed?.rubro) {
+    total_final = engine.calcularReal(
+      parsed.rubro,
+      parsed.nivel || 1,
+      parsed.metros || 1,
+      parsed.puntos || 1
+    );
+  }
+} catch(e) {
+  console.log("engine error", e);
+}
+
+result.total_estimado = Math.max(total_final, 1500000);
+
+return res.json({
       total_estimado: total_final,
       modo: "REAL_OVERRIDE_OK"
     });
