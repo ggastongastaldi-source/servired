@@ -52,7 +52,7 @@ try {
 } catch(e) { console.error('❌ routes/matching falló:', e.message); }
 
 try {
-  app.use('/api', require('./routes/smartQuote'));
+  app.use('/api/smart-quote', require('./routes/smartQuote'));
 } catch(e) { console.error('❌ routes/matching falló:', e.message); }
 
 app.get('/go',(req,res)=>{
