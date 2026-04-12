@@ -160,7 +160,7 @@ async function cargarWor(){
     const data=resp.data||resp;
     const el=document.getElementById('lista-wor');
     if(!data.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem">Sin trabajadores</div>';return;}
-    el.innerHTML=data.map(w=>`<div class="w-row"><div class="w-av">${(w.nombre||'?')[0]}</div><div class="w-info"><div class="w-name">${w.nombre||'—'}</div><div class="w-meta">${(w.especialidades||[]).join(', ')||'—'}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;"><div style="font-size:0.7rem;font-family:'Share Tech Mono',monospace"><span class="wdot ${w.online?'on':'off'}"></span>${w.online?'Online':'Offline'}</div>${w.estado==='PENDIENTE_VERIFICACION'?`<button class="btn-ver" onclick="verificar('${w._id}')">VERIFICAR</button>`:'<span style="font-size:0.65rem;color:var(--success)">✓ OK</span>'}</div></div>`).join('');
+    el.innerHTML=data.map(w=>`<div class="w-row" data-worker-id="${w._id}"><div class="w-av">${(w.nombre||'?')[0]}</div><div class="w-info"><div class="w-name">${w.nombre||'—'}</div><div class="w-meta">${(w.especialidades||[]).join(', ')||'—'}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;"><div style="font-size:0.7rem;font-family:'Share Tech Mono',monospace"><span class="wdot ${w.disponible?'on':'off'}"></span><span class="status-lbl">${w.disponible?'Online':'Offline'}</span></div>${w.estado==='PENDIENTE_VERIFICACION'?`<button class="btn-ver" onclick="verificar('${w._id}')">VERIFICAR</button>`:'<span style="font-size:0.65rem;color:var(--success)">✓ OK</span>'}</div></div>`).join('');
   }catch(e){}
 }
 
