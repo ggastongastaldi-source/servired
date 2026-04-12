@@ -79,7 +79,10 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
   <div class="estado-label" id="estado-txt">Buscando trabajador...</div>
 </div>
 <div class="pantalla active" id="pant-pedir">
-  <div id="mapa"></div>
+  <div style="padding:10px 16px;background:#0d1b2a;border-bottom:1px solid rgba(255,255,255,0.05);">
+  <button onclick="document.getElementById('sq-modal').style.display='block'" style="width:100%;padding:10px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,58,237,0.15));border:1px solid #00E5FF;border-radius:10px;color:#00E5FF;font-size:0.9rem;font-weight:700;cursor:pointer;">🧠 Presupuesto Inteligente — ¿Cuánto me va a costar?</button>
+</div>
+<div id="mapa"></div>
   <div class="panel">
     <div class="card">
       <div class="card-title">// ¿Qué servicio necesitás?</div>
@@ -213,6 +216,41 @@ function resetUI(){
   document.getElementById('worker-card').classList.remove('visible');
   if(markerTrab){mapa.removeLayer(markerTrab);markerTrab=null;}
   pedidoActivo=null;
+}
+
+async function pedirSmartQuote(){
+  const input = document.getElementById('sq-input').value.trim();
+  if(!input) return;
+  const btn = document.querySelector('#sq-modal button[onclick="pedirSmartQuote()"]');
+  btn.textContent = '⏳ Analizando...';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/smart-quote', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({request_text:input, property_type:'casa', urgency:'media'})
+    });
+    const d = await r.json();
+    const el = document.getElementById('sq-content');
+    el.innerHTML = `
+      <div style="background:#1a2236;border-radius:8px;padding:12px;margin-bottom:8px;">
+        <div style="color:#00E5FF;font-weight:700;margin-bottom:6px;">📋 ${d.rubro||'Servicio'}</div>
+        <div style="font-size:0.8rem;color:#94a3b8;margin-bottom:8px;">${d.descripcion||''}</div>
+        ${(d.materiales||[]).map(m=>`<div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span>${m.nombre}</span><span style="color:#10b981;">ARS ${(m.precio_estimado||0).toLocaleString('es-AR')}</span></div>`).join('')}
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Materiales</span><span>ARS ${(d.materiales_total||0).toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Mano de obra</span><span>ARS ${(d.mano_de_obra||0).toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Flete estimado</span><span>ARS ${(d.flete_estimado||0).toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-weight:700;margin-top:6px;color:#00E5FF;"><span>TOTAL ESTIMADO</span><span>ARS ${(d.total_estimado||0).toLocaleString('es-AR')}</span></div>
+        </div>
+      </div>`;
+    document.getElementById('sq-result').style.display='block';
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    btn.textContent = '⚡ Estimar presupuesto';
+    btn.disabled = false;
+  }
 }
 
 function cerrarSesion(){localStorage.removeItem('token');window.location='/';}

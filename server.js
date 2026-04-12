@@ -32,6 +32,9 @@ mongoose.connect(MONGO_URI, { family: 4 })
   .catch(e => console.error('❌ MongoDB error:', e.message));
 
 // ✅ Rutas con manejo de error de importación
+// Socket global para notificaciones
+global._io = io;
+
 try {
   app.use('/api/auth', require('./routes/auth'));
 } catch(e) { console.error('❌ routes/auth falló:', e.message); }
@@ -46,6 +49,10 @@ try {
 
 try {
   app.use('/api/matching', require('./routes/matching'));
+} catch(e) { console.error('❌ routes/matching falló:', e.message); }
+
+try {
+  app.use('/api', require('./routes/smartQuote'));
 } catch(e) { console.error('❌ routes/matching falló:', e.message); }
 
 app.get('/go',(req,res)=>{

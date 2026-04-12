@@ -129,7 +129,7 @@ let mapa,mWorkers={},revenue=0,comision=0,pedidosHoy=0,workersOnline=0,pedidosCo
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],12);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
 }
 
 function irTab(id,btn){
@@ -212,7 +212,17 @@ socket.on('ubicacion_trabajador',data=>{
   if(mWorkers[data.trabajadorId])mWorkers[data.trabajadorId].setLatLng([data.lat,data.lng]);
   else mWorkers[data.trabajadorId]=L.marker([data.lat,data.lng],{icon:ic}).addTo(mapa).bindPopup(data.nombre||'Trabajador');
 });
-socket.on('worker_online',data=>{workersOnline++;updKPIs();addEv('🟢',`${data.nombre||'Trabajador'} entró en línea`);});
+socket.on('trabajador_nuevo', data => {
+    addFeed('🆕 Nuevo trabajador: ' + data.nombre + ' — ' + data.email);
+    showToast('🆕 Nuevo trabajador: ' + data.nombre);
+    // Vibración
+    if(navigator.vibrate) navigator.vibrate([200,100,200]);
+    // Sonido
+    try{const ctx=new AudioContext();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);o.start();o.stop(ctx.currentTime+0.5);}catch(e){}
+    // Actualizar lista
+    setTimeout(loadWorkers, 1000);
+  });
+  socket.on('worker_online',data=>{workersOnline++;updKPIs();addEv('🟢',`${data.nombre||'Trabajador'} entró en línea`);});
 socket.on('worker_offline',data=>{workersOnline=Math.max(0,workersOnline-1);updKPIs();addEv('🔴',`${data.nombre||'Trabajador'} salió`);});
 
 function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
