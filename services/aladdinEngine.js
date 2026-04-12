@@ -6,7 +6,40 @@
 
 class AladdinEngine {
   constructor() {
-    this.VALOR_BASE_COMBO_ARS = parseFloat(process.env.BIGMAC_ARS || '7500');
+    
+// 🔥 ENGINE MERCADO REAL
+const FACTOR = 1.5;
+
+// Base realista
+this.VALOR_BASE_COMBO_ARS = 18000 * FACTOR;
+
+// Tabla mercado
+this.COEF = {
+  albanileria:  { base: 350000, m2: 45000 },
+  plomeria:     { base: 250000, punto: 120000 },
+  electricidad: { base: 250000, punto: 130000 },
+  durlock:      { base: 20000 },
+  pintura:      { ambiente: 300000 },
+};
+
+// 🧠 FUNCIÓN REAL
+this.calcularReal = function(rubro, nivel=1, metros=1, puntos=1){
+  let c = this.COEF[rubro];
+  if(!c) return 0;
+
+  let precio = 0;
+
+  if(c.base) precio += c.base * FACTOR * nivel;
+  if(c.m2) precio += c.m2 * metros * FACTOR;
+  if(c.punto) precio += c.punto * puntos * FACTOR;
+  if(c.ambiente) precio += c.ambiente * nivel * FACTOR;
+
+  // margen real mercado
+  precio *= 1.25;
+
+  return Math.round(precio);
+};
+
 
     // Coeficientes por rubro y complejidad (baja/alta)
     // 1.0 = 1 hora de trabajo estándar
@@ -64,7 +97,40 @@ class AladdinEngine {
   }
 
   setValorBaseARS(nuevoValor) {
-    this.VALOR_BASE_COMBO_ARS = nuevoValor;
+    
+// 🔥 ENGINE MERCADO REAL
+const FACTOR = 1.5;
+
+// Base realista
+this.VALOR_BASE_COMBO_ARS = 18000 * FACTOR;
+
+// Tabla mercado
+this.COEF = {
+  albanileria:  { base: 350000, m2: 45000 },
+  plomeria:     { base: 250000, punto: 120000 },
+  electricidad: { base: 250000, punto: 130000 },
+  durlock:      { base: 20000 },
+  pintura:      { ambiente: 300000 },
+};
+
+// 🧠 FUNCIÓN REAL
+this.calcularReal = function(rubro, nivel=1, metros=1, puntos=1){
+  let c = this.COEF[rubro];
+  if(!c) return 0;
+
+  let precio = 0;
+
+  if(c.base) precio += c.base * FACTOR * nivel;
+  if(c.m2) precio += c.m2 * metros * FACTOR;
+  if(c.punto) precio += c.punto * puntos * FACTOR;
+  if(c.ambiente) precio += c.ambiente * nivel * FACTOR;
+
+  // margen real mercado
+  precio *= 1.25;
+
+  return Math.round(precio);
+};
+
     console.log(`[Aladdín] Índice Big Mac actualizado: ${nuevoValor} ARS`);
   }
 

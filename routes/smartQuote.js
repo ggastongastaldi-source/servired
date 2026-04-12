@@ -8,28 +8,27 @@ router.post('/smart-quote', async (req, res) => {
     if (!request_text) return res.status(400).json({ error: 'Describí qué necesitás' });
 
     // Groq analiza el pedido y estima materiales
-    const prompt = `Sos un experto en construcción y servicios del hogar en Argentina, zona GBA/CABA 2024.
-El cliente necesita: "${request_text}" en un/a ${property_type}, urgencia: ${urgency}.
+    
+const FACTOR = 1.5;
 
-PRECIOS REALES ARS Argentina 2024 (usá estos como referencia):
-- Mano de obra plomero: 80.000-150.000 por trabajo simple, 300.000-800.000 obra completa
-- Mano de obra electricista: 80.000-200.000 por trabajo, 500.000+ instalación completa  
-- Mano de obra albañil: 100.000-300.000 por trabajo simple, 1.000.000+ obra grande
-- Durlock m2: 15.000-25.000 por m2 colocado
-- Pintura ambiente: 80.000-200.000
-- Limpieza hogar: 8.000-15.000 por hora
-- Materiales: precios de ferretería/corralón GBA 2024
+const prompt = `Sos un clasificador de trabajos del hogar en Argentina.
+NO estimes precios.
 
-Respondé SOLO con JSON sin markdown:
+Detectá:
+- rubro (albanileria, plomeria, electricidad, durlock, pintura)
+- nivel (1=chico,2=medio,3=grande)
+- metros (si aplica)
+- puntos (si aplica)
+
+Respondé SOLO JSON:
 {
-  "rubro": "nombre del rubro",
-  "rubroKey": "clave_del_rubro",
-  "materiales": [{"nombre":"...","precio_estimado":123456}],
-  "mano_de_obra_estimada": 1234567,
-  "descripcion": "descripción breve del trabajo"
-}
+ "rubro":"...",
+ "nivel":1,
+ "metros":1,
+ "puntos":1,
+ "descripcion":"..."
+}`;
 
-Los precios deben ser REALISTAS para Argentina 2024. Sin explicaciones.`;
 
     const raw = await groqService.inferir(prompt, 500);
     let data;
