@@ -260,10 +260,47 @@ const SQ_TRABAJOS={
 
 let sqTrabajo=null,sqM2=4,sqComplejidad='baja';
 
+function sqModoTexto(){
+  document.getElementById('sq-paso1').style.display='none';
+  document.getElementById('sq-paso3').style.display='block';
+  document.getElementById('sq-result').style.display='none';
+}
+
+async function pedirGroq(){
+  const texto=document.getElementById('sq-texto-libre').value.trim();
+  if(!texto)return;
+  const btn=document.getElementById('sq-btn-groq');
+  btn.textContent='⏳ Analizando con IA...';btn.disabled=true;
+  try{
+    const res=await fetch('/api/smart-quote',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body:JSON.stringify({texto})
+    });
+    const d=await res.json();
+    if(!d.ok)throw new Error(d.error||'Error IA');
+    const lineas=(d.rubros||[]).map(r=>`<div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span>🔹 ${r.nombre}</span><span style="color:#10b981;">ARS ${(r.precio_mano_obra||0).toLocaleString('es-AR')}</span></div>`).join('');
+    document.getElementById('sq-content').innerHTML=`
+      <div style="background:#1a2236;border-radius:8px;padding:12px;">
+        <div style="color:#a78bfa;font-weight:700;margin-bottom:8px;">✏️ ${d.descripcion||'Trabajo personalizado'}</div>
+        ${lineas}
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);">
+          <div style="display:flex;justify-content:space-between;font-weight:700;color:#00E5FF;font-size:1rem;"><span>TOTAL MANO DE OBRA</span><span>ARS ${(d.total_mano_obra||0).toLocaleString('es-AR')}</span></div>
+        </div>
+        <div style="font-size:0.7rem;color:#64748b;margin-top:8px;">${d.nota||''}</div>
+        <div style="font-size:0.65rem;color:#475569;margin-top:4px;">Confianza estimación: ${d.confianza||'media'}</div>
+      </div>`;
+    document.getElementById('sq-result').style.display='block';
+    document.getElementById('sq-paso3').style.display='none';
+  }catch(e){alert('Error: '+e.message);}
+  finally{btn.textContent='🧠 Calcular con IA';btn.disabled=false;}
+}
+
 function sqReset(){
   sqTrabajo=null;
   document.getElementById('sq-paso1').style.display='block';
   document.getElementById('sq-paso2').style.display='none';
+  document.getElementById('sq-paso3').style.display='none';
   document.getElementById('sq-result').style.display='none';
 }
 
@@ -385,7 +422,15 @@ window.addEventListener('DOMContentLoaded',initMapa);
         <button onclick="sqElegir('banio')" style="padding:10px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.8rem;cursor:pointer;font-weight:700;">🚿 Baño completo</button>
         <button onclick="sqElegir('cocina')" style="padding:10px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.8rem;cursor:pointer;font-weight:700;">🍳 Cocina</button>
         <button onclick="sqElegir('reforma')" style="padding:10px;background:rgba(255,109,0,0.1);border:1px solid #FF6D00;border-radius:8px;color:#FF6D00;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">🏗️ Reforma integral</button>
+        <button onclick="sqModoTexto()" style="padding:10px;background:rgba(124,58,237,0.15);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">✏️ Describir mi trabajo (IA)</button>
       </div>
+    </div>
+    <!-- PASO 3: texto libre con Groq -->
+    <div id="sq-paso3" style="display:none;">
+      <button onclick="sqReset()" style="background:none;border:none;color:#64748b;font-size:0.8rem;cursor:pointer;margin-bottom:12px;">← Volver</button>
+      <div style="font-size:1rem;font-weight:700;color:#a78bfa;margin-bottom:12px;">✏️ Describí tu trabajo</div>
+      <textarea id="sq-texto-libre" placeholder="Ej: Necesito instalar cámaras de seguridad en la entrada y el garaje, con grabación en la nube..." style="width:100%;padding:12px;background:#1a2236;border:1px solid rgba(124,58,237,0.4);border-radius:10px;color:#e2e8f0;font-size:0.9rem;resize:none;height:100px;margin-bottom:12px;"></textarea>
+      <button id="sq-btn-groq" onclick="pedirGroq()" style="width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">🧠 Calcular con IA</button>
     </div>
     <!-- PASO 2: dimensiones y complejidad -->
     <div id="sq-paso2" style="display:none;">
