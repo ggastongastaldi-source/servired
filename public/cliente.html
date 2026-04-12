@@ -384,7 +384,7 @@ async function pedirSmartQuote(){
       const res=await fetch('/api/smart-quote',{
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-        body:JSON.stringify({rubro:item.r,complejidad:sqComplejidad})
+        body:JSON.stringify({rubro:item.r,complejidad:sqComplejidad,descripcion:document.getElementById('sq-descripcion')?.value||''})
       });
       const d=await res.json();
       if(d.ok){
@@ -476,12 +476,25 @@ window.addEventListener('DOMContentLoaded',initMapa);
         <button onclick="sqElegir('cerrajeria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔑 Cerrajería</button>
         <button onclick="sqElegir('jardineria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🌿 Jardinería</button>
         <button onclick="sqElegir('mudanza')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🚛 Mudanza</button>
+        <button onclick="sqElegir('albanileria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🧱 Albañilería</button>
+        <button onclick="sqElegir('techistas')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🏚️ Techista</button>
+        <button onclick="sqElegir('herreria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">⚒️ Herrería</button>
+        <button onclick="sqElegir('carpinteria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🪚 Carpintería</button>
+        <button onclick="sqElegir('durlock')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🪣 Durlock</button>
+        <button onclick="sqElegir('revestimientos')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🧱 Revest. PVC</button>
+        <button onclick="sqElegir('antihumedad')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">💧 Antihumedad</button>
+        <button onclick="sqElegir('climatizacion')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">❄️ Climatización</button>
+        <button onclick="sqElegir('mecanica')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔩 Mecánica</button>
+        <button onclick="sqElegir('consorcios')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🏢 Consorcios</button>
+        <button onclick="sqElegir('fumigacion')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🦟 Fumigación</button>
+        <button onclick="sqElegir('peluqueria_canina')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🐕 Peluq. Canina</button>
+        <button onclick="sqElegir('paneles_solares')" style="padding:10px;background:rgba(255,200,0,0.1);border:1px solid #ffc800;border-radius:8px;color:#ffc800;font-size:0.8rem;cursor:pointer;font-weight:700;">☀️ Paneles Solares</button>
         <button onclick="sqElegir('banio')" style="padding:10px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.8rem;cursor:pointer;font-weight:700;">🚿 Baño completo</button>
         <button onclick="sqElegir('cocina')" style="padding:10px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.8rem;cursor:pointer;font-weight:700;">🍳 Cocina</button>
+        <button onclick="sqElegir('camaras')" style="padding:10px;background:rgba(124,58,237,0.1);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;">📷 Cámaras</button>
+        <button onclick="sqElegir('alarmas')" style="padding:10px;background:rgba(124,58,237,0.1);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;">🚨 Alarmas</button>
+        <button onclick="sqElegir('domotica')" style="padding:10px;background:rgba(124,58,237,0.1);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;font-weight:700;">🏠 Domótica</button>
         <button onclick="sqElegir('reforma')" style="padding:10px;background:rgba(255,109,0,0.1);border:1px solid #FF6D00;border-radius:8px;color:#FF6D00;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">🏗️ Reforma integral</button>
-        <button onclick="sqElegir('camaras')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">📷 Cámaras</button>
-        <button onclick="sqElegir('alarmas')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🚨 Alarmas</button>
-        <button onclick="sqElegir('domotica')" style="padding:10px;background:rgba(124,58,237,0.1);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">🏠 Domótica/Automatización</button>
         <button onclick="sqModoTexto()" style="padding:10px;background:rgba(124,58,237,0.15);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">✏️ Describir mi trabajo (IA)</button>
       </div>
     </div>
@@ -496,6 +509,10 @@ window.addEventListener('DOMContentLoaded',initMapa);
     <div id="sq-paso2" style="display:none;">
       <button onclick="sqReset()" style="background:none;border:none;color:#64748b;font-size:0.8rem;cursor:pointer;margin-bottom:12px;">← Volver</button>
       <div id="sq-titulo-trabajo" style="font-size:1rem;font-weight:700;color:#00E5FF;margin-bottom:12px;"></div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.8rem;color:#94a3b8;">¿Cuál es el problema? (opcional pero mejora el presupuesto)</label>
+        <textarea id="sq-descripcion" rows="2" placeholder="Ej: Se me rompió un caño bajo la pileta, hay pérdida de agua..." style="width:100%;padding:8px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.85rem;margin-top:4px;resize:none;box-sizing:border-box;"></textarea>
+      </div>
       <div id="sq-fila-m2" style="margin-bottom:12px;">
         <label style="font-size:0.8rem;color:#94a3b8;">Metros cuadrados (m²)</label>
         <input id="sq-m2" type="number" value="4" min="1" max="200" style="width:100%;padding:8px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:1rem;margin-top:4px;">
