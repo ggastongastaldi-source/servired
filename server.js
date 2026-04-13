@@ -9,6 +9,7 @@ const dns = require('dns');
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const app = express();
+require('./services/tensionScheduler');
 const server = http.createServer(app);
 const io = socketio(server, { cors: { origin: '*' } });
 
