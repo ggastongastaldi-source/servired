@@ -92,6 +92,59 @@ select option{background:#1a2236;color:#e2e8f0;}
 .modal{background:#111827 !important;}
 .modal-bg{backdrop-filter:blur(4px);}
 
+
+/* ── TÉRMINOS Y CONDICIONES MODAL ── */
+.tc-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(6px);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;}
+.tc-overlay.show{display:flex;animation:tcFadeIn .3s ease;}
+@keyframes tcFadeIn{from{opacity:0}to{opacity:1}}
+.tc-modal{background:#0d1117;border:1px solid rgba(0,229,255,0.18);border-radius:16px;width:100%;max-width:580px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 60px rgba(0,229,255,0.08);animation:tcSlideUp .35s cubic-bezier(0.22,1,0.36,1);}
+@keyframes tcSlideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.tc-hdr{padding:18px 22px 14px;border-bottom:1px solid rgba(0,229,255,0.12);flex-shrink:0;background:linear-gradient(135deg,#0d1117,#101820);}
+.tc-hdr-brand{font-size:17px;font-weight:700;letter-spacing:1px;color:#e2e8f0;font-family:'Share Tech Mono',monospace;}
+.tc-hdr-brand span{color:#39ff14;}
+.tc-hdr-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#00E5FF;margin-top:3px;}
+.tc-hdr-ver{font-size:10px;color:#64748b;font-family:'Share Tech Mono',monospace;margin-top:2px;}
+.tc-prog-wrap{padding:10px 22px 0;flex-shrink:0;background:#0d1117;}
+.tc-prog-row{display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-bottom:4px;}
+.tc-prog-row span{color:#00E5FF;font-family:'Share Tech Mono',monospace;}
+.tc-prog-track{height:3px;background:#1e2a33;border-radius:99px;overflow:hidden;}
+.tc-prog-fill{height:100%;width:0%;background:linear-gradient(90deg,#00E5FF,#39ff14);border-radius:99px;transition:width .12s ease;box-shadow:0 0 6px #00E5FF;}
+.tc-hint{display:flex;align-items:center;gap:7px;font-size:11px;color:#64748b;padding:7px 22px 0;flex-shrink:0;transition:opacity .4s;}
+.tc-hint.hidden{opacity:0;pointer-events:none;}
+.tc-body{flex:1;overflow-y:auto;padding:18px 22px;scroll-behavior:smooth;}
+.tc-body::-webkit-scrollbar{width:4px;}
+.tc-body::-webkit-scrollbar-track{background:#1e2a33;}
+.tc-body::-webkit-scrollbar-thumb{background:#00E5FF;border-radius:99px;}
+.tc-sec{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.tc-sec:last-child{border-bottom:none;margin-bottom:6px;}
+.tc-sec-num{font-family:'Share Tech Mono',monospace;font-size:9px;color:#FF6D00;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+.tc-sec-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;}
+.tc-sec-body{font-size:12px;line-height:1.7;color:#94a3b8;}
+.tc-sec-body ul{list-style:none;margin-top:6px;}
+.tc-sec-body ul li{padding:3px 0 3px 14px;position:relative;font-size:11.5px;color:#64748b;}
+.tc-sec-body ul li::before{content:'▸';position:absolute;left:0;color:#00E5FF;font-size:9px;top:5px;}
+.tc-hl-o{color:#FF6D00;font-weight:600;}
+.tc-hl-g{color:#39ff14;font-weight:600;}
+.tc-hl-c{color:#00E5FF;font-weight:600;}
+.tc-footer{padding:14px 22px 18px;border-top:1px solid rgba(0,229,255,0.12);flex-shrink:0;background:#0d1117;}
+.tc-chk-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer;opacity:.35;transition:opacity .3s;pointer-events:none;}
+.tc-chk-row.unlocked{opacity:1;pointer-events:auto;}
+.tc-chk-box{width:18px;height:18px;border:2px solid #00E5FF;border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.tc-chk-box.checked{background:#00E5FF;}
+.tc-chk-box svg{display:none;width:11px;height:11px;color:#0a0d10;}
+.tc-chk-box.checked svg{display:block;}
+.tc-chk-label{font-size:11.5px;line-height:1.5;color:#94a3b8;user-select:none;}
+.tc-btn-aceptar{width:100%;padding:13px;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .25s;}
+.tc-btn-aceptar:disabled{background:#1a2230;color:#3a4a55;cursor:not-allowed;}
+.tc-btn-aceptar:not(:disabled){background:linear-gradient(135deg,#00b8d4,#39ff14);color:#0a0d10;box-shadow:0 0 20px rgba(57,255,20,0.25);}
+.tc-btn-aceptar:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(57,255,20,0.4);}
+.tc-ok{display:none;text-align:center;padding:36px 22px;flex-direction:column;align-items:center;gap:10px;}
+.tc-ok.show{display:flex;}
+.tc-ok-icon{width:56px;height:56px;border-radius:50%;background:rgba(57,255,20,0.1);border:2px solid #39ff14;display:flex;align-items:center;justify-content:center;animation:tcPulse 1.5s ease infinite;}
+@keyframes tcPulse{0%,100%{box-shadow:0 0 0 0 rgba(57,255,20,0.3)}50%{box-shadow:0 0 0 10px rgba(57,255,20,0)}}
+.tc-ok h3{font-size:17px;color:#39ff14;}
+.tc-ok p{font-size:12px;color:#64748b;}
+
 </style>
 </head>
 <body>
@@ -390,7 +443,7 @@ function sqReset(){
   document.getElementById('sq-result').style.display='none';
 }
 
-function sqElegir(key){
+function sqElegir(key){if(localStorage.getItem('srv_tc_v3')!=='1'){tcMostrar(function(){sqElegir(key);});return;}
   sqTrabajo=key;
   document.getElementById('sq-paso1').style.display='none';
   document.getElementById('sq-paso2').style.display='block';
@@ -484,6 +537,43 @@ function irPant(id,btn){
 function toast(msg,dur=3500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
 window.addEventListener('DOMContentLoaded',initMapa);
+
+// ── TÉRMINOS Y CONDICIONES ──
+var _tcChecked=false,_tcScrolled=false,_tcCb=null;
+function tcMostrar(cb){
+  if(localStorage.getItem('srv_tc_v3')==='1'){cb&&cb();return;}
+  _tcCb=cb;_tcChecked=false;_tcScrolled=false;
+  document.getElementById('tcFill').style.width='0%';
+  document.getElementById('tcPct').textContent='0%';
+  document.getElementById('tcHint').classList.remove('hidden');
+  document.getElementById('tcChkRow').classList.remove('unlocked');
+  document.getElementById('tcChkBox').classList.remove('checked');
+  document.getElementById('tcBtnAceptar').disabled=true;
+  document.getElementById('tcFooter').style.display='';
+  document.getElementById('tcOk').classList.remove('show');
+  document.getElementById('tcBody').scrollTop=0;
+  document.getElementById('tcOverlay').classList.add('show');
+}
+(function(){
+  var b=document.getElementById('tcBody');
+  if(!b)return;
+  b.addEventListener('scroll',function(){
+    var r=b.scrollTop/(b.scrollHeight-b.clientHeight);
+    var p=Math.min(100,Math.round(r*100));
+    document.getElementById('tcFill').style.width=p+'%';
+    document.getElementById('tcPct').textContent=p+'%';
+    if(p>=98){document.getElementById('tcHint').classList.add('hidden');document.getElementById('tcChkRow').classList.add('unlocked');_tcScrolled=true;tcUpdateBtn();}
+  });
+})();
+function tcToggleChk(){if(!_tcScrolled)return;_tcChecked=!_tcChecked;document.getElementById('tcChkBox').classList.toggle('checked',_tcChecked);tcUpdateBtn();}
+function tcUpdateBtn(){document.getElementById('tcBtnAceptar').disabled=!(_tcScrolled&&_tcChecked);}
+function tcAceptar(){
+  localStorage.setItem('srv_tc_v3','1');
+  document.getElementById('tcFooter').style.display='none';
+  document.getElementById('tcOk').classList.add('show');
+  setTimeout(function(){document.getElementById('tcOverlay').classList.remove('show');if(_tcCb)_tcCb();},1600);
+}
+
 </script>
 
 <!-- SMART QUOTE MODAL -->
@@ -565,5 +655,48 @@ window.addEventListener('DOMContentLoaded',initMapa);
     </div>
   </div>
 </div>
+
+<!-- MODAL TÉRMINOS Y CONDICIONES SERVIRED v3.0 -->
+<div class="tc-overlay" id="tcOverlay">
+  <div class="tc-modal">
+    <div class="tc-hdr">
+      <div class="tc-hdr-brand">SERVI<span>RED</span></div>
+      <div class="tc-hdr-sub">Términos y Condiciones de Uso</div>
+      <div class="tc-hdr-ver">Versión 3.0 · República Argentina</div>
+    </div>
+    <div class="tc-prog-wrap">
+      <div class="tc-prog-row">Leído <span id="tcPct">0%</span></div>
+      <div class="tc-prog-track"><div class="tc-prog-fill" id="tcFill"></div></div>
+    </div>
+    <div class="tc-hint" id="tcHint">▼ Desplazate hasta el final para aceptar</div>
+    <div class="tc-body" id="tcBody">
+      <div class="tc-sec"><div class="tc-sec-num">Art. 01</div><div class="tc-sec-title">Aceptación e Integración</div><div class="tc-sec-body">El acceso, registro y uso de ServiRed implica la aceptación total, expresa e irrevocable de los presentes Términos. Constituye un <span class="tc-hl-c">contrato vinculante</span> entre ServiRed y el usuario en rol de <span class="tc-hl-c">Cliente</span> o <span class="tc-hl-c">Técnico</span>.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 02</div><div class="tc-sec-title">Objeto y Rol de la Plataforma</div><div class="tc-sec-body">ServiRed es un <span class="tc-hl-g">intermediario tecnológico independiente</span>. Facilita el contacto entre partes pero no es empleador, contratista ni agencia de empleo. La calidad del servicio es responsabilidad exclusiva de las partes.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 03</div><div class="tc-sec-title">Naturaleza de la Relación — Blindaje Laboral</div><div class="tc-sec-body">La relación con los Técnicos es <span class="tc-hl-o">comercial y autónoma</span>.<ul><li>Sin subordinación jurídica, horaria ni económica</li><li>Técnico responsable de AFIP (Monotributo/Autónomo) y seguros personales</li><li>Renuncia expresa a reclamar relación de dependencia contra ServiRed</li></ul></div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 04</div><div class="tc-sec-title">Herramientas — Motor Aladdín</div><div class="tc-sec-body">Las herramientas de software como <span class="tc-hl-o">"Aladdín"</span> y los sistemas de matching proveen valores <span class="tc-hl-c">estimativos y no vinculantes</span> hasta acuerdo expreso entre partes.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 05</div><div class="tc-sec-title">Comisión</div><div class="tc-sec-body">ServiRed percibe una comisión del <span class="tc-hl-g">20%</span> por operación. Los pagos son procesados por pasarelas externas. ServiRed no custodia fondos como entidad bancaria.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 06</div><div class="tc-sec-title">Cláusula Antielusión</div><div class="tc-sec-body">Está <span class="tc-hl-o">estrictamente prohibido</span> concretar servicios fuera de la plataforma tras el contacto inicial.<ul><li>Suspensión permanente de cuentas</li><li>Penalidad del 100% de la comisión evadida + daños y perjuicios</li></ul></div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 07</div><div class="tc-sec-title">Propiedad Intelectual</div><div class="tc-sec-body">Los algoritmos <span class="tc-hl-o">"Aladdín"</span> y <span class="tc-hl-c">"Glóbulo Rojo"</span> son propiedad exclusiva de ServiRed. Prohibida la ingeniería inversa, copia o extracción de datos.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 08</div><div class="tc-sec-title">Limitación de Responsabilidad</div><div class="tc-sec-body">ServiRed no responde por daños materiales o personales surgidos del servicio. Ante reclamo fundado, la responsabilidad se limita al <span class="tc-hl-c">monto de la comisión</span> de la operación en cuestión.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 09</div><div class="tc-sec-title">Privacidad — Ley 25.326</div><div class="tc-sec-body">El usuario autoriza el tratamiento de datos personales para fines operativos y mejora de algoritmos, conforme a la <span class="tc-hl-g">Ley 25.326</span> de la República Argentina.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 10</div><div class="tc-sec-title">Indemnidad</div><div class="tc-sec-body">El usuario mantiene indemne a ServiRed frente a reclamos judiciales, extrajudiciales o sanciones de organismos públicos derivadas de su conducta.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 11</div><div class="tc-sec-title">Jurisdicción</div><div class="tc-sec-body">Controversias se dirimen ante los <span class="tc-hl-c">Tribunales Ordinarios de CABA</span>, renunciando a cualquier otro fuero. Rige la legislación argentina.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 12</div><div class="tc-sec-title">Modificaciones</div><div class="tc-sec-body">ServiRed puede modificar estos términos. El uso continuado implica <span class="tc-hl-g">aceptación de los cambios</span>.</div></div>
+    </div>
+    <div class="tc-ok" id="tcOk">
+      <div class="tc-ok-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h3>¡Términos aceptados!</h3>
+      <p>Continuando...</p>
+    </div>
+    <div class="tc-footer" id="tcFooter">
+      <div class="tc-chk-row" id="tcChkRow" onclick="tcToggleChk()">
+        <div class="tc-chk-box" id="tcChkBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="tc-chk-label">He leído y acepto los Términos y Condiciones de ServiRed v3.0, incluyendo la cláusula de naturaleza autónoma y la política de privacidad.</div>
+      </div>
+      <button class="tc-btn-aceptar" id="tcBtnAceptar" disabled onclick="tcAceptar()">ACEPTAR Y CONTINUAR</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
