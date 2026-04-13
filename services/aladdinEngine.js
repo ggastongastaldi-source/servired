@@ -9,7 +9,7 @@ class AladdinEngine {
   constructor() {
 
     // Precio combo Big Mac Argentina - Abril 2026
-    this.VALOR_BASE_COMBO_ARS = 6500;
+    this.VALOR_BASE_COMBO_ARS = 9000;
 
     // Coeficientes por rubro y complejidad
     this.COEFICIENTES = {
