@@ -1,9 +1,12 @@
-const { correrActualizacion } = require('./preciosMarket');
+const { correrActualizacion, correrActualizacionMateriales } = require('./preciosMarket');
 
 // Ejecutar al arrancar el servidor (después de 30s para no bloquear startup)
 setTimeout(async () => {
   console.log('[scheduler] 🕐 Ejecutando actualización inicial de precios...');
-  try { await correrActualizacion(); }
+  try {
+    await correrActualizacion();
+    await correrActualizacionMateriales();
+  }
   catch(e) { console.error('[scheduler] Error en actualización inicial:', e.message); }
 }, 30000);
 
@@ -11,7 +14,10 @@ setTimeout(async () => {
 const SEMANA_MS = 7 * 24 * 60 * 60 * 1000;
 setInterval(async () => {
   console.log('[scheduler] 🔄 Actualización semanal de precios de mercado...');
-  try { await correrActualizacion(); }
+  try {
+    await correrActualizacion();
+    await correrActualizacionMateriales();
+  }
   catch(e) { console.error('[scheduler] Error en actualización semanal:', e.message); }
 }, SEMANA_MS);
 
