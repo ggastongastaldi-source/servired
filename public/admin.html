@@ -21,31 +21,22 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px;}
 .kpi{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px;text-align:center;position:relative;overflow:hidden;}
 .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.kpi.c::after{background:var(--cyan);}
-.kpi.o::after{background:var(--orange);}
-.kpi.g::after{background:var(--success);}
-.kpi.p::after{background:var(--purple);}
+.kpi.c::after{background:var(--cyan);}.kpi.o::after{background:var(--orange);}.kpi.g::after{background:var(--success);}.kpi.p::after{background:var(--purple);}
 .kpi-num{font-size:1.3rem;font-weight:700;font-family:'Share Tech Mono',monospace;text-shadow:0 0 10px currentColor;}
-.kpi.c .kpi-num{color:var(--cyan);}
-.kpi.o .kpi-num{color:var(--orange);}
-.kpi.g .kpi-num{color:var(--success);}
-.kpi.p .kpi-num{color:var(--purple);}
+.kpi.c .kpi-num{color:var(--cyan);}.kpi.o .kpi-num{color:var(--orange);}.kpi.g .kpi-num{color:var(--success);}.kpi.p .kpi-num{color:var(--purple);}
 .kpi-lbl{font-size:0.55rem;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-top:2px;}
 #mapa{width:100%;height:220px;}
 .legend{display:flex;gap:14px;padding:8px 16px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.04);}
 .leg-i{display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--muted);}
 .leg-d{width:8px;height:8px;border-radius:50%;}
-.tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.07);background:var(--surface);}
-.tab{flex:1;padding:10px;text-align:center;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:#cbd5e1;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Share Tech Mono',monospace;}
+.tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.07);background:var(--surface);overflow-x:auto;}
+.tab{flex:1;min-width:60px;padding:10px 6px;text-align:center;font-size:0.65rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:#cbd5e1;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Share Tech Mono',monospace;white-space:nowrap;}
 .tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
-.tc{display:none;padding:12px 16px 30px;}
-.tc.active{display:block;}
+.tc{display:none;padding:12px 16px 30px;}.tc.active{display:block;}
 .sec-title{font-size:0.65rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px;font-family:'Share Tech Mono',monospace;}
 .p-row{display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:6px;}
 .p-id{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--muted);width:50px;flex-shrink:0;}
-.p-info{flex:1;}
-.p-srv{font-weight:600;font-size:0.85rem;}
-.p-meta{font-size:0.7rem;color:var(--muted);}
+.p-info{flex:1;}.p-srv{font-weight:600;font-size:0.85rem;}.p-meta{font-size:0.7rem;color:var(--muted);}
 .badge{padding:2px 8px;border-radius:999px;font-size:0.6rem;font-weight:700;text-transform:uppercase;font-family:'Share Tech Mono',monospace;flex-shrink:0;}
 .badge.PENDIENTE{background:rgba(245,158,11,0.15);color:var(--warn);border:1px solid var(--warn);}
 .badge.ACEPTADA{background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid var(--cyan);}
@@ -55,77 +46,173 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .badge.CANCELADA{background:rgba(239,68,68,0.1);color:var(--danger);border:1px solid var(--danger);}
 .w-row{display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:6px;}
 .w-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),#0080ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:0.85rem;flex-shrink:0;}
-.w-info{flex:1;}
-.w-name{font-weight:600;font-size:0.9rem;}
-.w-meta{font-size:0.7rem;color:var(--muted);}
+.w-info{flex:1;}.w-name{font-weight:600;font-size:0.9rem;}.w-meta{font-size:0.7rem;color:var(--muted);}
 .wdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
-.wdot.on{background:var(--success);animation:pulse 1.5s infinite;}
-.wdot.off{background:var(--muted);}
+.wdot.on{background:var(--success);animation:pulse 1.5s infinite;}.wdot.off{background:var(--muted);}
 .btn-ver{padding:4px 10px;background:rgba(0,229,255,0.1);border:1px solid var(--cyan);border-radius:6px;color:var(--cyan);font-size:0.65rem;font-family:'Share Tech Mono',monospace;cursor:pointer;font-weight:700;}
+.btn-danger{padding:4px 10px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:6px;color:var(--danger);font-size:0.65rem;font-family:'Share Tech Mono',monospace;cursor:pointer;font-weight:700;}
+.btn-warn{padding:4px 10px;background:rgba(245,158,11,0.1);border:1px solid var(--warn);border-radius:6px;color:var(--warn);font-size:0.65rem;font-family:'Share Tech Mono',monospace;cursor:pointer;font-weight:700;}
 .fin-row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:6px;}
 .fin-v{font-family:'Share Tech Mono',monospace;font-weight:700;}
-.fin-v.pos{color:var(--success);}
-.fin-v.neg{color:var(--danger);}
-.fin-v.neu{color:var(--cyan);}
+.fin-v.pos{color:var(--success);}.fin-v.neg{color:var(--danger);}.fin-v.neu{color:var(--cyan);}
 .feed{max-height:200px;overflow-y:auto;}
 .ev{display:flex;align-items:flex-start;gap:8px;padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.78rem;}
 .ev-t{color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:0.65rem;white-space:nowrap;}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--cyan);border-radius:10px;padding:10px 18px;font-size:0.85rem;z-index:300;transition:transform 0.3s;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
+/* COLA DE PEDIDOS */
+.cola-row{padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:8px;border-left:3px solid var(--warn);}
+.cola-row.urgente{border-left-color:var(--danger);animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.6}}
+.cola-timer{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--warn);}
+.cola-timer.urgente{color:var(--danger);}
+.cola-actions{display:flex;gap:6px;margin-top:8px;}
+/* HEAT MAP RUBROS */
+.heat-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.heat-label{font-size:0.8rem;width:140px;flex-shrink:0;}
+.heat-bar-wrap{flex:1;background:rgba(255,255,255,0.06);border-radius:4px;height:8px;overflow:hidden;}
+.heat-bar{height:100%;border-radius:4px;transition:width 0.5s;}
+.heat-val{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--cyan);width:30px;text-align:right;}
+/* CONVERSION */
+.conv-card{background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:10px;}
+.conv-title{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.conv-num{font-size:1.8rem;font-weight:700;font-family:'Share Tech Mono',monospace;color:var(--cyan);}
+.conv-sub{font-size:0.75rem;color:var(--muted);margin-top:2px;}
+.conv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+/* ALERTAS */
+.alerta{padding:10px 12px;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;gap:10px;font-size:0.82rem;}
+.alerta.warn{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);}
+.alerta.danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);}
+.alerta.info{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);}
 </style>
 </head>
 <body>
 <div class="header">
   <div class="logo">SERV<span>ired</span> // COMMAND CENTER</div>
-  <div style="display:flex;align-items:center;gap:10px;"><div class="live-badge"><div class="ldot"></div>LIVE</div><button onclick="logout()" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:4px 12px;border-radius:6px;font-size:0.7rem;font-family:'Share Tech Mono',monospace;cursor:pointer;">⏻ SALIR</button></div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="live-badge"><div class="ldot"></div>LIVE</div>
+    <button onclick="logout()" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:4px 12px;border-radius:6px;font-size:0.7rem;font-family:'Share Tech Mono',monospace;cursor:pointer;">⏻ SALIR</button>
+  </div>
 </div>
+
 <div class="kpi-row">
-  <div class="kpi c"><div class="kpi-num" id="k-ped">0</div><div class="kpi-lbl">Pedidos hoy</div></div>
-  <div class="kpi g"><div class="kpi-num" id="k-onl">0</div><div class="kpi-lbl">Online</div></div>
-  <div class="kpi o"><div class="kpi-num" id="k-rev">$0</div><div class="kpi-lbl">Revenue</div></div>
+  <div class="kpi c"><div class="kpi-num" id="k-ped">0</div><div class="kpi-lbl">Pedidos Hoy</div></div>
+  <div class="kpi o"><div class="kpi-num" id="k-onl">0</div><div class="kpi-lbl">Online</div></div>
+  <div class="kpi g"><div class="kpi-num" id="k-rev">$0</div><div class="kpi-lbl">Revenue</div></div>
   <div class="kpi p"><div class="kpi-num" id="k-com">$0</div><div class="kpi-lbl">Comisión</div></div>
 </div>
+
 <div id="mapa"></div>
 <div class="legend">
   <div class="leg-i"><div class="leg-d" style="background:#00E5FF"></div>Trabajador</div>
   <div class="leg-i"><div class="leg-d" style="background:#FF6D00"></div>Cliente</div>
   <div class="leg-i"><div class="leg-d" style="background:#10b981"></div>Completado</div>
 </div>
+
 <div class="tabs">
-  <div class="tab active" onclick="irTab('pedidos',this)">Pedidos</div>
-  <div class="tab" onclick="irTab('workers',this)">Workers</div>
-  <div class="tab" onclick="irTab('finanzas',this)">Finanzas</div>
-  <div class="tab" onclick="irTab('feed',this)">Live</div>
+  <div class="tab active" onclick="irTab('pedidos',this)">PEDIDOS</div>
+  <div class="tab" onclick="irTab('workers',this)">WORKERS</div>
+  <div class="tab" onclick="irTab('cola',this)">COLA</div>
+  <div class="tab" onclick="irTab('intel',this)">INTEL</div>
+  <div class="tab" onclick="irTab('finanzas',this)">FINANZAS</div>
+  <div class="tab" onclick="irTab('live',this)">LIVE</div>
 </div>
+
+<!-- TAB PEDIDOS -->
 <div class="tc active" id="tc-pedidos">
-  <div class="sec-title">// Pedidos activos</div>
-  <div id="lista-ped"><div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem">Cargando...</div></div>
+  <div class="sec-title">// Pedidos recientes</div>
+  <div id="lista-ped"></div>
 </div>
+
+<!-- TAB WORKERS -->
 <div class="tc" id="tc-workers">
-  <div class="sec-title">// Trabajadores</div>
-  <div id="lista-wor"><div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem">Cargando...</div></div>
+  <!-- Pendientes de verificación -->
+  <div id="sec-pendientes" style="display:none;margin-bottom:16px;">
+    <div class="sec-title" style="color:var(--warn);">// ⚠️ Pendientes verificación</div>
+    <div id="lista-pendientes"></div>
+  </div>
+  <div class="sec-title">// Todos los trabajadores</div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button onclick="filtrarWor('todos')" id="fw-todos" style="padding:4px 10px;background:rgba(0,229,255,0.15);border:1px solid var(--cyan);border-radius:6px;color:var(--cyan);font-size:0.65rem;font-family:'Share Tech Mono',monospace;cursor:pointer;">TODOS</button>
+    <button onclick="filtrarWor('online')" id="fw-online" style="padding:4px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#94a3b8;font-size:0.65rem;font-family:'Share Tech Mono',monospace;cursor:pointer;">ONLINE</button>
+    <button onclick="filtrarWor('verificar')" id="fw-verificar" style="padding:4px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#94a3b8;font-size:0.65rem;font-family:'Share Tech Mono',monospace;cursor:pointer;">PENDIENTES</button>
+  </div>
+  <div id="lista-wor"></div>
 </div>
+
+<!-- TAB COLA -->
+<div class="tc" id="tc-cola">
+  <div class="sec-title">// Cola de pedidos sin asignar</div>
+  <div id="cola-alertas" style="margin-bottom:10px;"></div>
+  <div id="lista-cola">
+    <div style="color:var(--muted);text-align:center;padding:30px;font-size:0.85rem;">✅ Sin pedidos en espera</div>
+  </div>
+</div>
+
+<!-- TAB INTEL -->
+<div class="tc" id="tc-intel">
+  <div class="conv-grid">
+    <div class="conv-card">
+      <div class="conv-title">Presupuestos generados</div>
+      <div class="conv-num" id="i-presup">—</div>
+      <div class="conv-sub">últimas 24hs</div>
+    </div>
+    <div class="conv-card">
+      <div class="conv-title">Tasa conversión</div>
+      <div class="conv-num" id="i-conv">—</div>
+      <div class="conv-sub">presupuesto → pedido</div>
+    </div>
+    <div class="conv-card">
+      <div class="conv-title">Ticket promedio</div>
+      <div class="conv-num" id="i-ticket">—</div>
+      <div class="conv-sub">ARS mano de obra</div>
+    </div>
+    <div class="conv-card">
+      <div class="conv-title">Workers activos</div>
+      <div class="conv-num" id="i-wact">—</div>
+      <div class="conv-sub">con pedido hoy</div>
+    </div>
+  </div>
+  <div class="sec-title">// Heat map por rubro</div>
+  <div id="heat-map"></div>
+</div>
+
+<!-- TAB FINANZAS -->
 <div class="tc" id="tc-finanzas">
   <div class="sec-title">// Resumen financiero</div>
-  <div class="fin-row"><span>Total facturado</span><span class="fin-v neu" id="f-total">$ 0</span></div>
-  <div class="fin-row"><span>Comisión 20%</span><span class="fin-v pos" id="f-com">$ 0</span></div>
-  <div class="fin-row"><span>Pagado workers 80%</span><span class="fin-v neg" id="f-pag">$ 0</span></div>
+  <div class="fin-row"><span>Revenue total</span><span class="fin-v pos" id="f-total">$ 0</span></div>
+  <div class="fin-row"><span>Comisión SERVired (20%)</span><span class="fin-v neu" id="f-com">$ 0</span></div>
+  <div class="fin-row"><span>Pagado a workers (80%)</span><span class="fin-v" id="f-pag">$ 0</span></div>
   <div class="fin-row"><span>Pedidos completados</span><span class="fin-v neu" id="f-cnt">0</span></div>
   <div class="fin-row"><span>Ticket promedio</span><span class="fin-v neu" id="f-avg">$ 0</span></div>
 </div>
-<div class="tc" id="tc-feed">
-  <div class="sec-title">// Eventos en tiempo real</div>
-  <div class="feed" id="feed">
-    <div class="ev"><span>🟢</span><div><div>Sistema iniciado</div><div class="ev-t">ahora</div></div></div>
-  </div>
+
+<!-- TAB LIVE -->
+<div class="tc" id="tc-live">
+  <div class="sec-title">// Feed en tiempo real</div>
+  <div class="feed" id="feed"></div>
 </div>
+
 <div class="toast" id="toast"></div>
+
 <script>
 const TOKEN=localStorage.getItem('token');
 if(!TOKEN){window.location='/';}
 function logout(){localStorage.removeItem('token');window.location='/';}
 const socket=io();
 let mapa,mWorkers={},revenue=0,comision=0,pedidosHoy=0,workersOnline=0,pedidosComp=0;
+let todosWorkers=[];
+let colaTimers={};
+const RUBROS_ICONOS={
+  albanileria:'🧱',plomeria:'🔧',electricidad:'⚡',gasista:'🔥',pintura:'🎨',
+  techistas:'🏚️',herreria:'⚒️',carpinteria:'🪚',durlock:'🪣',pisos_revestimientos:'🏠',
+  revestimientos_pvc:'🧱',antihumedad:'💧',cerrajeria:'🔑',climatizacion:'❄️',
+  camaras_seguridad:'📷',alarmas:'🚨',domotica_automatizacion:'🏠',paneles_solares:'☀️',
+  mecanica_auxilio:'🔩',jardineria:'🌿',limpieza_hogar:'🧹',servicio_domestico:'🧹',
+  mantenimiento_consorcios:'🏢',fletes_mudanzas:'📦',peluqueria_canina:'🐕',fumigacion:'🦟'
+};
+
+function icono(t){return RUBROS_ICONOS[t]||'🔨';}
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],12);
@@ -139,6 +226,8 @@ function irTab(id,btn){
   btn.classList.add('active');
   if(id==='pedidos')cargarPed();
   if(id==='workers')cargarWor();
+  if(id==='cola')cargarCola();
+  if(id==='intel')cargarIntel();
   setTimeout(()=>mapa?.invalidateSize(),50);
 }
 
@@ -148,32 +237,214 @@ async function cargarPed(){
     const data=await r.json();
     const el=document.getElementById('lista-ped');
     if(!data.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem">Sin pedidos</div>';return;}
-    el.innerHTML=data.map(p=>`<div class="p-row"><div class="p-id">#${(p._id||'').slice(-4)}</div><div class="p-info"><div class="p-srv">${icono(p.tipoServicio)} ${(p.tipoServicio||'—').replace(/_/g,' ')}</div><div class="p-meta">${p.direccion||'—'} · $${(p.precio||0).toLocaleString('es-AR')}</div></div><span class="badge ${p.estado}">${p.estado||'—'}</span></div>`).join('');
+    el.innerHTML=data.map(p=>`
+      <div class="p-row">
+        <div class="p-id">#${(p._id||'').slice(-4)}</div>
+        <div class="p-info">
+          <div class="p-srv">${icono(p.tipoServicio)} ${(p.tipoServicio||'—').replace(/_/g,' ')}</div>
+          <div class="p-meta">${p.direccion||'—'} · $${(p.precio||0).toLocaleString('es-AR')}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <span class="badge ${p.estado}">${p.estado||'—'}</span>
+          ${p.estado==='PENDIENTE'?`<button class="btn-warn" onclick="reasignarPedido('${p._id}')">REASIGNAR</button>`:''}
+          ${p.estado!=='CANCELADA'&&p.estado!=='PAGADA'?`<button class="btn-danger" onclick="cancelarPedido('${p._id}')">CANCELAR</button>`:''}
+        </div>
+      </div>`).join('');
   }catch(e){}
 }
 
-async function loadWorkers(){return cargarWor();}
 async function cargarWor(){
   try{
     const r=await fetch('/api/admin/trabajadores',{headers:{Authorization:'Bearer '+TOKEN}});
     const resp=await r.json();
-    const data=resp.data||resp;
-    const el=document.getElementById('lista-wor');
-    if(!data.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem">Sin trabajadores</div>';return;}
-    el.innerHTML=data.map(w=>`<div class="w-row" data-worker-id="${w._id}"><div class="w-av">${(w.nombre||'?')[0]}</div><div class="w-info"><div class="w-name">${w.nombre||'—'}</div><div class="w-meta">${(w.especialidades||[]).join(', ')||'—'}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;"><div style="font-size:0.7rem;font-family:'Share Tech Mono',monospace"><span class="wdot ${w.disponible?'on':'off'}"></span><span class="status-lbl">${w.disponible?'Online':'Offline'}</span></div>${w.estado==='PENDIENTE_VERIFICACION'?`<button class="btn-ver" onclick="verificar('${w._id}')">VERIFICAR</button>`:'<span style="font-size:0.65rem;color:var(--success)">✓ OK</span>'}</div></div>`).join('');
+    todosWorkers=resp.data||resp;
+    renderWorkers(todosWorkers);
+    // Sección pendientes destacada
+    const pendientes=todosWorkers.filter(w=>w.estado==='PENDIENTE_VERIFICACION');
+    const secPend=document.getElementById('sec-pendientes');
+    const listaPend=document.getElementById('lista-pendientes');
+    if(pendientes.length){
+      secPend.style.display='block';
+      listaPend.innerHTML=pendientes.map(w=>workerCard(w,true)).join('');
+    } else {
+      secPend.style.display='none';
+    }
   }catch(e){}
+}
+
+function workerCard(w,destacado=false){
+  const esPend=w.estado==='PENDIENTE_VERIFICACION';
+  return `<div class="w-row" data-worker-id="${w._id}" style="${destacado?'border:1px solid rgba(245,158,11,0.4);':''}">
+    <div class="w-av" style="${destacado?'background:linear-gradient(135deg,#f59e0b,#d97706);':''}">${(w.nombre||'?')[0]}</div>
+    <div class="w-info">
+      <div class="w-name">${w.nombre||'—'}</div>
+      <div class="w-meta">${(w.especialidades||[]).slice(0,2).join(', ')||'—'} · ${w.zona||'—'}</div>
+      <div class="w-meta" style="font-size:0.65rem;margin-top:2px;">${w.email||''}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+      <div style="font-size:0.7rem;font-family:'Share Tech Mono',monospace;">
+        <span class="wdot ${w.disponible?'on':'off'}"></span>
+        <span class="status-lbl">${w.disponible?'Online':'Offline'}</span>
+      </div>
+      ${esPend
+        ?`<button class="btn-ver" onclick="verificar('${w._id}')">✓ APROBAR</button>
+           <button class="btn-danger" onclick="rechazarWorker('${w._id}')">✗ RECHAZAR</button>`
+        :`<span style="font-size:0.65rem;color:var(--success);">✓ OK</span>
+          <button class="btn-danger" onclick="desactivarWorker('${w._id}')" style="font-size:0.55rem;">DESACTIVAR</button>`
+      }
+    </div>
+  </div>`;
+}
+
+function renderWorkers(lista){
+  const el=document.getElementById('lista-wor');
+  if(!lista.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:0.85rem">Sin trabajadores</div>';return;}
+  el.innerHTML=lista.map(w=>workerCard(w)).join('');
+}
+
+function filtrarWor(tipo){
+  document.querySelectorAll('[id^="fw-"]').forEach(b=>{
+    b.style.background='rgba(255,255,255,0.05)';b.style.borderColor='rgba(255,255,255,0.1)';b.style.color='#94a3b8';
+  });
+  const btn=document.getElementById('fw-'+tipo);
+  btn.style.background='rgba(0,229,255,0.15)';btn.style.borderColor='var(--cyan)';btn.style.color='var(--cyan)';
+  if(tipo==='todos')renderWorkers(todosWorkers);
+  else if(tipo==='online')renderWorkers(todosWorkers.filter(w=>w.disponible));
+  else if(tipo==='verificar')renderWorkers(todosWorkers.filter(w=>w.estado==='PENDIENTE_VERIFICACION'));
 }
 
 async function verificar(id){
-  if(!confirm('¿Verificar este trabajador?')) return;
+  if(!confirm('¿Aprobar este trabajador?'))return;
   try{
-    const rv = await fetch(`/api/admin/trabajadores/${id}/verificar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
-    if(rv.ok){ showToast('✅ Trabajador verificado'); cargarWor(); }
-    toast('✅ Trabajador verificado');cargarWor();addEv('✅',`Trabajador verificado`);
+    const rv=await fetch(`/api/admin/trabajadores/${id}/verificar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
+    if(rv.ok){toast('✅ Trabajador aprobado');cargarWor();addEv('✅',`Trabajador verificado`);}
   }catch(e){}
 }
 
-function icono(t){return{servicio_domestico:'🧹',plomeria:'🔧',electricidad:'⚡',pintura:'🎨',jardineria:'🌿',mudanza:'📦'}[t]||'🔨';}
+async function rechazarWorker(id){
+  if(!confirm('¿Rechazar y eliminar este trabajador?'))return;
+  try{
+    const rv=await fetch(`/api/admin/trabajadores/${id}`,{method:'DELETE',headers:{Authorization:'Bearer '+TOKEN}});
+    if(rv.ok){toast('🗑️ Trabajador rechazado');cargarWor();}
+    else toast('❌ Error al rechazar');
+  }catch(e){}
+}
+
+async function desactivarWorker(id){
+  if(!confirm('¿Desactivar este trabajador?'))return;
+  try{
+    const rv=await fetch(`/api/admin/trabajadores/${id}/desactivar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
+    if(rv.ok){toast('⏸️ Trabajador desactivado');cargarWor();}
+  }catch(e){}
+}
+
+async function cancelarPedido(id){
+  if(!confirm('¿Cancelar este pedido?'))return;
+  try{
+    const rv=await fetch(`/api/admin/pedidos/${id}/cancelar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
+    if(rv.ok){toast('❌ Pedido cancelado');cargarPed();}
+  }catch(e){}
+}
+
+async function reasignarPedido(id){
+  toast('🔄 Reasignando pedido...');
+  try{
+    const rv=await fetch(`/api/admin/pedidos/${id}/reasignar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
+    if(rv.ok){toast('✅ Pedido reasignado');cargarPed();}
+    else toast('❌ Sin workers disponibles');
+  }catch(e){}
+}
+
+// ── COLA ──────────────────────────────────────────────────────
+let colaData=[];
+async function cargarCola(){
+  try{
+    const r=await fetch('/api/admin/pedidos',{headers:{Authorization:'Bearer '+TOKEN}});
+    const data=await r.json();
+    colaData=data.filter(p=>p.estado==='PENDIENTE');
+    renderCola();
+  }catch(e){}
+}
+
+function renderCola(){
+  const el=document.getElementById('lista-cola');
+  const alertas=document.getElementById('cola-alertas');
+  if(!colaData.length){
+    el.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px;font-size:0.85rem;">✅ Sin pedidos en espera</div>';
+    alertas.innerHTML='';return;
+  }
+  const urgentes=colaData.filter(p=>{
+    const mins=(Date.now()-new Date(p.createdAt||Date.now()))/60000;
+    return mins>5;
+  });
+  alertas.innerHTML=urgentes.length
+    ?`<div class="alerta danger">🚨 ${urgentes.length} pedido${urgentes.length>1?'s':''} sin asignar hace más de 5 minutos</div>`
+    :'';
+  el.innerHTML=colaData.map(p=>{
+    const mins=Math.round((Date.now()-new Date(p.createdAt||Date.now()))/60000);
+    const urgente=mins>5;
+    return `<div class="cola-row ${urgente?'urgente':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><strong>${icono(p.tipoServicio)} ${(p.tipoServicio||'—').replace(/_/g,' ')}</strong></div>
+        <div class="cola-timer ${urgente?'urgente':''}">⏱ ${mins}min</div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">${p.direccion||'—'} · $${(p.precio||0).toLocaleString('es-AR')}</div>
+      <div class="cola-actions">
+        <button class="btn-ver" onclick="reasignarPedido('${p._id}')">🔄 REASIGNAR</button>
+        <button class="btn-danger" onclick="cancelarPedido('${p._id}')">✗ CANCELAR</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── INTEL ─────────────────────────────────────────────────────
+async function cargarIntel(){
+  try{
+    const [rPed,rWor]=await Promise.all([
+      fetch('/api/admin/pedidos',{headers:{Authorization:'Bearer '+TOKEN}}),
+      fetch('/api/admin/trabajadores',{headers:{Authorization:'Bearer '+TOKEN}})
+    ]);
+    const pedidos=await rPed.json();
+    const wResp=await rWor.json();
+    const workers=wResp.data||wResp;
+
+    const completados=pedidos.filter(p=>p.estado==='PAGADA'||p.estado==='REALIZADA');
+    const total=completados.reduce((s,p)=>s+(p.precio||0),0);
+    const ticket=completados.length?Math.round(total/completados.length):0;
+    const wActivos=new Set(completados.map(p=>p.trabajadorId)).size;
+
+    document.getElementById('i-presup').textContent=pedidos.length||'0';
+    document.getElementById('i-conv').textContent=pedidos.length?Math.round((completados.length/pedidos.length)*100)+'%':'0%';
+    document.getElementById('i-ticket').textContent=ticket?'$'+fmt(ticket):'$0';
+    document.getElementById('i-wact').textContent=wActivos||'0';
+
+    // Heat map por rubro
+    const conteo={};
+    pedidos.forEach(p=>{if(p.tipoServicio)conteo[p.tipoServicio]=(conteo[p.tipoServicio]||0)+1;});
+    const max=Math.max(...Object.values(conteo),1);
+    const sorted=Object.entries(conteo).sort((a,b)=>b[1]-a[1]);
+    const colores=['#00E5FF','#10b981','#f59e0b','#FF6D00','#7c3aed','#ef4444'];
+    document.getElementById('heat-map').innerHTML=sorted.length
+      ?sorted.map(([r,n],i)=>`
+        <div class="heat-row">
+          <div class="heat-label">${icono(r)} ${r.replace(/_/g,' ')}</div>
+          <div class="heat-bar-wrap"><div class="heat-bar" style="width:${Math.round((n/max)*100)}%;background:${colores[i%colores.length]};"></div></div>
+          <div class="heat-val">${n}</div>
+        </div>`).join('')
+      :'<div style="color:var(--muted);padding:20px;text-align:center;font-size:0.85rem;">Sin datos aún</div>';
+
+    // Alertas de cobertura
+    const rubrosConPedido=new Set(pedidos.map(p=>p.tipoServicio));
+    const rubrosConWorker=new Set(workers.flatMap(w=>w.especialidades||[]));
+    const sinCobertura=[...rubrosConPedido].filter(r=>!rubrosConWorker.has(r));
+    if(sinCobertura.length){
+      document.getElementById('coal-alertas')||'';
+      const alertEl=document.createElement('div');
+      alertEl.innerHTML=`<div class="alerta warn" style="margin-bottom:12px;">⚠️ Rubros con demanda sin workers: ${sinCobertura.map(r=>r.replace(/_/g,' ')).join(', ')}</div>`;
+      document.getElementById('heat-map').prepend(alertEl);
+    }
+  }catch(e){console.error(e);}
+}
 
 function updKPIs(){
   document.getElementById('k-ped').textContent=pedidosHoy;
@@ -198,14 +469,21 @@ function addEv(icon,msg){
   while(feed.children.length>50)feed.removeChild(feed.lastChild);
 }
 
-socket.emit('admin_conectado',{token:TOKEN});
+function toast(msg,dur=3000){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function showToast(msg){toast(msg);}
 
+// Socket events
+socket.emit('admin_conectado',{token:TOKEN});
 socket.on('nuevo_pedido_admin',data=>{
   pedidosHoy++;updKPIs();
   addEv('🔔',`Nuevo pedido: ${(data.servicio||'').replace(/_/g,' ')} · $${(data.precio||0).toLocaleString('es-AR')}`);
-  cargarPed();
+  cargarPed();cargarCola();
+  if(navigator.vibrate)navigator.vibrate([200,100,200]);
 });
-socket.on('pedido_aceptado_admin',data=>{addEv('✅',`Aceptado por ${data.trabajadorNombre||'trabajador'}`);cargarPed();});
+socket.on('pedido_aceptado_admin',data=>{addEv('✅',`Aceptado por ${data.trabajadorNombre||'trabajador'}`);cargarPed();cargarCola();});
 socket.on('pedido_completado_admin',data=>{
   pedidosComp++;revenue+=(data.precio||0);comision=Math.round(revenue*0.2);updKPIs();
   addEv('💰',`Completado · $${(data.precio||0).toLocaleString('es-AR')}`);cargarPed();
@@ -216,32 +494,34 @@ socket.on('ubicacion_trabajador',data=>{
   if(mWorkers[data.trabajadorId])mWorkers[data.trabajadorId].setLatLng([data.lat,data.lng]);
   else mWorkers[data.trabajadorId]=L.marker([data.lat,data.lng],{icon:ic}).addTo(mapa).bindPopup(data.nombre||'Trabajador');
 });
-socket.on('trabajador_nuevo', data => {
-    addFeed('🆕 Nuevo trabajador: ' + data.nombre + ' — ' + data.email);
-    showToast('🆕 Nuevo trabajador: ' + data.nombre);
-    // Vibración
-    if(navigator.vibrate) navigator.vibrate([200,100,200]);
-    // Sonido
-    try{const ctx=new AudioContext();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);o.start();o.stop(ctx.currentTime+0.5);}catch(e){}
-    // Actualizar lista
-    setTimeout(loadWorkers, 1000);
-  });
-  socket.on('worker_online',data=>{workersOnline++;updKPIs();addEv('🟢',`${data.nombre||'Trabajador'} entró en línea`);});
+socket.on('trabajador_nuevo',data=>{
+  addEv('🆕',`Nuevo trabajador: ${data.nombre} — ${data.email}`);
+  showToast('🆕 Nuevo trabajador: '+data.nombre);
+  if(navigator.vibrate)navigator.vibrate([200,100,200]);
+  try{const ctx=new AudioContext();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);o.start();o.stop(ctx.currentTime+0.5);}catch(e){}
+  setTimeout(cargarWor,1000);
+});
+socket.on('worker_online',data=>{workersOnline++;updKPIs();addEv('🟢',`${data.nombre||'Trabajador'} entró en línea`);});
 socket.on('worker_offline',data=>{workersOnline=Math.max(0,workersOnline-1);updKPIs();addEv('🔴',`${data.nombre||'Trabajador'} salió`);});
 socket.on('worker_estado_actualizado',data=>{
-  const cards=document.querySelectorAll('.worker-card,[data-worker-id]');
+  const cards=document.querySelectorAll('[data-worker-id]');
   cards.forEach(c=>{if(c.dataset.workerId===data.userId){
-    const dot=c.querySelector('.status-dot,.sdot');
-    const lbl=c.querySelector('.status-lbl,.status-text');
-    if(dot){dot.style.background=data.online?'#10b981':'#64748b';}
+    const dot=c.querySelector('.wdot');
+    const lbl=c.querySelector('.status-lbl');
+    if(dot){dot.className='wdot '+(data.online?'on':'off');}
     if(lbl){lbl.textContent=data.online?'Online':'Offline';}
   }});
-  cargarWor();
 });
 
-function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+// Refrescar cola cada 30s automáticamente
+setInterval(()=>{
+  const tabCola=document.getElementById('tc-cola');
+  if(tabCola.classList.contains('active'))cargarCola();
+},30000);
 
-window.addEventListener('DOMContentLoaded',()=>{initMapa();cargarPed();updKPIs();});
+window.addEventListener('DOMContentLoaded',()=>{
+  initMapa();cargarPed();updKPIs();
+});
 </script>
 </body>
 </html>
