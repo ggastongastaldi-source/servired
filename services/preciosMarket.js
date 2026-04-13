@@ -180,8 +180,7 @@ async function buscarPrecioML(rubro, query) {
       })
     });
     const data = await res.json();
-    const contexto = (data.results || []).map(r => r.content).join('
-').slice(0, 1500);
+    const contexto = (data.results || []).map(r => r.content).join('\n').slice(0, 1500);
     return { rubro, contexto, answer: data.answer || '', fuente: 'MercadoLibre' };
   } catch(e) {
     console.error(`[preciosMarket/ML] Error ${rubro}:`, e.message);
