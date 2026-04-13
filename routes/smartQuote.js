@@ -44,14 +44,6 @@ Responde SOLO JSON valido sin texto extra:
     } catch(e) {
       console.error('[smartQuote] Error leyendo precios de MongoDB:', e.message);
     }
-    // Precios desde MongoDB (actualizados por Tavily/ML)
-    let preciosReales = {};
-    try {
-      const docs = await PrecioMercado.find({});
-      docs.forEach(d => { preciosReales[d.rubro] = { baja: d.baja, alta: d.alta }; });
-    } catch(e) {
-      console.error('[smartQuote] Error leyendo precios de MongoDB:', e.message);
-    }
     // Merge fallback: MongoDB tiene prioridad
     const preciosFallback = {
       limpieza_hogar:{baja:7500,alta:12000},servicio_domestico:{baja:48000,alta:80000},
