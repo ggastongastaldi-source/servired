@@ -177,6 +177,12 @@ select option{background:#1a2236;color:#e2e8f0;}
     <div class="card">
       <div class="card-title">// Precio estimado · Motor Aladín</div>
       <div class="precio-row"><span style="color:var(--muted)">Base estimada</span><span class="precio-valor" id="precio-display">$ —</span></div>
+      <div id="sq-desc-ia" style="font-size:0.75rem;color:#64748b;margin-top:4px;min-height:16px;font-style:italic;"></div>
+      <div id="sq-desglose" style="font-size:0.7rem;color:#FF6D00;margin-top:2px;font-family:'Share Tech Mono',monospace;"></div>
+      <button id="btn-pagar-mp" onclick="pagarConMP()" style="display:none;width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#00b9e8,#009ee3);border:none;border-radius:10px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:1px;">
+        💳 PAGAR CON MERCADO PAGO
+      </button>
+      <div id="pago-status" style="display:none;text-align:center;padding:10px;border-radius:8px;margin-top:8px;font-size:0.85rem;"></div>
     </div>
     <button class="btn-pedir" id="btn-pedir" onclick="pedirServicio()">⚡ PEDIR AHORA</button>
     <div class="worker-card" id="worker-card">
@@ -444,6 +450,27 @@ function sqReset(){
 }
 
 function sqElegir(key){if(localStorage.getItem('srv_tc_v3')!=='1'){tcMostrar(function(){sqElegir(key);});return;}
+  rubroActual = key;
+  const srv = SERVICIOS.find(s=>s.id===key);
+  if(!srv) return;
+  document.getElementById('precio-display').textContent = '$ calculando...';
+  fetch('/api/smart-quote',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({rubro:key, descripcion: srv.label, zona: zonaCliente||'palermo', complejidad:'estandar'})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){
+      precioActual = d.estimado;
+      comisionActual = d.comision;
+      pagoWorkerActual = d.pago_worker;
+      document.getElementById('precio-display').textContent = '$ '+d.estimado.toLocaleString('es-AR');
+      if(d.descripcion_ia) document.getElementById('sq-desc-ia').textContent = d.descripcion_ia;
+      document.getElementById('sq-desglose').textContent = 'Zona: '+d.zona+' · Comisión SERVired: $'+d.comision.toLocaleString('es-AR');
+    }
+  }).catch(()=>{
+    precioActual = srv.precio;
+    document.getElementById('precio-display').textContent = '$ '+srv.precio.toLocaleString('es-AR');
+  });
   sqTrabajo=key;
   document.getElementById('sq-paso1').style.display='none';
   document.getElementById('sq-paso2').style.display='block';
