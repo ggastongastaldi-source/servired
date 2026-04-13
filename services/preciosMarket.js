@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const PrecioMercado = require('../models/PrecioMercado');
 
 const TAVILY_KEY = process.env.TAVILY_API_KEY;
 
@@ -96,6 +97,23 @@ ${resultados.map(r => `=== ${r.rubro} ===\n${r.answer}\n${r.contexto}`).join('\n
 }
 
 async function actualizarPreciosEnSmartQuote(precios) {
+  // Guardar en MongoDB (sobrevive deploys)
+  let actualizados = 0;
+  for (const [rubro, vals] of Object.entries(precios)) {
+    if (!vals.baja || !vals.alta) continue;
+    try {
+      await PrecioMercado.findOneAndUpdate(
+        { rubro },
+        { baja: Math.round(vals.baja), alta: Math.round(vals.alta), fuente: 'tavily', actualizadoEn: new Date() },
+        { upsert: true, new: true }
+      );
+      actualizados++;
+    } catch(e) { console.error('[preciosMarket] Error guardando', rubro, e.message); }
+  }
+  console.log(`[preciosMarket] ✅ ${actualizados} rubros actualizados en MongoDB`);
+  return actualizados;
+}
+async function actualizarPreciosEnSmartQuote_FILE(precios) {
   const fs = require('fs');
   const path = require('path');
   const filePath = path.join(__dirname, '../routes/smartQuote.js');

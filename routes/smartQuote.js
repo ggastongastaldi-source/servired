@@ -1,4 +1,5 @@
 const express = require("express");
+const PrecioMercado = require("../models/PrecioMercado");
 const router = express.Router();
 const aladdin = require("../services/aladdinEngine");
 const groq = require("../services/groqService");
@@ -35,7 +36,15 @@ Responde SOLO JSON valido sin texto extra:
     const f = parseFloat(factor) || 1;
     const result = aladdin.calcularPresupuesto(rubro, complejidad || "baja");
 
-    // Precios reales abril 2026 por rubro
+    // Precios desde MongoDB (actualizados por Tavily/ML)
+    let preciosReales = {};
+    try {
+      const docs = await PrecioMercado.find({});
+      docs.forEach(d => { preciosReales[d.rubro] = { baja: d.baja, alta: d.alta }; });
+    } catch(e) {
+      console.error('[smartQuote] Error leyendo precios de MongoDB:', e.message);
+    }
+    // Fallback hardcodeado si MongoDB falla
     const preciosReales = {
       // Precios por HORA de mano de obra simple
       limpieza_hogar:          { baja: 8000,    alta: 18000   },
