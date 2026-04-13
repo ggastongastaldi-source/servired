@@ -44,41 +44,31 @@ Responde SOLO JSON valido sin texto extra:
     } catch(e) {
       console.error('[smartQuote] Error leyendo precios de MongoDB:', e.message);
     }
-    // Fallback hardcodeado si MongoDB falla
-    const preciosReales = {
-      // Precios por HORA de mano de obra simple
-      limpieza_hogar:          { baja: 8000,    alta: 18000   },
-      servicio_domestico:      { baja: 8000,    alta: 16000   },
-      cerrajeria:              { baja: 40000,   alta: 120000  },
-      jardineria:              { baja: 12000,   alta: 35000   },
-      mecanica_auxilio:        { baja: 60000,   alta: 200000  },
-      peluqueria_canina:       { baja: 18000,   alta: 60000   },
-      // Precios por TRABAJO completo (ancla: baño $3.4M-$5.2M)
-      plomeria:                { baja: 200000,  alta: 600000  },
-      electricidad:            { baja: 180000,  alta: 550000  },
-      albanileria:             { baja: 600000,  alta: 1800000 },
-      pintura:                 { baja: 400000,  alta: 1200000 },
-      gasista:                 { baja: 200000,  alta: 700000  },
-      durlock:                 { baja: 350000,  alta: 1000000 },
-      impermeabilizacion:      { baja: 350000,  alta: 1000000 },
-      pisos_revestimientos:    { baja: 500000,  alta: 1500000 },
-      carpinteria:             { baja: 600000,  alta: 2000000 },
-      herreria:                { baja: 500000,  alta: 1800000 },
-      techista:                { baja: 500000,  alta: 1800000 },
-      techistas:               { baja: 500000,  alta: 1800000 },
-      antihumedad:             { baja: 350000,  alta: 1200000 },
-      revestimientos_pvc:      { baja: 300000,  alta: 900000  },
-      climatizacion:           { baja: 400000,  alta: 1200000 },
-      fletes_mudanzas:         { baja: 250000,  alta: 900000  },
-      mantenimiento_consorcios:{ baja: 250000,  alta: 800000  },
-      fumigacion:              { baja: 180000,  alta: 600000  },
-      aire_acondicionado:      { baja: 400000,  alta: 1200000 },
-      // Proyectos grandes
-      camaras_seguridad:       { baja: 900000,  alta: 3500000 },
-      alarmas:                 { baja: 700000,  alta: 2800000 },
-      domotica_automatizacion: { baja: 2000000, alta: 9000000 },
-      paneles_solares:         { baja: 4000000, alta: 18000000},
+    // Precios desde MongoDB (actualizados por Tavily/ML)
+    let preciosReales = {};
+    try {
+      const docs = await PrecioMercado.find({});
+      docs.forEach(d => { preciosReales[d.rubro] = { baja: d.baja, alta: d.alta }; });
+    } catch(e) {
+      console.error('[smartQuote] Error leyendo precios de MongoDB:', e.message);
+    }
+    // Merge fallback: MongoDB tiene prioridad
+    const preciosFallback = {
+      limpieza_hogar:{baja:7500,alta:12000},servicio_domestico:{baja:48000,alta:80000},
+      plomeria:{baja:55000,alta:85000},electricidad:{baja:75000,alta:150000},
+      albanileria:{baja:18500,alta:35000},pintura:{baja:6500,alta:12000},
+      gasista:{baja:95000,alta:180000},cerrajeria:{baja:60000,alta:120000},
+      jardineria:{baja:45000,alta:90000},herreria:{baja:45000,alta:90000},
+      carpinteria:{baja:40000,alta:80000},climatizacion:{baja:160000,alta:280000},
+      camaras_seguridad:{baja:90000,alta:180000},alarmas:{baja:90000,alta:180000},
+      fletes_mudanzas:{baja:70000,alta:150000},mecanica_auxilio:{baja:45000,alta:90000},
+      peluqueria_canina:{baja:25000,alta:50000},fumigacion:{baja:42000,alta:85000},
+      durlock:{baja:12500,alta:22000},pisos_revestimientos:{baja:18000,alta:35000},
+      techistas:{baja:8500,alta:18000},antihumedad:{baja:8500,alta:18000},
+      revestimientos_pvc:{baja:12000,alta:22000},mantenimiento_consorcios:{baja:110000,alta:200000},
+      paneles_solares:{baja:4000000,alta:18000000},domotica_automatizacion:{baja:800000,alta:3000000},
     };
+    Object.keys(preciosFallback).forEach(k=>{ if(!preciosReales[k]) preciosReales[k]=preciosFallback[k]; });
 
     const nivel = complejidad === "alta" ? "alta" : "baja";
     const precioBase = preciosReales[rubro]?.[nivel] || result.precio_total;
