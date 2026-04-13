@@ -59,6 +59,35 @@ h1 span{color:var(--orange);}
 .btn-sm-sec{background:var(--surface2);color:var(--muted);border:1px solid rgba(255,255,255,0.1);}
 .err{color:var(--danger);font-size:0.82rem;margin-top:8px;display:none;}
 .err.show{display:block;}
+
+/* ── CONTRASTE GLOBAL ── */
+input,select,textarea{
+  background:#1a2236 !important;
+  color:#e2e8f0 !important;
+  border:1px solid rgba(255,255,255,0.15) !important;
+  border-radius:10px !important;
+  font-family:'Rajdhani',sans-serif !important;
+  font-size:1rem !important;
+  -webkit-text-fill-color:#e2e8f0 !important;
+}
+input::placeholder,textarea::placeholder{color:#64748b !important;}
+input:focus,select:focus,textarea:focus{
+  border-color:#00E5FF !important;
+  outline:none !important;
+  box-shadow:0 0 0 2px rgba(0,229,255,0.15) !important;
+}
+/* Autofill chrome/android */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus{
+  -webkit-box-shadow:0 0 0px 1000px #1a2236 inset !important;
+  -webkit-text-fill-color:#e2e8f0 !important;
+  caret-color:#e2e8f0 !important;
+}
+select option{background:#1a2236;color:#e2e8f0;}
+.modal{background:#111827 !important;}
+.modal-bg{backdrop-filter:blur(4px);}
+
 </style>
 </head>
 <body>
