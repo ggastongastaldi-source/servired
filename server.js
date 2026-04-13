@@ -10,6 +10,7 @@ dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const app = express();
 require('./services/tensionScheduler');
+const pagosRouter = require('./routes/pagos');
 const server = http.createServer(app);
 const io = socketio(server, { cors: { origin: '*' } });
 
@@ -41,7 +42,8 @@ try {
 } catch(e) { console.error('❌ routes/auth falló:', e.message); }
 
 try {
-  app.use('/api/admin', require('./routes/admin'));
+  app.use('/api/pagos', pagosRouter);
+app.use('/api/admin', require('./routes/admin'));
 } catch(e) { console.error('❌ routes/admin falló:', e.message); }
 
 try {
