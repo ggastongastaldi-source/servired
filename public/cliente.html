@@ -589,7 +589,7 @@ function tcMostrar(cb){
     var p=Math.min(100,Math.round(r*100));
     document.getElementById('tcFill').style.width=p+'%';
     document.getElementById('tcPct').textContent=p+'%';
-    if(p>=98){document.getElementById('tcHint').classList.add('hidden');document.getElementById('tcChkRow').classList.add('unlocked');_tcScrolled=true;tcUpdateBtn();}
+    if(p>=85){document.getElementById('tcHint').classList.add('hidden');document.getElementById('tcChkRow').classList.add('unlocked');_tcScrolled=true;tcUpdateBtn();}
   });
 })();
 function tcToggleChk(){if(!_tcScrolled)return;_tcChecked=!_tcChecked;document.getElementById('tcChkBox').classList.toggle('checked',_tcChecked);tcUpdateBtn();}
