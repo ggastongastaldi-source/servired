@@ -589,7 +589,7 @@ function tcMostrar(cb){
     var p=Math.min(100,Math.round(r*100));
     document.getElementById('tcFill').style.width=p+'%';
     document.getElementById('tcPct').textContent=p+'%';
-    if(p>=85){document.getElementById('tcHint').classList.add('hidden');document.getElementById('tcChkRow').classList.add('unlocked');_tcScrolled=true;tcUpdateBtn();}
+    if(p>=70){document.getElementById('tcHint').classList.add('hidden');document.getElementById('tcChkRow').classList.add('unlocked');_tcScrolled=true;tcUpdateBtn();}
   });
 })();
 function tcToggleChk(){if(!_tcScrolled)return;_tcChecked=!_tcChecked;document.getElementById('tcChkBox').classList.toggle('checked',_tcChecked);tcUpdateBtn();}
@@ -716,7 +716,7 @@ function tcAceptar(){
       <p>Continuando...</p>
     </div>
     <div class="tc-footer" id="tcFooter">
-      <div class="tc-chk-row" id="tcChkRow" onclick="tcToggleChk()">
+      <div class="tc-chk-row" id="tcChkRow" onclick="tcToggleChk()" ontouchend="event.preventDefault();tcToggleChk();" style="min-height:48px;align-items:center;">
         <div class="tc-chk-box" id="tcChkBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
         <div class="tc-chk-label">He leído y acepto los Términos y Condiciones de ServiRed v3.0, incluyendo la cláusula de naturaleza autónoma y la política de privacidad.</div>
       </div>
