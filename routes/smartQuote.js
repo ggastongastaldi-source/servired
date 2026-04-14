@@ -1,4 +1,5 @@
 const express = require('express');
+const Groq = require('groq-sdk');
 const router = express.Router();
 
 const PRECIOS_BASE = {
@@ -44,9 +45,8 @@ router.post('/', async (req, res) => {
     // Groq con fallback robusto
     let descripcionIA = '';
     try {
-      const { default: Groq } = await import('groq-sdk');
       const key = process.env.GROQ_API_KEY;
-      if (key && key.startsWith('gsk_')) {
+      if (key) {
         const groq = new Groq({ apiKey: key });
         const chat = await groq.chat.completions.create({
           model: 'llama3-8b-8192',
