@@ -449,7 +449,7 @@ function sqReset(){
   document.getElementById('sq-result').style.display='none';
 }
 
-function sqElegir(key){if(localStorage.getItem('srv_tc_v3')!=='1'){tcMostrar(function(){sqElegir(key);});return;}
+function sqElegir(key){
   rubroActual = key;
   const srv = SERVICIOS.find(s=>s.id===key);
   if(!srv) return;
