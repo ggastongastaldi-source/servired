@@ -484,6 +484,7 @@ function sqReset(){
 }
 
 function sqElegir(key){
+  try {
   rubroActual = key;
   const srv = SERVICIOS.find(s=>s.id===key);
   if(!srv) return;
@@ -507,6 +508,7 @@ function sqElegir(key){
   });
   sqTrabajo=key;
   document.getElementById('sq-paso1').style.display='none';
+  } catch(e){ alert('ERROR sqElegir: '+e.message); }
   document.getElementById('sq-paso2').style.display='block';
   document.getElementById('sq-titulo-trabajo').textContent=SQ_TRABAJOS[key].label;
   const esObra=['banio','cocina','reforma','pintura'].includes(key);
