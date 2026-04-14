@@ -86,7 +86,7 @@ ${resultados.map(r => `=== ${r.rubro} ===\n${r.answer}\n${r.contexto}`).join('\n
       'Authorization': `Bearer ${GROQ_KEY}`
     },
     body: JSON.stringify({
-      model: 'llama3-8b-8192',
+      model: 'llama3-70b-8192',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
       max_tokens: 2000,

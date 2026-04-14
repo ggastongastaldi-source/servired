@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
       if (key) {
         const groq = new Groq({ apiKey: key });
         const chat = await groq.chat.completions.create({
-          model: 'llama3-8b-8192',
+          model: 'llama3-70b-8192',
           max_tokens: 120,
           messages: [{
             role: 'user',
