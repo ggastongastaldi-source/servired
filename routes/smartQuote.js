@@ -89,9 +89,14 @@ router.post('/', async (req, res) => {
       console.error('[smartQuote] Groq:', e.message.slice(0,80));
     }
 
+    const manoObra = Math.round(estimado * 0.65);
+    const materiales = Math.round(estimado * 0.15);
     res.json({
-      ok: true, rubro, estimado, comision,
-      pago_worker: pagoWorker,
+      ok: true, rubro, estimado,
+      total_estimado: estimado,
+      mano_de_obra: manoObra,
+      materiales: materiales,
+      comision, pago_worker: pagoWorker,
       zona: zona||'CABA',
       complejidad: complejidad||'estandar',
       descripcion_ia: descripcionIA,
