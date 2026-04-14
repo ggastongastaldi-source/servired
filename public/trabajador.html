@@ -207,7 +207,7 @@ select option{background:#1a2236;color:#e2e8f0;}
 </div>
 
 <div class="header">
-  <div class="logo">SERV<span>ired</span> PRO</div>
+  <div class="logo" onclick="tcResetTap()" style="cursor:pointer;">SERV<span>ired</span> PRO</div>
   <div style="display:flex;align-items:center;gap:6px;">
     <button class="status-pill online" id="status-btn" onclick="toggleStatus()">
       <div class="sdot online" id="sdot"></div>
@@ -561,6 +561,21 @@ function tcAceptar(){
   document.getElementById('tcFooter').style.display='none';
   document.getElementById('tcOk').classList.add('show');
   setTimeout(function(){document.getElementById('tcOverlay').classList.remove('show');if(_tcCb)_tcCb();},1600);
+}
+
+
+// Reset TC - tocar logo 5 veces
+var _tcTaps=0,_tcTimer=null;
+function tcResetTap(){
+  _tcTaps++;
+  clearTimeout(_tcTimer);
+  if(_tcTaps>=5){
+    localStorage.removeItem('srv_tc_v3');
+    _tcTaps=0;
+    tcMostrar(function(){});
+    return;
+  }
+  _tcTimer=setTimeout(function(){_tcTaps=0;},1500);
 }
 
 </script>
