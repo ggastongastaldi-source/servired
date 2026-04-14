@@ -3,17 +3,44 @@ const Groq = require('groq-sdk');
 const router = express.Router();
 
 const PRECIOS_BASE = {
-  limpieza:15000, plomeria:35000, electricidad:40000, pintura:28000,
-  gasista:45000, cerrajeria:25000, jardineria:22000, mudanza:80000,
-  albanileria:42000, techistas:55000, herreria:50000, carpinteria:38000,
-  durlock:45000, revestimientos:42000, antihumedad:50000, climatizacion:60000,
-  mecanica:35000, consorcios:25000, fumigacion:32000, peluqueria_canina:18000,
-  paneles_solares:180000, banio:250000, cocina:220000, camaras:55000,
-  alarmas:50000, domotica:95000, reforma:550000,
-  servicio_domestico:18000, refrigeracion:45000, informatico:30000,
-  yesero:32000, cuidador:22000, enfermero:35000, instructor:25000,
-  fotografo:40000, chofer:20000, cocinero:28000, delivery:8000,
-  seguridad:40000,
+  // 26 rubros oficiales SERVired - abril 2026
+  plomeria:55000,        // Destapacion/Colector
+  electricidad:75000,    // Tablero principal
+  gasista:95000,         // Inst. estufa tiro balanceado
+  cerrajeria:60000,      // Apertura urgencia 24hs
+  albanileria:18500,     // M2 contrapiso y carpeta
+  pintura:6500,          // M2 interior completo
+  jardineria:45000,      // Poda altura/desmalezado
+  limpieza:55000,        // Pileta tratamiento choque
+  servicio_domestico:48000, // Jornada post-obra
+  herreria:45000,        // Soldadura/refuerzo porton
+  carpinteria:40000,     // Ajuste/armado mueble
+  climatizacion:160000,  // Inst. 3000fg sin materiales
+  camaras:90000,         // DVR + 4 camaras config
+  alarmas:90000,         // DVR + 4 camaras config
+  informatico:35000,     // Formateo + backup + SSD
+  mudanza:70000,         // Base 2h + 2 ayudantes
+  mecanica:45000,        // Cambio pastillas freno
+  peluqueria_canina:25000, // Corte + bano raza grande
+  fumigacion:42000,      // Integral casa 3 amb
+  durlock:12500,         // M2 tabique divisorio
+  techistas:8500,        // Limpieza canaletas/m2 memb
+  refrigeracion:55000,   // Rep. plaqueta lavarropas
+  antihumedad:48000,     // Inst. sanitarios vanitory
+  domotica:90000,        // Camaras/alarmas DVR
+  reforma:550000,        // Reforma integral
+  paneles_solares:200000,// Instalacion paneles
+  // Rubros adicionales
+  banio:280000, cocina:250000,
+  consorcios:110000,     // Abono mantenimiento ascensor
+  yesero:9500,           // Alisado rodillado m2
+  decoracion:55000,      // Asesoria diseno ambiente
+  cuidador:24000, enfermero:38000, instructor:28000,
+  fotografo:45000, chofer:22000, cocinero:30000,
+  delivery:9000, seguridad:42000,
+  // Alias compatibles
+  carpintero:40000, cerrajero:60000, albanil:18500,
+  techista:8500, herrero:45000,
 };
 
 const ZONAS = {
