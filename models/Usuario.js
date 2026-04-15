@@ -1,22 +1,31 @@
 const mongoose = require('mongoose');
-const usuarioSchema = new mongoose.Schema({
-  nombre: String,
-  email: { type: String, unique: true },
-  password: String,
-  rol: { type: String, enum: ['CLIENTE','TRABAJADOR','ADMIN'], default: 'CLIENTE' },
-  estado: { type: String, default: 'ACTIVO' },
-  especialidades: [String],
+
+const UsuarioSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  rol: { type: String, enum: ['CLIENTE', 'WORKER', 'ADMIN'], default: 'CLIENTE' },
   telefono: String,
-  dni: String,
-  cbu: String,
-  alias: String,
-  especialidades: [String],
-  estado: { type: String, default: 'ACTIVO' },
   verificado: { type: Boolean, default: false },
-  bio: String,
-  tarifaHora: Number,
-  trabajosCompletados: { type: Number, default: 0 },
-  rating: { type: Number, default: 0 },
-  disponible: { type: Boolean, default: false },
-}, { timestamps: true });
-module.exports = mongoose.model('Usuario', usuarioSchema, 'usuarios');
+  
+  // CAMPOS NUEVOS PARA NOTIFICACIONES
+  fcmToken: { type: String, default: null },
+  isOnline: { type: Boolean, default: false },
+  rubro: { type: String, default: null }, // plomeria, domestica, electricidad, etc.
+  ubicacion: {
+    type: { type: String, default: 'Point' },
+    coordinates: [Number] // [lng, lat]
+  },
+  
+  // Stats
+  calificacion: { type: Number, default: 0 },
+  totalTrabajos: { type: Number, default: 0 },
+  cbu: String,
+  
+  createdAt: { type: Date, default: Date.now }
+});
+
+UsuarioSchema.index({ ubicacion: '2dsphere' });
+UsuarioSchema.index({ rubro: 1, isOnline: 1 });
+
+module.exports = mongoose.model('Usuario', UsuarioSchema);

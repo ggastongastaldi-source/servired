@@ -1,9 +1,19 @@
 const Pedido = require('../models/Pedido');
 const Usuario = require('../models/Usuario');
 
-// Enviar FCM push notification
-async function sendFCM(fcmToken, title, body, data={}) {
-  // Si no hay firebase-admin, usar fetch directo a FCM v1
+// Helper: Obtener io de global
+const getIO = () => {
+  if (!global.io) {
+    console.error('[NOTIF] ERROR: global.io no definido. ¿Server.js iniciado?');
+    return null;
+  }
+  return global.io;
+};
+
+// Enviar notificación FCM (Firebase Cloud Messaging)
+async function sendFCM(fcmToken, title, body, data = {}) {
+  if (!fcmToken || !process.env.FCM_SERVER_KEY) return false;
+  
   try {
     const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
     const response = await fetch('https://fcm.googleapis.com/fcm/send', {
@@ -14,8 +24,14 @@ async function sendFCM(fcmToken, title, body, data={}) {
       },
       body: JSON.stringify({
         to: fcmToken,
-        notification: { title, body, sound: 'default' },
-        data
+        notification: { 
+          title, 
+          body, 
+          sound: 'default',
+          badge: '1'
+        },
+        data: { ...data, click_action: 'FLUTTER_NOTIFICATION_CLICK' },
+        priority: 'high'
       })
     });
     return response.ok;
@@ -25,159 +41,290 @@ async function sendFCM(fcmToken, title, body, data={}) {
   }
 }
 
-// Notificar trabajadores cercanos por radio
-async function notificarTrabajadoresCercanos(pedido, radioKm=5) {
+// BUSCAR Y NOTIFICAR TRABAJADORES CERCANOS
+async function notificarTrabajadoresCercanos(pedido, radioKm = 5) {
+  const io = getIO();
+  if (!io) return 0;
+
   try {
+    // Buscar workers online del mismo rubro, ordenados por cercanía
     const workers = await Usuario.find({
-      rol: 'trabajador',
+      rol: 'WORKER',
       verificado: true,
-      rubros: pedido.tipoServicio,
+      isOnline: true,
+      rubro: pedido.tipoServicio,
       ubicacion: {
         $near: {
           $geometry: {
             type: 'Point',
-            coordinates: [pedido.ubicacion?.lng || -58.4, pedido.ubicacion?.lat || -34.6]
+            coordinates: pedido.ubicacion?.coordinates || [-58.4, -34.6]
           },
-          $maxDistance: radioKm * 1000
+          $maxDistance: radioKm * 1000 // metros
         }
       }
     }).limit(20);
 
-    console.log(`[notif] ${workers.length} trabajadores en radio ${radioKm}km para ${pedido.tipoServicio}`);
+    console.log(`[NOTIF] ${workers.length} workers ${pedido.tipoServicio} en ${radioKm}km`);
 
-    // Guardar workers notificados
+    // Guardar lista de notificados
     await Pedido.findByIdAndUpdate(pedido._id, {
       workersNotificados: workers.map(w => w._id)
     });
 
-    for (const w of workers) {
-      // Socket.io para online
-      if (global.io) {
-        global.io.to('worker_' + w._id).emit('nueva_oportunidad', {
-          pedidoId: pedido._id,
-          rubro: pedido.tipoServicio,
-          zona: pedido.zona || 'CABA',
-          precio: pedido.precio,
-          mensaje: `¡Oportunidad de Oro! 🛠️ Hay demanda de ${pedido.tipoServicio} en ${pedido.zona||'tu zona'}. Valor estimado: $${(pedido.precio||0).toLocaleString('es-AR')}`
-        });
-      }
+    const notificacion = {
+      tipo: 'nueva_oportunidad',
+      pedidoId: pedido._id.toString(),
+      rubro: pedido.tipoServicio,
+      zona: pedido.zona,
+      descripcion: pedido.descripcion || 'Sin descripción',
+      precio: pedido.total_estimado || pedido.precio,
+      fecha: new Date().toISOString()
+    };
 
-      // FCM para offline
-      if (w.fcmToken) {
+    // Enviar a cada worker
+    for (const worker of workers) {
+      // 1. Socket.IO (tiempo real - si está conectado)
+      io.to(`worker_${worker._id}`).emit('nueva_oportunidad', notificacion);
+      io.to(`rubro_${pedido.tipoServicio}`).emit('nueva_oportunidad', notificacion);
+      
+      // 2. FCM (push notification - si la app está cerrada)
+      if (worker.fcmToken) {
         await sendFCM(
-          w.fcmToken,
-          '¡Oportunidad de Oro! 🛠️',
-          `Hay laburo de ${pedido.tipoServicio} en ${pedido.zona||'tu zona'}. Valor: $${(pedido.precio||0).toLocaleString('es-AR')}. ¡Activate para capturarlo!`,
-          { pedidoId: pedido._id.toString(), tipo: 'nueva_oportunidad' }
+          worker.fcmToken,
+          `🔔 ¡Nuevo trabajo! ${pedido.tipoServicio.toUpperCase()}`,
+          `${pedido.zona} - $${(pedido.total_estimado || 0).toLocaleString('es-AR')}. ¡Sé el primero!`,
+          { pedidoId: pedido._id.toString(), tipo: 'nueva_oportunidad', rubro: pedido.tipoServicio }
         );
       }
     }
 
     return workers.length;
   } catch(e) {
-    console.error('[notif] Error:', e.message);
+    console.error('[NOTIF] Error buscando workers:', e.message);
     return 0;
   }
 }
 
-// Protocolo de paz mental del cliente
+// NOTIFICAR AL CLIENTE (protocolo de "paz mental")
 async function notificarCliente(pedidoId, fase) {
+  const io = getIO();
+  
   try {
-    const pedido = await Pedido.findById(pedidoId).populate('clienteId');
-    if (!pedido || !pedido.clienteId) return;
+    const pedido = await Pedido.findById(pedidoId).populate('cliente');
+    if (!pedido || !pedido.cliente) return;
 
     const mensajes = {
       SEARCHING: {
         titulo: '🔍 Buscando especialista',
-        msg: `Activando red de especialistas... Notificamos a los profesionales más cercanos en tu zona.`
+        mensaje: `Activando red de ${pedido.tipoServicio}s cercanos... Te avisamos en segundos.`,
+        color: '#FF9800'
       },
       EXPANDING_RADIUS: {
         titulo: '🌎 Ampliando búsqueda',
-        msg: `Tu pedido es prioridad. Estamos ampliando el radar a todo el AMBA para asegurarte el servicio hoy.`
+        mensaje: `Tu pedido es prioridad. Ampliando a toda la zona para conseguirte ${pedido.tipoServicio} YA.`,
+        color: '#2196F3'
       },
       ACEPTADA: {
         titulo: '✅ ¡Especialista asignado!',
-        msg: `Tu especialista está en camino. Vas a recibir sus datos en instantes.`
+        mensaje: `Tu ${pedido.tipoServicio} está confirmado. Preparate, va en camino.`,
+        color: '#4CAF50'
       }
     };
 
-    const m = mensajes[fase];
-    if (!m) return;
+    const msg = mensajes[fase];
+    if (!msg) return;
+
+    const payload = {
+      fase,
+      pedidoId: pedidoId.toString(),
+      ...msg,
+      timestamp: new Date().toISOString()
+    };
 
     // Socket al cliente
-    if (global.io) {
-      global.io.to('cliente_' + pedido.clienteId._id).emit('estado_pedido', {
-        pedidoId, fase,
-        titulo: m.titulo,
-        mensaje: m.msg
-      });
+    if (io) {
+      io.to(`cliente_${pedido.cliente._id}`).emit('estado_pedido', payload);
     }
 
     // FCM al cliente
-    if (pedido.clienteId.fcmToken) {
-      await sendFCM(pedido.clienteId.fcmToken, m.titulo, m.msg, { pedidoId: pedidoId.toString(), fase });
+    if (pedido.cliente.fcmToken) {
+      await sendFCM(
+        pedido.cliente.fcmToken,
+        msg.titulo,
+        msg.mensaje,
+        { pedidoId: pedidoId.toString(), fase, tipo: 'estado_cliente' }
+      );
     }
 
+    console.log(`[NOTIF] Cliente ${pedido.cliente._id} notificado: ${fase}`);
+
   } catch(e) {
-    console.error('[notif cliente] Error:', e.message);
+    console.error('[NOTIF] Error notificando cliente:', e.message);
   }
 }
 
-// Flujo completo con expansión de radio
+// FLUJO COMPLETO DE BÚSQUEDA
 async function iniciarFlujoBusqueda(pedidoId) {
   try {
-    const pedido = await Pedido.findByIdAndUpdate(pedidoId, { estado: 'SEARCHING' }, { new: true });
-    if (!pedido) return;
+    const pedido = await Pedido.findByIdAndUpdate(
+      pedidoId, 
+      { 
+        estado: 'SEARCHING',
+        $push: { historialEstados: { estado: 'SEARCHING', fecha: new Date() } }
+      }, 
+      { new: true }
+    );
 
-    console.log(`[busqueda] Iniciando flujo para pedido ${pedidoId}`);
+    if (!pedido) {
+      console.error('[FLUJO] Pedido no encontrado:', pedidoId);
+      return;
+    }
 
-    // Fase 1 - radio 5km
+    console.log(`[FLUJO] ===== INICIANDO BÚSQUEDA =====`);
+    console.log(`[FLUJO] Pedido: ${pedidoId}`);
+    console.log(`[FLUJO] Servicio: ${pedido.tipoServicio} | Zona: ${pedido.zona}`);
+
+    // FASE 1: Notificar cliente que estamos buscando
     await notificarCliente(pedidoId, 'SEARCHING');
-    let notif = await notificarTrabajadoresCercanos(pedido, 5);
-    console.log(`[busqueda] Fase 1: ${notif} trabajadores notificados`);
 
-    // Esperar 15 minutos y verificar
+    // FASE 1: Buscar en 5km
+    const notificados = await notificarTrabajadoresCercanos(pedido, 5);
+    
+    if (notificados === 0) {
+      console.log('[FLUJO] Sin workers en 5km, expandiendo...');
+      expandirBusqueda(pedidoId);
+      return;
+    }
+
+    console.log(`[FLUJO] Fase 1: ${notificados} workers notificados`);
+
+    // FASE 2: Esperar 2 minutos y expandir si nadie aceptó
     setTimeout(async () => {
-      const p = await Pedido.findById(pedidoId);
-      if (!p || p.estado !== 'SEARCHING') return;
-
-      // Fase 2 - expandir a 30km
-      await Pedido.findByIdAndUpdate(pedidoId, { estado: 'EXPANDING_RADIUS' });
-      await notificarCliente(pedidoId, 'EXPANDING_RADIUS');
-      notif = await notificarTrabajadoresCercanos(p, 30);
-      console.log(`[busqueda] Fase 2: ${notif} trabajadores notificados en radio 30km`);
-
-    }, 15 * 60 * 1000); // 15 minutos
+      const actual = await Pedido.findById(pedidoId);
+      if (actual && actual.estado === 'SEARCHING' && !actual.workerAcepto) {
+        console.log(`[FLUJO] Timeout Fase 1 - expandiendo a 30km`);
+        expandirBusqueda(pedidoId);
+      }
+    }, 2 * 60 * 1000); // 2 minutos
 
   } catch(e) {
-    console.error('[busqueda] Error:', e.message);
+    console.error('[FLUJO] Error:', e.message);
   }
 }
 
-// Broadcast cancelacion a workers cuando pedido es tomado
+// EXPANDIR RADIO DE BÚSQUEDA
+async function expandirBusqueda(pedidoId) {
+  try {
+    const pedido = await Pedido.findByIdAndUpdate(
+      pedidoId,
+      {
+        estado: 'EXPANDING_RADIUS',
+        $push: { historialEstados: { estado: 'EXPANDING_RADIUS', fecha: new Date() } }
+      },
+      { new: true }
+    );
+
+    if (!pedido) return;
+
+    // Notificar cliente
+    await notificarCliente(pedidoId, 'EXPANDING_RADIUS');
+
+    // Buscar en 30km (toda la zona)
+    const notificados = await notificarTrabajadoresCercanos(pedido, 30);
+    console.log(`[FLUJO] Fase 2: ${notificados} workers notificados en 30km`);
+
+    // Si sigue sin nadie, notificar al admin para asignación manual
+    setTimeout(async () => {
+      const actual = await Pedido.findById(pedidoId);
+      if (actual && actual.estado === 'EXPANDING_RADIUS' && !actual.workerAcepto) {
+        const io = getIO();
+        if (io) {
+          io.to('admins').emit('pedido_sin_asignar', {
+            pedidoId: pedidoId.toString(),
+            mensaje: `Pedido ${pedido.tipoServicio} en ${pedido.zona} sin asignar después de 15 min`
+          });
+        }
+      }
+    }, 10 * 60 * 1000); // 10 minutos más
+
+  } catch(e) {
+    console.error('[FLUJO] Error expandiendo:', e.message);
+  }
+}
+
+// CANCELAR NOTIFICACIONES (cuando alguien acepta)
 async function cancelarNotificacionesWorkers(pedidoId, workerAceptoId) {
+  const io = getIO();
+  if (!io) return;
+
   try {
     const pedido = await Pedido.findById(pedidoId);
     if (!pedido) return;
 
-    for (const workerId of pedido.workersNotificados || []) {
-      if (workerId.toString() === workerAceptoId.toString()) continue;
-      if (global.io) {
-        global.io.to('worker_' + workerId).emit('pedido_tomado', {
-          pedidoId,
-          mensaje: 'Este pedido ya fue tomado por otro profesional.'
-        });
-      }
+    // Notificar a los que no aceptaron que ya fue tomado
+    for (const workerId of (pedido.workersNotificados || [])) {
+      if (workerId.toString() === workerAceptoId?.toString()) continue;
+      
+      io.to(`worker_${workerId}`).emit('pedido_tomado', {
+        pedidoId: pedidoId.toString(),
+        mensaje: 'Este trabajo ya fue asignado a otro profesional'
+      });
     }
-    console.log(`[notif] Broadcast cancelacion enviado a ${(pedido.workersNotificados||[]).length - 1} workers`);
+
+    // Notificar al cliente que ya tiene worker
+    await notificarCliente(pedidoId, 'ACEPTADA');
+
+    console.log(`[FLUJO] Pedido ${pedidoId} asignado a ${workerAceptoId}`);
+
   } catch(e) {
-    console.error('[notif cancel] Error:', e.message);
+    console.error('[FLUJO] Error cancelando notifs:', e.message);
+  }
+}
+
+// WORKER ACEPTA TRABAJO (llamado desde socket o HTTP)
+async function aceptarTrabajo(pedidoId, workerId) {
+  try {
+    const pedido = await Pedido.findById(pedidoId);
+    
+    if (!pedido || pedido.estado !== 'SEARCHING') {
+      return { ok: false, error: 'Pedido no disponible o ya asignado' };
+    }
+
+    // Verificar que el worker esté en la lista de notificados
+    const fueNotificado = pedido.workersNotificados?.some(w => w.toString() === workerId.toString());
+    if (!fueNotificado) {
+      console.warn(`[ACEPTAR] Worker ${workerId} intentó aceptar sin ser notificado`);
+    }
+
+    // Actualizar pedido
+    const actualizado = await Pedido.findByIdAndUpdate(
+      pedidoId,
+      {
+        estado: 'ACEPTADA',
+        worker: workerId,
+        workerAcepto: workerId,
+        fechaAceptacion: new Date(),
+        $push: { historialEstados: { estado: 'ACEPTADA', fecha: new Date(), nota: `Aceptado por ${workerId}` } }
+      },
+      { new: true }
+    );
+
+    // Cancelar notificaciones a otros
+    await cancelarNotificacionesWorkers(pedidoId, workerId);
+
+    return { ok: true, pedido: actualizado };
+
+  } catch(e) {
+    console.error('[ACEPTAR] Error:', e.message);
+    return { ok: false, error: e.message };
   }
 }
 
 module.exports = {
   iniciarFlujoBusqueda,
-  notificarCliente,
   notificarTrabajadoresCercanos,
-  cancelarNotificacionesWorkers
+  notificarCliente,
+  cancelarNotificacionesWorkers,
+  aceptarTrabajo,
+  expandirBusqueda
 };

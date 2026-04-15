@@ -1,23 +1,46 @@
 const mongoose = require('mongoose');
 
 const PedidoSchema = new mongoose.Schema({
-  clienteId:    { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
-  trabajadorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
-  tipoServicio: { type: String, required: true },
-  descripcion:  { type: String },
-  direccion:    { type: String },
-  precio:       { type: Number, default: 0 },
-  estado:       { type: String, enum: ['PENDIENTE','SEARCHING','EXPANDING_RADIUS','ACEPTADA','EN_PROCESO','REALIZADA','PAGADA','CANCELADA'], default: 'PENDIENTE' },
-  zona: { type: String },
-  workersNotificados: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' }],
-  pagoId:       { type: String },
-  pagoMonto:    { type: Number },
-  pagoComision: { type: Number },
-  pagoWorker:   { type: Number },
-  ubicacion: {
-    lat: Number,
-    lng: Number,
+  cliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
+  worker: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', default: null },
+  
+  tipoServicio: { type: String, required: true }, // plomeria, domestica, etc.
+  zona: { type: String, required: true }, // palermo, belgrano, etc.
+  descripcion: String,
+  direccion: String,
+  complejidad: { type: String, enum: ['baja', 'media', 'alta'], default: 'baja' },
+  
+  // Precios
+  precio: { type: Number, default: 0 },
+  total_estimado: { type: Number, default: 0 },
+  pago_worker: { type: Number, default: 0 },
+  
+  // Estados: PENDIENTE → SEARCHING → EXPANDING_RADIUS → ACEPTADA → EN_PROCESO → REALIZADA
+  estado: { 
+    type: String, 
+    enum: ['PENDIENTE', 'SEARCHING', 'EXPANDING_RADIUS', 'ACEPTADA', 'EN_PROCESO', 'REALIZADA', 'PAGADA', 'CANCELADA'], 
+    default: 'PENDIENTE' 
   },
-}, { timestamps: true });
+  
+  // Tracking de notificaciones
+  workersNotificados: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' }],
+  workerAcepto: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', default: null },
+  fechaAceptacion: Date,
+  
+  ubicacion: {
+    type: { type: String, default: 'Point' },
+    coordinates: [Number]
+  },
+  
+  fechaCreacion: { type: Date, default: Date.now },
+  historialEstados: [{
+    estado: String,
+    fecha: { type: Date, default: Date.now },
+    nota: String
+  }]
+});
+
+PedidoSchema.index({ estado: 1, tipoServicio: 1, zona: 1 });
+PedidoSchema.index({ ubicacion: '2dsphere' });
 
 module.exports = mongoose.model('Pedido', PedidoSchema);
