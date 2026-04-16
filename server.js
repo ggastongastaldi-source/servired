@@ -1,191 +1,106 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
+const io = new Server(server, { cors: { origin: '*' } });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// ============================================
-// VARIABLES GLOBALES PARA SOCKET.IO
-// ============================================
+// Estado global
 const trabajadoresOnline = {};
 
-// Hacer disponibles en toda la app
-app.set('io', io);
-app.set('trabajadoresOnline', trabajadoresOnline);
-
-// ============================================
-// RUTAS API
-// ============================================
-
-// Health check MEJORADO
+// Health check CRÍTICO para Railway
 app.get('/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        mongo: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-        workersOnline: Object.keys(trabajadoresOnline).length,
-        workersList: Object.values(trabajadoresOnline).map(w => ({
-            nombre: w.nombre,
-            rubro: w.rubro,
-            socketId: w.socketId
-        }))
+    res.status(200).json({
+        status: 'OK',
+        sistema: 'ServiRed',
+        moneda: 'ARS',
+        timestamp: new Date().toISOString(),
+        workers: Object.keys(trabajadoresOnline).length,
+        uptime: process.uptime()
     });
 });
 
-// Ruta de servicios INLINE (para evitar problemas de importación)
+// Rutas API
 app.post('/api/servicios', async (req, res) => {
     try {
-        console.log('[API] 📥 Nuevo servicio:', JSON.stringify(req.body));
-        
-        const { prestador, rubro, descripcion, cliente, moneda, ubicacion } = req.body;
-        
-        if (!prestador || !rubro || !descripcion) {
-            return res.status(400).json({ 
-                ok: false, 
-                error: 'Faltan datos: prestador, rubro, descripcion' 
-            });
-        }
-
-        // Normalizar rubro
-        const rubroNormalizado = rubro
-            .toString()
-            .toUpperCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .trim();
-
-        console.log('[API] Rubro normalizado:', rubroNormalizado);
-        console.log('[SOCKET] Workers conectados:', Object.keys(trabajadoresOnline).length);
-
-        // Buscar y notificar workers
-        let notificados = 0;
-        const workersNotificados = [];
-        
-        for (const [socketId, worker] of Object.entries(trabajadoresOnline)) {
-            const workerRubro = (worker.rubro || '')
-                .toUpperCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '');
-            
-            console.log(`[SOCKET] Comparando: ${workerRubro} vs ${rubroNormalizado}`);
-            
-            if (workerRubro === rubroNormalizado) {
-                console.log(`[SOCKET] ✅ MATCH! Notificando a ${worker.nombre}`);
-                
-                io.to(socketId).emit('nuevo_trabajo', {
-                    id: Date.now().toString(),
-                    prestador,
-                    rubro: rubroNormalizado,
-                    descripcion,
-                    cliente: cliente || 'Anónimo',
-                    moneda: moneda || 'ARS',
-                    ubicacion: ubicacion || null,
-                    fecha: new Date()
-                });
-                
-                notificados++;
-                workersNotificados.push(worker.nombre);
-            }
-        }
-
-        res.json({
-            ok: true,
-            mensaje: 'Servicio procesado',
-            servicio: { prestador, rubro: rubroNormalizado, descripcion, cliente },
-            notificados,
-            workersNotificados,
-            totalWorkersOnline: Object.keys(trabajadoresOnline).length
-        });
-
+        const { prestador, rubro, descripcion, cliente, presupuesto } = req.body;
+        const servicio = {
+            id: Date.now(),
+            prestador,
+            rubro,
+            descripcion,
+            cliente,
+            presupuesto: presupuesto || 0,
+            moneda: 'ARS',
+            estado: 'pendiente',
+            fecha: new Date()
+        };
+        io.emit('nuevo_servicio', servicio);
+        res.status(201).json(servicio);
     } catch (err) {
-        console.error('[API] ❌ Error:', err);
-        res.status(500).json({ ok: false, error: err.message });
+        res.status(500).json({ error: err.message });
     }
 });
 
-// GET test
 app.get('/api/servicios', (req, res) => {
-    res.json({ ok: true, mensaje: 'Ruta activa - Use POST para crear servicio' });
+    res.json({
+        sistema: 'ServiRed',
+        moneda: 'ARS',
+        mensaje: 'Lista de servicios',
+        trabajadoresActivos: Object.keys(trabajadoresOnline).length
+    });
 });
 
-// ============================================
-// SOCKET.IO
-// ============================================
+app.get('/api/trabajadores', (req, res) => {
+    res.json(trabajadoresOnline);
+});
+
+// Socket.IO
 io.on('connection', (socket) => {
-    console.log(`[SOCKET] 🔌 Conectado: ${socket.id}`);
-
-    socket.on('registrar_worker', (data) => {
-        try {
-            console.log('[SOCKET] Registrando:', data);
-            const { userId, nombre, rubro } = data;
-            
-            if (!nombre || !rubro) {
-                return socket.emit('error_registro', { error: 'Faltan nombre o rubro' });
-            }
-
-            const rubroNormalizado = rubro
-                .toUpperCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .trim();
-
-            trabajadoresOnline[socket.id] = {
-                socketId: socket.id,
-                userId: userId || 'anon',
-                nombre,
-                rubro: rubroNormalizado
-            };
-
-            console.log(`[SOCKET] ✅ ${nombre} registrado en ${rubroNormalizado}`);
-            console.log(`[SOCKET] Total workers: ${Object.keys(trabajadoresOnline).length}`);
-            
-            socket.emit('registro_ok', { 
-                mensaje: 'Registrado correctamente',
-                rubroNormalizado,
-                workersOnline: Object.keys(trabajadoresOnline).length
-            });
-
-        } catch (err) {
-            console.error('[SOCKET] Error:', err);
-            socket.emit('error_registro', { error: err.message });
-        }
+    console.log('[SOCKET] Conectado:', socket.id);
+    
+    socket.on('registrar_trabajador', (data) => {
+        trabajadoresOnline[socket.id] = {
+            ...data,
+            socketId: socket.id,
+            conectado: new Date(),
+            estado: 'disponible'
+        };
+        io.emit('trabajadores_actualizados', trabajadoresOnline);
+        console.log('[SOCKET] Registrado:', data.nombre);
     });
-
+    
     socket.on('disconnect', () => {
         const worker = trabajadoresOnline[socket.id];
         if (worker) {
-            console.log(`[SOCKET] 🔴 ${worker.nombre} desconectado`);
+            console.log('[SOCKET] Desconectado:', worker.nombre);
             delete trabajadoresOnline[socket.id];
+            io.emit('trabajadores_actualizados', trabajadoresOnline);
         }
     });
 });
 
-// ============================================
-// CONEXIÓN Y ARRANQUE
-// ============================================
-mongoose.connect(process.env.MONGO_URI)
+// MongoDB
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
     .then(() => console.log('✅ MongoDB conectado'))
     .catch(err => console.error('❌ MongoDB error:', err.message));
 
+// Puerto CRÍTICO: Railway asigna process.env.PORT
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Servidor en puerto ${PORT}`);
-    console.log(`📡 Socket.IO activo`);
-    console.log(`👥 Workers: ${Object.keys(trabajadoresOnline).length}`);
+const HOST = '0.0.0.0';
+
+server.listen(PORT, HOST, () => {
+    console.log('🚀 ServiRed activo en puerto', PORT);
+    console.log('📡 Socket.IO escuchando');
+    console.log('💰 Moneda: ARS');
 });
 
 module.exports = { app, server, io };
-// Reinicio forzado v3
+// ServiRed rebuild 1776303171
