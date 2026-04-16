@@ -13,6 +13,20 @@ require('./services/socketHandlers')(io);
 app.use(cors());
 app.use(express.json());
 
+// Rutas
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/pedidos', require('./routes/pedidos'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/matching', require('./routes/matching'));
+app.use('/api/pagos', require('./routes/pagos'));
+app.use('/api/servicios', require('./routes/servicios'));
+app.use('/api/smart-quote', require('./routes/smartQuote'));
+
+// Static frontend
+app.use(express.static('public'));
+app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
+
+
 // Estado global
 const trabajadoresOnline = {};
 

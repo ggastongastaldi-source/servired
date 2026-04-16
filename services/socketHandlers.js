@@ -3,42 +3,56 @@ const Cotizacion = require('../models/Cotizacion');
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
-    console.log(`[Socket] Usuario conectado: ${socket.id}`);
+    console.log('[Socket] Conectado:', socket.id);
 
-    // Trabajador se registra como online
-    socket.on('registrar-trabajador', async (data) => {
-      const { userId, rubro, zona } = data;
-      await Usuario.findByIdAndUpdate(userId, {
-        socketStatus: 'online',
-        socketId: socket.id,
-        rubro: rubro,
-        zona: zona
-      });
-      socket.join(`zona-${zona}`);
-      socket.join(`rubro-${rubro}`);
-      console.log(`[Socket] Trabajador ${userId} en zona ${zona}, rubro ${rubro}`);
+    // Cliente se conecta
+    socket.on('cliente_conectado', async (data) => {
+      socket.join('cliente-' + socket.id);
+      socket.emit('conectado_ok', { socketId: socket.id });
+      console.log('[Socket] Cliente conectado:', socket.id);
     });
 
-    // Cliente se registra
-    socket.on('registrar-cliente', (data) => {
-      socket.join(`cliente-${data.userId}`);
-      console.log(`[Socket] Cliente registrado: ${data.userId}`);
+    // Trabajador se conecta
+    socket.on('worker_conectado', async (data) => {
+      const { token, rubro, zona, nombre } = data;
+      socket.join('zona-' + zona);
+      socket.join('rubro-' + rubro);
+      socket.emit('conectado_ok', { socketId: socket.id });
+      // Guardar socketId si hay userId en token (opcional por ahora)
+      console.log('[Socket] Worker conectado:', nombre || socket.id);
     });
 
-    // Trabajador acepta pedido via socket
-    socket.on('aceptar-pedido', async (data) => {
+    // Trabajador cambia estado disponible/ocupado
+    socket.on('cambiar_estado', async (data) => {
+      const { userId, estado } = data;
+      if (userId) {
+        await Usuario.findByIdAndUpdate(userId, { disponible: estado === 'disponible' });
+      }
+      console.log('[Socket] Estado cambiado:', estado);
+    });
+
+    // Trabajador acepta trabajo
+    socket.on('aceptar_trabajo', async (data) => {
       const { pedidoId, trabajadorId } = data;
-      const pedido = await Cotizacion.findByIdAndUpdate(
-        pedidoId,
-        { status: 'asignado', trabajadorId },
-        { new: true }
-      );
-      if (pedido) {
-        io.emit(`pedido-${pedidoId}-asignado`, {
+      try {
+        const pedido = await Cotizacion.findByIdAndUpdate(
           pedidoId,
-          trabajadorId,
-          mensaje: 'Un profesional ha aceptado tu pedido'
-        });
+          { status: 'asignado', trabajadorId },
+          { new: true }
+        );
+        if (pedido) {
+          socket.emit('trabajo_aceptado_ok', { pedidoId, mensaje: 'Pedido aceptado correctamente' });
+          // Notificar al cliente
+          io.emit('trabajo_aceptado', {
+            pedidoId,
+            mensaje: 'Un profesional aceptó tu pedido y está en camino'
+          });
+          io.emit('estado_pedido', { pedidoId, estado: 'asignado' });
+        } else {
+          socket.emit('trabajo_aceptado_error', { mensaje: 'Pedido no encontrado' });
+        }
+      } catch (e) {
+        socket.emit('trabajo_aceptado_error', { mensaje: e.message });
       }
     });
 
@@ -46,8 +60,8 @@ module.exports = (io) => {
       await Usuario.findOneAndUpdate(
         { socketId: socket.id },
         { socketStatus: 'offline', socketId: null }
-      );
-      console.log(`[Socket] Usuario desconectado: ${socket.id}`);
+      ).catch(() => {});
+      console.log('[Socket] Desconectado:', socket.id);
     });
   });
 };
