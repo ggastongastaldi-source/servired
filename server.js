@@ -1,170 +1,190 @@
+require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const http = require('http');
-const { Server } = require('socket.io');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
 const app = express();
-const serviciosRoutes = require('./routes/servicios');
 const server = http.createServer(app);
-
-const io = new Server(server, {
-    cors: { origin: "*", methods: ["GET", "POST"] }
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
 });
 
-global.io = io;
-const trabajadoresOnline = {};
-
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/api/servicios', serviciosRoutes);
-app.use(express.static('public'));
 
-let Usuario, Pedido;
-try {
-    Usuario = require('./models/Usuario');
-    Pedido = require('./models/Pedido');
-} catch(e) {
-    console.log('⚠️ Modelos no cargados');
-}
+// ============================================
+// VARIABLES GLOBALES PARA SOCKET.IO
+// ============================================
+const trabajadoresOnline = {};
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/pedidos', require('./routes/pedidos'));
+// Hacer disponibles en toda la app
+app.set('io', io);
+app.set('trabajadoresOnline', trabajadoresOnline);
 
+// ============================================
+// RUTAS API
+// ============================================
+
+// Health check MEJORADO
 app.get('/health', (req, res) => {
     res.json({
         status: 'ok',
+        mongo: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
         workersOnline: Object.keys(trabajadoresOnline).length,
-        workers: Object.values(trabajadoresOnline).map(w => ({ 
-            nombre: w.nombre, 
+        workersList: Object.values(trabajadoresOnline).map(w => ({
+            nombre: w.nombre,
             rubro: w.rubro,
-            socketId: w.socketId 
-        })),
-        timestamp: new Date().toISOString()
+            socketId: w.socketId
+        }))
     });
 });
 
+// Ruta de servicios INLINE (para evitar problemas de importación)
+app.post('/api/servicios', async (req, res) => {
+    try {
+        console.log('[API] 📥 Nuevo servicio:', JSON.stringify(req.body));
+        
+        const { prestador, rubro, descripcion, cliente, moneda, ubicacion } = req.body;
+        
+        if (!prestador || !rubro || !descripcion) {
+            return res.status(400).json({ 
+                ok: false, 
+                error: 'Faltan datos: prestador, rubro, descripcion' 
+            });
+        }
+
+        // Normalizar rubro
+        const rubroNormalizado = rubro
+            .toString()
+            .toUpperCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+
+        console.log('[API] Rubro normalizado:', rubroNormalizado);
+        console.log('[SOCKET] Workers conectados:', Object.keys(trabajadoresOnline).length);
+
+        // Buscar y notificar workers
+        let notificados = 0;
+        const workersNotificados = [];
+        
+        for (const [socketId, worker] of Object.entries(trabajadoresOnline)) {
+            const workerRubro = (worker.rubro || '')
+                .toUpperCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+            
+            console.log(`[SOCKET] Comparando: ${workerRubro} vs ${rubroNormalizado}`);
+            
+            if (workerRubro === rubroNormalizado) {
+                console.log(`[SOCKET] ✅ MATCH! Notificando a ${worker.nombre}`);
+                
+                io.to(socketId).emit('nuevo_trabajo', {
+                    id: Date.now().toString(),
+                    prestador,
+                    rubro: rubroNormalizado,
+                    descripcion,
+                    cliente: cliente || 'Anónimo',
+                    moneda: moneda || 'ARS',
+                    ubicacion: ubicacion || null,
+                    fecha: new Date()
+                });
+                
+                notificados++;
+                workersNotificados.push(worker.nombre);
+            }
+        }
+
+        res.json({
+            ok: true,
+            mensaje: 'Servicio procesado',
+            servicio: { prestador, rubro: rubroNormalizado, descripcion, cliente },
+            notificados,
+            workersNotificados,
+            totalWorkersOnline: Object.keys(trabajadoresOnline).length
+        });
+
+    } catch (err) {
+        console.error('[API] ❌ Error:', err);
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+// GET test
+app.get('/api/servicios', (req, res) => {
+    res.json({ ok: true, mensaje: 'Ruta activa - Use POST para crear servicio' });
+});
+
+// ============================================
+// SOCKET.IO
+// ============================================
 io.on('connection', (socket) => {
-    console.log(`[SOCKET] 🔌 Nuevo cliente: ${socket.id}`);
-    
-    // WORKER conecta
-    socket.on('worker_conectado', async (data) => {
+    console.log(`[SOCKET] 🔌 Conectado: ${socket.id}`);
+
+    socket.on('registrar_worker', (data) => {
         try {
-            console.log(`[WORKER] 📥 Intento de conexión:`, data);
+            console.log('[SOCKET] Registrando:', data);
+            const { userId, nombre, rubro } = data;
             
-            const { token, rubro, lat, lng } = data;
-            if (!token) {
-                return socket.emit('error', { mensaje: 'Token requerido' });
+            if (!nombre || !rubro) {
+                return socket.emit('error_registro', { error: 'Faltan nombre o rubro' });
             }
-            
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log(`[WORKER] 👤 Usuario: ${decoded.nombre} | Rol: ${decoded.rol}`);
-            
-            if (decoded.rol !== 'WORKER') {
-                return socket.emit('error', { mensaje: 'No es worker' });
-            }
-            
-            // Guardar en memoria
+
+            const rubroNormalizado = rubro
+                .toUpperCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+
             trabajadoresOnline[socket.id] = {
                 socketId: socket.id,
-                userId: decoded.userId,
-                nombre: decoded.nombre,
-                rubro: (rubro || decoded.rubro || '').toLowerCase().trim(),
-                lat: lat,
-                lng: lng,
-                conectado: new Date()
+                userId: userId || 'anon',
+                nombre,
+                rubro: rubroNormalizado
             };
+
+            console.log(`[SOCKET] ✅ ${nombre} registrado en ${rubroNormalizado}`);
+            console.log(`[SOCKET] Total workers: ${Object.keys(trabajadoresOnline).length}`);
             
-            // Unir a salas
-            socket.join('workers');
-            socket.join(`worker_${decoded.userId}`);
-            const rubroNormalizado = (rubro || decoded.rubro || 'general').toLowerCase().trim();
-            socket.join(`rubro_${rubroNormalizado}`);
-            
-            console.log(`[WORKER] ✅ ${decoded.nombre} online | Rubro: ${rubroNormalizado} | Sala: rubro_${rubroNormalizado}`);
-            
-            // Actualizar DB
-            if (Usuario) {
-                await Usuario.findByIdAndUpdate(decoded.userId, {
-                    isOnline: true,
-                    lastSocketId: socket.id,
-                    rubro: rubroNormalizado
-                });
-            }
-            
-            socket.emit('conectado_ok', { 
-                userId: decoded.userId, 
-                rubro: rubroNormalizado,
-                socketId: socket.id 
+            socket.emit('registro_ok', { 
+                mensaje: 'Registrado correctamente',
+                rubroNormalizado,
+                workersOnline: Object.keys(trabajadoresOnline).length
             });
-            
+
         } catch (err) {
-            console.error(`[WORKER] ❌ Error conexión:`, err.message);
-            socket.emit('error', { mensaje: err.message });
+            console.error('[SOCKET] Error:', err);
+            socket.emit('error_registro', { error: err.message });
         }
     });
-    
-    // CLIENTE conecta
-    socket.on('cliente_conectado', async (data) => {
-        try {
-            const { token } = data;
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            socket.join(`cliente_${decoded.userId}`);
-            console.log(`[CLIENTE] ✅ ${decoded.nombre} conectado`);
-            socket.emit('conectado_ok', { tipo: 'cliente', userId: decoded.userId });
-        } catch (err) {
-            socket.emit('error', { mensaje: err.message });
-        }
-    });
-    
-    // Aceptar trabajo
-    socket.on('aceptar_trabajo', async (data) => {
-        try {
-            const { pedidoId, token } = data;
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            
-            console.log(`[ACEPTAR] ${decoded.nombre} quiere pedido ${pedidoId}`);
-            
-            const { aceptarTrabajo } = require('./controllers/notificationController');
-            const result = await aceptarTrabajo(pedidoId, decoded.userId);
-            
-            if (result.ok) {
-                socket.emit('trabajo_ok', result);
-                console.log(`[ACEPTAR] ✅ Pedido ${pedidoId} asignado a ${decoded.nombre}`);
-            } else {
-                socket.emit('trabajo_error', result);
-                console.log(`[ACEPTAR] ❌ ${result.error}`);
-            }
-            
-        } catch (err) {
-            socket.emit('trabajo_error', { error: err.message });
-        }
-    });
-    
-    // Desconexión
-    socket.on('disconnect', async () => {
+
+    socket.on('disconnect', () => {
         const worker = trabajadoresOnline[socket.id];
         if (worker) {
-            console.log(`[WORKER] 🔴 ${worker.nombre} desconectado`);
-            if (Usuario) {
-                await Usuario.findByIdAndUpdate(worker.userId, { isOnline: false });
-            }
+            console.log(`[SOCKET] 🔴 ${worker.nombre} desconectado`);
             delete trabajadoresOnline[socket.id];
         }
     });
 });
 
+// ============================================
+// CONEXIÓN Y ARRANQUE
+// ============================================
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('✅ MongoDB conectado'))
-    .catch(err => console.error('❌ MongoDB:', err.message));
+    .catch(err => console.error('❌ MongoDB error:', err.message));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🚀 SERVIRED en puerto ${PORT}`);
+    console.log(`🚀 Servidor en puerto ${PORT}`);
     console.log(`📡 Socket.IO activo`);
-    console.log(`👥 Workers online: ${Object.keys(trabajadoresOnline).length}`);
+    console.log(`👥 Workers: ${Object.keys(trabajadoresOnline).length}`);
 });
 
 module.exports = { app, server, io };
