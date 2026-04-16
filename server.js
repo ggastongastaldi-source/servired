@@ -63,21 +63,6 @@ app.get('/api/trabajadores', (req, res) => {
     res.json(trabajadoresOnline);
 });
 
-// Socket.IO
-io.on('connection', (socket) => {
-    console.log('[SOCKET] Conectado:', socket.id);
-    
-    socket.on('registrar_trabajador', (data) => {
-        trabajadoresOnline[socket.id] = {
-            ...data,
-            socketId: socket.id,
-            conectado: new Date(),
-            estado: 'disponible'
-        };
-        io.emit('trabajadores_actualizados', trabajadoresOnline);
-        console.log('[SOCKET] Registrado:', data.nombre);
-    });
-    
     socket.on('disconnect', () => {
         const worker = trabajadoresOnline[socket.id];
         if (worker) {
