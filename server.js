@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
+const serviciosRoutes = require('./routes/servicios');
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -18,6 +19,7 @@ const trabajadoresOnline = {};
 
 app.use(cors());
 app.use(express.json());
+app.use('/api/servicios', serviciosRoutes);
 app.use(express.static('public'));
 
 let Usuario, Pedido;
