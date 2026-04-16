@@ -15,7 +15,9 @@ app.use(express.json());
 
 // Rutas
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/pedidos', require('./routes/pedidos'));
+const pedidosRoute = require('./routes/pedidos');
+app.use('/api/pedidos', pedidosRoute);
+pedidosRoute.setIO(io);
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/matching', require('./routes/matching'));
 app.use('/api/pagos', require('./routes/pagos'));

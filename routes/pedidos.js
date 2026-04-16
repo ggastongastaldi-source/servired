@@ -155,3 +155,4 @@ router.delete('/:pedidoId', verificarToken, verificarRol('CLIENTE'), async (req,
 });
 
 module.exports = router;
+module.exports.setIO = setIO;
