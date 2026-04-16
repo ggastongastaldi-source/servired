@@ -8,6 +8,7 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
+require('./services/socketHandlers')(io);
 
 app.use(cors());
 app.use(express.json());
