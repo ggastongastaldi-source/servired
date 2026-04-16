@@ -63,7 +63,21 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
       fechaCreacion: new Date()
     });
 
-    await nuevoPedido.save();
+    const pedidoGuardado = await nuevoPedido.save();
+    if (_io) {
+      const payload = {
+        pedidoId: pedidoGuardado._id,
+        tipoServicio,
+        zona,
+        descripcion: descripcion || '',
+        direccion: direccion || '',
+        total_estimado,
+        pago_worker
+      };
+      _io.to('rubro-' + tipoServicio).emit('nueva_oportunidad', payload);
+      _io.to('zona-' + zona).emit('nueva_oportunidad', payload);
+      console.log('[Socket] nueva_oportunidad emitida:', tipoServicio, zona);
+    }
     console.log(`[PEDIDOS] Creado: ${nuevoPedido._id} - ${tipoServicio} en ${zona}`);
 
     // Iniciar flujo de notificaciones (no bloqueante)
