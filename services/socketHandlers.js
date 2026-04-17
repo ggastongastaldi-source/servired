@@ -1,66 +1,186 @@
 const Usuario = require('../models/Usuario');
-const Cotizacion = require('../models/Cotizacion');
+const Pedido = require('../models/Pedido');
+
+// Mapa en memoria: pedidoId -> socketId del cliente
+const clienteSockets = {};
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
     console.log('[Socket] Conectado:', socket.id);
 
-    // Cliente se conecta
-    socket.on('cliente_conectado', async (data) => {
+    // ── CLIENTE se conecta ──────────────────────────────────────
+    socket.on('cliente_conectado', async ({ token, userId, pedidoId }) => {
       socket.join('cliente-' + socket.id);
+      // Si viene con pedidoId, lo asociamos para notificarle después
+      if (pedidoId) clienteSockets[pedidoId] = socket.id;
+      // Si viene con userId, guardar socketId en DB
+      if (userId) {
+        await Usuario.findByIdAndUpdate(userId, { socketId: socket.id }).catch(() => {});
+      }
       socket.emit('conectado_ok', { socketId: socket.id });
-      console.log('[Socket] Cliente conectado:', socket.id);
+      console.log('[Socket] Cliente conectado:', socket.id, pedidoId ? `pedido:${pedidoId}` : '');
     });
 
-    // Trabajador se conecta
-    socket.on('worker_conectado', async (data) => {
-      const { token, rubro, zona, nombre } = data;
+    // Cliente asocia pedido a su socket (lo llama después de crear pedido)
+    socket.on('registrar_pedido', ({ pedidoId }) => {
+      if (pedidoId) {
+        clienteSockets[pedidoId] = socket.id;
+        socket.join('pedido-' + pedidoId);
+        console.log('[Socket] Cliente registrado en pedido:', pedidoId);
+      }
+    });
+
+    // ── TRABAJADOR se conecta ───────────────────────────────────
+    socket.on('worker_conectado', async ({ userId, rubro, zona, nombre }) => {
       socket.join('zona-' + zona);
       socket.join('rubro-' + rubro);
+      // Guardar socketId en DB para poder localizarlo
+      if (userId) {
+        await Usuario.findByIdAndUpdate(userId, {
+          socketId: socket.id,
+          disponible: true,
+          socketStatus: 'online'
+        }).catch(() => {});
+      }
       socket.emit('conectado_ok', { socketId: socket.id });
-      // Guardar socketId si hay userId en token (opcional por ahora)
-      console.log('[Socket] Worker conectado:', nombre || socket.id);
+      console.log('[Socket] Worker conectado:', nombre || socket.id, `rubro:${rubro} zona:${zona}`);
     });
 
     // Trabajador cambia estado disponible/ocupado
-    socket.on('cambiar_estado', async (data) => {
-      const { userId, estado } = data;
+    socket.on('cambiar_estado', async ({ userId, estado }) => {
       if (userId) {
-        await Usuario.findByIdAndUpdate(userId, { disponible: estado === 'disponible' });
+        await Usuario.findByIdAndUpdate(userId, {
+          disponible: estado === 'disponible',
+          socketStatus: estado
+        }).catch(() => {});
       }
-      console.log('[Socket] Estado cambiado:', estado);
+      socket.emit('estado_actualizado', { estado });
+      console.log('[Socket] Estado cambiado:', estado, userId);
     });
 
-    // Trabajador acepta trabajo
-    socket.on('aceptar_trabajo', async (data) => {
-      const { pedidoId, trabajadorId } = data;
+    // ── TRABAJADOR acepta trabajo ───────────────────────────────
+    socket.on('aceptar_trabajo', async ({ pedidoId, trabajadorId, trabajadorNombre }) => {
       try {
-        const pedido = await Cotizacion.findByIdAndUpdate(
-          pedidoId,
-          { status: 'asignado', trabajadorId },
+        // Buscar pedido activo
+        const pedido = await Pedido.findOneAndUpdate(
+          { _id: pedidoId, estado: 'PENDIENTE' },
+          {
+            estado: 'ACEPTADA',
+            trabajador: trabajadorId,
+            fechaAceptacion: new Date()
+          },
           { new: true }
         );
-        if (pedido) {
-          socket.emit('trabajo_aceptado_ok', { pedidoId, mensaje: 'Pedido aceptado correctamente' });
-          // Notificar al cliente
-          io.emit('trabajo_aceptado', {
-            pedidoId,
-            mensaje: 'Un profesional aceptó tu pedido y está en camino'
-          });
-          io.emit('estado_pedido', { pedidoId, estado: 'asignado' });
-        } else {
-          socket.emit('trabajo_aceptado_error', { mensaje: 'Pedido no encontrado' });
+
+        if (!pedido) {
+          socket.emit('trabajo_aceptado_error', { mensaje: 'Pedido no disponible o ya tomado' });
+          return;
         }
+
+        // ✅ Confirmar al trabajador
+        socket.emit('trabajo_aceptado_ok', {
+          pedidoId,
+          mensaje: 'Pedido aceptado. Dirigite al cliente.',
+          direccion: pedido.direccion,
+          descripcion: pedido.descripcion
+        });
+
+        // ✅ Notificar al cliente específicamente
+        const clienteSocketId = clienteSockets[pedidoId];
+        const targetRoom = clienteSocketId
+          ? 'cliente-' + clienteSocketId
+          : 'pedido-' + pedidoId;
+
+        io.to(targetRoom).emit('trabajo_aceptado', {
+          pedidoId,
+          trabajadorNombre: trabajadorNombre || 'Un profesional',
+          mensaje: 'Tu pedido fue aceptado. El profesional está en camino.',
+          estado: 'ACEPTADA'
+        });
+        io.to(targetRoom).emit('estado_pedido', { pedidoId, estado: 'ACEPTADA' });
+
+        // También notificar a otros workers que el pedido ya fue tomado
+        io.to('rubro-' + pedido.tipoServicio).emit('pedido_tomado', { pedidoId });
+        io.to('zona-' + pedido.zona).emit('pedido_tomado', { pedidoId });
+
+        // Marcar trabajador como ocupado
+        if (trabajadorId) {
+          await Usuario.findByIdAndUpdate(trabajadorId, { disponible: false }).catch(() => {});
+        }
+
+        console.log('[Socket] Pedido aceptado:', pedidoId, 'por worker:', trabajadorId);
       } catch (e) {
+        console.error('[Socket] Error aceptar_trabajo:', e.message);
         socket.emit('trabajo_aceptado_error', { mensaje: e.message });
       }
     });
 
+    // ── GPS: trabajador envía ubicación ────────────────────────
+    socket.on('gps_update', async ({ pedidoId, lat, lng, trabajadorId }) => {
+      if (!pedidoId || !lat || !lng) return;
+
+      // Actualizar posición en DB
+      if (trabajadorId) {
+        await Usuario.findByIdAndUpdate(trabajadorId, {
+          'ubicacion.coordinates': [parseFloat(lng), parseFloat(lat)],
+          ultimaUbicacion: new Date()
+        }).catch(() => {});
+      }
+
+      // Enviar al cliente del pedido
+      const clienteSocketId = clienteSockets[pedidoId];
+      const targetRoom = clienteSocketId
+        ? 'cliente-' + clienteSocketId
+        : 'pedido-' + pedidoId;
+
+      io.to(targetRoom).emit('worker_gps', {
+        pedidoId,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        timestamp: Date.now()
+      });
+    });
+
+    // ── TRABAJADOR termina el trabajo ──────────────────────────
+    socket.on('trabajo_completado', async ({ pedidoId, trabajadorId }) => {
+      try {
+        await Pedido.findByIdAndUpdate(pedidoId, {
+          estado: 'REALIZADA',
+          fechaRealizacion: new Date()
+        });
+
+        const clienteSocketId = clienteSockets[pedidoId];
+        const targetRoom = clienteSocketId
+          ? 'cliente-' + clienteSocketId
+          : 'pedido-' + pedidoId;
+
+        io.to(targetRoom).emit('estado_pedido', {
+          pedidoId,
+          estado: 'REALIZADA',
+          mensaje: 'El trabajo fue completado. Por favor confirmá el pago.'
+        });
+
+        if (trabajadorId) {
+          await Usuario.findByIdAndUpdate(trabajadorId, { disponible: true }).catch(() => {});
+        }
+
+        socket.emit('trabajo_completado_ok', { pedidoId });
+        console.log('[Socket] Trabajo completado:', pedidoId);
+      } catch (e) {
+        socket.emit('error', { mensaje: e.message });
+      }
+    });
+
+    // ── DESCONEXIÓN ────────────────────────────────────────────
     socket.on('disconnect', async () => {
       await Usuario.findOneAndUpdate(
         { socketId: socket.id },
-        { socketStatus: 'offline', socketId: null }
+        { socketStatus: 'offline', socketId: null, disponible: false }
       ).catch(() => {});
+      // Limpiar clienteSockets si era un cliente
+      for (const [pid, sid] of Object.entries(clienteSockets)) {
+        if (sid === socket.id) delete clienteSockets[pid];
+      }
       console.log('[Socket] Desconectado:', socket.id);
     });
   });
