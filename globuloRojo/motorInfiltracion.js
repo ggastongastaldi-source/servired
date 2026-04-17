@@ -7,9 +7,10 @@ const MAPA = {
   'pintor':'pintura','carpintero':'carpinteria','cerrajero':'cerrajeria',
   'albanil':'albanileria','albañil':'albanileria','techista':'techista',
   'herrero':'herreria','mecanico':'mecanica_ligera','mecánico':'mecanica_ligera',
-  'jardinero':'jardineria','limpieza':'limpieza_hogar','mudanza':'fletes_mudanzas',
-  'informatico':'servicio_tecnico_pc','yesero':'durlock','durlock':'durlock',
-  'cuidador':'cuidado_personas','domestico':'servicio_domestico',
+  'jardinero':'jardineria','limpieza':'limpieza_hogar','limpieza_hogar':'limpieza_hogar',
+  'mudanza':'fletes_mudanzas','informatico':'servicio_tecnico_pc',
+  'yesero':'durlock','durlock':'durlock','cuidador':'cuidado_personas',
+  'domestico':'servicio_domestico','servicio_domestico':'servicio_domestico',
   'peluquero':'peluqueria_domicilio','zinguero':'zingueria','vidriero':'vidrieria',
   'refrigeracion':'aire_acondicionado','desinfeccion':'desinfeccion_plagas',
 };
@@ -17,12 +18,12 @@ const MAPA = {
 function traducir(texto) {
   const limpio = (texto||'').trim().toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z\s]/g,'').trim();
+    .replace(/[^a-z_\s]/g,'').trim();
   for (const [key, val] of Object.entries(MAPA)) {
     const k = key.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     if (limpio === k || limpio.includes(k)) return val;
   }
-  return null;
+  return limpio || null;
 }
 
 async function clasificarConGroq(descripcion) {
@@ -39,30 +40,46 @@ Respondé solo con una palabra:`;
   return { rubroKey, categoriaRaw: (raw||'').trim() };
 }
 
-async function buscarTrabajadores({ descripcion, especialidad, lat, lon, radioKm = 15, zona = 'CABA' }) {
-  let rubroFinal = especialidad;
+async function buscarTrabajadores({ descripcion, especialidad, lat, lon, radioKm = 50, zona = 'CABA' }) {
+  let rubroFinal = especialidad ? traducir(especialidad) : null;
   let urgencia = 'media';
   let resumenGroq = null;
 
-  if (descripcion && !especialidad) {
+  if (descripcion && !rubroFinal) {
     const { rubroKey, categoriaRaw } = await clasificarConGroq(descripcion);
     rubroFinal = rubroKey;
     resumenGroq = categoriaRaw ? `Servicio de ${categoriaRaw} en Argentina` : null;
   }
 
+  console.log('[GlobRojo] Buscando rubro:', rubroFinal);
+
   let candidatos = [];
   try {
-    const PerfilTrabajador = require('../models/PerfilTrabajador');
+    const Usuario = require('../models/Usuario');
+    const query = {
+      rol: 'TRABAJADOR',
+      estado: 'ACTIVO',
+      disponible: true,
+    };
     if (rubroFinal) {
-      candidatos = await PerfilTrabajador.find({ especialidades: rubroFinal, estado: 'ACTIVO' }).lean();
+      query.$or = [
+        { rubro: rubroFinal },
+        { especialidades: rubroFinal },
+        { especialidades: { $in: [rubroFinal, especialidad] } },
+      ];
     }
-  } catch(e) { console.warn('[GlobRojo] DB:', e.message); }
+    console.log('[GlobRojo] Query:', JSON.stringify(query));
+    candidatos = await Usuario.find(query).lean();
+    console.log('[GlobRojo] Candidatos encontrados:', candidatos.length);
+  } catch(e) { console.warn('[GlobRojo] DB error:', e.message); }
 
   if (lat && lon && candidatos.length) {
     candidatos = candidatos.filter(t => {
-      if (!t.ubicacion?.coordinates) return true;
+      if (!t.ubicacion?.coordinates?.length) return true; // sin coords → incluir igual
       const [tLon, tLat] = t.ubicacion.coordinates;
-      return haversine(parseFloat(lat), parseFloat(lon), tLat, tLon) <= parseFloat(radioKm);
+      const dist = haversine(parseFloat(lat), parseFloat(lon), tLat, tLon);
+      console.log('[GlobRojo] Distancia a', t.nombre, ':', dist, 'km');
+      return dist <= parseFloat(radioKm);
     });
   }
 

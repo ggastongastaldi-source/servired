@@ -169,4 +169,9 @@ router.delete('/:pedidoId', verificarToken, verificarRol('CLIENTE'), async (req,
 });
 
 module.exports = router;
+// FIX: Definición de setIO agregada
+function setIO(ioInstance) {
+    io = ioInstance;
+}
+
 module.exports.setIO = setIO;
