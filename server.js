@@ -79,15 +79,6 @@ app.get('/api/trabajadores', (req, res) => {
     res.json(trabajadoresOnline);
 });
 
-    socket.on('disconnect', () => {
-        const worker = trabajadoresOnline[socket.id];
-        if (worker) {
-            console.log('[SOCKET] Desconectado:', worker.nombre);
-            delete trabajadoresOnline[socket.id];
-            io.emit('trabajadores_actualizados', trabajadoresOnline);
-        }
-    });
-});
 
 // MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
@@ -103,6 +94,23 @@ server.listen(PORT, HOST, () => {
     console.log('📡 Socket.IO escuchando');
     console.log('💰 Moneda: ARS');
 });
+
+
+// ============================================
+// FIXES v2.2.1 - INYECCIÓN SEGURA
+// ============================================
+const fixes = {
+    jwt: require('./services/fixes/jwt-fix'),
+    loop: require('./services/fixes/loop-guard'),
+    gps: require('./services/fixes/gps-manager')
+};
+
+// Aplicar parches
+fixes.jwt.patch(io);
+fixes.loop.patch(io);
+fixes.gps.patch(io);
+console.log('[SYSTEM] 🔧 Fixes v2.2.1 activos: JWT + Anti-loop + GPS');
+// ============================================
 
 module.exports = { app, server, io };
 // ServiRed rebuild 1776303171
