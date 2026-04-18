@@ -15,7 +15,9 @@ module.exports = (io) => {
     });
 
     socket.on('cliente_conectado', async ({ token, userId, pedidoId }) => {
-      socket.join('cliente-' + socket.id);
+      // Room por userId si existe, fallback por socket.id
+      const clienteRoom = userId ? 'cliente_' + userId : 'cliente_' + socket.id;
+      socket.join(clienteRoom);
       // Si viene con pedidoId, lo asociamos para notificarle después
       if (pedidoId) clienteSockets[pedidoId] = socket.id;
       // Si viene con userId, guardar socketId en DB
@@ -30,15 +32,15 @@ module.exports = (io) => {
     socket.on('registrar_pedido', ({ pedidoId }) => {
       if (pedidoId) {
         clienteSockets[pedidoId] = socket.id;
-        socket.join('pedido-' + pedidoId);
+        socket.join('pedido_' + pedidoId);
         console.log('[Socket] Cliente registrado en pedido:', pedidoId);
       }
     });
 
     // ── TRABAJADOR se conecta ───────────────────────────────────
     socket.on('worker_conectado', async ({ userId, rubro, zona, nombre }) => {
-      socket.join('zona-' + zona);
-      socket.join('rubro-' + rubro);
+      socket.join('zona_' + zona);
+      socket.join('rubro_' + rubro);
       // Guardar socketId en DB para poder localizarlo
       if (userId) {
         await Usuario.findByIdAndUpdate(userId, {
@@ -93,8 +95,8 @@ module.exports = (io) => {
         // ✅ Notificar al cliente específicamente
         const clienteSocketId = clienteSockets[pedidoId];
         const targetRoom = clienteSocketId
-          ? 'cliente-' + clienteSocketId
-          : 'pedido-' + pedidoId;
+          ? 'cliente_' + clienteSocketId
+          : 'pedido_' + pedidoId;
 
         io.to(targetRoom).emit('trabajo_aceptado', {
           pedidoId,
@@ -105,8 +107,8 @@ module.exports = (io) => {
         io.to(targetRoom).emit('estado_pedido', { pedidoId, estado: 'ACEPTADA' });
 
         // También notificar a otros workers que el pedido ya fue tomado
-        io.to('rubro-' + pedido.tipoServicio).emit('pedido_tomado', { pedidoId });
-        io.to('zona-' + pedido.zona).emit('pedido_tomado', { pedidoId });
+        io.to('rubro_' + pedido.tipoServicio).emit('pedido_tomado', { pedidoId });
+        io.to('zona_' + pedido.zona).emit('pedido_tomado', { pedidoId });
 
         // Marcar trabajador como ocupado
         if (trabajadorId) {
@@ -135,8 +137,8 @@ module.exports = (io) => {
       // Enviar al cliente del pedido
       const clienteSocketId = clienteSockets[pedidoId];
       const targetRoom = clienteSocketId
-        ? 'cliente-' + clienteSocketId
-        : 'pedido-' + pedidoId;
+        ? 'cliente_' + clienteSocketId
+        : 'pedido_' + pedidoId;
 
       io.to(targetRoom).emit('worker_gps', {
         pedidoId,
@@ -156,8 +158,8 @@ module.exports = (io) => {
 
         const clienteSocketId = clienteSockets[pedidoId];
         const targetRoom = clienteSocketId
-          ? 'cliente-' + clienteSocketId
-          : 'pedido-' + pedidoId;
+          ? 'cliente_' + clienteSocketId
+          : 'pedido_' + pedidoId;
 
         io.to(targetRoom).emit('estado_pedido', {
           pedidoId,

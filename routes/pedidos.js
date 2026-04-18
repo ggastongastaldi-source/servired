@@ -79,8 +79,8 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
         total_estimado,
         pago_worker
       };
-      io.to('rubro-' + tipoServicio).emit('nueva_oportunidad', payload);
-      io.to('zona-' + zona).emit('nueva_oportunidad', payload);
+      io.to('rubro_' + tipoServicio).emit('nueva_oportunidad', payload);
+      io.to('zona_' + zona).emit('nueva_oportunidad', payload);
       console.log('[Socket] nueva_oportunidad emitida:', tipoServicio, zona);
     }
     console.log(`[PEDIDOS] Creado: ${nuevoPedido._id} - ${tipoServicio} en ${zona}`);
@@ -172,6 +172,52 @@ router.delete('/:pedidoId', verificarToken, verificarRol('CLIENTE'), async (req,
     res.status(500).json({ ok: false, error: error.message });
   }
 });
+
+
+// CLIENTE ACEPTA AUMENTO DEL 10%
+router.post('/:pedidoId/aceptar-aumento', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
+  try {
+    const { detenerFlujo } = require('../controllers/notificationController');
+    const pedido = await Pedido.findOne({
+      _id: req.params.pedidoId,
+      cliente: req.user.userId,
+      estado: 'EXPANDING_RADIUS'
+    });
+    
+    if (!pedido) {
+      return res.status(400).json({ ok: false, error: 'Pedido no disponible para aumento' });
+    }
+    
+    const nuevoTotal = Math.round(pedido.total_estimado * 1.10);
+    const nuevoPagoWorker = Math.round(nuevoTotal * 0.8);
+    
+    await Pedido.findByIdAndUpdate(req.params.pedidoId, {
+      total_estimado: nuevoTotal,
+      pago_worker: nuevoPagoWorker,
+      'metadata.aumentoAceptado': true,
+      'metadata.aumentoPct': 10,
+      \$push: { historialEstados: { estado: 'PRESUPUESTO_AUMENTADO', fecha: new Date() } }
+    });
+    
+    // Detener flujo actual y reiniciar con prioridad
+    detenerFlujo(req.params.pedidoId);
+    
+    // Reiniciar búsqueda inmediata con prioridad
+    const { iniciarFlujoBusqueda } = require('../controllers/notificationController');
+    setImmediate(() => iniciarFlujoBusqueda(req.params.pedidoId));
+    
+    res.json({ 
+      ok: true, 
+      mensaje: 'Presupuesto aumentado. Buscando con prioridad...',
+      nuevoTotal,
+      nuevoPagoWorker
+    });
+    
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
 
 return router;
 };
