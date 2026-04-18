@@ -12,8 +12,8 @@ async function buscarWorkersDisponibles(rubro, zona, lat, lng) {
     
     // Buscar TODOS los workers online del rubro (sin filtro GPS por ahora)
     const workers = await Usuario.find({
-        rol: 'WORKER',
-        isOnline: true,
+        rol: { \$in: ['TRABAJADOR', 'WORKER'] },
+        
         rubro: { $regex: rubroNormalizado, $options: 'i' } // Búsqueda flexible
     });
     

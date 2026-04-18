@@ -9,6 +9,7 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
+global.io = io;
 require('./services/socketHandlers')(io);
 require('./services/mensajeriaSocket')(io);;
 
