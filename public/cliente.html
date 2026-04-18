@@ -132,9 +132,13 @@
     let pedidoActual = null;
     let mapa = null;
 
-    // Auto-login desde localStorage (token guardado por index.html)
+    
+    // Auto-login: desde localStorage O desde parámetro URL ?t=
     window.onload = () => {
-      const t = localStorage.getItem('token');
+      const params = new URLSearchParams(window.location.search);
+      const tUrl   = params.get('t');
+      if (tUrl) localStorage.setItem('token', tUrl);
+      const t = tUrl || localStorage.getItem('token');
       if (t) {
         document.getElementById('tokenInput').value = t;
         conectar();

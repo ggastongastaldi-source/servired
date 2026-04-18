@@ -126,14 +126,18 @@
     const socket = io();
     let currentToken = '';
     let currentUserId = '';
-    // Auto-login desde localStorage
+    
+    // Auto-login: desde localStorage O desde parámetro URL ?t=
     window.onload = () => {
-      const tok = localStorage.getItem('token');
+      const params = new URLSearchParams(window.location.search);
+      const tUrl   = params.get('t');
+      if (tUrl) localStorage.setItem('token', tUrl);
+      const t = tUrl || localStorage.getItem('token');
+      if (t) {
+        document.getElementById('tokenInput').value = t;
       const rub = localStorage.getItem('rubro');
-      if (tok) {
-        document.getElementById('tokenInput').value = tok;
-        if (rub) document.getElementById('rubroInput').value = rub;
-        conectar();
+      if (rub) document.getElementById('rubroInput').value = rub;
+      conectar();
       }
     };
 
