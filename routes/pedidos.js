@@ -1,6 +1,8 @@
+module.exports = function(ioInstance) {
+const io = ioInstance;
 const express = require('express');
 const router = express.Router();
-let io = null;
+
 const getIO = () => io;
 const Pedido = require('../models/Pedido');
 const { verificarToken, verificarRol } = require('../middleware/auth');
@@ -171,10 +173,7 @@ router.delete('/:pedidoId', verificarToken, verificarRol('CLIENTE'), async (req,
   }
 });
 
-module.exports = router;
+return router;
+};
 // FIX: Definición de setIO agregada
-function setIO(ioInstance) {
-    io = ioInstance;
-}
 
-module.exports.setIO = setIO;

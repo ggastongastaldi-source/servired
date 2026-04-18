@@ -18,9 +18,8 @@ app.use(express.json());
 // Rutas
 app.use('/api/mensajes', rutaMensajes);
 app.use('/api/auth', require('./routes/auth'));
-const pedidosRoute = require('./routes/pedidos');
+const pedidosRoute = require('./routes/pedidos')(io);
 app.use('/api/pedidos', pedidosRoute);
-pedidosRoute.setIO(io);
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/matching', require('./routes/matching'));
 app.use('/api/pagos', require('./routes/pagos'));
