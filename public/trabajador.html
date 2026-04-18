@@ -163,25 +163,20 @@ input,select{width:100%;padding:12px;border-radius:8px;border:1px solid #334155;
 </div>
 
 <script>
-// ── ESTADO ──────────────────────────────────────────
 let socket, miToken, miId, miNombre, miRubro;
-let ordenActual   = null;
-let salaActual    = null;
-let gpsInterval   = null;
-let typingTimer   = null;
-let oportunidadId = null;
+let ordenActual = null, salaActual = null;
+let gpsInterval = null, typingTimer = null;
+let oportunidadActual = null;
 
-// ── LOG ─────────────────────────────────────────────
 function log(msg, tipo='info') {
   const box = document.getElementById('logBox');
   const t   = new Date().toLocaleTimeString('es-AR');
   const div = document.createElement('div');
   div.className = 'log-entry ' + tipo;
-  div.textContent = `[${t}] ${msg}`;
+  div.textContent = '[' + t + '] ' + msg;
   box.insertBefore(div, box.firstChild);
 }
 
-// ── AUTO LOGIN ──────────────────────────────────────
 window.onload = () => {
   const t = localStorage.getItem('token');
   const r = localStorage.getItem('rubro');
@@ -198,7 +193,7 @@ function conectar() {
   if (!miToken) return;
   try {
     const p = JSON.parse(atob(miToken.split('.')[1]));
-    miId     = p.id || p._id;
+    miId     = p.id || p._id || p.userId;
     miNombre = p.nombre || p.email || 'Trabajador';
   } catch(e) { alert('Token inválido'); return; }
 
@@ -212,7 +207,12 @@ function conectar() {
     document.getElementById('statusIndicator').style.color = '#22c55e';
     document.getElementById('statusText').textContent = 'Conectado';
     log('Conectado al servidor', 'success');
-    socket.emit('trabajador:online', { rubro: miRubro });
+    socket.emit('worker_conectado', {
+      userId: miId,
+      rubro: miRubro,
+      nombre: miNombre,
+      zona: ''
+    });
   });
 
   socket.on('disconnect', () => {
@@ -222,134 +222,139 @@ function conectar() {
     detenerGPS();
   });
 
-  // Oportunidad entrante
-  socket.on('orden:nueva', (data) => {
-    oportunidadId = data.ordenId;
-    document.getElementById('opServicio').textContent   = '📋 ' + (data.servicio || 'Servicio');
-    document.getElementById('opZona').textContent       = '📍 ' + (data.zona || '');
-    document.getElementById('opDescripcion').textContent = data.descripcion || '';
-    document.getElementById('opPrecio').textContent     = data.precio ? '$ ' + data.precio.toLocaleString('es-AR') : '';
-    document.getElementById('oportunidadSection').classList.remove('hidden');
-    log('Nueva oportunidad: ' + data.servicio, 'info');
+  socket.on('conectado_ok', (data) => {
+    log('Online como ' + miNombre + ' (' + miRubro + ')', 'success');
   });
 
-  // Orden aceptada confirmada
-  socket.on('orden:confirmada', (data) => {
-    ordenActual = data.ordenId;
+  // Nueva oportunidad entrante
+  socket.on('nueva_oportunidad', (data) => {
+    oportunidadActual = data;
+    document.getElementById('opServicio').textContent   = '📋 ' + (data.tipoServicio || data.servicio || 'Servicio');
+    document.getElementById('opZona').textContent       = '📍 ' + (data.zona || '');
+    document.getElementById('opDescripcion').textContent = data.descripcion || '';
+    document.getElementById('opPrecio').textContent     = data.total_estimado ? '$ ' + Number(data.total_estimado).toLocaleString('es-AR') : '';
+    document.getElementById('oportunidadSection').classList.remove('hidden');
+    log('Nueva oportunidad: ' + (data.tipoServicio || data.servicio), 'info');
+  });
+
+  // Pedido tomado por otro
+  socket.on('pedido_tomado', (data) => {
+    if (oportunidadActual && oportunidadActual.pedidoId === data.pedidoId) {
+      document.getElementById('oportunidadSection').classList.add('hidden');
+      oportunidadActual = null;
+      log('Pedido tomado por otro trabajador', 'error');
+    }
+  });
+
+  // Aceptación confirmada
+  socket.on('trabajo_aceptado_ok', (data) => {
+    ordenActual = data.pedidoId;
     document.getElementById('oportunidadSection').classList.add('hidden');
     document.getElementById('trabajoSection').classList.remove('hidden');
     document.getElementById('trabajoCliente').textContent  = '👤 ' + (data.clienteNombre || 'Cliente');
-    document.getElementById('trabajoServicio').textContent = data.servicio || '';
+    document.getElementById('trabajoServicio').textContent = data.tipoServicio || miRubro;
     iniciarGPS();
     log('Orden aceptada — GPS activado', 'success');
   });
 
-  // FSM
-  socket.on('orden:cancelada', () => {
+  socket.on('trabajo_aceptado_error', (data) => {
+    document.getElementById('oportunidadSection').classList.add('hidden');
+    oportunidadActual = null;
+    log('Error: ' + data.mensaje, 'error');
+    alert(data.mensaje);
+  });
+
+  socket.on('trabajo_completado_ok', () => {
     ordenActual = null;
     document.getElementById('trabajoSection').classList.add('hidden');
-    document.getElementById('oportunidadSection').classList.add('hidden');
     detenerGPS();
-    log('Orden cancelada por el cliente', 'error');
+    log('Trabajo completado y registrado', 'success');
   });
 
   // Chat
   socket.on('chat:nuevoMensaje', (msg) => {
     if (msg.salaId === salaActual) { chatAgregarBurbuja(msg); chatScrollAbajo(); }
-    else { log(`💬 Nuevo mensaje de ${msg.remitenteNombre}`, 'info'); }
+    else { log('💬 Nuevo mensaje de ' + msg.remitenteNombre, 'info'); }
   });
-  socket.on('chat:escribiendo',    ({ nombre }) => { document.getElementById('chat-typing').textContent = `${nombre} está escribiendo...`; });
-  socket.on('chat:dejoDeEscribir', () => { document.getElementById('chat-typing').textContent = ''; });
+  socket.on('chat:escribiendo',    ({ nombre }) => { document.getElementById('chat-typing').textContent = nombre + ' está escribiendo...'; });
+  socket.on('chat:dejoDeEscribir', ()           => { document.getElementById('chat-typing').textContent = ''; });
 
   document.getElementById('loginSection').classList.add('hidden');
   document.getElementById('dashboardSection').classList.remove('hidden');
   document.getElementById('dashNombre').textContent = '👋 ' + miNombre;
 }
 
-// ── DISPONIBILIDAD ──────────────────────────────────
 function toggleDisponible(v) {
-  socket.emit('trabajador:disponibilidad', { disponible: v });
-  log(v ? 'Estás disponible' : 'Estás ocupado', v ? 'success' : 'error');
+  socket.emit('cambiar_estado', { userId: miId, estado: v ? 'DISPONIBLE' : 'OCUPADO' });
+  log(v ? 'Disponible' : 'Ocupado', v ? 'success' : 'error');
 }
 
-// ── GPS ─────────────────────────────────────────────
 function iniciarGPS() {
   document.getElementById('gpsIndicator').classList.remove('hidden');
   if (!navigator.geolocation) return;
   gpsInterval = setInterval(() => {
     navigator.geolocation.getCurrentPosition(pos => {
-      socket.emit('trabajador:ubicacion', {
-        ordenId: ordenActual,
+      socket.emit('gps_update', {
+        pedidoId: ordenActual,
+        trabajadorId: miId,
         lat: pos.coords.latitude,
         lng: pos.coords.longitude
       });
     });
   }, 10000);
 }
+
 function detenerGPS() {
   clearInterval(gpsInterval);
   gpsInterval = null;
   document.getElementById('gpsIndicator').classList.add('hidden');
 }
 
-// ── ORDEN ────────────────────────────────────────────
 function aceptarOrden() {
-  socket.emit('trabajador:aceptar', { ordenId: oportunidadId });
-  document.getElementById('oportunidadSection').classList.add('hidden');
+  if (!oportunidadActual) return;
+  socket.emit('aceptar_trabajo', {
+    pedidoId: oportunidadActual.pedidoId,
+    trabajadorId: miId,
+    trabajadorNombre: miNombre
+  });
+  log('Aceptando orden...', 'info');
 }
+
 function rechazarOrden() {
-  socket.emit('trabajador:rechazar', { ordenId: oportunidadId });
   document.getElementById('oportunidadSection').classList.add('hidden');
-  oportunidadId = null;
+  oportunidadActual = null;
   log('Oportunidad rechazada', 'info');
 }
+
 function marcarEnProceso() {
-  socket.emit('trabajador:enProceso', { ordenId: ordenActual });
+  socket.emit('cambiar_estado', { userId: miId, estado: 'EN_PROCESO', pedidoId: ordenActual });
   document.getElementById('btnEnProceso').classList.add('hidden');
   log('Trabajo iniciado', 'success');
 }
+
 function marcarRealizado() {
-  socket.emit('trabajador:realizado', { ordenId: ordenActual });
-  log('Trabajo marcado como realizado — esperando confirmación del cliente', 'info');
+  socket.emit('trabajo_completado', { pedidoId: ordenActual, trabajadorId: miId });
+  log('Marcado como realizado — esperando confirmación', 'info');
 }
 
-// ── CHAT ────────────────────────────────────────────
-function abrirChatOrden() {
-  if (!ordenActual) return;
-  salaActual = 'orden_' + ordenActual;
-  document.getElementById('chat-titulo').textContent = '💬 Chat con el cliente';
-  chatAbrir(salaActual);
-}
-function abrirChatGeneral() {
-  salaActual = 'general_' + miId;
-  document.getElementById('chat-titulo').textContent = '💬 Mensajes';
-  chatAbrir(salaActual);
-}
+function abrirChatOrden()   { if (!ordenActual) return; salaActual = 'orden_' + ordenActual; document.getElementById('chat-titulo').textContent = '💬 Chat con el cliente'; chatAbrir(salaActual); }
+function abrirChatGeneral() { salaActual = 'general_' + miId; document.getElementById('chat-titulo').textContent = '💬 Mensajes'; chatAbrir(salaActual); }
 
 async function chatAbrir(salaId) {
   document.getElementById('chat-mensajes').innerHTML = '';
   document.getElementById('chat-modal').classList.add('abierto');
   document.getElementById('chat-input').focus();
-
   socket.emit('chat:unirse', { salaId, usuarioId: miId, nombre: miNombre, rol: 'trabajador' });
-
   try {
-    const r = await fetch('/api/mensajes/sala/' + salaId, {
-      headers: { Authorization: 'Bearer ' + miToken }
-    });
+    const r = await fetch('/api/mensajes/sala/'+salaId, { headers:{ Authorization:'Bearer '+miToken } });
     const d = await r.json();
     if (d.ok) { d.mensajes.forEach(m => chatAgregarBurbuja(m)); chatScrollAbajo(); }
-  } catch(e){}
-
-  fetch('/api/mensajes/leidos/' + salaId, {
-    method:'POST', headers:{ Authorization:'Bearer '+miToken }
-  }).catch(()=>{});
+  } catch(e) {}
+  fetch('/api/mensajes/leidos/'+salaId, { method:'POST', headers:{ Authorization:'Bearer '+miToken } }).catch(()=>{});
 }
 
-function chatCerrar() {
-  document.getElementById('chat-modal').classList.remove('abierto');
-  salaActual = null;
-}
+function chatCerrar() { document.getElementById('chat-modal').classList.remove('abierto'); salaActual = null; }
+
 function chatEnviar() {
   const input = document.getElementById('chat-input');
   const texto = input.value.trim();
@@ -358,28 +363,26 @@ function chatEnviar() {
   input.value = '';
   socket.emit('chat:dejoDeEscribir', { salaId: salaActual });
 }
+
 function chatTyping() {
   socket.emit('chat:escribiendo', { salaId: salaActual });
   clearTimeout(typingTimer);
   typingTimer = setTimeout(() => socket.emit('chat:dejoDeEscribir', { salaId: salaActual }), 1500);
 }
+
 function chatAgregarBurbuja(msg) {
   const esPropio = msg.remitente?.toString() === miId;
   const div = document.createElement('div');
   div.className = 'burbuja-wrap ' + (esPropio ? 'propio' : 'ajeno');
   const hora = new Date(msg.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  div.innerHTML = `
-    ${!esPropio ? `<span class="burbuja-nombre">${msg.remitenteNombre}</span>` : ''}
-    <div class="burbuja ${esPropio?'propio':'ajeno'}">${esc(msg.texto)}</div>
-    <span class="burbuja-hora">${hora}</span>`;
+  div.innerHTML = (!esPropio ? '<span class="burbuja-nombre">'+msg.remitenteNombre+'</span>' : '') +
+    '<div class="burbuja '+(esPropio?'propio':'ajeno')+'">'+esc(msg.texto)+'</div>' +
+    '<span class="burbuja-hora">'+hora+'</span>';
   document.getElementById('chat-mensajes').appendChild(div);
 }
-function chatScrollAbajo() {
-  const c = document.getElementById('chat-mensajes'); if(c) c.scrollTop = c.scrollHeight;
-}
-function esc(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+
+function chatScrollAbajo() { const c=document.getElementById('chat-mensajes'); if(c) c.scrollTop=c.scrollHeight; }
+function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
