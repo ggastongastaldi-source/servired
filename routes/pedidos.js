@@ -65,6 +65,7 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     });
 
     const pedidoGuardado = await nuevoPedido.save();
+    console.log('[PEDIDOS] io disponible:', !!io);
     if (io) {
       const payload = {
         pedidoId: pedidoGuardado._id,
