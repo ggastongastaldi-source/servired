@@ -1,8 +1,15 @@
 const Usuario = require('../models/Usuario');
 const Pedido = require('../models/Pedido');
 
-// Mapa en memoria: pedidoId -> socketId del cliente
-const clienteSockets = {};
+const LRU = require('lru-cache');
+const clienteSockets = new LRU({
+  max: 5000,
+  ttl: 1000 * 60 * 30,
+  updateAgeOnGet: true,
+  dispose: (value, key) => {
+    console.log('[LRU] Expirado:', key);
+  }
+});
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
@@ -19,7 +26,7 @@ module.exports = (io) => {
       const clienteRoom = userId ? 'cliente_' + userId : 'cliente_' + socket.id;
       socket.join(clienteRoom);
       // Si viene con pedidoId, lo asociamos para notificarle después
-      if (pedidoId) clienteSockets[pedidoId] = socket.id;
+      if (pedidoId) clienteSockets.get(pedidoId) = socket.id;
       // Si viene con userId, guardar socketId en DB
       if (userId) {
         await Usuario.findByIdAndUpdate(userId, { socketId: socket.id }).catch(() => {});
@@ -31,7 +38,7 @@ module.exports = (io) => {
     // Cliente asocia pedido a su socket (lo llama después de crear pedido)
     socket.on('registrar_pedido', ({ pedidoId }) => {
       if (pedidoId) {
-        clienteSockets[pedidoId] = socket.id;
+        clienteSockets.get(pedidoId) = socket.id;
         socket.join('pedido_' + pedidoId);
         console.log('[Socket] Cliente registrado en pedido:', pedidoId);
       }
@@ -93,7 +100,7 @@ module.exports = (io) => {
         });
 
         // ✅ Notificar al cliente específicamente
-        const clienteSocketId = clienteSockets[pedidoId];
+        const clienteSocketId = clienteSockets.get(pedidoId);
         const targetRoom = clienteSocketId
           ? 'cliente_' + clienteSocketId
           : 'pedido_' + pedidoId;
@@ -135,7 +142,7 @@ module.exports = (io) => {
       }
 
       // Enviar al cliente del pedido
-      const clienteSocketId = clienteSockets[pedidoId];
+      const clienteSocketId = clienteSockets.get(pedidoId);
       const targetRoom = clienteSocketId
         ? 'cliente_' + clienteSocketId
         : 'pedido_' + pedidoId;
@@ -156,7 +163,7 @@ module.exports = (io) => {
           fechaRealizacion: new Date()
         });
 
-        const clienteSocketId = clienteSockets[pedidoId];
+        const clienteSocketId = clienteSockets.get(pedidoId);
         const targetRoom = clienteSocketId
           ? 'cliente_' + clienteSocketId
           : 'pedido_' + pedidoId;
@@ -186,7 +193,7 @@ module.exports = (io) => {
       ).catch(() => {});
       // Limpiar clienteSockets si era un cliente
       for (const [pid, sid] of Object.entries(clienteSockets)) {
-        if (sid === socket.id) delete clienteSockets[pid];
+        if (sid === socket.id) delete clienteSockets.get(pid);
       }
       console.log('[Socket] Desconectado:', socket.id);
     });

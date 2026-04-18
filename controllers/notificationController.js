@@ -174,24 +174,25 @@ async function notificarWorkers(pedido, workers) {
   const io = global.io;
   if (!io) return;
   
-  for (const worker of workers) {
-    // Notificar a sala individual del worker
-    io.to(`worker_${worker._id}`).emit('nueva_oportunidad', {
-      pedidoId: pedido._id,
-      tipoServicio: pedido.tipoServicio,
-      zona: pedido.zona,
-      precio: pedido.total_estimado,
-      pagoWorker: pedido.pago_worker,
-      descripcion: pedido.descripcion,
-      direccion: pedido.direccion,
-      expiraEn: 300 // 5 minutos para aceptar
-    });
-    
-    // Marcar como notificado
-    await Pedido.findByIdAndUpdate(pedido._id, {
-      \$addToSet: { workersNotificados: worker._id }
-    });
-  }
+  // BATCH: Un solo emit a las salas del rubro y zona
+  io.to('rubro_' + pedido.tipoServicio).to('zona_' + pedido.zona).emit('nueva_oportunidad', {
+    pedidoId: pedido._id,
+    tipoServicio: pedido.tipoServicio,
+    zona: pedido.zona,
+    precio: pedido.total_estimado,
+    pagoWorker: pedido.pago_worker,
+    descripcion: pedido.descripcion,
+    direccion: pedido.direccion,
+    expiraEn: 300
+  });
+  
+  // Marcar todos como notificados en una sola query
+  const workerIds = workers.map(w => w._id);
+  await Pedido.findByIdAndUpdate(pedido._id, {
+    $addToSet: { workersNotificados: { $each: workerIds } }
+  });
+  
+  console.log('[FSM] Batch emit a rubro_' + pedido.tipoServicio + ' + zona_' + pedido.zona + ' (' + workers.length + ' workers)');
 }
 
 async function buscarWorkersDisponibles(rubro, zona, lat, lng) {
