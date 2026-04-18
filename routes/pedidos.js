@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+let io = null;
 const Pedido = require('../models/Pedido');
 const { verificarToken, verificarRol } = require('../middleware/auth');
 const { 
@@ -64,7 +65,7 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     });
 
     const pedidoGuardado = await nuevoPedido.save();
-    if (_io) {
+    if (io) {
       const payload = {
         pedidoId: pedidoGuardado._id,
         tipoServicio,
@@ -74,8 +75,8 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
         total_estimado,
         pago_worker
       };
-      _io.to('rubro-' + tipoServicio).emit('nueva_oportunidad', payload);
-      _io.to('zona-' + zona).emit('nueva_oportunidad', payload);
+      io.to('rubro-' + tipoServicio).emit('nueva_oportunidad', payload);
+      io.to('zona-' + zona).emit('nueva_oportunidad', payload);
       console.log('[Socket] nueva_oportunidad emitida:', tipoServicio, zona);
     }
     console.log(`[PEDIDOS] Creado: ${nuevoPedido._id} - ${tipoServicio} en ${zona}`);
