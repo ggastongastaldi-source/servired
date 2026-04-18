@@ -126,6 +126,17 @@
     const socket = io();
     let currentToken = '';
     let currentUserId = '';
+    // Auto-login desde localStorage
+    window.onload = () => {
+      const tok = localStorage.getItem('token');
+      const rub = localStorage.getItem('rubro');
+      if (tok) {
+        document.getElementById('tokenInput').value = tok;
+        if (rub) document.getElementById('rubroInput').value = rub;
+        conectar();
+      }
+    };
+
     let currentRubro = '';
     let currentNombre = '';
     let pedidoActivoId = null;
@@ -149,6 +160,7 @@
     function conectar() {
         currentToken = document.getElementById('tokenInput').value.trim();
         currentRubro = document.getElementById('rubroInput').value;
+        localStorage.setItem('rubro', currentRubro);
         if (!currentToken) return alert('Token requerido');
         if (!currentRubro) return alert('Seleccioná tu especialidad');
 

@@ -131,6 +131,15 @@
     let currentUserId = '';
     let pedidoActual = null;
     let mapa = null;
+
+    // Auto-login desde localStorage (token guardado por index.html)
+    window.onload = () => {
+      const t = localStorage.getItem('token');
+      if (t) {
+        document.getElementById('tokenInput').value = t;
+        conectar();
+      }
+    };
     let markerWorker = null;
 
     // Decodificar JWT sin librería (solo payload, no verifica firma)
