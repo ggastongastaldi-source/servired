@@ -1,4 +1,5 @@
 const Usuario = require('../models/Usuario');
+const { registrarTransaccion } = require('../controllers/finanzasController');
 const Pedido = require('../models/Pedido');
 
 const LRU = require('lru-cache');
@@ -179,6 +180,9 @@ module.exports = (io) => {
         }
 
         socket.emit('trabajo_completado_ok', { pedidoId });
+        
+        // REGISTRO FINANCIERO AUTOMÁTICO
+        registrarTransaccion(pedidoId);
         console.log('[Socket] Trabajo completado:', pedidoId);
       } catch (e) {
         socket.emit('error', { mensaje: e.message });

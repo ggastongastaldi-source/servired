@@ -26,6 +26,7 @@ app.use('/api/matching', require('./routes/matching'));
 app.use('/api/pagos', require('./routes/pagos'));
 app.use('/api/servicios', require('./routes/servicios'));
 app.use('/api/smart-quote', require('./routes/smartQuote'));
+app.use('/api/finanzas', require('./routes/finanzas'));
 
 // Static frontend
 app.use(express.static('public'));
