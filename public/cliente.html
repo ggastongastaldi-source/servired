@@ -1,85 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ServiRed — Cliente</title>
-<script src="/socket.io/socket.io.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
-.container{max-width:480px;margin:0 auto;padding:20px}
-.header{text-align:center;padding:20px 0}
-.header h1{color:#3b82f6;font-size:1.5rem}
-.section{background:#1e293b;border-radius:12px;padding:16px;margin:16px 0;border:1px solid #334155}
-.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px}
-.btn-primary{background:#3b82f6;color:#fff}
-.btn-success{background:#22c55e;color:#fff}
-.btn-danger{background:#ef4444;color:#fff}
-.btn-chat{background:#6366f1;color:#fff}
-.btn-outline{background:transparent;border:2px solid #3b82f6;color:#3b82f6}
-input,select,textarea{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;font-size:1rem}
-.hidden{display:none!important}
-.estado-box{padding:16px;border-radius:8px;text-align:center;margin:12px 0;font-weight:700}
-.estado-buscando{background:#f59e0b;color:#0f172a;animation:pulse 2s infinite}
-.estado-aceptada{background:#22c55e;color:#fff}
-.estado-proceso{background:#6366f1;color:#fff}
-.estado-realizada{background:#8b5cf6;color:#fff}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
-#mapaWorker{height:220px;border-radius:10px;margin-top:12px;border:2px solid #22c55e}
-/* CHAT MODAL */
-#chat-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center}
-#chat-modal.abierto{display:flex}
-.chat-box{width:100%;max-width:480px;height:72vh;background:#0d0d1a;border-top:2px solid #00E5FF;border-radius:16px 16px 0 0;display:flex;flex-direction:column}
-.chat-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #1a1a3a}
-.chat-titulo{color:#00E5FF;font-weight:700;font-size:15px}
-.chat-cerrar{background:none;border:none;color:#aaa;font-size:22px;cursor:pointer}
-#chat-mensajes{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
-#chat-typing{padding:0 16px 4px;color:#888;font-size:12px;min-height:18px}
-.chat-input-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #1a1a3a}
-#chat-input{flex:1;background:#1a1a2e;border:1px solid #00E5FF44;border-radius:22px;padding:10px 16px;color:#fff;font-size:14px;outline:none}
-.chat-send{background:#00E5FF;border:none;border-radius:50%;width:42px;height:42px;cursor:pointer;font-size:18px;flex-shrink:0}
-.burbuja-wrap{display:flex;flex-direction:column}
-.burbuja-wrap.propio{align-items:flex-end}
-.burbuja-wrap.ajeno{align-items:flex-start}
-.burbuja{max-width:75%;border-radius:16px;padding:9px 13px;font-size:14px;word-break:break-word}
-.burbuja.propio{background:#00E5FF22;border:1px solid #00E5FF55;color:#fff;border-radius:16px 16px 4px 16px}
-.burbuja.ajeno{background:#1a1a3a;border:1px solid #333;color:#fff;border-radius:16px 16px 16px 4px}
-.burbuja-nombre{font-size:11px;color:#888;margin-bottom:2px}
-.burbuja-hora{font-size:10px;color:#555;margin-top:3px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente - ServiRed</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .header h1 { color: #3b82f6; font-size: 1.5rem; }
+        .section { background: #1e293b; border-radius: 12px; padding: 16px; margin: 16px 0; border: 1px solid #334155; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-success { background: #22c55e; color: white; }
+        .estado-box { padding: 16px; border-radius: 8px; text-align: center; margin: 12px 0; }
+        .estado-searching { background: #f59e0b; color: #0f172a; animation: pulse 2s infinite; }
+        .estado-aceptada { background: #22c55e; color: white; }
+        .estado-realizada { background: #6366f1; color: white; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+        .pedido-card { background: #0f172a; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #3b82f6; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 1rem; }
+        .hidden { display: none !important; }
+        #mapaWorker { height: 220px; border-radius: 10px; margin-top: 12px; border: 2px solid #22c55e; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; background: #334155; color: #94a3b8; }
+        .badge.online { background: #14532d; color: #22c55e; }
+        .alerta { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 10px; padding: 14px; margin: 8px 0; font-size: 0.95rem; }
+    </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <h1>🏠 ServiRed Cliente</h1>
-    <p style="color:#64748b;margin-top:8px">Solicitá servicios en tiempo real</p>
-  </div>
+    <div class="header">
+        <h1>🏠 ServiRed Cliente</h1>
+        <p style="color:#64748b;margin-top:8px;">Solicitá servicios en tiempo real</p>
+    </div>
 
-  <!-- LOGIN -->
-  <div class="section" id="loginSection">
-    <h3 style="color:#94a3b8;margin-bottom:12px">Ingresá tu token</h3>
-    <input type="text" id="tokenInput" placeholder="Token JWT...">
-    <button class="btn btn-primary" onclick="conectar()">Ingresar</button>
-  </div>
+    <!-- Login -->
+    <div class="section" id="loginSection">
+        <h3 style="color:#94a3b8;margin-bottom:12px;">Ingresá tu token</h3>
+        <input type="text" id="tokenInput" placeholder="Token JWT...">
+        <button class="btn btn-primary" onclick="conectar()">Ingresar</button>
+    </div>
 
-  <!-- NUEVO PEDIDO -->
-  <div class="section hidden" id="pedidoSection">
-    <h3 style="color:#94a3b8;margin-bottom:4px">Nuevo Pedido</h3>
-    <select id="tipoServicio">
-      <option value="">¿Qué necesitás?</option>
-      <option value="plomeria">🚿 Plomería</option>
-      <option value="electricidad">⚡ Electricidad</option>
-      <option value="gasista">🔥 Gasista</option>
-      <option value="cerrajeria">🔑 Cerrajería</option>
-      <option value="servicio_domestico">🧹 Servicio Doméstico</option>
-      <option value="pintura">🎨 Pintura</option>
-      <option value="albanileria">🧱 Albañilería</option>
-      <option value="camaras">📷 Cámaras de Seguridad</option>
-      <option value="alarmas">🚨 Alarmas</option>
-      <option value="aire_acondicionado">❄️ Aire Acondicionado</option>
+    <!-- Formulario -->
+    <div class="section hidden" id="pedidoSection">
+        <h3 style="color:#94a3b8;margin-bottom:4px;">Nuevo Pedido</h3>
+        <select id="tipoServicio">
+            <option value="">¿Qué necesitás?</option>
+            <option value="plomeria">🚿 Plomería</option>
+            <option value="electricidad">⚡ Electricidad</option>
+            <option value="domestica">🧹 Servicio Doméstico</option>
+            <option value="cerrajeria">🔑 Cerrajería</option>
+            <option value="pintura">🎨 Pintura</option>
+            <option value="gasista">🔥 Gasista</option>
+            <option value="camaras">📷 Cámaras</option>
+            <option value="alarmas">🚨 Alarmas</option>
+            <option value="albanileria">🧱 Albañilería</option>
+            <option value="aire_acondicionado">❄️ Aire Acondicionado</option>
       <option value="herreria">⚙️ Herrería</option>
       <option value="carpinteria">🪵 Carpintería</option>
       <option value="mudanzas">🚚 Mudanzas</option>
@@ -96,17 +77,18 @@ input,select,textarea{width:100%;padding:12px;margin:8px 0;border-radius:8px;bor
       <option value="ascensores">🛗 Ascensores</option>
       <option value="energia_solar">☀️ Energía Solar</option>
       <option value="cuidado_adultos">👴 Cuidado de Adultos</option>
-    </select>
-    <select id="zona">
-      <option value="">¿Zona?</option>
-      <option value="palermo">Palermo</option>
-      <option value="belgrano">Belgrano</option>
-      <option value="recoleta">Recoleta</option>
-      <option value="caballito">Caballito</option>
-      <option value="san_telmo">San Telmo</option>
-      <option value="nuñez">Nuñez</option>
-      <option value="flores">Flores</option>
-      <option value="villa_urquiza">Villa Urquiza</option>
+        </select>
+        <select id="zona">
+            <option value="">¿Zona?</option>
+            <option value="palermo">Palermo</option>
+            <option value="belgrano">Belgrano</option>
+            <option value="recoleta">Recoleta</option>
+            <option value="caballito">Caballito</option>
+            <option value="san_telmo">San Telmo</option>
+            <option value="nuñez">Nuñez</option>
+            <option value="flores">Flores</option>
+            <option value="villa_urquiza">Villa Urquiza</option>
+      <option value="la_matanza">La Matanza</option>
       <option value="lanus">Lanús</option>
       <option value="quilmes">Quilmes</option>
       <option value="lomas_zamora">Lomas de Zamora</option>
@@ -114,239 +96,208 @@ input,select,textarea{width:100%;padding:12px;margin:8px 0;border-radius:8px;bor
       <option value="tigre">Tigre</option>
       <option value="san_isidro">San Isidro</option>
       <option value="vicente_lopez">Vicente López</option>
-    </select>
-    <textarea id="descripcion" rows="3" placeholder="Describí el problema..."></textarea>
-    <button class="btn btn-primary" onclick="crearPedido()">🔍 Buscar Especialista</button>
-    <button class="btn btn-chat" onclick="abrirChatGeneral()" style="margin-top:6px">💬 Mensajes</button>
-  </div>
+      <option value="tres_febrero">Tres de Febrero</option>
+      <option value="merlo">Merlo</option>
+        </select>
+        <textarea id="descripcion" rows="3" placeholder="Describí el problema..."></textarea>
+        <button class="btn btn-primary" id="btnBuscar" onclick="crearPedido()">🔍 Buscar Especialista</button>
+    </div>
 
-  <!-- ESTADO DEL PEDIDO -->
-  <div class="section hidden" id="estadoSection">
-    <div id="estadoBox" class="estado-box estado-buscando">🔍 Buscando especialista...</div>
-    <div id="workerInfo" class="hidden" style="margin-top:12px">
-      <div style="background:#0f172a;padding:12px;border-radius:8px;border-left:4px solid #22c55e">
-        <p style="font-weight:700;color:#22c55e" id="workerNombre"></p>
-        <p style="color:#94a3b8;font-size:.9rem" id="workerRubro"></p>
-        <p style="color:#94a3b8;font-size:.9rem" id="workerETA"></p>
-      </div>
-      <div id="mapaWorker" class="hidden"></div>
-      <button class="btn btn-chat" onclick="abrirChatOrden()" style="margin-top:10px">💬 Chatear con el trabajador</button>
+    <!-- Estado del pedido -->
+    <div class="section hidden" id="estadoSection">
+        <h3 style="color:#94a3b8;margin-bottom:4px;">Estado de tu Pedido</h3>
+        <div id="estadoBox" class="estado-box estado-searching">
+            <h4 id="estadoTitulo">🔍 Buscando Especialista</h4>
+            <p id="estadoMensaje">Activando red de profesionales en tu zona...</p>
+        </div>
+        <div id="infoWorker" class="hidden alerta">
+            <strong>👷 Profesional en camino</strong>
+            <p id="workerNombre" style="margin-top:4px;color:#94a3b8;"></p>
+        </div>
+        <div id="mapaWorker" class="hidden"></div>
+        <button id="btnConfirmarPago" class="btn btn-success hidden" onclick="confirmarPago()">✅ Confirmar Pago</button>
     </div>
-    <div id="accionesCliente" class="hidden" style="margin-top:12px">
-      <button class="btn btn-success" onclick="confirmarRealizado()">✅ Confirmar trabajo realizado</button>
-    </div>
-    <button class="btn btn-outline" onclick="cancelarPedido()" style="margin-top:8px">✕ Cancelar pedido</button>
-  </div>
 
-  <!-- CALIFICACIÓN -->
-  <div class="section hidden" id="calificacionSection">
-    <h3 style="color:#94a3b8;margin-bottom:12px">¿Cómo estuvo el servicio?</h3>
-    <div style="text-align:center;font-size:2rem;margin:12px 0" id="estrellas">
-      <span onclick="setEstrellas(1)">⭐</span><span onclick="setEstrellas(2)">⭐</span>
-      <span onclick="setEstrellas(3)">⭐</span><span onclick="setEstrellas(4)">⭐</span><span onclick="setEstrellas(5)">⭐</span>
+    <!-- Mis Pedidos -->
+    <div class="section hidden" id="misPedidosSection">
+        <h3 style="color:#94a3b8;margin-bottom:8px;">Mis Pedidos</h3>
+        <div id="listaPedidos"></div>
     </div>
-    <textarea id="comentario" rows="2" placeholder="Comentario (opcional)..."></textarea>
-    <button class="btn btn-primary" onclick="enviarCalificacion()">Enviar calificación</button>
-  </div>
-</div>
-
-<!-- CHAT MODAL -->
-<div id="chat-modal">
-  <div class="chat-box">
-    <div class="chat-header">
-      <span class="chat-titulo" id="chat-titulo">💬 Chat</span>
-      <button class="chat-cerrar" onclick="chatCerrar()">✕</button>
-    </div>
-    <div id="chat-mensajes"></div>
-    <div id="chat-typing"></div>
-    <div class="chat-input-row">
-      <input id="chat-input" type="text" placeholder="Escribí un mensaje..." maxlength="1000"
-        oninput="chatTyping()" onkeydown="if(event.key==='Enter')chatEnviar()">
-      <button class="chat-send" onclick="chatEnviar()">➤</button>
-    </div>
-  </div>
 </div>
 
 <script>
-let socket, miToken, miId, miNombre;
-let ordenActual = null, salaActual = null;
-let mapaL = null, markerWorker = null;
-let calificacion = 5, typingTimer = null;
+    const socket = io();
+    let currentToken = '';
+    let currentUserId = '';
+    let pedidoActual = null;
+    let mapa = null;
+    let markerWorker = null;
 
-window.onload = () => {
-  const t = localStorage.getItem('token');
-  if (t) { document.getElementById('tokenInput').value = t; conectar(); }
-};
-
-function conectar() {
-  miToken = document.getElementById('tokenInput').value.trim();
-  if (!miToken) return;
-  try {
-    const p = JSON.parse(atob(miToken.split('.')[1]));
-    miId = p.id || p._id || p.userId;
-    miNombre = p.nombre || p.email || 'Cliente';
-  } catch(e) { alert('Token inválido'); return; }
-  localStorage.setItem('token', miToken);
-  localStorage.setItem('userId', miId);
-
-  socket = io({ auth: { token: miToken } });
-
-  socket.on('connect', () => {
-    socket.emit('cliente_conectado', { token: miToken, userId: miId });
-  });
-
-  socket.on('pedido_aceptado', (data) => {
-    ordenActual = data.pedidoId || ordenActual;
-    document.getElementById('estadoBox').className = 'estado-box estado-aceptada';
-    document.getElementById('estadoBox').textContent = '✅ ¡Especialista en camino!';
-    document.getElementById('workerInfo').classList.remove('hidden');
-    document.getElementById('workerNombre').textContent = data.trabajadorNombre || 'Trabajador';
-    document.getElementById('workerRubro').textContent  = data.tipoServicio || '';
-    document.getElementById('workerETA').textContent    = '';
-    initMapa();
-  });
-
-  socket.on('estado_pedido', (data) => {
-    if (data.estado === 'ACEPTADA') {
-      document.getElementById('estadoBox').className = 'estado-box estado-aceptada';
-      document.getElementById('estadoBox').textContent = '✅ Especialista en camino';
-      document.getElementById('workerInfo').classList.remove('hidden');
-    } else if (data.estado === 'EN_PROCESO') {
-      document.getElementById('estadoBox').className = 'estado-box estado-proceso';
-      document.getElementById('estadoBox').textContent = '🔧 Trabajo en proceso...';
-      document.getElementById('accionesCliente').classList.remove('hidden');
-    } else if (data.estado === 'REALIZADA') {
-      document.getElementById('estadoBox').className = 'estado-box estado-realizada';
-      document.getElementById('estadoBox').textContent = '✅ Listo — confirmá para pagar';
-      document.getElementById('accionesCliente').classList.remove('hidden');
-    } else if (data.estado === 'PAGADA') {
-      document.getElementById('estadoSection').classList.add('hidden');
-      document.getElementById('calificacionSection').classList.remove('hidden');
+    // Decodificar JWT sin librería (solo payload, no verifica firma)
+    function decodeJWT(token) {
+        try {
+            const payload = token.split('.')[1];
+            return JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
+        } catch(e) { return {}; }
     }
-  });
 
-  socket.on('trabajador_ubicacion', (data) => {
-    if (!mapaL) return;
-    const ll = [data.lat, data.lng];
-    if (!markerWorker) {
-      markerWorker = L.marker(ll, { icon: L.divIcon({ html:'<div style="font-size:24px">🔧</div>', iconSize:[30,30] }) }).addTo(mapaL);
-    } else { markerWorker.setLatLng(ll); }
-    mapaL.setView(ll, 15);
-  });
+    function conectar() {
+        currentToken = document.getElementById('tokenInput').value.trim();
+        if (!currentToken) return alert('Token requerido');
+        const decoded = decodeJWT(currentToken);
+        currentUserId = decoded.userId || decoded.id || '';
+        socket.emit('cliente_conectado', { token: currentToken, userId: currentUserId });
+    }
 
-  socket.on('chat:nuevoMensaje', (msg) => {
-    if (msg.salaId === salaActual) { chatAgregarBurbuja(msg); chatScrollAbajo(); }
-  });
-  socket.on('chat:escribiendo',    ({ nombre }) => { document.getElementById('chat-typing').textContent = nombre + ' está escribiendo...'; });
-  socket.on('chat:dejoDeEscribir', ()           => { document.getElementById('chat-typing').textContent = ''; });
+    async function crearPedido() {
+        const tipo = document.getElementById('tipoServicio').value;
+        const zona = document.getElementById('zona').value;
+        const desc = document.getElementById('descripcion').value;
+        if (!tipo || !zona) return alert('Completá servicio y zona');
 
-  document.getElementById('loginSection').classList.add('hidden');
-  document.getElementById('pedidoSection').classList.remove('hidden');
-}
+        document.getElementById('btnBuscar').disabled = true;
+        document.getElementById('btnBuscar').textContent = '⏳ Enviando...';
 
-async function crearPedido() {
-  const tipoServicio = document.getElementById('tipoServicio').value;
-  const zona         = document.getElementById('zona').value;
-  const descripcion  = document.getElementById('descripcion').value.trim();
-  if (!tipoServicio || !zona) { alert('Seleccioná servicio y zona'); return; }
+        try {
+            // Intentar obtener GPS real
+            let lat = -34.6, lng = -58.4;
+            try {
+                const pos = await new Promise((res, rej) =>
+                    navigator.geolocation.getCurrentPosition(res, rej, { timeout: 4000 })
+                );
+                lat = pos.coords.latitude;
+                lng = pos.coords.longitude;
+            } catch(e) {}
 
-  let lat = -34.6037, lng = -58.3816;
-  try {
-    const pos = await new Promise((res,rej) => navigator.geolocation.getCurrentPosition(res,rej,{timeout:3000}));
-    lat = pos.coords.latitude; lng = pos.coords.longitude;
-  } catch(e) {}
+            const res = await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + currentToken
+                },
+                body: JSON.stringify({ tipoServicio: tipo, zona, descripcion: desc, complejidad: 'baja', lat, lng })
+            });
 
-  try {
-    const resp = await fetch('/api/pedidos', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+miToken },
-      body: JSON.stringify({ tipoServicio, zona, descripcion, lat, lng })
+            const data = await res.json();
+            if (data.ok) {
+                pedidoActual = data.pedido;
+                // ← Clave: registrar pedido en socket para recibir updates
+                socket.emit('registrar_pedido', { pedidoId: pedidoActual._id });
+                mostrarEstado('SEARCHING');
+                document.getElementById('pedidoSection').classList.add('hidden');
+                cargarMisPedidos();
+            } else {
+                alert('Error: ' + (data.error || 'desconocido'));
+                document.getElementById('btnBuscar').disabled = false;
+                document.getElementById('btnBuscar').textContent = '🔍 Buscar Especialista';
+            }
+        } catch(e) {
+            alert('Error de conexión');
+            document.getElementById('btnBuscar').disabled = false;
+            document.getElementById('btnBuscar').textContent = '🔍 Buscar Especialista';
+        }
+    }
+
+    function mostrarEstado(fase) {
+        document.getElementById('estadoSection').classList.remove('hidden');
+        const box = document.getElementById('estadoBox');
+        const titulo = document.getElementById('estadoTitulo');
+        const msg = document.getElementById('estadoMensaje');
+        box.className = 'estado-box';
+
+        if (fase === 'SEARCHING') {
+            box.classList.add('estado-searching');
+            titulo.textContent = '🔍 Buscando Especialista';
+            msg.textContent = 'Activando red de profesionales en tu zona...';
+        } else if (fase === 'ACEPTADA') {
+            box.classList.add('estado-aceptada');
+            titulo.textContent = '✅ Profesional Asignado';
+            msg.textContent = 'Está en camino hacia tu ubicación';
+            document.getElementById('infoWorker').classList.remove('hidden');
+            iniciarMapa();
+        } else if (fase === 'REALIZADA') {
+            box.classList.add('estado-realizada');
+            titulo.textContent = '🏁 Trabajo Completado';
+            msg.textContent = 'El profesional marcó el trabajo como terminado';
+            document.getElementById('btnConfirmarPago').classList.remove('hidden');
+        }
+    }
+
+    function iniciarMapa() {
+        document.getElementById('mapaWorker').classList.remove('hidden');
+        if (mapa) return;
+        mapa = L.map('mapaWorker').setView([-34.6, -58.4], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(mapa);
+    }
+
+    function confirmarPago() {
+        alert('Funcionalidad de pago próximamente. ¡Gracias por usar ServiRed!');
+    }
+
+    async function cargarMisPedidos() {
+        try {
+            const res = await fetch('/api/pedidos/mis-pedidos', {
+                headers: { 'Authorization': 'Bearer ' + currentToken }
+            });
+            const data = await res.json();
+            if (data.ok && data.pedidos.length) {
+                const lista = document.getElementById('listaPedidos');
+                lista.innerHTML = data.pedidos.map(p => `
+                    <div class="pedido-card">
+                        <strong>${p.tipoServicio}</strong> — ${p.zona}<br>
+                        <span class="badge ${p.estado === 'ACEPTADA' ? 'online' : ''}">${p.estado}</span>
+                        <small style="float:right;color:#64748b;">$${(p.total_estimado||0).toLocaleString('es-AR')}</small>
+                    </div>
+                `).join('');
+                document.getElementById('misPedidosSection').classList.remove('hidden');
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    // ── Socket events ────────────────────────────────────────
+    socket.on('conectado_ok', () => {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('pedidoSection').classList.remove('hidden');
+        cargarMisPedidos();
     });
-    const data = await resp.json();
-    if (!data.ok) { alert('Error: ' + data.error); return; }
-    ordenActual = data.pedido._id;
-    socket.emit('registrar_pedido', { pedidoId: ordenActual });
-    document.getElementById('pedidoSection').classList.add('hidden');
-    document.getElementById('estadoSection').classList.remove('hidden');
-    document.getElementById('estadoBox').className = 'estado-box estado-buscando';
-    document.getElementById('estadoBox').textContent = '🔍 Buscando especialista...';
-    document.getElementById('workerInfo').classList.add('hidden');
-    document.getElementById('accionesCliente').classList.add('hidden');
-  } catch(e) { alert('Error de red: ' + e.message); }
-}
 
-function cancelarPedido() {
-  if (!confirm('¿Cancelar pedido?')) return;
-  if (ordenActual) socket.emit('cancelar_pedido', { pedidoId: ordenActual });
-  ordenActual = null;
-  document.getElementById('estadoSection').classList.add('hidden');
-  document.getElementById('pedidoSection').classList.remove('hidden');
-}
+    socket.on('trabajo_aceptado', (data) => {
+        console.log('[Cliente] trabajo_aceptado:', data);
+        document.getElementById('workerNombre').textContent = data.trabajadorNombre || 'Profesional asignado';
+        mostrarEstado('ACEPTADA');
+        cargarMisPedidos();
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('¡Pedido Aceptado! 🎉', { body: data.mensaje });
+        }
+    });
 
-function confirmarRealizado() { socket.emit('confirmar_pago', { pedidoId: ordenActual }); }
+    socket.on('estado_pedido', (data) => {
+        console.log('[Cliente] estado_pedido:', data);
+        if (data.estado === 'ACEPTADA') mostrarEstado('ACEPTADA');
+        if (data.estado === 'REALIZADA') mostrarEstado('REALIZADA');
+        cargarMisPedidos();
+    });
 
-function initMapa() {
-  const el = document.getElementById('mapaWorker');
-  el.classList.remove('hidden');
-  if (mapaL) return;
-  mapaL = L.map('mapaWorker').setView([-34.6037,-58.3816],13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaL);
-}
+    // GPS del worker en tiempo real
+    socket.on('worker_gps', (data) => {
+        console.log('[Cliente] GPS worker:', data.lat, data.lng);
+        if (!mapa) iniciarMapa();
+        const pos = [data.lat, data.lng];
+        if (markerWorker) {
+            markerWorker.setLatLng(pos);
+        } else {
+            markerWorker = L.marker(pos, {
+                icon: L.divIcon({ html: '👷', className: '', iconSize: [30,30] })
+            }).addTo(mapa).bindPopup('Profesional en camino');
+        }
+        mapa.setView(pos, 15);
+    });
 
-function setEstrellas(n) { calificacion = n; }
-function enviarCalificacion() {
-  socket.emit('calificar_pedido', { pedidoId: ordenActual, estrellas: calificacion, comentario: document.getElementById('comentario').value });
-  document.getElementById('calificacionSection').classList.add('hidden');
-  document.getElementById('pedidoSection').classList.remove('hidden');
-  alert('¡Gracias por tu calificación!');
-}
-
-function abrirChatOrden()   { if (!ordenActual) return; salaActual = 'orden_' + ordenActual; document.getElementById('chat-titulo').textContent = '💬 Chat con el trabajador'; chatAbrir(salaActual); }
-function abrirChatGeneral() { salaActual = 'general_' + miId; document.getElementById('chat-titulo').textContent = '💬 Mensajes'; chatAbrir(salaActual); }
-
-async function chatAbrir(salaId) {
-  document.getElementById('chat-mensajes').innerHTML = '';
-  document.getElementById('chat-modal').classList.add('abierto');
-  document.getElementById('chat-input').focus();
-  socket.emit('chat:unirse', { salaId, usuarioId: miId, nombre: miNombre, rol: 'cliente' });
-  try {
-    const r = await fetch('/api/mensajes/sala/'+salaId, { headers:{ Authorization:'Bearer '+miToken } });
-    const d = await r.json();
-    if (d.ok) { d.mensajes.forEach(m => chatAgregarBurbuja(m)); chatScrollAbajo(); }
-  } catch(e) {}
-  fetch('/api/mensajes/leidos/'+salaId, { method:'POST', headers:{ Authorization:'Bearer '+miToken } }).catch(()=>{});
-}
-
-function chatCerrar() { document.getElementById('chat-modal').classList.remove('abierto'); salaActual = null; }
-
-function chatEnviar() {
-  const input = document.getElementById('chat-input');
-  const texto = input.value.trim();
-  if (!texto || !salaActual) return;
-  socket.emit('chat:mensaje', { salaId: salaActual, ordenId: ordenActual, texto });
-  input.value = '';
-  socket.emit('chat:dejoDeEscribir', { salaId: salaActual });
-}
-
-function chatTyping() {
-  socket.emit('chat:escribiendo', { salaId: salaActual });
-  clearTimeout(typingTimer);
-  typingTimer = setTimeout(() => socket.emit('chat:dejoDeEscribir', { salaId: salaActual }), 1500);
-}
-
-function chatAgregarBurbuja(msg) {
-  const esPropio = msg.remitente?.toString() === miId;
-  const div = document.createElement('div');
-  div.className = 'burbuja-wrap ' + (esPropio ? 'propio' : 'ajeno');
-  const hora = new Date(msg.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  div.innerHTML = (!esPropio ? '<span class="burbuja-nombre">'+msg.remitenteNombre+'</span>' : '') +
-    '<div class="burbuja '+(esPropio?'propio':'ajeno')+'">'+esc(msg.texto)+'</div>' +
-    '<span class="burbuja-hora">'+hora+'</span>';
-  document.getElementById('chat-mensajes').appendChild(div);
-}
-
-function chatScrollAbajo() { const c=document.getElementById('chat-mensajes'); if(c) c.scrollTop=c.scrollHeight; }
-function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
 </script>
 </body>
 </html>

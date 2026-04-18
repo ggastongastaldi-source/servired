@@ -1,88 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ServiRed — Trabajador</title>
-<script src="/socket.io/socket.io.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
-.container{max-width:480px;margin:0 auto;padding:20px}
-.header{text-align:center;padding:20px 0;border-bottom:1px solid #334155}
-.header h1{color:#f59e0b;font-size:1.5rem}
-.status{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#1e293b;border-radius:20px;margin-top:10px;font-size:.9rem}
-.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
-.section{background:#1e293b;border-radius:12px;padding:16px;margin:16px 0;border:1px solid #334155}
-.section h3{color:#94a3b8;font-size:.8rem;text-transform:uppercase;margin-bottom:12px}
-.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px}
-.btn-primary{background:#f59e0b;color:#0f172a}
-.btn-success{background:#22c55e;color:#fff}
-.btn-danger{background:#ef4444;color:#fff}
-.btn-purple{background:#6366f1;color:#fff}
-.btn-chat{background:#00E5FF;color:#0f172a}
-.oportunidad{background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;padding:20px;border-radius:12px;margin:12px 0;animation:slideIn .3s ease}
-@keyframes slideIn{from{transform:translateX(-20px);opacity:0}to{transform:translateX(0);opacity:1}}
-.oportunidad h4{font-size:1.1rem;margin-bottom:8px}
-.oportunidad .precio{font-size:1.5rem;font-weight:bold;margin:8px 0}
-.trabajo-activo{background:linear-gradient(135deg,#14532d,#166534);border:2px solid #22c55e;padding:20px;border-radius:12px;margin:12px 0}
-.log{background:#0f172a;padding:12px;border-radius:8px;font-family:monospace;font-size:.8rem;max-height:180px;overflow-y:auto}
-.log-entry{margin:4px 0;padding:4px 0;border-bottom:1px solid #1e293b}
-.log-entry.error{color:#ef4444}
-.log-entry.success{color:#22c55e}
-.log-entry.info{color:#3b82f6}
-.gps-on{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;color:#22c55e;margin-top:8px}
-.gps-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-input,select{width:100%;padding:12px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:12px}
-.hidden{display:none!important}
-/* CHAT */
-#chat-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center}
-#chat-modal.abierto{display:flex}
-.chat-box{width:100%;max-width:480px;height:72vh;background:#0d0d1a;border-top:2px solid #00E5FF;border-radius:16px 16px 0 0;display:flex;flex-direction:column}
-.chat-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #1a1a3a}
-.chat-titulo{color:#00E5FF;font-weight:700;font-size:15px}
-.chat-cerrar{background:none;border:none;color:#aaa;font-size:22px;cursor:pointer}
-#chat-mensajes{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
-#chat-typing{padding:0 16px 4px;color:#888;font-size:12px;min-height:18px}
-.chat-input-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #1a1a3a}
-#chat-input{flex:1;background:#1a1a2e;border:1px solid #00E5FF44;border-radius:22px;padding:10px 16px;color:#fff;font-size:14px;outline:none}
-.chat-send{background:#00E5FF;border:none;border-radius:50%;width:42px;height:42px;cursor:pointer;font-size:18px;flex-shrink:0}
-.burbuja-wrap{display:flex;flex-direction:column}
-.burbuja-wrap.propio{align-items:flex-end}
-.burbuja-wrap.ajeno{align-items:flex-start}
-.burbuja{max-width:75%;border-radius:16px;padding:9px 13px;font-size:14px;word-break:break-word}
-.burbuja.propio{background:#f59e0b22;border:1px solid #f59e0b55;color:#fff;border-radius:16px 16px 4px 16px}
-.burbuja.ajeno{background:#1a1a3a;border:1px solid #333;color:#fff;border-radius:16px 16px 16px 4px}
-.burbuja-nombre{font-size:11px;color:#888;margin-bottom:2px}
-.burbuja-hora{font-size:10px;color:#555;margin-top:3px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker - ServiRed</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; border-bottom: 1px solid #334155; }
+        .header h1 { color: #f59e0b; font-size: 1.5rem; }
+        .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #1e293b; border-radius: 20px; margin-top: 10px; font-size: 0.9rem; }
+        .status.online { color: #22c55e; }
+        .status.offline { color: #ef4444; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .section { background: #1e293b; border-radius: 12px; padding: 16px; margin: 16px 0; border: 1px solid #334155; }
+        .section h3 { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 12px; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+        .btn-primary { background: #f59e0b; color: #0f172a; }
+        .btn-success { background: #22c55e; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-purple { background: #6366f1; color: white; }
+        .oportunidad { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0f172a; padding: 20px; border-radius: 12px; margin: 12px 0; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from{transform:translateX(-100%);opacity:0} to{transform:translateX(0);opacity:1} }
+        .oportunidad h4 { font-size: 1.1rem; margin-bottom: 8px; }
+        .oportunidad .precio { font-size: 1.5rem; font-weight: bold; margin: 8px 0; }
+        .trabajo-activo { background: linear-gradient(135deg, #14532d, #166534); border: 2px solid #22c55e; padding: 20px; border-radius: 12px; margin: 12px 0; }
+        .log { background: #0f172a; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; max-height: 200px; overflow-y: auto; }
+        .log-entry { margin: 4px 0; padding: 4px 0; border-bottom: 1px solid #1e293b; }
+        .log-entry.error { color: #ef4444; }
+        .log-entry.success { color: #22c55e; }
+        .log-entry.info { color: #3b82f6; }
+        .gps-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #22c55e; margin-top: 8px; }
+        .gps-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; margin-bottom: 12px; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <h1>🔧 ServiRed Worker</h1>
-    <div class="status offline" id="statusIndicator" style="color:#ef4444">
-      <span class="dot"></span><span id="statusText">Desconectado</span>
+    <div class="header">
+        <h1>🔧 ServiRed Worker</h1>
+        <div class="status offline" id="statusIndicator">
+            <span class="dot"></span>
+            <span id="statusText">Desconectado</span>
+        </div>
     </div>
-  </div>
 
-  <!-- LOGIN -->
-  <div class="section" id="loginSection">
-    <h3>Ingresar</h3>
-    <input type="text" id="tokenInput" placeholder="Token JWT...">
-    <select id="rubroInput">
-      <option value="">Seleccioná tu especialidad...</option>
-      <option value="plomeria">🚿 Plomería</option>
-      <option value="electricidad">⚡ Electricidad</option>
-      <option value="gasista">🔥 Gasista</option>
-      <option value="cerrajeria">🔑 Cerrajería</option>
-      <option value="servicio_domestico">🧹 Servicio Doméstico</option>
-      <option value="pintura">🎨 Pintura</option>
-      <option value="albanileria">🧱 Albañilería</option>
-      <option value="camaras">📷 Cámaras de Seguridad</option>
-      <option value="alarmas">🚨 Alarmas</option>
-      <option value="aire_acondicionado">❄️ Aire Acondicionado</option>
+    <!-- Login -->
+    <div class="section" id="loginSection">
+        <h3>Ingresar</h3>
+        <input type="text" id="tokenInput" placeholder="Token JWT...">
+        <select id="rubroInput">
+            <option value="">Seleccioná tu especialidad...</option>
+            <option value="plomeria">🚿 Plomería</option>
+            <option value="electricidad">⚡ Electricidad</option>
+            <option value="gasista">🔥 Gasista</option>
+            <option value="cerrajeria">🔑 Cerrajería</option>
+            <option value="domestica">🧹 Servicio Doméstico</option>
+            <option value="pintura">🎨 Pintura</option>
+            <option value="albanileria">🧱 Albañilería</option>
+            <option value="camaras">📷 Cámaras de Seguridad</option>
+            <option value="alarmas">🚨 Alarmas</option>
+            <option value="aire_acondicionado">❄️ Aire Acondicionado</option>
       <option value="herreria">⚙️ Herrería</option>
       <option value="carpinteria">🪵 Carpintería</option>
       <option value="mudanzas">🚚 Mudanzas</option>
@@ -99,290 +81,253 @@ input,select{width:100%;padding:12px;border-radius:8px;border:1px solid #334155;
       <option value="ascensores">🛗 Ascensores</option>
       <option value="energia_solar">☀️ Energía Solar</option>
       <option value="cuidado_adultos">👴 Cuidado de Adultos</option>
-    </select>
-    <button class="btn btn-primary" onclick="conectar()">Conectar</button>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div class="section hidden" id="dashboardSection">
-    <h3>Estado</h3>
-    <p id="dashNombre" style="color:#f59e0b;font-weight:700;margin-bottom:8px"></p>
-    <button class="btn btn-success" onclick="toggleDisponible(true)">🟢 Disponible</button>
-    <button class="btn btn-danger"  onclick="toggleDisponible(false)" style="margin-top:8px">🔴 Ocupado</button>
-    <div class="gps-on hidden" id="gpsIndicator"><span class="gps-dot"></span> GPS activo</div>
-    <button class="btn btn-chat" onclick="abrirChatGeneral()" style="margin-top:10px">💬 Mensajes</button>
-  </div>
-
-  <!-- OPORTUNIDAD ENTRANTE -->
-  <div class="hidden" id="oportunidadSection">
-    <div class="oportunidad" id="oportunidadCard">
-      <h4 id="opServicio">Nuevo pedido</h4>
-      <p id="opZona" style="margin-bottom:6px"></p>
-      <p id="opDescripcion" style="font-size:.9rem;margin-bottom:10px"></p>
-      <div class="precio" id="opPrecio"></div>
-      <button class="btn btn-success" onclick="aceptarOrden()">✅ Aceptar</button>
-      <button class="btn btn-danger"  onclick="rechazarOrden()" style="margin-top:6px">✕ Rechazar</button>
+        </select>
+        <button class="btn btn-primary" onclick="conectar()">Conectar</button>
     </div>
-  </div>
 
-  <!-- TRABAJO ACTIVO -->
-  <div class="hidden" id="trabajoSection">
-    <div class="trabajo-activo">
-      <h4 style="color:#22c55e;margin-bottom:8px">🔧 Trabajo en curso</h4>
-      <p id="trabajoCliente" style="color:#e2e8f0;margin-bottom:4px"></p>
-      <p id="trabajoServicio" style="color:#94a3b8;font-size:.9rem;margin-bottom:12px"></p>
-      <button class="btn btn-purple"  onclick="marcarEnProceso()" id="btnEnProceso">▶️ Iniciar trabajo</button>
-      <button class="btn btn-success" onclick="marcarRealizado()"  id="btnRealizado" style="margin-top:8px">✅ Marcar como realizado</button>
-      <button class="btn btn-chat"    onclick="abrirChatOrden()"   style="margin-top:8px">💬 Chatear con cliente</button>
+    <!-- Dashboard -->
+    <div class="section hidden" id="dashboardSection">
+        <h3>Estado</h3>
+        <button class="btn btn-success" onclick="toggleDisponible(true)">🟢 Estoy Disponible</button>
+        <button class="btn btn-danger" onclick="toggleDisponible(false)" style="margin-top:8px;">🔴 Estoy Ocupado</button>
+        <div class="gps-indicator hidden" id="gpsIndicator">
+            <span class="gps-dot"></span> GPS activo — enviando ubicación
+        </div>
     </div>
-  </div>
 
-  <!-- LOG -->
-  <div class="section">
-    <h3>Log de Eventos</h3>
-    <div class="log" id="logBox"></div>
-    <button class="btn" style="background:#334155;color:#94a3b8;margin-top:8px" onclick="document.getElementById('logBox').innerHTML=''">Limpiar</button>
-  </div>
-</div>
+    <!-- Trabajo activo -->
+    <div class="section hidden" id="trabajoActivoSection">
+        <h3>Trabajo en Curso</h3>
+        <div class="trabajo-activo" id="trabajoActivoCard">
+            <h4 id="taServicio">—</h4>
+            <p id="taDireccion" style="margin:4px 0;font-size:0.9rem;opacity:0.85;"></p>
+            <p id="taDescripcion" style="margin:4px 0;font-size:0.85rem;opacity:0.7;"></p>
+        </div>
+        <button class="btn btn-purple" onclick="marcarCompletado()">🏁 Marcar como Completado</button>
+    </div>
 
-<!-- CHAT MODAL -->
-<div id="chat-modal">
-  <div class="chat-box">
-    <div class="chat-header">
-      <span class="chat-titulo" id="chat-titulo">💬 Chat</span>
-      <button class="chat-cerrar" onclick="chatCerrar()">✕</button>
+    <!-- Oportunidades -->
+    <div class="section hidden" id="oportunidadesSection">
+        <h3>Oportunidades de Trabajo</h3>
+        <div id="oportunidadesList">
+            <p style="color:#64748b;text-align:center;padding:20px;">Esperando oportunidades...</p>
+        </div>
     </div>
-    <div id="chat-mensajes"></div>
-    <div id="chat-typing"></div>
-    <div class="chat-input-row">
-      <input id="chat-input" type="text" placeholder="Escribí un mensaje..." maxlength="1000"
-        oninput="chatTyping()" onkeydown="if(event.key==='Enter')chatEnviar()">
-      <button class="chat-send" onclick="chatEnviar()">➤</button>
+
+    <!-- Log -->
+    <div class="section">
+        <h3>Log de Eventos</h3>
+        <div class="log" id="eventLog"></div>
+        <button class="btn" onclick="limpiarLog()" style="margin-top:8px;background:#334155;color:#e2e8f0;">Limpiar</button>
     </div>
-  </div>
 </div>
 
 <script>
-let socket, miToken, miId, miNombre, miRubro;
-let ordenActual = null, salaActual = null;
-let gpsInterval = null, typingTimer = null;
-let oportunidadActual = null;
+    const socket = io();
+    let currentToken = '';
+    let currentUserId = '';
+    let currentRubro = '';
+    let currentNombre = '';
+    let pedidoActivoId = null;
+    let gpsInterval = null;
 
-function log(msg, tipo='info') {
-  const box = document.getElementById('logBox');
-  const t   = new Date().toLocaleTimeString('es-AR');
-  const div = document.createElement('div');
-  div.className = 'log-entry ' + tipo;
-  div.textContent = '[' + t + '] ' + msg;
-  box.insertBefore(div, box.firstChild);
-}
-
-window.onload = () => {
-  const t = localStorage.getItem('token');
-  const r = localStorage.getItem('rubro');
-  if (t) {
-    document.getElementById('tokenInput').value = t;
-    if (r) document.getElementById('rubroInput').value = r;
-    conectar();
-  }
-};
-
-function conectar() {
-  miToken = document.getElementById('tokenInput').value.trim();
-  miRubro = document.getElementById('rubroInput').value;
-  if (!miToken) return;
-  try {
-    const p = JSON.parse(atob(miToken.split('.')[1]));
-    miId     = p.id || p._id || p.userId;
-    miNombre = p.nombre || p.email || 'Trabajador';
-  } catch(e) { alert('Token inválido'); return; }
-
-  localStorage.setItem('token', miToken);
-  localStorage.setItem('userId', miId);
-  if (miRubro) localStorage.setItem('rubro', miRubro);
-
-  socket = io({ auth: { token: miToken } });
-
-  socket.on('connect', () => {
-    document.getElementById('statusIndicator').style.color = '#22c55e';
-    document.getElementById('statusText').textContent = 'Conectado';
-    log('Conectado al servidor', 'success');
-    socket.emit('worker_conectado', {
-      userId: miId,
-      rubro: miRubro,
-      nombre: miNombre,
-      zona: ''
-    });
-  });
-
-  socket.on('disconnect', () => {
-    document.getElementById('statusIndicator').style.color = '#ef4444';
-    document.getElementById('statusText').textContent = 'Desconectado';
-    log('Desconectado del servidor', 'error');
-    detenerGPS();
-  });
-
-  socket.on('conectado_ok', (data) => {
-    log('Online como ' + miNombre + ' (' + miRubro + ')', 'success');
-  });
-
-  // Nueva oportunidad entrante
-  socket.on('nueva_oportunidad', (data) => {
-    oportunidadActual = data;
-    document.getElementById('opServicio').textContent   = '📋 ' + (data.tipoServicio || data.servicio || 'Servicio');
-    document.getElementById('opZona').textContent       = '📍 ' + (data.zona || '');
-    document.getElementById('opDescripcion').textContent = data.descripcion || '';
-    document.getElementById('opPrecio').textContent     = data.total_estimado ? '$ ' + Number(data.total_estimado).toLocaleString('es-AR') : '';
-    document.getElementById('oportunidadSection').classList.remove('hidden');
-    log('Nueva oportunidad: ' + (data.tipoServicio || data.servicio), 'info');
-  });
-
-  // Pedido tomado por otro
-  socket.on('pedido_tomado', (data) => {
-    if (oportunidadActual && oportunidadActual.pedidoId === data.pedidoId) {
-      document.getElementById('oportunidadSection').classList.add('hidden');
-      oportunidadActual = null;
-      log('Pedido tomado por otro trabajador', 'error');
+    function decodeJWT(token) {
+        try {
+            const payload = token.split('.')[1];
+            return JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
+        } catch(e) { return {}; }
     }
-  });
 
-  // Aceptación confirmada
-  socket.on('trabajo_aceptado_ok', (data) => {
-    ordenActual = data.pedidoId;
-    document.getElementById('oportunidadSection').classList.add('hidden');
-    document.getElementById('trabajoSection').classList.remove('hidden');
-    document.getElementById('trabajoCliente').textContent  = '👤 ' + (data.clienteNombre || 'Cliente');
-    document.getElementById('trabajoServicio').textContent = data.tipoServicio || miRubro;
-    iniciarGPS();
-    log('Orden aceptada — GPS activado', 'success');
-  });
+    function log(msg, type = 'info') {
+        const logDiv = document.getElementById('eventLog');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type}`;
+        entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        logDiv.insertBefore(entry, logDiv.firstChild);
+    }
 
-  socket.on('trabajo_aceptado_error', (data) => {
-    document.getElementById('oportunidadSection').classList.add('hidden');
-    oportunidadActual = null;
-    log('Error: ' + data.mensaje, 'error');
-    alert(data.mensaje);
-  });
+    function conectar() {
+        currentToken = document.getElementById('tokenInput').value.trim();
+        currentRubro = document.getElementById('rubroInput').value;
+        if (!currentToken) return alert('Token requerido');
+        if (!currentRubro) return alert('Seleccioná tu especialidad');
 
-  socket.on('trabajo_completado_ok', () => {
-    ordenActual = null;
-    document.getElementById('trabajoSection').classList.add('hidden');
-    detenerGPS();
-    log('Trabajo completado y registrado', 'success');
-  });
+        const decoded = decodeJWT(currentToken);
+        currentUserId = decoded.userId || decoded.id || '';
+        currentNombre = decoded.nombre || decoded.name || 'Profesional';
 
-  // Chat
-  socket.on('chat:nuevoMensaje', (msg) => {
-    if (msg.salaId === salaActual) { chatAgregarBurbuja(msg); chatScrollAbajo(); }
-    else { log('💬 Nuevo mensaje de ' + msg.remitenteNombre, 'info'); }
-  });
-  socket.on('chat:escribiendo',    ({ nombre }) => { document.getElementById('chat-typing').textContent = nombre + ' está escribiendo...'; });
-  socket.on('chat:dejoDeEscribir', ()           => { document.getElementById('chat-typing').textContent = ''; });
+        log('Conectando...', 'info');
+        socket.emit('worker_conectado', {
+            userId: currentUserId,
+            token: currentToken,
+            rubro: currentRubro,
+            zona: 'palermo', // zona por defecto, se actualizará con GPS
+            nombre: currentNombre
+        });
+    }
 
-  document.getElementById('loginSection').classList.add('hidden');
-  document.getElementById('dashboardSection').classList.remove('hidden');
-  document.getElementById('dashNombre').textContent = '👋 ' + miNombre;
-}
+    function toggleDisponible(disponible) {
+        socket.emit('cambiar_estado', {
+            userId: currentUserId,
+            estado: disponible ? 'disponible' : 'ocupado'
+        });
+        log(`Estado: ${disponible ? 'DISPONIBLE' : 'OCUPADO'}`, disponible ? 'success' : 'error');
 
-function toggleDisponible(v) {
-  socket.emit('cambiar_estado', { userId: miId, estado: v ? 'DISPONIBLE' : 'OCUPADO' });
-  log(v ? 'Disponible' : 'Ocupado', v ? 'success' : 'error');
-}
+        if (disponible) {
+            iniciarGPS();
+        } else {
+            detenerGPS();
+        }
+    }
 
-function iniciarGPS() {
-  document.getElementById('gpsIndicator').classList.remove('hidden');
-  if (!navigator.geolocation) return;
-  gpsInterval = setInterval(() => {
-    navigator.geolocation.getCurrentPosition(pos => {
-      socket.emit('gps_update', {
-        pedidoId: ordenActual,
-        trabajadorId: miId,
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
-      });
+    function iniciarGPS() {
+        if (gpsInterval) return;
+        document.getElementById('gpsIndicator').classList.remove('hidden');
+        log('GPS activado', 'success');
+
+        // Enviar posición cada 8 segundos
+        gpsInterval = setInterval(() => {
+            if (!pedidoActivoId) return; // Solo enviar GPS si hay trabajo activo
+            navigator.geolocation.getCurrentPosition(pos => {
+                socket.emit('gps_update', {
+                    pedidoId: pedidoActivoId,
+                    trabajadorId: currentUserId,
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                });
+                log(`GPS → ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`, 'info');
+            }, err => {
+                // Fallback: simular movimiento cerca de Buenos Aires (solo para testing)
+                const lat = -34.6 + (Math.random() - 0.5) * 0.02;
+                const lng = -58.4 + (Math.random() - 0.5) * 0.02;
+                socket.emit('gps_update', {
+                    pedidoId: pedidoActivoId,
+                    trabajadorId: currentUserId,
+                    lat, lng
+                });
+            });
+        }, 8000);
+    }
+
+    function detenerGPS() {
+        if (gpsInterval) { clearInterval(gpsInterval); gpsInterval = null; }
+        document.getElementById('gpsIndicator').classList.add('hidden');
+    }
+
+    function aceptarTrabajo(pedidoId, tipoServicio, direccion, descripcion) {
+        socket.emit('aceptar_trabajo', {
+            pedidoId,
+            trabajadorId: currentUserId,
+            trabajadorNombre: currentNombre
+        });
+        log(`Aceptando trabajo ${pedidoId}...`, 'info');
+
+        // Guardar datos del trabajo activo para mostrar en UI
+        pedidoActivoId = pedidoId;
+        document.getElementById('taServicio').textContent = '🛠️ ' + (tipoServicio || '').toUpperCase();
+        document.getElementById('taDireccion').textContent = '📍 ' + (direccion || 'Dirección pendiente');
+        document.getElementById('taDescripcion').textContent = descripcion || '';
+    }
+
+    function marcarCompletado() {
+        if (!pedidoActivoId) return;
+        socket.emit('trabajo_completado', {
+            pedidoId: pedidoActivoId,
+            trabajadorId: currentUserId
+        });
+        log('Marcando trabajo como completado...', 'info');
+    }
+
+    function limpiarLog() { document.getElementById('eventLog').innerHTML = ''; }
+
+    // ── Socket events ────────────────────────────────────────
+    socket.on('connect', () => log('Conectado al servidor', 'success'));
+
+    socket.on('conectado_ok', (data) => {
+        log(`Autenticado: ${data.socketId}`, 'success');
+        document.getElementById('statusIndicator').className = 'status online';
+        document.getElementById('statusText').textContent = 'Online — ' + currentRubro;
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('dashboardSection').classList.remove('hidden');
+        document.getElementById('oportunidadesSection').classList.remove('hidden');
+        // Activar disponible automáticamente al conectar
+        toggleDisponible(true);
     });
-  }, 10000);
-}
 
-function detenerGPS() {
-  clearInterval(gpsInterval);
-  gpsInterval = null;
-  document.getElementById('gpsIndicator').classList.add('hidden');
-}
+    socket.on('estado_actualizado', (data) => {
+        log(`Estado confirmado: ${data.estado}`, 'success');
+    });
 
-function aceptarOrden() {
-  if (!oportunidadActual) return;
-  socket.emit('aceptar_trabajo', {
-    pedidoId: oportunidadActual.pedidoId,
-    trabajadorId: miId,
-    trabajadorNombre: miNombre
-  });
-  log('Aceptando orden...', 'info');
-}
+    socket.on('nueva_oportunidad', (data) => {
+        const precio = data.pago_worker || data.total_estimado || 0;
+        log(`Nueva oportunidad: ${data.tipoServicio} en ${data.zona} — $${precio.toLocaleString('es-AR')}`, 'success');
 
-function rechazarOrden() {
-  document.getElementById('oportunidadSection').classList.add('hidden');
-  oportunidadActual = null;
-  log('Oportunidad rechazada', 'info');
-}
+        const list = document.getElementById('oportunidadesList');
+        // Limpiar placeholder
+        const placeholder = list.querySelector('p');
+        if (placeholder) placeholder.remove();
 
-function marcarEnProceso() {
-  socket.emit('cambiar_estado', { userId: miId, estado: 'EN_PROCESO', pedidoId: ordenActual });
-  document.getElementById('btnEnProceso').classList.add('hidden');
-  log('Trabajo iniciado', 'success');
-}
+        const div = document.createElement('div');
+        div.className = 'oportunidad';
+        div.id = 'op-' + data.pedidoId;
+        div.innerHTML = `
+            <h4>🛠️ ${(data.tipoServicio||'').toUpperCase()}</h4>
+            <div class="zona">📍 ${data.zona || ''} — ${data.descripcion || 'Sin descripción'}</div>
+            <div class="precio">$${precio.toLocaleString('es-AR')} <small style="font-size:0.7rem;opacity:0.7;">(tu parte)</small></div>
+            <button class="btn btn-success" style="margin-top:10px;" 
+                onclick="aceptarTrabajo('${data.pedidoId}','${data.tipoServicio}','${data.direccion||''}','${data.descripcion||''}');this.closest('.oportunidad').remove()">
+                ✅ ACEPTAR TRABAJO
+            </button>
+        `;
+        list.insertBefore(div, list.firstChild);
 
-function marcarRealizado() {
-  socket.emit('trabajo_completado', { pedidoId: ordenActual, trabajadorId: miId });
-  log('Marcado como realizado — esperando confirmación', 'info');
-}
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('🔔 Nuevo trabajo disponible', {
+                body: `${data.tipoServicio} en ${data.zona} — $${precio.toLocaleString('es-AR')}`
+            });
+        }
+    });
 
-function abrirChatOrden()   { if (!ordenActual) return; salaActual = 'orden_' + ordenActual; document.getElementById('chat-titulo').textContent = '💬 Chat con el cliente'; chatAbrir(salaActual); }
-function abrirChatGeneral() { salaActual = 'general_' + miId; document.getElementById('chat-titulo').textContent = '💬 Mensajes'; chatAbrir(salaActual); }
+    socket.on('trabajo_aceptado_ok', (data) => {
+        log('¡TRABAJO ACEPTADO! ' + (data.mensaje||''), 'success');
+        document.getElementById('trabajoActivoSection').classList.remove('hidden');
+        document.getElementById('oportunidadesSection').classList.add('hidden');
+        iniciarGPS(); // Arrancar GPS ahora que hay trabajo activo
+    });
 
-async function chatAbrir(salaId) {
-  document.getElementById('chat-mensajes').innerHTML = '';
-  document.getElementById('chat-modal').classList.add('abierto');
-  document.getElementById('chat-input').focus();
-  socket.emit('chat:unirse', { salaId, usuarioId: miId, nombre: miNombre, rol: 'trabajador' });
-  try {
-    const r = await fetch('/api/mensajes/sala/'+salaId, { headers:{ Authorization:'Bearer '+miToken } });
-    const d = await r.json();
-    if (d.ok) { d.mensajes.forEach(m => chatAgregarBurbuja(m)); chatScrollAbajo(); }
-  } catch(e) {}
-  fetch('/api/mensajes/leidos/'+salaId, { method:'POST', headers:{ Authorization:'Bearer '+miToken } }).catch(()=>{});
-}
+    socket.on('trabajo_aceptado_error', (data) => {
+        log('Error: ' + (data.mensaje || data.error || 'desconocido'), 'error');
+        pedidoActivoId = null;
+        alert('No se pudo aceptar: ' + (data.mensaje || 'El pedido ya fue tomado'));
+    });
 
-function chatCerrar() { document.getElementById('chat-modal').classList.remove('abierto'); salaActual = null; }
+    socket.on('trabajo_completado_ok', (data) => {
+        log('Trabajo completado confirmado ✓', 'success');
+        detenerGPS();
+        pedidoActivoId = null;
+        document.getElementById('trabajoActivoSection').classList.add('hidden');
+        document.getElementById('dashboardSection').classList.remove('hidden');
+        document.getElementById('oportunidadesSection').classList.remove('hidden');
+        document.getElementById('oportunidadesList').innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Esperando oportunidades...</p>';
+        toggleDisponible(true);
+    });
 
-function chatEnviar() {
-  const input = document.getElementById('chat-input');
-  const texto = input.value.trim();
-  if (!texto || !salaActual) return;
-  socket.emit('chat:mensaje', { salaId: salaActual, ordenId: ordenActual, texto });
-  input.value = '';
-  socket.emit('chat:dejoDeEscribir', { salaId: salaActual });
-}
+    socket.on('pedido_tomado', (data) => {
+        log('Pedido tomado por otro profesional', 'info');
+        const el = document.getElementById('op-' + data.pedidoId);
+        if (el) el.remove();
+    });
 
-function chatTyping() {
-  socket.emit('chat:escribiendo', { salaId: salaActual });
-  clearTimeout(typingTimer);
-  typingTimer = setTimeout(() => socket.emit('chat:dejoDeEscribir', { salaId: salaActual }), 1500);
-}
+    socket.on('disconnect', () => {
+        log('Desconectado del servidor', 'error');
+        document.getElementById('statusIndicator').className = 'status offline';
+        document.getElementById('statusText').textContent = 'Desconectado';
+        detenerGPS();
+    });
 
-function chatAgregarBurbuja(msg) {
-  const esPropio = msg.remitente?.toString() === miId;
-  const div = document.createElement('div');
-  div.className = 'burbuja-wrap ' + (esPropio ? 'propio' : 'ajeno');
-  const hora = new Date(msg.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  div.innerHTML = (!esPropio ? '<span class="burbuja-nombre">'+msg.remitenteNombre+'</span>' : '') +
-    '<div class="burbuja '+(esPropio?'propio':'ajeno')+'">'+esc(msg.texto)+'</div>' +
-    '<span class="burbuja-hora">'+hora+'</span>';
-  document.getElementById('chat-mensajes').appendChild(div);
-}
-
-function chatScrollAbajo() { const c=document.getElementById('chat-mensajes'); if(c) c.scrollTop=c.scrollHeight; }
-function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
 </script>
 </body>
 </html>
