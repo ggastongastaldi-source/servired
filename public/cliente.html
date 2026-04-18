@@ -160,6 +160,9 @@
         const decoded = decodeJWT(currentToken);
         currentUserId = decoded.userId || decoded.id || '';
         socket.emit('cliente_conectado', { token: currentToken, userId: currentUserId });
+        // Ocultar login y mostrar panel inmediatamente
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('pedidoSection').classList.remove('hidden');
     }
 
     async function crearPedido() {
