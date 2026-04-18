@@ -1,319 +1,815 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cliente - ServiRed</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
-        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; padding: 20px 0; }
-        .header h1 { color: #3b82f6; font-size: 1.5rem; }
-        .section { background: #1e293b; border-radius: 12px; padding: 16px; margin: 16px 0; border: 1px solid #334155; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-success { background: #22c55e; color: white; }
-        .estado-box { padding: 16px; border-radius: 8px; text-align: center; margin: 12px 0; }
-        .estado-searching { background: #f59e0b; color: #0f172a; animation: pulse 2s infinite; }
-        .estado-aceptada { background: #22c55e; color: white; }
-        .estado-realizada { background: #6366f1; color: white; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-        .pedido-card { background: #0f172a; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #3b82f6; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 1rem; }
-        .hidden { display: none !important; }
-        #mapaWorker { height: 220px; border-radius: 10px; margin-top: 12px; border: 2px solid #22c55e; }
-        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; background: #334155; color: #94a3b8; }
-        .badge.online { background: #14532d; color: #22c55e; }
-        .alerta { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 10px; padding: 14px; margin: 8px 0; font-size: 0.95rem; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SERVired — Cliente</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+:root{--cyan:#00E5FF;--orange:#FF6D00;--green:#39ff14;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#0d1b2a;border-bottom:1px solid rgba(0,229,255,0.15);position:sticky;top:0;z-index:100;}
+.logo{font-size:1.5rem;font-weight:700;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 12px rgba(0,229,255,0.5);}
+.logo span{color:var(--orange);}
+.btn-salir{background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:5px 12px;border-radius:6px;font-size:0.7rem;font-family:"Share Tech Mono",monospace;cursor:pointer;}
+.btn-modo{background:rgba(0,229,255,0.15);border:1px solid var(--cyan);color:var(--cyan);padding:5px 12px;border-radius:6px;font-size:0.7rem;font-family:"Share Tech Mono",monospace;cursor:pointer;margin-right:6px;}
+.user-pill{display:flex;align-items:center;gap:8px;background:var(--surface2);padding:6px 14px;border-radius:999px;font-size:0.85rem;border:1px solid rgba(0,229,255,0.2);}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;}
+#mapa{width:100%;height:240px;}
+.panel{padding:16px 20px;display:flex;flex-direction:column;gap:14px;padding-bottom:80px;}
+.card{background:var(--surface);border:1px solid rgba(0,229,255,0.12);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--orange));}
+.card-title{font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;font-family:'Share Tech Mono',monospace;}
+.servicios-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.srv-btn{background:var(--surface2);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.2s;color:var(--text);}
+.srv-btn:hover,.srv-btn.active{border-color:var(--cyan);background:rgba(0,229,255,0.08);color:var(--cyan);}
+.srv-btn .icon{font-size:1.5rem;display:block;margin-bottom:3px;}
+.srv-btn .label{font-size:0.7rem;font-weight:600;}
+.dir-input{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;}
+.dir-input input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:1rem;}
+.dir-input input::placeholder{color:var(--muted);}
+.precio-row{display:flex;justify-content:space-between;align-items:center;}
+.precio-valor{font-size:1.4rem;font-weight:700;color:var(--cyan);font-family:'Share Tech Mono',monospace;}
+.btn-pedir{width:100%;padding:16px;background:linear-gradient(135deg,var(--orange),#ff8c00);border:none;border-radius:12px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.btn-pedir:disabled{opacity:0.5;cursor:not-allowed;}
+.worker-card{display:none;flex-direction:column;gap:12px;background:var(--surface);border:1px solid rgba(0,229,255,0.25);border-radius:14px;padding:16px;}
+.worker-card.visible{display:flex;}
+.worker-header{display:flex;align-items:center;gap:12px;}
+.w-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),#0080ff);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#000;}
+.eta-box{text-align:center;background:rgba(0,229,255,0.05);border-radius:10px;padding:10px;}
+.eta-num{font-size:2rem;font-weight:700;color:var(--cyan);font-family:'Share Tech Mono',monospace;}
+.eta-lbl{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.btn-cancelar{width:100%;padding:12px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:10px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;}
+.estado-bar{display:none;align-items:center;gap:10px;padding:10px 20px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.05);}
+.estado-bar.visible{display:flex;}
+.pulse-dot{width:10px;height:10px;border-radius:50%;background:var(--cyan);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.4)}}
+.estado-label{font-size:0.95rem;font-weight:600;color:var(--cyan);}
+.nav-bottom{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid rgba(255,255,255,0.07);display:flex;z-index:50;}
+.nav-btn{flex:1;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Rajdhani',sans-serif;}
+.nav-btn.active{color:var(--cyan);}
+.nav-btn .ni{font-size:1.4rem;}
+.nav-btn .nl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;}
+.pantalla{display:none;padding-bottom:70px;}
+.pantalla.active{display:block;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--cyan);border-radius:10px;padding:12px 20px;font-size:0.9rem;z-index:200;transition:transform 0.3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:10px;margin-bottom:8px;}
+.badge{padding:3px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;font-family:'Share Tech Mono',monospace;}
+.badge.PAGADA{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid var(--success);}
+.badge.PENDIENTE{background:rgba(245,158,11,0.15);color:var(--warn);border:1px solid var(--warn);}
+.badge.CANCELADA{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid var(--danger);}
+
+/* ── CONTRASTE GLOBAL ── */
+input,select,textarea{
+  background:#1a2236 !important;
+  color:#e2e8f0 !important;
+  border:1px solid rgba(255,255,255,0.15) !important;
+  border-radius:10px !important;
+  font-family:'Rajdhani',sans-serif !important;
+  font-size:1rem !important;
+  -webkit-text-fill-color:#e2e8f0 !important;
+}
+input::placeholder,textarea::placeholder{color:#64748b !important;}
+input:focus,select:focus,textarea:focus{
+  border-color:#00E5FF !important;
+  outline:none !important;
+  box-shadow:0 0 0 2px rgba(0,229,255,0.15) !important;
+}
+/* Autofill chrome/android */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus{
+  -webkit-box-shadow:0 0 0px 1000px #1a2236 inset !important;
+  -webkit-text-fill-color:#e2e8f0 !important;
+  caret-color:#e2e8f0 !important;
+}
+select option{background:#1a2236;color:#e2e8f0;}
+.modal{background:#111827 !important;}
+.modal-bg{backdrop-filter:blur(4px);}
+
+
+/* ── TÉRMINOS Y CONDICIONES MODAL ── */
+.tc-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(6px);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;}
+.tc-overlay.show{display:flex;animation:tcFadeIn .3s ease;}
+@keyframes tcFadeIn{from{opacity:0}to{opacity:1}}
+.tc-modal{background:#0d1117;border:1px solid rgba(0,229,255,0.18);border-radius:16px;width:100%;max-width:580px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 60px rgba(0,229,255,0.08);animation:tcSlideUp .35s cubic-bezier(0.22,1,0.36,1);}
+@keyframes tcSlideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.tc-hdr{padding:18px 22px 14px;border-bottom:1px solid rgba(0,229,255,0.12);flex-shrink:0;background:linear-gradient(135deg,#0d1117,#101820);}
+.tc-hdr-brand{font-size:17px;font-weight:700;letter-spacing:1px;color:#e2e8f0;font-family:'Share Tech Mono',monospace;}
+.tc-hdr-brand span{color:#39ff14;}
+.tc-hdr-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#00E5FF;margin-top:3px;}
+.tc-hdr-ver{font-size:10px;color:#64748b;font-family:'Share Tech Mono',monospace;margin-top:2px;}
+.tc-prog-wrap{padding:10px 22px 0;flex-shrink:0;background:#0d1117;}
+.tc-prog-row{display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-bottom:4px;}
+.tc-prog-row span{color:#00E5FF;font-family:'Share Tech Mono',monospace;}
+.tc-prog-track{height:3px;background:#1e2a33;border-radius:99px;overflow:hidden;}
+.tc-prog-fill{height:100%;width:0%;background:linear-gradient(90deg,#00E5FF,#39ff14);border-radius:99px;transition:width .12s ease;box-shadow:0 0 6px #00E5FF;}
+.tc-hint{display:flex;align-items:center;gap:7px;font-size:11px;color:#64748b;padding:7px 22px 0;flex-shrink:0;transition:opacity .4s;}
+.tc-hint.hidden{opacity:0;pointer-events:none;}
+.tc-body{flex:1;overflow-y:auto;padding:18px 22px 80px;scroll-behavior:smooth;}
+.tc-body::-webkit-scrollbar{width:4px;}
+.tc-body::-webkit-scrollbar-track{background:#1e2a33;}
+.tc-body::-webkit-scrollbar-thumb{background:#00E5FF;border-radius:99px;}
+.tc-sec{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.tc-sec:last-child{border-bottom:none;margin-bottom:6px;}
+.tc-sec-num{font-family:'Share Tech Mono',monospace;font-size:9px;color:#FF6D00;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+.tc-sec-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;}
+.tc-sec-body{font-size:12px;line-height:1.7;color:#94a3b8;}
+.tc-sec-body ul{list-style:none;margin-top:6px;}
+.tc-sec-body ul li{padding:3px 0 3px 14px;position:relative;font-size:11.5px;color:#64748b;}
+.tc-sec-body ul li::before{content:'▸';position:absolute;left:0;color:#00E5FF;font-size:9px;top:5px;}
+.tc-hl-o{color:#FF6D00;font-weight:600;}
+.tc-hl-g{color:#39ff14;font-weight:600;}
+.tc-hl-c{color:#00E5FF;font-weight:600;}
+.tc-footer{padding:14px 22px 18px;border-top:1px solid rgba(0,229,255,0.12);flex-shrink:0;background:#0d1117;}
+.tc-chk-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer;opacity:.35;transition:opacity .3s;pointer-events:none;}
+.tc-chk-row.unlocked{opacity:1;pointer-events:auto;}
+.tc-chk-box{width:18px;height:18px;border:2px solid #00E5FF;border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.tc-chk-box.checked{background:#00E5FF;}
+.tc-chk-box svg{display:none;width:11px;height:11px;color:#0a0d10;}
+.tc-chk-box.checked svg{display:block;}
+.tc-chk-label{font-size:11.5px;line-height:1.5;color:#94a3b8;user-select:none;}
+.tc-btn-aceptar{width:100%;padding:13px;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .25s;}
+.tc-btn-aceptar:disabled{background:#1a2230;color:#3a4a55;cursor:not-allowed;}
+.tc-btn-aceptar:not(:disabled){background:linear-gradient(135deg,#00b8d4,#39ff14);color:#0a0d10;box-shadow:0 0 20px rgba(57,255,20,0.25);}
+.tc-btn-aceptar:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(57,255,20,0.4);}
+.tc-ok{display:none;text-align:center;padding:36px 22px;flex-direction:column;align-items:center;gap:10px;}
+.tc-ok.show{display:flex;}
+.tc-ok-icon{width:56px;height:56px;border-radius:50%;background:rgba(57,255,20,0.1);border:2px solid #39ff14;display:flex;align-items:center;justify-content:center;animation:tcPulse 1.5s ease infinite;}
+@keyframes tcPulse{0%,100%{box-shadow:0 0 0 0 rgba(57,255,20,0.3)}50%{box-shadow:0 0 0 10px rgba(57,255,20,0)}}
+.tc-ok h3{font-size:17px;color:#39ff14;}
+.tc-ok p{font-size:12px;color:#64748b;}
+
+</style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>🏠 ServiRed Cliente</h1>
-        <p style="color:#64748b;margin-top:8px;">Solicitá servicios en tiempo real</p>
-    </div>
-
-    <!-- Login -->
-    <div class="section" id="loginSection">
-        <h3 style="color:#94a3b8;margin-bottom:12px;">Ingresá tu token</h3>
-        <input type="text" id="tokenInput" placeholder="Token JWT...">
-        <button class="btn btn-primary" onclick="conectar()">Ingresar</button>
-    </div>
-
-    <!-- Formulario -->
-    <div class="section hidden" id="pedidoSection">
-        <h3 style="color:#94a3b8;margin-bottom:4px;">Nuevo Pedido</h3>
-        <select id="tipoServicio">
-            <option value="">¿Qué necesitás?</option>
-            <option value="plomeria">🚿 Plomería</option>
-            <option value="electricidad">⚡ Electricidad</option>
-            <option value="domestica">🧹 Servicio Doméstico</option>
-            <option value="cerrajeria">🔑 Cerrajería</option>
-            <option value="pintura">🎨 Pintura</option>
-            <option value="gasista">🔥 Gasista</option>
-            <option value="camaras">📷 Cámaras</option>
-            <option value="alarmas">🚨 Alarmas</option>
-            <option value="albanileria">🧱 Albañilería</option>
-            <option value="aire_acondicionado">❄️ Aire Acondicionado</option>
-      <option value="herreria">⚙️ Herrería</option>
-      <option value="carpinteria">🪵 Carpintería</option>
-      <option value="mudanzas">🚚 Mudanzas</option>
-      <option value="jardineria">🌿 Jardinería</option>
-      <option value="limpieza">🧽 Limpieza</option>
-      <option value="techista">🏚️ Techista</option>
-      <option value="impermeabilizacion">💧 Impermeabilización</option>
-      <option value="frigorista">🧊 Frigorista</option>
-      <option value="electrodomesticos">📺 Electrodomésticos</option>
-      <option value="informatica">💻 Informática</option>
-      <option value="soldadura">🔩 Soldadura</option>
-      <option value="fumigacion">🐜 Fumigación</option>
-      <option value="piscinas">🏊 Piscinas</option>
-      <option value="ascensores">🛗 Ascensores</option>
-      <option value="energia_solar">☀️ Energía Solar</option>
-      <option value="cuidado_adultos">👴 Cuidado de Adultos</option>
-        </select>
-        <select id="zona">
-            <option value="">¿Zona?</option>
-            <option value="palermo">Palermo</option>
-            <option value="belgrano">Belgrano</option>
-            <option value="recoleta">Recoleta</option>
-            <option value="caballito">Caballito</option>
-            <option value="san_telmo">San Telmo</option>
-            <option value="nuñez">Nuñez</option>
-            <option value="flores">Flores</option>
-            <option value="villa_urquiza">Villa Urquiza</option>
-      <option value="la_matanza">La Matanza</option>
-      <option value="lanus">Lanús</option>
-      <option value="quilmes">Quilmes</option>
-      <option value="lomas_zamora">Lomas de Zamora</option>
-      <option value="moron">Morón</option>
-      <option value="tigre">Tigre</option>
-      <option value="san_isidro">San Isidro</option>
-      <option value="vicente_lopez">Vicente López</option>
-      <option value="tres_febrero">Tres de Febrero</option>
-      <option value="merlo">Merlo</option>
-        </select>
-        <textarea id="descripcion" rows="3" placeholder="Describí el problema..."></textarea>
-        <button class="btn btn-primary" id="btnBuscar" onclick="crearPedido()">🔍 Buscar Especialista</button>
-    </div>
-
-    <!-- Estado del pedido -->
-    <div class="section hidden" id="estadoSection">
-        <h3 style="color:#94a3b8;margin-bottom:4px;">Estado de tu Pedido</h3>
-        <div id="estadoBox" class="estado-box estado-searching">
-            <h4 id="estadoTitulo">🔍 Buscando Especialista</h4>
-            <p id="estadoMensaje">Activando red de profesionales en tu zona...</p>
-        </div>
-        <div id="infoWorker" class="hidden alerta">
-            <strong>👷 Profesional en camino</strong>
-            <p id="workerNombre" style="margin-top:4px;color:#94a3b8;"></p>
-        </div>
-        <div id="mapaWorker" class="hidden"></div>
-        <button id="btnConfirmarPago" class="btn btn-success hidden" onclick="confirmarPago()">✅ Confirmar Pago</button>
-    </div>
-
-    <!-- Mis Pedidos -->
-    <div class="section hidden" id="misPedidosSection">
-        <h3 style="color:#94a3b8;margin-bottom:8px;">Mis Pedidos</h3>
-        <div id="listaPedidos"></div>
-    </div>
+<div class="header">
+  <div class="logo" onclick="tcResetTap()" style="cursor:pointer;">SERV<span>ired</span></div>
+  <div style="display:flex;align-items:center;gap:6px;">
+  <button class="btn-modo" onclick="window.location='/trabajador.html'">🔧 Ir como Trabajador</button>
+  <button class="btn-salir" onclick="logout()">⏻ Salir</button>
 </div>
+<div class="user-pill"><div class="avatar" id="av">C</div><span id="nombre-cliente">Cliente</span></div>
+</div>
+<div class="estado-bar" id="estado-bar">
+  <div class="pulse-dot"></div>
+  <div class="estado-label" id="estado-txt">Buscando trabajador...</div>
+</div>
+<div class="pantalla active" id="pant-pedir">
+  <div style="padding:10px 16px;background:#0d1b2a;border-bottom:1px solid rgba(255,255,255,0.05);">
+  <button onclick="abrirSmartQuote()" style="width:100%;padding:10px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,58,237,0.15));border:1px solid #00E5FF;border-radius:10px;color:#00E5FF;font-size:0.9rem;font-weight:700;cursor:pointer;">🧠 Presupuesto Inteligente — ¿Cuánto me va a costar?</button>
+</div>
+<div id="mapa"></div>
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">// ¿Qué servicio necesitás?</div>
+      <div class="servicios-grid" id="servicios-grid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">// Tu dirección</div>
+      <div class="dir-input"><span style="color:var(--orange)">📍</span><input type="text" id="dir-input" placeholder="Av. Corrientes 1234, CABA"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">// Precio estimado · Motor Aladín</div>
+      <div class="precio-row"><span style="color:var(--muted)">Base estimada</span><span class="precio-valor" id="precio-display">$ —</span></div>
+      <div id="sq-desc-ia" style="font-size:0.75rem;color:#64748b;margin-top:4px;min-height:16px;font-style:italic;"></div>
+      <div id="sq-desglose" style="font-size:0.7rem;color:#FF6D00;margin-top:2px;font-family:'Share Tech Mono',monospace;"></div>
+      <button id="btn-pagar-mp" onclick="pagarConMP()" style="display:none;width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#00b9e8,#009ee3);border:none;border-radius:10px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:1px;">
+        💳 PAGAR CON MERCADO PAGO
+      </button>
+      <div id="pago-status" style="display:none;text-align:center;padding:10px;border-radius:8px;margin-top:8px;font-size:0.85rem;"></div>
+    </div>
+    <button class="btn-pedir" id="btn-pedir" onclick="pedirServicio()">⚡ PEDIR AHORA</button>
+    <div class="worker-card" id="worker-card">
+      <div class="worker-header">
+        <div class="w-avatar" id="w-ini">T</div>
+        <div><div style="font-size:1.1rem;font-weight:700" id="w-nombre">—</div><div style="color:var(--muted);font-size:0.8rem">★★★★☆ Verificado · SERVired</div></div>
+      </div>
+      <div class="eta-box"><div class="eta-num" id="eta-num">—</div><div class="eta-lbl">minutos estimados de llegada</div></div>
+      <button class="btn-cancelar" onclick="cancelarPedido()">✕ Cancelar pedido</button>
+    </div>
+  </div>
+</div>
+<div class="pantalla" id="pant-historial">
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">// Mis pedidos</div>
+      <div id="lista-hist"><div style="color:var(--muted);text-align:center;padding:20px">Cargando...</div></div>
+    </div>
+  </div>
+</div>
+<nav class="nav-bottom">
+  <button class="nav-btn active" onclick="irPant('pedir',this)"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+  <button class="nav-btn" onclick="irPant('historial',this);cargarHistorial()"><span class="ni">📋</span><span class="nl">Pedidos</span></button>
+  <button class="nav-btn" onclick="cerrarSesion()"><span class="ni">🚪</span><span class="nl">Salir</span></button>
+</nav>
+<div class="toast" id="toast"></div>
 
 <script>
-    const socket = io();
-    let currentToken = '';
-    let currentUserId = '';
-    let pedidoActual = null;
-    let mapa = null;
 
-    
-    // Auto-login: desde localStorage O desde parámetro URL ?t=
+    // Auto-login desde URL ?t= o localStorage
     window.onload = () => {
       const params = new URLSearchParams(window.location.search);
-      const tUrl   = params.get('t');
+      const tUrl = params.get('t');
       if (tUrl) localStorage.setItem('token', tUrl);
       const t = tUrl || localStorage.getItem('token');
       if (t) {
-        document.getElementById('tokenInput').value = t;
-        conectar();
+        const el = document.getElementById('tokenInput');
+        if (el) { el.value = t; conectar(); }
       }
     };
-    let markerWorker = null;
+const RUBROS=[
+  {id:'servicio_domestico',label:'Doméstico',icon:'🧹',precio:8000},
+  {id:'plomeria',label:'Plomería',icon:'🔧',precio:12000},
+  {id:'electricidad',label:'Electricidad',icon:'⚡',precio:14000},
+  {id:'pintura',label:'Pintura',icon:'🎨',precio:10000},
+  {id:'jardineria',label:'Jardín',icon:'🌿',precio:9000},
+  {id:'mudanza',label:'Mudanza',icon:'📦',precio:18000},
+  {id:'gasista',label:'Gasista',icon:'🔥',precio:13000},
+  {id:'carpintero',label:'Carpintería',icon:'🪚',precio:11000},
+  {id:'cerrajero',label:'Cerrajería',icon:'🔑',precio:9500},
+  {id:'albanil',label:'Albañilería',icon:'🧱',precio:15000},
+  {id:'techista',label:'Techista',icon:'🏚️',precio:16000},
+  {id:'herrero',label:'Herrería',icon:'⚒️',precio:12000},
+  {id:'mecanico',label:'Mecánico',icon:'🔩',precio:14000},
+  {id:'refrigeracion',label:'Refrigeración',icon:'❄️',precio:15000},
+  {id:'informatico',label:'Informático',icon:'💻',precio:10000},
+  {id:'yesero',label:'Yesero',icon:'🪣',precio:11000},
+  {id:'cuidador',label:'Cuidador/a',icon:'🧑‍⚕️',precio:9000},
+  {id:'enfermero',label:'Enfermero/a',icon:'💊',precio:12000},
+  {id:'instructor',label:'Instructor',icon:'🏋️',precio:10000},
+  {id:'fotografo',label:'Fotógrafo',icon:'📷',precio:11000},
+  {id:'chofer',label:'Chofer',icon:'🚗',precio:9000},
+  {id:'cocinero',label:'Cocinero/a',icon:'👨‍🍳',precio:10000},
+  {id:'delivery',label:'Delivery',icon:'🛵',precio:6000},
+  {id:'seguridad',label:'Seguridad',icon:'🛡️',precio:13000},
+  {id:'peluquero',label:'Peluquero/a',icon:'✂️',precio:8000},
+  {id:'masajista',label:'Masajista',icon:'💆',precio:10000},
+];
 
-    // Decodificar JWT sin librería (solo payload, no verifica firma)
-    function decodeJWT(token) {
-        try {
-            const payload = token.split('.')[1];
-            return JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
-        } catch(e) { return {}; }
-    }
+// Construir grilla
+let servicioSel=RUBROS[0].id,precioSel=RUBROS[0].precio;
+const grid=document.getElementById('servicios-grid');
+RUBROS.forEach((r,i)=>{
+  const b=document.createElement('div');
+  b.className='srv-btn'+(i===0?' active':'');
+  b.dataset.tipo=r.id;b.dataset.precio=r.precio;
+  b.innerHTML=`<span class="icon">${r.icon}</span><span class="label">${r.label}</span>`;
+  b.onclick=()=>selSrv(b,r);
+  grid.appendChild(b);
+});
+document.getElementById('precio-display').textContent='$ '+RUBROS[0].precio.toLocaleString('es-AR');
 
-    function conectar() {
-        currentToken = document.getElementById('tokenInput').value.trim();
-        if (!currentToken) return alert('Token requerido');
-        const decoded = decodeJWT(currentToken);
-        currentUserId = decoded.userId || decoded.id || '';
-        socket.emit('cliente_conectado', { token: currentToken, userId: currentUserId });
-        // Ocultar login y mostrar panel inmediatamente
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('pedidoSection').classList.remove('hidden');
-    }
+function selSrv(btn,r){
+  document.querySelectorAll('.srv-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  servicioSel=r.id;precioSel=r.precio;
+  document.getElementById('precio-display').textContent='$ '+r.precio.toLocaleString('es-AR');
+}
 
-    async function crearPedido() {
-        const tipo = document.getElementById('tipoServicio').value;
-        const zona = document.getElementById('zona').value;
-        const desc = document.getElementById('descripcion').value;
-        if (!tipo || !zona) return alert('Completá servicio y zona');
+function logout(){localStorage.removeItem('token');window.location='/';}
+const urlT=new URLSearchParams(window.location.search).get('t');
+if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/cliente.html');}
+const urlT2=new URLSearchParams(window.location.search).get('t');
+if(urlT2){localStorage.setItem('token',urlT2);}
+const TOKEN=localStorage.getItem('token');
+let rubroActual=null,precioActual=0,comisionActual=0,pagoWorkerActual=0,zonaCliente='palermo',pedidoActivoId=null;
+const SERVICIOS = [
+  {id:'limpieza',label:'Limpieza',icon:'🧹',precio:12000},
+  {id:'plomeria',label:'Plomería',icon:'🔧',precio:55000},
+  {id:'electricidad',label:'Electricidad',icon:'⚡',precio:75000},
+  {id:'pintura',label:'Pintura',icon:'🎨',precio:32000},
+  {id:'gasista',label:'Gasista',icon:'🔥',precio:95000},
+  {id:'cerrajeria',label:'Cerrajería',icon:'🔑',precio:60000},
+  {id:'jardineria',label:'Jardinería',icon:'🌿',precio:45000},
+  {id:'mudanza',label:'Mudanza',icon:'🚛',precio:95000},
+  {id:'albanileria',label:'Albañilería',icon:'🧱',precio:45000},
+  {id:'techistas',label:'Techista',icon:'🏚️',precio:60000},
+  {id:'herreria',label:'Herrería',icon:'⚒️',precio:45000},
+  {id:'carpinteria',label:'Carpintería',icon:'🪚',precio:40000},
+  {id:'durlock',label:'Durlock',icon:'🪣',precio:48000},
+  {id:'revestimientos',label:'Revest. PVC',icon:'🧱',precio:45000},
+  {id:'antihumedad',label:'Antihumedad',icon:'💧',precio:55000},
+  {id:'climatizacion',label:'Climatización',icon:'❄️',precio:160000},
+  {id:'mecanica',label:'Mecánica',icon:'🔩',precio:45000},
+  {id:'consorcios',label:'Consorcios',icon:'🏢',precio:110000},
+  {id:'fumigacion',label:'Fumigación',icon:'🦟',precio:42000},
+  {id:'peluqueria_canina',label:'Peluq. Canina',icon:'🐕',precio:25000},
+  {id:'paneles_solares',label:'Paneles Solares',icon:'☀️',precio:200000},
+  {id:'banio',label:'Baño completo',icon:'🚿',precio:280000},
+  {id:'cocina',label:'Cocina',icon:'🍳',precio:250000},
+  {id:'camaras',label:'Cámaras',icon:'📷',precio:90000},
+  {id:'alarmas',label:'Alarmas',icon:'🚨',precio:90000},
+  {id:'domotica',label:'Domótica',icon:'🏠',precio:105000},
+  {id:'reforma',label:'Reforma integral',icon:'🏗️',precio:600000},
+  {id:'servicio_domestico',label:'Doméstico',icon:'🧹',precio:14000},
+  {id:'refrigeracion',label:'Refrigeración',icon:'❄️',precio:55000},
+  {id:'informatico',label:'Informático',icon:'💻',precio:35000},
+];
 
-        document.getElementById('btnBuscar').disabled = true;
-        document.getElementById('btnBuscar').textContent = '⏳ Enviando...';
+if(!TOKEN){window.location='/';throw new Error('sin token');}
+const payload=TOKEN?JSON.parse(atob(TOKEN.split('.')[1])):null;
+if(payload&&payload.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';}
+let socket,mapa,markerCli,markerTrab,pedidoActivo=null;
+try{document.getElementById('nombre-cliente').textContent=payload?.nombre||'Cliente';}catch(ex){}
+try{document.getElementById('av').textContent=(payload?.nombre||'C')[0].toUpperCase();}catch(ex){}
+try{socket=io();}catch(ex){}
 
-        try {
-            // Intentar obtener GPS real
-            let lat = -34.6, lng = -58.4;
-            try {
-                const pos = await new Promise((res, rej) =>
-                    navigator.geolocation.getCurrentPosition(res, rej, { timeout: 4000 })
-                );
-                lat = pos.coords.latitude;
-                lng = pos.coords.longitude;
-            } catch(e) {}
+function initMapa(){
+  mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
+  const ic=L.divIcon({html:'<div style="background:#FF6D00;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px rgba(255,109,0,0.8)"></div>',className:'',iconSize:[14,14]});
+  markerCli=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Tu ubicación');
+  if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{markerCli.setLatLng([p.coords.latitude,p.coords.longitude]);mapa.setView([p.coords.latitude,p.coords.longitude],14);});
+}
 
-            const res = await fetch('/api/pedidos', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + currentToken
-                },
-                body: JSON.stringify({ tipoServicio: tipo, zona, descripcion: desc, complejidad: 'baja', lat, lng })
-            });
+function pedirServicio(){
+  const dir=document.getElementById('dir-input').value.trim();
+  if(!dir){toast('📍 Ingresá tu dirección');return;}
+  const btn=document.getElementById('btn-pedir');
+  btn.disabled=true;btn.textContent='⏳ Buscando trabajador...';
+  document.getElementById('estado-bar').classList.add('visible');
+  document.getElementById('estado-txt').textContent='Buscando trabajador disponible...';
+  socket.emit('nuevo_pedido',{token:TOKEN,servicio:servicioSel,direccion:dir,precio:precioSel});
+}
 
-            const data = await res.json();
-            if (data.ok) {
-                pedidoActual = data.pedido;
-                // ← Clave: registrar pedido en socket para recibir updates
-                socket.emit('registrar_pedido', { pedidoId: pedidoActual._id });
-                mostrarEstado('SEARCHING');
-                document.getElementById('pedidoSection').classList.add('hidden');
-                cargarMisPedidos();
-            } else {
-                alert('Error: ' + (data.error || 'desconocido'));
-                document.getElementById('btnBuscar').disabled = false;
-                document.getElementById('btnBuscar').textContent = '🔍 Buscar Especialista';
-            }
-        } catch(e) {
-            alert('Error de conexión');
-            document.getElementById('btnBuscar').disabled = false;
-            document.getElementById('btnBuscar').textContent = '🔍 Buscar Especialista';
-        }
-    }
+function cancelarPedido(){
+  if(pedidoActivo)socket.emit('cancelar_pedido',{pedidoId:pedidoActivo,token:TOKEN});
+  resetUI();
+}
 
-    function mostrarEstado(fase) {
-        document.getElementById('estadoSection').classList.remove('hidden');
-        const box = document.getElementById('estadoBox');
-        const titulo = document.getElementById('estadoTitulo');
-        const msg = document.getElementById('estadoMensaje');
-        box.className = 'estado-box';
+function resetUI(){
+  const btn=document.getElementById('btn-pedir');
+  btn.disabled=false;btn.textContent='⚡ PEDIR AHORA';
+  document.getElementById('estado-bar').classList.remove('visible');
+  document.getElementById('worker-card').classList.remove('visible');
+  if(markerTrab){mapa.removeLayer(markerTrab);markerTrab=null;}
+  pedidoActivo=null;
+}
 
-        if (fase === 'SEARCHING') {
-            box.classList.add('estado-searching');
-            titulo.textContent = '🔍 Buscando Especialista';
-            msg.textContent = 'Activando red de profesionales en tu zona...';
-        } else if (fase === 'ACEPTADA') {
-            box.classList.add('estado-aceptada');
-            titulo.textContent = '✅ Profesional Asignado';
-            msg.textContent = 'Está en camino hacia tu ubicación';
-            document.getElementById('infoWorker').classList.remove('hidden');
-            iniciarMapa();
-        } else if (fase === 'REALIZADA') {
-            box.classList.add('estado-realizada');
-            titulo.textContent = '🏁 Trabajo Completado';
-            msg.textContent = 'El profesional marcó el trabajo como terminado';
-            document.getElementById('btnConfirmarPago').classList.remove('hidden');
-        }
-    }
+function abrirSmartQuote(){
+  var m=document.getElementById('sq-modal');
+  if(m){m.style.display='block';m.style.zIndex='9999';sqReset();}
+  else{alert('Error: modal no encontrado');}
+}
 
-    function iniciarMapa() {
-        document.getElementById('mapaWorker').classList.remove('hidden');
-        if (mapa) return;
-        mapa = L.map('mapaWorker').setView([-34.6, -58.4], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(mapa);
-    }
+const SQ_TRABAJOS={
+  limpieza:{label:'🧹 Limpieza',rubros:[{r:'limpieza_hogar',label:'Limpieza',coef:1}]},
+  plomeria:{label:'🔧 Plomería',rubros:[{r:'plomeria',label:'Plomería',coef:1}]},
+  electricidad:{label:'⚡ Electricidad',rubros:[{r:'electricidad',label:'Electricidad',coef:1}]},
+  pintura:{label:'🎨 Pintura',rubros:[{r:'pintura',label:'Pintura',coef:1}]},
+  gasista:{label:'🔥 Gasista',rubros:[{r:'gasista',label:'Gasista',coef:1}]},
+  cerrajeria:{label:'🔑 Cerrajería',rubros:[{r:'cerrajeria',label:'Cerrajería',coef:1}]},
+  jardineria:{label:'🌿 Jardinería',rubros:[{r:'jardineria',label:'Jardinería',coef:1}]},
+  mudanza:{label:'🚛 Mudanza',rubros:[{r:'fletes_mudanzas',label:'Flete',coef:1}]},
+  banio:{label:'🚿 Baño completo',rubros:[
+    {r:'plomeria',label:'Plomería',coef:4},
+    {r:'electricidad',label:'Electricidad',coef:3},
+    {r:'albanileria',label:'Albañilería/revoque',coef:6},
+    {r:'pisos_revestimientos',label:'Cerámicos',coef:4},
+    {r:'durlock',label:'Durlock/cielorraso',coef:3},
+    {r:'pintura',label:'Pintura final',coef:2},
+  ]},
+  cocina:{label:'🍳 Cocina completa',rubros:[
+    {r:'plomeria',label:'Plomería',coef:3},
+    {r:'electricidad',label:'Electricidad',coef:4},
+    {r:'albanileria',label:'Albañilería',coef:5},
+    {r:'pisos_revestimientos',label:'Revestimientos',coef:3},
+    {r:'pintura',label:'Pintura',coef:2},
+  ]},
+  camaras:{label:'📷 Cámaras de seguridad',rubros:[
+    {r:'camaras_seguridad',label:'Instalación cámaras',coef:1},
+    {r:'electricidad',label:'Cableado/alimentación',coef:1},
+  ]},
+  alarmas:{label:'🚨 Sistema de alarmas',rubros:[
+    {r:'alarmas',label:'Alarma perimetral',coef:1},
+    {r:'electricidad',label:'Cableado',coef:1},
+  ]},
+  domotica:{label:'🏠 Domótica/Automatización',rubros:[
+    {r:'domotica_automatizacion',label:'Automatización',coef:1},
+    {r:'electricidad',label:'Instalación eléctrica',coef:1},
+  ]},
+  techistas:{label:'🏚️ Techistas',rubros:[
+    {r:'techistas',label:'Techo de chapa/losa',coef:1},
+    {r:'techistas',label:'Impermeabilización',coef:1.2},
+  ]},
+  herreria:{label:'🔩 Herrería',rubros:[
+    {r:'herreria',label:'Rejas/portones',coef:1},
+    {r:'herreria',label:'Escaleras metálicas',coef:1.3},
+  ]},
+  carpinteria:{label:'🪚 Carpintería',rubros:[
+    {r:'carpinteria',label:'Muebles a medida',coef:1.2},
+    {r:'carpinteria',label:'Puertas/ventanas',coef:1},
+  ]},
+  revestimientos:{label:'🧱 Revestimientos PVC',rubros:[
+    {r:'revestimientos_pvc',label:'Cielorraso PVC',coef:1},
+    {r:'revestimientos_pvc',label:'Revestimiento paredes',coef:1},
+  ]},
+  antihumedad:{label:'💧 Antihumedad',rubros:[
+    {r:'antihumedad',label:'Tratamiento muros',coef:1.2},
+    {r:'antihumedad',label:'Membrana exterior',coef:1.3},
+  ]},
+  climatizacion:{label:'❄️ Climatización',rubros:[
+    {r:'climatizacion',label:'Instalación AC split',coef:1},
+    {r:'climatizacion',label:'Estufa/calefacción',coef:1},
+    {r:'climatizacion',label:'Mantenimiento AC',coef:0.8},
+  ]},
+  mecanica:{label:'🔧 Mecánica/Auxilio',rubros:[
+    {r:'mecanica_auxilio',label:'Auxilio en ruta',coef:1},
+    {r:'mecanica_auxilio',label:'Mecánica ligera',coef:1},
+  ]},
+  consorcios:{label:'🏢 Consorcios',rubros:[
+    {r:'mantenimiento_consorcios',label:'Mantenimiento general',coef:1},
+    {r:'mantenimiento_consorcios',label:'Limpieza áreas comunes',coef:0.9},
+  ]},
+  paneles_solares:{label:'☀️ Paneles Solares',rubros:[
+    {r:'paneles_solares',label:'Instalación residencial',coef:1.5},
+    {r:'paneles_solares',label:'Mantenimiento paneles',coef:1},
+  ]},
+  peluqueria_canina:{label:'🐕 Peluquería Canina',rubros:[
+    {r:'peluqueria_canina',label:'Baño y corte',coef:1},
+    {r:'peluqueria_canina',label:'Corte raza',coef:1.2},
+  ]},
+  fumigacion:{label:'🦟 Fumigación',rubros:[
+    {r:'fumigacion',label:'Control plagas',coef:1},
+    {r:'fumigacion',label:'Desinfección integral',coef:1.2},
+  ]},
+  camaras:{label:'📷 Cámaras de seguridad',rubros:[
+    {r:'camaras_seguridad',label:'Instalación cámaras',coef:1},
+    {r:'electricidad',label:'Cableado/alimentación',coef:1},
+  ]},
+  alarmas:{label:'🚨 Sistema de alarmas',rubros:[
+    {r:'alarmas',label:'Alarma perimetral',coef:1},
+    {r:'electricidad',label:'Cableado',coef:1},
+  ]},
+  domotica:{label:'🏠 Domótica/Automatización',rubros:[
+    {r:'domotica_automatizacion',label:'Automatización',coef:1},
+    {r:'electricidad',label:'Instalación eléctrica',coef:1},
+  ]},
+  reforma:{label:'🏗️ Reforma integral',rubros:[
+    {r:'albanileria',label:'Albañilería',coef:20},
+    {r:'plomeria',label:'Plomería',coef:8},
+    {r:'electricidad',label:'Electricidad',coef:8},
+    {r:'durlock',label:'Durlock',coef:6},
+    {r:'pisos_revestimientos',label:'Pisos',coef:6},
+    {r:'pintura',label:'Pintura',coef:5},
+  ]},
+};
 
-    function confirmarPago() {
-        alert('Funcionalidad de pago próximamente. ¡Gracias por usar ServiRed!');
-    }
+let sqTrabajo=null,sqM2=4,sqComplejidad='baja';
 
-    async function cargarMisPedidos() {
-        try {
-            const res = await fetch('/api/pedidos/mis-pedidos', {
-                headers: { 'Authorization': 'Bearer ' + currentToken }
-            });
-            const data = await res.json();
-            if (data.ok && data.pedidos.length) {
-                const lista = document.getElementById('listaPedidos');
-                lista.innerHTML = data.pedidos.map(p => `
-                    <div class="pedido-card">
-                        <strong>${p.tipoServicio}</strong> — ${p.zona}<br>
-                        <span class="badge ${p.estado === 'ACEPTADA' ? 'online' : ''}">${p.estado}</span>
-                        <small style="float:right;color:#64748b;">$${(p.total_estimado||0).toLocaleString('es-AR')}</small>
-                    </div>
-                `).join('');
-                document.getElementById('misPedidosSection').classList.remove('hidden');
-            }
-        } catch(e) { console.error(e); }
-    }
+function sqModoTexto(){
+  document.getElementById('sq-paso1').style.display='none';
+  document.getElementById('sq-paso3').style.display='block';
+  document.getElementById('sq-result').style.display='none';
+}
 
-    // ── Socket events ────────────────────────────────────────
-    socket.on('conectado_ok', () => {
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('pedidoSection').classList.remove('hidden');
-        cargarMisPedidos();
+async function pedirGroq(){
+  const texto=document.getElementById('sq-texto-libre').value.trim();
+  if(!texto)return;
+  const btn=document.getElementById('sq-btn-groq');
+  btn.textContent='⏳ Analizando con IA...';btn.disabled=true;
+  try{
+    const res=await fetch('/api/smart-quote',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body:JSON.stringify({texto})
     });
+    const d=await res.json();
+    if(!d.ok)throw new Error(d.error||'Error IA');
+    const lineas=(d.rubros||[]).map(r=>`<div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span>🔹 ${r.nombre}</span><span style="color:#10b981;">ARS ${(r.precio_mano_obra||0).toLocaleString('es-AR')}</span></div>`).join('');
+    document.getElementById('sq-content').innerHTML=`
+      <div style="background:#1a2236;border-radius:8px;padding:12px;">
+        <div style="color:#a78bfa;font-weight:700;margin-bottom:8px;">✏️ ${d.descripcion||'Trabajo personalizado'}</div>
+        ${lineas}
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);">
+          <div style="display:flex;justify-content:space-between;font-weight:700;color:#00E5FF;font-size:1rem;"><span>TOTAL MANO DE OBRA</span><span>ARS ${(d.total_mano_obra||0).toLocaleString('es-AR')}</span></div>
+        </div>
+        <div style="font-size:0.7rem;color:#64748b;margin-top:8px;">${d.nota||''}</div>
+        <div style="font-size:0.65rem;color:#475569;margin-top:4px;">Confianza estimación: ${d.confianza||'media'}</div>
+      </div>`;
+    document.getElementById('sq-result').style.display='block';
+    document.getElementById('sq-paso3').style.display='none';
+  }catch(e){alert('Error: '+e.message);}
+  finally{btn.textContent='🧠 Calcular con IA';btn.disabled=false;}
+}
 
-    socket.on('trabajo_aceptado', (data) => {
-        console.log('[Cliente] trabajo_aceptado:', data);
-        document.getElementById('workerNombre').textContent = data.trabajadorNombre || 'Profesional asignado';
-        mostrarEstado('ACEPTADA');
-        cargarMisPedidos();
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('¡Pedido Aceptado! 🎉', { body: data.mensaje });
-        }
-    });
+function sqReset(){
+  sqTrabajo=null;
+  document.getElementById('sq-paso1').style.display='block';
+  document.getElementById('sq-paso2').style.display='none';
+  document.getElementById('sq-paso3').style.display='none';
+  document.getElementById('sq-result').style.display='none';
+}
 
-    socket.on('estado_pedido', (data) => {
-        console.log('[Cliente] estado_pedido:', data);
-        if (data.estado === 'ACEPTADA') mostrarEstado('ACEPTADA');
-        if (data.estado === 'REALIZADA') mostrarEstado('REALIZADA');
-        cargarMisPedidos();
-    });
-
-    // GPS del worker en tiempo real
-    socket.on('worker_gps', (data) => {
-        console.log('[Cliente] GPS worker:', data.lat, data.lng);
-        if (!mapa) iniciarMapa();
-        const pos = [data.lat, data.lng];
-        if (markerWorker) {
-            markerWorker.setLatLng(pos);
-        } else {
-            markerWorker = L.marker(pos, {
-                icon: L.divIcon({ html: '👷', className: '', iconSize: [30,30] })
-            }).addTo(mapa).bindPopup('Profesional en camino');
-        }
-        mapa.setView(pos, 15);
-    });
-
-    if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
+function sqElegir(key){
+  try {
+  rubroActual = key;
+  const srv = SERVICIOS.find(s=>s.id===key);
+  if(!srv) return;
+  document.getElementById('precio-display').textContent = '$ calculando...';
+  fetch('/api/smart-quote',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({rubro:key, descripcion: srv.label, zona: zonaCliente||'palermo', complejidad:'estandar'})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){
+      precioActual = d.estimado;
+      comisionActual = d.comision;
+      pagoWorkerActual = d.pago_worker;
+      document.getElementById('precio-display').textContent = '$ '+d.estimado.toLocaleString('es-AR');
+      if(d.descripcion_ia) document.getElementById('sq-desc-ia').textContent = d.descripcion_ia;
+      document.getElementById('sq-desglose').textContent = 'Zona: '+d.zona+' · Comisión SERVired: $'+d.comision.toLocaleString('es-AR');
     }
+  }).catch(()=>{
+    precioActual = srv.precio;
+    document.getElementById('precio-display').textContent = '$ '+srv.precio.toLocaleString('es-AR');
+  });
+  sqTrabajo=key;
+  document.getElementById('sq-paso1').style.display='none';
+  } catch(e){ alert('ERROR sqElegir: '+e.message); }
+  document.getElementById('sq-paso2').style.display='block';
+  document.getElementById('sq-titulo-trabajo').textContent=SQ_TRABAJOS[key].label;
+  const esObra=['banio','cocina','reforma','pintura'].includes(key);
+  document.getElementById('sq-fila-m2').style.display=esObra?'block':'none';
+}
+
+async function pedirSmartQuote(){
+  if(!sqTrabajo)return;
+  sqM2=parseFloat(document.getElementById('sq-m2').value)||4;
+  sqComplejidad=document.getElementById('sq-complejidad').value||'baja';
+  const btn=document.getElementById('sq-btn-calcular');
+  btn.textContent='⏳ Calculando...';btn.disabled=true;
+  try{
+    const trabajo=SQ_TRABAJOS[sqTrabajo];
+    let totalMat=0,totalMano=0,totalCom=0;
+    const lineas=[];
+    for(const item of trabajo.rubros){
+      const res=await fetch('/api/smart-quote',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+        body:JSON.stringify({rubro:item.r,complejidad:sqComplejidad,descripcion:document.getElementById('sq-descripcion')?.value||''})
+      });
+      const d=await res.json();
+      if(d.ok){
+        const sub=Math.round(d.total_estimado*item.coef);
+        totalMat+=Math.round(d.materiales*item.coef);
+        totalMano+=Math.round(d.mano_de_obra*item.coef);
+        totalCom+=Math.round(d.comision*item.coef);
+        lineas.push({label:item.label,sub});
+      }
+    }
+    const total=totalMat+totalMano+totalCom;
+    document.getElementById('sq-content').innerHTML=`
+      <div style="background:#1a2236;border-radius:8px;padding:12px;">
+        <div style="color:#00E5FF;font-weight:700;margin-bottom:8px;">${trabajo.label}</div>
+        <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:8px;">Calidad: ${sqComplejidad==='alta'?'Premium':'Económico'}</div>
+        ${lineas.map(l=>`<div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span>${l.label}</span><span style="color:#10b981;">ARS ${l.sub.toLocaleString('es-AR')}</span></div>`).join('')}
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);">
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Materiales</span><span>ARS ${totalMat.toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Mano de obra</span><span>ARS ${totalMano.toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Comisión SERVired</span><span>ARS ${totalCom.toLocaleString('es-AR')}</span></div>
+          <div style="display:flex;justify-content:space-between;font-weight:700;margin-top:6px;color:#00E5FF;font-size:1rem;"><span>TOTAL ESTIMADO</span><span>ARS ${total.toLocaleString('es-AR')}</span></div>
+        </div>
+        <div style="font-size:0.7rem;color:#64748b;margin-top:8px;">* Estimación orientativa. Puede variar según materiales y condición del lugar.</div>
+      </div>`;
+    document.getElementById('sq-result').style.display='block';
+  }catch(e){alert('Error: '+e.message);}
+  finally{btn.textContent='⚡ Calcular presupuesto';btn.disabled=false;}
+}
+
+function cerrarSesion(){localStorage.removeItem('token');window.location='/';}
+
+socket.on('pedido_aceptado',data=>{
+  pedidoActivo=data.pedidoId;
+  document.getElementById('estado-txt').textContent='✅ Trabajador en camino';
+  document.getElementById('w-nombre').textContent=data.trabajador.nombre;
+  document.getElementById('w-ini').textContent=data.trabajador.nombre[0];
+  document.getElementById('eta-num').textContent=data.eta||'~15';
+  document.getElementById('worker-card').classList.add('visible');
+  const ic=L.divIcon({html:'<div style="background:#00E5FF;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(0,229,255,0.9)"></div>',className:'',iconSize:[14,14]});
+  if(markerTrab)mapa.removeLayer(markerTrab);
+  markerTrab=L.marker([data.trabajador.lat||(-34.6037),data.trabajador.lng||(-58.3816)],{icon:ic}).addTo(mapa);
+  toast('¡Trabajador asignado! Viene en camino 🚀');
+});
+socket.on('ubicacion_trabajador',data=>{if(markerTrab)markerTrab.setLatLng([data.lat,data.lng]);});
+socket.on('estado_pedido_actualizado',data=>{document.getElementById('estado-txt').textContent='Estado: '+data.estado.replace(/_/g,' ');});
+socket.on('pedido_completado',()=>{toast('✅ Servicio completado. ¡Gracias!');resetUI();cargarHistorial();irPant('historial',null);});
+socket.on('pedido_cancelado',()=>{toast('Pedido cancelado');resetUI();});
+
+async function cargarHistorial(){
+  try{
+    const r=await fetch('/api/pedidos/mis-pedidos',{headers:{Authorization:'Bearer '+TOKEN}});
+    const data=await r.json();
+    const lista=document.getElementById('lista-hist');
+    const rmap=Object.fromEntries(RUBROS.map(x=>[x.id,x]));
+    if(!data.length){lista.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">Sin pedidos aún</div>';return;}
+    lista.innerHTML=data.map(p=>{const robj=rmap[p.tipoServicio]||{};return`<div class="hist-item"><div><div style="font-weight:600">${robj.icon||'🔨'} ${(p.tipoServicio||'—').replace(/_/g,' ')}</div><div style="font-size:0.75rem;color:var(--muted)">${new Date(p.createdAt).toLocaleDateString('es-AR')} · $${(p.precio||0).toLocaleString('es-AR')}</div></div><span class="badge ${p.estado}">${p.estado}</span></div>`;}).join('');
+  }catch(e){}
+}
+
+function irPant(id,btn){
+  document.querySelectorAll('.pantalla').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pant-'+id)?.classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='mapa')setTimeout(()=>mapa?.invalidateSize(),100);
+}
+
+function toast(msg,dur=3500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+window.addEventListener('DOMContentLoaded',initMapa);
+
+// ── TÉRMINOS Y CONDICIONES ──
+var _tcChecked=false,_tcScrolled=false,_tcCb=null;
+function tcMostrar(cb){
+  if(localStorage.getItem('srv_tc_v3')==='1'){cb&&cb();return;}
+  _tcCb=cb;_tcChecked=false;_tcScrolled=false;
+  document.getElementById('tcFill').style.width='0%';
+  document.getElementById('tcPct').textContent='0%';
+  document.getElementById('tcHint').classList.remove('hidden');
+  document.getElementById('tcChkRow').classList.remove('unlocked');
+  document.getElementById('tcChkBox').classList.remove('checked');
+  document.getElementById('tcBtnAceptar').disabled=true;
+  document.getElementById('tcFooter').style.display='';
+  document.getElementById('tcOk').classList.remove('show');
+  document.getElementById('tcBody').scrollTop=0;
+  document.getElementById('tcOverlay').classList.add('show');
+}
+(function(){
+  var b=document.getElementById('tcBody');
+  if(!b)return;
+  b.addEventListener('scroll',function(){
+    var r=b.scrollTop/(b.scrollHeight-b.clientHeight);
+    var p=Math.min(100,Math.round(r*100));
+    document.getElementById('tcFill').style.width=p+'%';
+    document.getElementById('tcPct').textContent=p+'%';
+    if(p>=70){document.getElementById('tcHint').classList.add('hidden');
+_tcScrolled=true;
+var btn=document.getElementById('tcBtnAceptar');
+btn.disabled=false;
+btn.style.opacity='1';
+btn.textContent='ACEPTAR Y CONTINUAR';}
+  });
+})();
+function tcToggleChk(){}
+function tcUpdateBtn(){}
+function tcAceptar(){
+  localStorage.setItem('srv_tc_v3','1');
+  document.getElementById('tcFooter').style.display='none';
+  document.getElementById('tcOk').classList.add('show');
+  setTimeout(function(){document.getElementById('tcOverlay').classList.remove('show');if(_tcCb)_tcCb();},1600);
+}
+
+
+// Reset TC - tocar logo 5 veces
+var _tcTaps=0,_tcTimer=null;
+function tcResetTap(){
+  _tcTaps++;
+  clearTimeout(_tcTimer);
+  if(_tcTaps>=5){
+    localStorage.removeItem('srv_tc_v3');
+    _tcTaps=0;
+    tcMostrar(function(){});
+    return;
+  }
+  _tcTimer=setTimeout(function(){_tcTaps=0;},1500);
+}
+
 </script>
+
+<!-- SMART QUOTE MODAL -->
+<div id="sq-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;overflow-y:auto;padding:20px;">
+  <div style="background:#111827;border:1px solid #00E5FF;border-radius:16px;padding:20px;max-width:480px;margin:0 auto;margin-top:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:1.1rem;font-weight:700;color:#00E5FF;">🧠 Presupuesto Inteligente</div>
+      <button onclick="document.getElementById('sq-modal').style.display='none'" style="background:none;border:none;color:#64748b;font-size:1.5rem;cursor:pointer;">✕</button>
+    </div>
+    <!-- PASO 1: elegir trabajo -->
+    <div id="sq-paso1">
+      <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:12px;">¿Qué trabajo necesitás?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="sqElegir('limpieza')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🧹 Limpieza</button>
+        <button onclick="sqElegir('plomeria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔧 Plomería</button>
+        <button onclick="sqElegir('electricidad')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">⚡ Electricidad</button>
+        <button onclick="sqElegir('pintura')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🎨 Pintura</button>
+        <button onclick="sqElegir('gasista')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔥 Gasista</button>
+        <button onclick="sqElegir('cerrajeria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔑 Cerrajería</button>
+        <button onclick="sqElegir('jardineria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🌿 Jardinería</button>
+        <button onclick="sqElegir('mudanza')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🚛 Mudanza</button>
+        <button onclick="sqElegir('albanileria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🧱 Albañilería</button>
+        <button onclick="sqElegir('techistas')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🏚️ Techista</button>
+        <button onclick="sqElegir('herreria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">⚒️ Herrería</button>
+        <button onclick="sqElegir('carpinteria')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🪚 Carpintería</button>
+        <button onclick="sqElegir('durlock')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🪣 Durlock</button>
+        <button onclick="sqElegir('revestimientos')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🧱 Revest. PVC</button>
+        <button onclick="sqElegir('antihumedad')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">💧 Antihumedad</button>
+        <button onclick="sqElegir('climatizacion')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">❄️ Climatización</button>
+        <button onclick="sqElegir('mecanica')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🔩 Mecánica</button>
+        <button onclick="sqElegir('consorcios')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🏢 Consorcios</button>
+        <button onclick="sqElegir('fumigacion')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🦟 Fumigación</button>
+        <button onclick="sqElegir('peluqueria_canina')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🐕 Peluq. Canina</button>
+        <button onclick="sqElegir('paneles_solares')" style="padding:10px;background:rgba(255,200,0,0.1);border:1px solid #ffc800;border-radius:8px;color:#ffc800;font-size:0.8rem;cursor:pointer;font-weight:700;">☀️ Paneles Solares</button>
+        <button onclick="sqElegir('banio')" style="padding:10px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.8rem;cursor:pointer;font-weight:700;">🚿 Baño completo</button>
+        <button onclick="sqElegir('cocina')" style="padding:10px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.8rem;cursor:pointer;font-weight:700;">🍳 Cocina</button>
+        <button onclick="sqElegir('camaras')" style="padding:10px;background:rgba(124,58,237,0.1);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;">📷 Cámaras</button>
+        <button onclick="sqElegir('alarmas')" style="padding:10px;background:rgba(124,58,237,0.1);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;">🚨 Alarmas</button>
+        <button onclick="sqElegir('domotica')" style="padding:10px;background:rgba(124,58,237,0.1);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;font-weight:700;">🏠 Domótica</button>
+        <button onclick="sqElegir('reforma')" style="padding:10px;background:rgba(255,109,0,0.1);border:1px solid #FF6D00;border-radius:8px;color:#FF6D00;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">🏗️ Reforma integral</button>
+        <button onclick="sqElegir('camaras')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">📷 Cámaras</button>
+        <button onclick="sqElegir('alarmas')" style="padding:10px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.8rem;cursor:pointer;">🚨 Alarmas</button>
+        <button onclick="sqElegir('domotica')" style="padding:10px;background:rgba(124,58,237,0.1);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">🏠 Domótica/Automatización</button>
+        <button onclick="sqModoTexto()" style="padding:10px;background:rgba(124,58,237,0.15);border:1px solid #7c3aed;border-radius:8px;color:#a78bfa;font-size:0.8rem;cursor:pointer;font-weight:700;grid-column:span 2;">✏️ Describir mi trabajo (IA)</button>
+      </div>
+    </div>
+    <!-- PASO 3: texto libre con Groq -->
+    <div id="sq-paso3" style="display:none;">
+      <button onclick="sqReset()" style="background:none;border:none;color:#64748b;font-size:0.8rem;cursor:pointer;margin-bottom:12px;">← Volver</button>
+      <div style="font-size:1rem;font-weight:700;color:#a78bfa;margin-bottom:12px;">✏️ Describí tu trabajo</div>
+      <textarea id="sq-texto-libre" placeholder="Ej: Necesito instalar cámaras de seguridad en la entrada y el garaje, con grabación en la nube..." style="width:100%;padding:12px;background:#1a2236;border:1px solid rgba(124,58,237,0.4);border-radius:10px;color:#e2e8f0;font-size:0.9rem;resize:none;height:100px;margin-bottom:12px;"></textarea>
+      <button id="sq-btn-groq" onclick="pedirGroq()" style="width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">🧠 Calcular con IA</button>
+    </div>
+    <!-- PASO 2: dimensiones y complejidad -->
+    <div id="sq-paso2" style="display:none;">
+      <button onclick="sqReset()" style="background:none;border:none;color:#64748b;font-size:0.8rem;cursor:pointer;margin-bottom:12px;">← Volver</button>
+      <div id="sq-titulo-trabajo" style="font-size:1rem;font-weight:700;color:#00E5FF;margin-bottom:12px;"></div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.8rem;color:#94a3b8;">¿Cuál es el problema? (opcional pero mejora el presupuesto)</label>
+        <textarea id="sq-descripcion" rows="2" placeholder="Ej: Se me rompió un caño bajo la pileta, hay pérdida de agua..." style="width:100%;padding:8px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.85rem;margin-top:4px;resize:none;box-sizing:border-box;"></textarea>
+      </div>
+      <div id="sq-fila-m2" style="margin-bottom:12px;">
+        <label style="font-size:0.8rem;color:#94a3b8;">Metros cuadrados (m²)</label>
+        <input id="sq-m2" type="number" value="4" min="1" max="200" style="width:100%;padding:8px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:1rem;margin-top:4px;">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.8rem;color:#94a3b8;">Calidad de materiales</label>
+        <select id="sq-complejidad" style="width:100%;padding:8px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.9rem;margin-top:4px;">
+          <option value="baja">Económico</option>
+          <option value="alta">Premium</option>
+        </select>
+      </div>
+      <button id="sq-btn-calcular" onclick="pedirSmartQuote()" style="width:100%;padding:12px;background:#00E5FF;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:16px;">⚡ Calcular presupuesto</button>
+    </div>
+    <!-- RESULTADO -->
+    <div id="sq-result" style="display:none;">
+      <div id="sq-content"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="sqReset()" style="flex:1;padding:10px;background:rgba(100,116,139,0.2);border:1px solid #64748b;border-radius:8px;color:#94a3b8;font-size:0.85rem;cursor:pointer;">← Nuevo presupuesto</button>
+        <button onclick="document.getElementById('sq-modal').style.display='none'" style="flex:1;padding:10px;background:rgba(0,229,255,0.15);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.85rem;cursor:pointer;">👷 Pedir profesional</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TÉRMINOS Y CONDICIONES SERVIRED v3.0 -->
+<div class="tc-overlay" id="tcOverlay">
+  <div class="tc-modal">
+    <div class="tc-hdr">
+      <div class="tc-hdr-brand">SERVI<span>RED</span></div>
+      <div class="tc-hdr-sub">Términos y Condiciones de Uso</div>
+      <div class="tc-hdr-ver">Versión 3.0 · República Argentina</div>
+    </div>
+    <div class="tc-prog-wrap">
+      <div class="tc-prog-row">Leído <span id="tcPct">0%</span></div>
+      <div class="tc-prog-track"><div class="tc-prog-fill" id="tcFill"></div></div>
+    </div>
+    <div class="tc-hint" id="tcHint">▼ Desplazate hasta el final para aceptar</div>
+    <div class="tc-body" id="tcBody">
+      <div class="tc-sec"><div class="tc-sec-num">Art. 01</div><div class="tc-sec-title">Aceptación e Integración</div><div class="tc-sec-body">El acceso, registro y uso de ServiRed implica la aceptación total, expresa e irrevocable de los presentes Términos. Constituye un <span class="tc-hl-c">contrato vinculante</span> entre ServiRed y el usuario en rol de <span class="tc-hl-c">Cliente</span> o <span class="tc-hl-c">Técnico</span>.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 02</div><div class="tc-sec-title">Objeto y Rol de la Plataforma</div><div class="tc-sec-body">ServiRed es un <span class="tc-hl-g">intermediario tecnológico independiente</span>. Facilita el contacto entre partes pero no es empleador, contratista ni agencia de empleo. La calidad del servicio es responsabilidad exclusiva de las partes.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 03</div><div class="tc-sec-title">Naturaleza de la Relación — Blindaje Laboral</div><div class="tc-sec-body">La relación con los Técnicos es <span class="tc-hl-o">comercial y autónoma</span>.<ul><li>Sin subordinación jurídica, horaria ni económica</li><li>Técnico responsable de AFIP (Monotributo/Autónomo) y seguros personales</li><li>Renuncia expresa a reclamar relación de dependencia contra ServiRed</li></ul></div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 04</div><div class="tc-sec-title">Herramientas — Motor Aladdín</div><div class="tc-sec-body">Las herramientas de software como <span class="tc-hl-o">"Aladdín"</span> y los sistemas de matching proveen valores <span class="tc-hl-c">estimativos y no vinculantes</span> hasta acuerdo expreso entre partes.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 05</div><div class="tc-sec-title">Comisión</div><div class="tc-sec-body">ServiRed percibe una comisión del <span class="tc-hl-g">20%</span> por operación. Los pagos son procesados por pasarelas externas. ServiRed no custodia fondos como entidad bancaria.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 06</div><div class="tc-sec-title">Cláusula Antielusión</div><div class="tc-sec-body">Está <span class="tc-hl-o">estrictamente prohibido</span> concretar servicios fuera de la plataforma tras el contacto inicial.<ul><li>Suspensión permanente de cuentas</li><li>Penalidad del 100% de la comisión evadida + daños y perjuicios</li></ul></div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 07</div><div class="tc-sec-title">Propiedad Intelectual</div><div class="tc-sec-body">Los algoritmos <span class="tc-hl-o">"Aladdín"</span> y <span class="tc-hl-c">"Glóbulo Rojo"</span> son propiedad exclusiva de ServiRed. Prohibida la ingeniería inversa, copia o extracción de datos.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 08</div><div class="tc-sec-title">Limitación de Responsabilidad</div><div class="tc-sec-body">ServiRed no responde por daños materiales o personales surgidos del servicio. Ante reclamo fundado, la responsabilidad se limita al <span class="tc-hl-c">monto de la comisión</span> de la operación en cuestión.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 09</div><div class="tc-sec-title">Privacidad — Ley 25.326</div><div class="tc-sec-body">El usuario autoriza el tratamiento de datos personales para fines operativos y mejora de algoritmos, conforme a la <span class="tc-hl-g">Ley 25.326</span> de la República Argentina.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 10</div><div class="tc-sec-title">Indemnidad</div><div class="tc-sec-body">El usuario mantiene indemne a ServiRed frente a reclamos judiciales, extrajudiciales o sanciones de organismos públicos derivadas de su conducta.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 11</div><div class="tc-sec-title">Jurisdicción</div><div class="tc-sec-body">Controversias se dirimen ante los <span class="tc-hl-c">Tribunales Ordinarios de CABA</span>, renunciando a cualquier otro fuero. Rige la legislación argentina.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 12</div><div class="tc-sec-title">Modificaciones</div><div class="tc-sec-body">ServiRed puede modificar estos términos. El uso continuado implica <span class="tc-hl-g">aceptación de los cambios</span>.</div></div>
+    </div>
+    <div class="tc-ok" id="tcOk">
+      <div class="tc-ok-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h3>¡Términos aceptados!</h3>
+      <p>Continuando...</p>
+    </div>
+    <div class="tc-footer" id="tcFooter">
+      <button class="tc-btn-aceptar" id="tcBtnAceptar" disabled 
+        onclick="tcAceptar()" 
+        ontouchend="event.preventDefault();tcAceptar();"
+        style="opacity:0.4;">
+        ↓ Scrolleá para aceptar
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+
+<!-- tc-modal-v3 -->

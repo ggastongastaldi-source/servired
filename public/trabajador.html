@@ -1,356 +1,645 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worker - ServiRed</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
-        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; padding: 20px 0; border-bottom: 1px solid #334155; }
-        .header h1 { color: #f59e0b; font-size: 1.5rem; }
-        .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #1e293b; border-radius: 20px; margin-top: 10px; font-size: 0.9rem; }
-        .status.online { color: #22c55e; }
-        .status.offline { color: #ef4444; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-        .section { background: #1e293b; border-radius: 12px; padding: 16px; margin: 16px 0; border: 1px solid #334155; }
-        .section h3 { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 12px; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
-        .btn-primary { background: #f59e0b; color: #0f172a; }
-        .btn-success { background: #22c55e; color: white; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-purple { background: #6366f1; color: white; }
-        .oportunidad { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0f172a; padding: 20px; border-radius: 12px; margin: 12px 0; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from{transform:translateX(-100%);opacity:0} to{transform:translateX(0);opacity:1} }
-        .oportunidad h4 { font-size: 1.1rem; margin-bottom: 8px; }
-        .oportunidad .precio { font-size: 1.5rem; font-weight: bold; margin: 8px 0; }
-        .trabajo-activo { background: linear-gradient(135deg, #14532d, #166534); border: 2px solid #22c55e; padding: 20px; border-radius: 12px; margin: 12px 0; }
-        .log { background: #0f172a; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; max-height: 200px; overflow-y: auto; }
-        .log-entry { margin: 4px 0; padding: 4px 0; border-bottom: 1px solid #1e293b; }
-        .log-entry.error { color: #ef4444; }
-        .log-entry.success { color: #22c55e; }
-        .log-entry.info { color: #3b82f6; }
-        .gps-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #22c55e; margin-top: 8px; }
-        .gps-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; margin-bottom: 12px; }
-        .hidden { display: none !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SERVired — Trabajador</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+:root{--cyan:#00E5FF;--orange:#FF6D00;--green:#39ff14;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#0d1b2a;border-bottom:1px solid rgba(0,229,255,0.15);position:sticky;top:0;z-index:100;}
+.logo{font-size:1.4rem;font-weight:700;letter-spacing:2px;color:var(--cyan);}
+.logo span{color:var(--orange);}
+.btn-salir{background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:5px 12px;border-radius:6px;font-size:0.7rem;font-family:"Share Tech Mono",monospace;cursor:pointer;}
+.btn-modo{background:rgba(255,109,0,0.15);border:1px solid var(--orange);color:var(--orange);padding:5px 12px;border-radius:6px;font-size:0.7rem;font-family:"Share Tech Mono",monospace;cursor:pointer;margin-right:6px;}
+.status-pill{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-size:0.8rem;font-weight:700;cursor:pointer;border:none;font-family:'Rajdhani',sans-serif;transition:all 0.2s;}
+.status-pill.online{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid var(--success);}
+.status-pill.offline{background:rgba(100,116,139,0.15);color:var(--muted);border:1px solid var(--muted);}
+.sdot{width:8px;height:8px;border-radius:50%;}
+.sdot.online{background:var(--success);animation:blink 1.5s infinite;}
+.sdot.offline{background:var(--muted);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+#mapa{width:100%;height:240px;}
+.panel{padding:16px 20px;display:flex;flex-direction:column;gap:14px;padding-bottom:80px;}
+.card{background:var(--surface);border:1px solid rgba(0,229,255,0.12);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--orange));}
+.card-title{font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;font-family:'Share Tech Mono',monospace;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stat-box{background:var(--surface2);border-radius:10px;padding:12px;text-align:center;}
+.stat-num{font-size:1.4rem;font-weight:700;color:var(--cyan);font-family:'Share Tech Mono',monospace;}
+.stat-lbl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.pedido-activo{display:none;flex-direction:column;gap:12px;background:var(--surface);border:1px solid rgba(0,229,255,0.25);border-radius:14px;padding:16px;}
+.pedido-activo.visible{display:flex;}
+.cli-row{display:flex;align-items:center;gap:12px;}
+.cli-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#ff8c00);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;}
+.fsm{display:flex;gap:4px;}
+.fsm-s{flex:1;padding:5px;border-radius:6px;text-align:center;font-size:0.6rem;font-weight:700;font-family:'Share Tech Mono',monospace;text-transform:uppercase;}
+.fsm-s.done{background:rgba(16,185,129,0.15);color:var(--success);}
+.fsm-s.active{background:rgba(0,229,255,0.15);color:var(--cyan);}
+.fsm-s.pending{background:var(--surface2);color:var(--muted);}
+.btn-sig{width:100%;padding:13px;background:linear-gradient(135deg,var(--cyan),#0080ff);border:none;border-radius:12px;color:#000;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;}
+.incoming{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:2px solid var(--orange);padding:20px;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);border-radius:20px 20px 0 0;}
+.incoming.show{transform:translateY(0);}
+.inc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.inc-title{font-size:1.2rem;font-weight:700;color:var(--orange);}
+.cdr{width:50px;height:50px;position:relative;}
+.cdr svg{transform:rotate(-90deg);}
+.cdr-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Share Tech Mono',monospace;font-size:1rem;font-weight:700;color:var(--orange);}
+.inc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.inc-lbl{color:var(--muted);font-size:0.85rem;}
+.inc-val{font-weight:700;}
+.inc-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.btn-aceptar{padding:14px;background:linear-gradient(135deg,var(--success),#059669);border:none;border-radius:12px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;}
+.btn-rechazar{padding:14px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:12px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;}
+.nav-bottom{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid rgba(255,255,255,0.07);display:flex;z-index:50;}
+.nav-btn{flex:1;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Rajdhani',sans-serif;}
+.nav-btn.active{color:var(--cyan);}
+.nav-btn .ni{font-size:1.4rem;}
+.nav-btn .nl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;}
+.pantalla{display:none;padding-bottom:70px;}
+.pantalla.active{display:block;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--cyan);border-radius:10px;padding:12px 20px;font-size:0.9rem;z-index:300;transition:transform 0.3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:10px;margin-bottom:8px;}
+.badge{padding:3px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;font-family:'Share Tech Mono',monospace;}
+.badge.PAGADA{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid var(--success);}
+.badge.EN_PROCESO{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid #a78bfa;}
+
+/* REGISTRO */
+.reg-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;display:none;}
+.reg-overlay.show{display:block;}
+.reg-inner{padding:24px 20px 40px;}
+.reg-title{font-size:1.6rem;font-weight:700;color:var(--cyan);margin-bottom:4px;}
+.reg-sub{color:var(--muted);font-size:0.88rem;margin-bottom:24px;}
+.reg-section{font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px;font-family:'Share Tech Mono',monospace;}
+.rubros-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px;}
+.rubro-btn{background:var(--surface);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.rubro-btn.sel{border-color:var(--cyan);background:rgba(0,229,255,0.08);}
+.rubro-btn .ri{font-size:1.6rem;}
+.rubro-btn .rl{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.rubro-btn.sel .rl{color:var(--cyan);}
+.reg-field{margin-bottom:14px;}
+.reg-field label{display:block;font-size:0.75rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;}
+.reg-field input{width:100%;padding:12px 14px;background:var(--surface);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:1rem;outline:none;}
+.reg-field input:focus{border-color:var(--cyan);}
+.reg-field input::placeholder{color:var(--muted);}
+.reg-nota{font-size:0.78rem;color:var(--muted);background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.1);border-radius:8px;padding:10px;margin-bottom:16px;}
+.btn-registrar{width:100%;padding:16px;background:linear-gradient(135deg,var(--orange),#ff8c00);border:none;border-radius:12px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;cursor:pointer;}
+.err-reg{color:var(--danger);font-size:0.82rem;margin-bottom:10px;display:none;}
+.err-reg.show{display:block;}
+
+/* ── CONTRASTE GLOBAL ── */
+input,select,textarea{
+  background:#1a2236 !important;
+  color:#e2e8f0 !important;
+  border:1px solid rgba(255,255,255,0.15) !important;
+  border-radius:10px !important;
+  font-family:'Rajdhani',sans-serif !important;
+  font-size:1rem !important;
+  -webkit-text-fill-color:#e2e8f0 !important;
+}
+input::placeholder,textarea::placeholder{color:#64748b !important;}
+input:focus,select:focus,textarea:focus{
+  border-color:#00E5FF !important;
+  outline:none !important;
+  box-shadow:0 0 0 2px rgba(0,229,255,0.15) !important;
+}
+/* Autofill chrome/android */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus{
+  -webkit-box-shadow:0 0 0px 1000px #1a2236 inset !important;
+  -webkit-text-fill-color:#e2e8f0 !important;
+  caret-color:#e2e8f0 !important;
+}
+select option{background:#1a2236;color:#e2e8f0;}
+.modal{background:#111827 !important;}
+.modal-bg{backdrop-filter:blur(4px);}
+
+
+/* ── TÉRMINOS Y CONDICIONES MODAL ── */
+.tc-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(6px);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;}
+.tc-overlay.show{display:flex;animation:tcFadeIn .3s ease;}
+@keyframes tcFadeIn{from{opacity:0}to{opacity:1}}
+.tc-modal{background:#0d1117;border:1px solid rgba(0,229,255,0.18);border-radius:16px;width:100%;max-width:580px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 60px rgba(0,229,255,0.08);animation:tcSlideUp .35s cubic-bezier(0.22,1,0.36,1);}
+@keyframes tcSlideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.tc-hdr{padding:18px 22px 14px;border-bottom:1px solid rgba(0,229,255,0.12);flex-shrink:0;background:linear-gradient(135deg,#0d1117,#101820);}
+.tc-hdr-brand{font-size:17px;font-weight:700;letter-spacing:1px;color:#e2e8f0;font-family:'Share Tech Mono',monospace;}
+.tc-hdr-brand span{color:#39ff14;}
+.tc-hdr-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#00E5FF;margin-top:3px;}
+.tc-hdr-ver{font-size:10px;color:#64748b;font-family:'Share Tech Mono',monospace;margin-top:2px;}
+.tc-prog-wrap{padding:10px 22px 0;flex-shrink:0;background:#0d1117;}
+.tc-prog-row{display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-bottom:4px;}
+.tc-prog-row span{color:#00E5FF;font-family:'Share Tech Mono',monospace;}
+.tc-prog-track{height:3px;background:#1e2a33;border-radius:99px;overflow:hidden;}
+.tc-prog-fill{height:100%;width:0%;background:linear-gradient(90deg,#00E5FF,#39ff14);border-radius:99px;transition:width .12s ease;box-shadow:0 0 6px #00E5FF;}
+.tc-hint{display:flex;align-items:center;gap:7px;font-size:11px;color:#64748b;padding:7px 22px 0;flex-shrink:0;transition:opacity .4s;}
+.tc-hint.hidden{opacity:0;pointer-events:none;}
+.tc-body{flex:1;overflow-y:auto;padding:18px 22px 80px;scroll-behavior:smooth;}
+.tc-body::-webkit-scrollbar{width:4px;}
+.tc-body::-webkit-scrollbar-track{background:#1e2a33;}
+.tc-body::-webkit-scrollbar-thumb{background:#00E5FF;border-radius:99px;}
+.tc-sec{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.tc-sec:last-child{border-bottom:none;margin-bottom:6px;}
+.tc-sec-num{font-family:'Share Tech Mono',monospace;font-size:9px;color:#FF6D00;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+.tc-sec-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;}
+.tc-sec-body{font-size:12px;line-height:1.7;color:#94a3b8;}
+.tc-sec-body ul{list-style:none;margin-top:6px;}
+.tc-sec-body ul li{padding:3px 0 3px 14px;position:relative;font-size:11.5px;color:#64748b;}
+.tc-sec-body ul li::before{content:'▸';position:absolute;left:0;color:#00E5FF;font-size:9px;top:5px;}
+.tc-hl-o{color:#FF6D00;font-weight:600;}
+.tc-hl-g{color:#39ff14;font-weight:600;}
+.tc-hl-c{color:#00E5FF;font-weight:600;}
+.tc-footer{padding:14px 22px 18px;border-top:1px solid rgba(0,229,255,0.12);flex-shrink:0;background:#0d1117;}
+.tc-chk-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer;opacity:.35;transition:opacity .3s;pointer-events:none;}
+.tc-chk-row.unlocked{opacity:1;pointer-events:auto;}
+.tc-chk-box{width:18px;height:18px;border:2px solid #00E5FF;border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.tc-chk-box.checked{background:#00E5FF;}
+.tc-chk-box svg{display:none;width:11px;height:11px;color:#0a0d10;}
+.tc-chk-box.checked svg{display:block;}
+.tc-chk-label{font-size:11.5px;line-height:1.5;color:#94a3b8;user-select:none;}
+.tc-btn-aceptar{width:100%;padding:13px;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .25s;}
+.tc-btn-aceptar:disabled{background:#1a2230;color:#3a4a55;cursor:not-allowed;}
+.tc-btn-aceptar:not(:disabled){background:linear-gradient(135deg,#00b8d4,#39ff14);color:#0a0d10;box-shadow:0 0 20px rgba(57,255,20,0.25);}
+.tc-btn-aceptar:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(57,255,20,0.4);}
+.tc-ok{display:none;text-align:center;padding:36px 22px;flex-direction:column;align-items:center;gap:10px;}
+.tc-ok.show{display:flex;}
+.tc-ok-icon{width:56px;height:56px;border-radius:50%;background:rgba(57,255,20,0.1);border:2px solid #39ff14;display:flex;align-items:center;justify-content:center;animation:tcPulse 1.5s ease infinite;}
+@keyframes tcPulse{0%,100%{box-shadow:0 0 0 0 rgba(57,255,20,0.3)}50%{box-shadow:0 0 0 10px rgba(57,255,20,0)}}
+.tc-ok h3{font-size:17px;color:#39ff14;}
+.tc-ok p{font-size:12px;color:#64748b;}
+
+</style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>🔧 ServiRed Worker</h1>
-        <div class="status offline" id="statusIndicator">
-            <span class="dot"></span>
-            <span id="statusText">Desconectado</span>
-        </div>
+
+<!-- OVERLAY REGISTRO -->
+<div class="reg-overlay" id="reg-overlay">
+  <div class="reg-inner">
+    <div class="reg-title">🚀 Unirme a SERVired</div>
+    <div class="reg-sub">Registrate como trabajador verificado y empezá a recibir pedidos</div>
+
+    <div class="reg-section">// Tu nombre y datos</div>
+    <div class="reg-field"><label>Nombre completo</label><input type="text" id="r-nombre" placeholder="Juan García"></div>
+    <div class="reg-field"><label>Email</label><input type="email" id="r-email" placeholder="tu@email.com"></div>
+    <div class="reg-field"><label>Contraseña</label><input type="password" id="r-pass" placeholder="Mínimo 6 caracteres"></div>
+    <div class="reg-field"><label>Teléfono (WhatsApp)</label><input type="tel" id="r-tel" placeholder="11 1234-5678"></div>
+    <div class="reg-field"><label>Zona donde trabajás</label><input type="text" id="r-zona" placeholder="Ej: Flores, Caballito, Lanús"></div>
+
+    <div class="reg-section">// Tus rubros (elegí todos los que sabés hacer)</div>
+    <div class="rubros-grid" id="rubros-grid"></div>
+
+    <div class="reg-section">// Datos de cobro</div>
+    <div class="reg-field"><label>CBU o Alias (Mercado Pago / banco)</label><input type="text" id="r-cbu" placeholder="mi.alias.mp o 0000003100..."></div>
+
+    <div class="reg-nota">
+      🔐 Tu cuenta quedará en estado <strong>PENDIENTE DE VERIFICACIÓN</strong>. El administrador de SERVired revisará tus datos y te habilitará manualmente. Te avisamos por WhatsApp.
     </div>
 
-    <!-- Login -->
-    <div class="section" id="loginSection">
-        <h3>Ingresar</h3>
-        <input type="text" id="tokenInput" placeholder="Token JWT...">
-        <select id="rubroInput">
-            <option value="">Seleccioná tu especialidad...</option>
-            <option value="plomeria">🚿 Plomería</option>
-            <option value="electricidad">⚡ Electricidad</option>
-            <option value="gasista">🔥 Gasista</option>
-            <option value="cerrajeria">🔑 Cerrajería</option>
-            <option value="domestica">🧹 Servicio Doméstico</option>
-            <option value="pintura">🎨 Pintura</option>
-            <option value="albanileria">🧱 Albañilería</option>
-            <option value="camaras">📷 Cámaras de Seguridad</option>
-            <option value="alarmas">🚨 Alarmas</option>
-            <option value="aire_acondicionado">❄️ Aire Acondicionado</option>
-      <option value="herreria">⚙️ Herrería</option>
-      <option value="carpinteria">🪵 Carpintería</option>
-      <option value="mudanzas">🚚 Mudanzas</option>
-      <option value="jardineria">🌿 Jardinería</option>
-      <option value="limpieza">🧽 Limpieza</option>
-      <option value="techista">🏚️ Techista</option>
-      <option value="impermeabilizacion">💧 Impermeabilización</option>
-      <option value="frigorista">🧊 Frigorista</option>
-      <option value="electrodomesticos">📺 Electrodomésticos</option>
-      <option value="informatica">💻 Informática</option>
-      <option value="soldadura">🔩 Soldadura</option>
-      <option value="fumigacion">🐜 Fumigación</option>
-      <option value="piscinas">🏊 Piscinas</option>
-      <option value="ascensores">🛗 Ascensores</option>
-      <option value="energia_solar">☀️ Energía Solar</option>
-      <option value="cuidado_adultos">👴 Cuidado de Adultos</option>
-        </select>
-        <button class="btn btn-primary" onclick="conectar()">Conectar</button>
-    </div>
-
-    <!-- Dashboard -->
-    <div class="section hidden" id="dashboardSection">
-        <h3>Estado</h3>
-        <button class="btn btn-success" onclick="toggleDisponible(true)">🟢 Estoy Disponible</button>
-        <button class="btn btn-danger" onclick="toggleDisponible(false)" style="margin-top:8px;">🔴 Estoy Ocupado</button>
-        <div class="gps-indicator hidden" id="gpsIndicator">
-            <span class="gps-dot"></span> GPS activo — enviando ubicación
-        </div>
-    </div>
-
-    <!-- Trabajo activo -->
-    <div class="section hidden" id="trabajoActivoSection">
-        <h3>Trabajo en Curso</h3>
-        <div class="trabajo-activo" id="trabajoActivoCard">
-            <h4 id="taServicio">—</h4>
-            <p id="taDireccion" style="margin:4px 0;font-size:0.9rem;opacity:0.85;"></p>
-            <p id="taDescripcion" style="margin:4px 0;font-size:0.85rem;opacity:0.7;"></p>
-        </div>
-        <button class="btn btn-purple" onclick="marcarCompletado()">🏁 Marcar como Completado</button>
-    </div>
-
-    <!-- Oportunidades -->
-    <div class="section hidden" id="oportunidadesSection">
-        <h3>Oportunidades de Trabajo</h3>
-        <div id="oportunidadesList">
-            <p style="color:#64748b;text-align:center;padding:20px;">Esperando oportunidades...</p>
-        </div>
-    </div>
-
-    <!-- Log -->
-    <div class="section">
-        <h3>Log de Eventos</h3>
-        <div class="log" id="eventLog"></div>
-        <button class="btn" onclick="limpiarLog()" style="margin-top:8px;background:#334155;color:#e2e8f0;">Limpiar</button>
-    </div>
+    <div class="err-reg" id="err-reg">Completá todos los campos</div>
+    <button class="btn-registrar" onclick="registrarTrabajador()">🚀 Unirme a la red</button>
+  </div>
 </div>
 
+<div class="header">
+  <div class="logo" onclick="tcResetTap()" style="cursor:pointer;">SERV<span>ired</span> PRO</div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <button class="status-pill online" id="status-btn" onclick="toggleStatus()">
+      <div class="sdot online" id="sdot"></div>
+      <span id="slbl">EN LÍNEA</span>
+    </button>
+    <button onclick="window.location='/cliente.html'" style="background:rgba(0,229,255,0.15);border:1px solid var(--cyan);color:var(--cyan);padding:5px 10px;border-radius:6px;font-size:0.7rem;cursor:pointer;">👤 Cliente</button>
+    <button onclick="localStorage.removeItem('token');window.location='/'" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:5px 10px;border-radius:6px;font-size:0.7rem;cursor:pointer;">⏻</button>
+  </div>
+</div>
+<div class="pantalla active" id="pant-mapa">
+  <div id="mapa"></div>
+  <div class="panel">
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" id="st-hoy">0</div><div class="stat-lbl">Hoy</div></div>
+      <div class="stat-box"><div class="stat-num" id="st-mes">0</div><div class="stat-lbl">Mes</div></div>
+      <div class="stat-box"><div class="stat-num" id="st-rat">—</div><div class="stat-lbl">Rating</div></div>
+    </div>
+    <div class="pedido-activo" id="pedido-activo">
+      <div class="card-title">// PEDIDO ACTIVO</div>
+      <div class="cli-row">
+        <div class="cli-av" id="c-ini">C</div>
+        <div><div style="font-size:1.1rem;font-weight:700" id="c-nombre">—</div><div style="color:var(--muted);font-size:0.8rem" id="c-dir">—</div></div>
+      </div>
+      <div class="fsm" id="fsm"></div>
+      <button class="btn-sig" id="btn-sig" onclick="avanzar()">Siguiente →</button>
+    </div>
+    <div class="card">
+      <div class="card-title">// Estado</div>
+      <p style="color:var(--muted);font-size:0.9rem" id="estado-msg">Estás en línea. Esperando pedidos cercanos...</p>
+    </div>
+  </div>
+</div>
+<div class="pantalla" id="pant-historial">
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">// Mis trabajos</div>
+      <div id="lista-hist"><div style="color:var(--muted);text-align:center;padding:20px">Cargando...</div></div>
+    </div>
+  </div>
+</div>
+<div class="pantalla" id="pant-perfil">
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">// Mi perfil</div>
+      <div style="text-align:center;padding:16px 0;">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),#0080ff);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#000;margin:0 auto 12px" id="p-av">T</div>
+        <div style="font-size:1.3rem;font-weight:700" id="p-nombre">—</div>
+        <div style="color:var(--muted);font-size:0.85rem" id="p-email">—</div>
+        <div style="color:var(--muted);font-size:0.8rem;margin-top:4px" id="p-zona">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">// Mis rubros</div>
+      <div id="p-rubros" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">// Ganancias del mes</div>
+      <div style="text-align:center;padding:10px 0;">
+        <div style="font-size:2.5rem;font-weight:700;color:var(--cyan);font-family:'Share Tech Mono',monospace" id="p-ganancia">$ 0</div>
+        <div style="color:var(--muted);font-size:0.8rem">80% de comisión · SERVired retiene 20%</div>
+      </div>
+    </div>
+    <div class="card" id="card-verificacion" style="display:none;">
+      <div class="card-title">// Estado de verificación</div>
+      <div style="color:var(--warn);font-size:0.9rem">⏳ Tu cuenta está pendiente de verificación. Te avisamos por WhatsApp cuando esté lista.</div>
+    </div>
+    <button onclick="cerrarSesion()" style="width:100%;padding:13px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:12px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">🚪 Cerrar sesión</button>
+  </div>
+</div>
+<nav class="nav-bottom">
+  <button class="nav-btn active" onclick="irPant('mapa',this)"><span class="ni">🗺️</span><span class="nl">Mapa</span></button>
+  <button class="nav-btn" onclick="irPant('historial',this);cargarHist()"><span class="ni">📋</span><span class="nl">Trabajos</span></button>
+  <button class="nav-btn" onclick="irPant('perfil',this)"><span class="ni">👤</span><span class="nl">Perfil</span></button>
+</nav>
+<div class="incoming" id="incoming">
+  <div class="inc-header">
+    <div class="inc-title">⚡ NUEVO PEDIDO</div>
+    <div class="cdr"><svg width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,109,0,0.2)" stroke-width="4"/><circle id="cdr-circle" cx="25" cy="25" r="20" fill="none" stroke="#FF6D00" stroke-width="4" stroke-dasharray="125.6" stroke-dashoffset="0" stroke-linecap="round"/></svg><div class="cdr-num" id="cdr-num">30</div></div>
+  </div>
+  <div class="inc-row"><span class="inc-lbl">Servicio</span><span class="inc-val" id="inc-srv">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Dirección</span><span class="inc-val" id="inc-dir">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Precio</span><span class="inc-val" id="inc-precio">—</span></div>
+  <div class="inc-row"><span class="inc-lbl">Tu ganancia (80%)</span><span class="inc-val" style="color:var(--success)" id="inc-gan">—</span></div>
+  <div class="inc-actions">
+    <button class="btn-rechazar" onclick="responder(false)">✕ Rechazar</button>
+    <button class="btn-aceptar" onclick="responder(true)">✓ Aceptar</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
 <script>
-    const socket = io();
-    let currentToken = '';
-    let currentUserId = '';
-    
-    // Auto-login: desde localStorage O desde parámetro URL ?t=
+
+    // Auto-login desde URL ?t= o localStorage
     window.onload = () => {
       const params = new URLSearchParams(window.location.search);
-      const tUrl   = params.get('t');
+      const tUrl = params.get('t');
       if (tUrl) localStorage.setItem('token', tUrl);
       const t = tUrl || localStorage.getItem('token');
       if (t) {
-        document.getElementById('tokenInput').value = t;
-      const rub = localStorage.getItem('rubro');
-      if (rub) document.getElementById('rubroInput').value = rub;
-      conectar();
+        const el = document.getElementById('tokenInput');
+        if (el) { el.value = t; 
+        const rub = localStorage.getItem('rubro');
+        if (rub) { const r = document.getElementById('rubroInput'); if(r) r.value = rub; }
+        conectar(); }
       }
     };
+const RUBROS=[
+  {id:'albanileria',label:'Albañilería',icon:'🧱'},
+  {id:'plomeria',label:'Plomería',icon:'🔧'},
+  {id:'electricidad',label:'Electricidad',icon:'⚡'},
+  {id:'gasista',label:'Gasista',icon:'🔥'},
+  {id:'pintura',label:'Pintura',icon:'🎨'},
+  {id:'techistas',label:'Techista',icon:'🏚️'},
+  {id:'herreria',label:'Herrería',icon:'⚒️'},
+  {id:'carpinteria',label:'Carpintería',icon:'🪚'},
+  {id:'durlock',label:'Durlock/Yesero',icon:'🪣'},
+  {id:'pisos_revestimientos',label:'Pisos/Cerámicos',icon:'🏠'},
+  {id:'revestimientos_pvc',label:'Revestim. PVC',icon:'🧱'},
+  {id:'antihumedad',label:'Antihumedad',icon:'💧'},
+  {id:'cerrajeria',label:'Cerrajería',icon:'🔑'},
+  {id:'climatizacion',label:'Climatización',icon:'❄️'},
+  {id:'camaras_seguridad',label:'Cámaras CCTV',icon:'📷'},
+  {id:'alarmas',label:'Alarmas',icon:'🚨'},
+  {id:'domotica_automatizacion',label:'Domótica',icon:'🏠'},
+  {id:'paneles_solares',label:'Paneles Solares',icon:'☀️'},
+  {id:'mecanica_auxilio',label:'Mecánica/Auxilio',icon:'🔩'},
+  {id:'jardineria',label:'Jardinería',icon:'🌿'},
+  {id:'limpieza_hogar',label:'Limpieza',icon:'🧹'},
+  {id:'servicio_domestico',label:'Serv. Doméstico',icon:'🧹'},
+  {id:'mantenimiento_consorcios',label:'Consorcios',icon:'🏢'},
+  {id:'fletes_mudanzas',label:'Mudanzas/Fletes',icon:'📦'},
+  {id:'peluqueria_canina',label:'Peluq. Canina',icon:'🐕'},
+  {id:'fumigacion',label:'Fumigación',icon:'🦟'},
+];
 
-    let currentRubro = '';
-    let currentNombre = '';
-    let pedidoActivoId = null;
-    let gpsInterval = null;
+function logout(){localStorage.removeItem('token');window.location='/';}
 
-    function decodeJWT(token) {
-        try {
-            const payload = token.split('.')[1];
-            return JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
-        } catch(e) { return {}; }
+const urlT=new URLSearchParams(window.location.search).get('t');
+if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/trabajador.html');}
+const TOKEN=localStorage.getItem('token');
+if(!TOKEN){window.location='/';}
+
+window.addEventListener('load',function(){
+  // Construir grilla de rubros en registro
+  const grid=document.getElementById('rubros-grid');
+  if(grid){RUBROS.forEach(r=>{
+    const b=document.createElement('div');
+    b.className='rubro-btn';b.dataset.id=r.id;
+    b.innerHTML=`<span class="ri">${r.icon}</span><span class="rl">${r.label}</span>`;
+    b.onclick=()=>b.classList.toggle('sel');
+    grid.appendChild(b);
+  });}
+  if(!TOKEN){return;}
+  try{
+    const p=JSON.parse(atob(TOKEN.split('.')[1]));
+    if(p.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';return;}
+    try{document.getElementById('p-nombre').textContent=p.nombre||'—';}catch(ex){}
+    try{document.getElementById('p-email').textContent=p.email||p.nombre||'—';}catch(ex){}
+    try{document.getElementById('p-av').textContent=(p.nombre||'T')[0].toUpperCase();}catch(ex){}
+    initApp();
+  }catch(e){console.error('TOKEN ERROR:',e.message);window.location='/';}
+});
+
+async function registrarTrabajador(){if(localStorage.getItem('srv_tc_v3')!=='1'){tcMostrar(function(){registrarTrabajador();});return;}
+  const nombre=document.getElementById('r-nombre').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pass=document.getElementById('r-pass').value;
+  const tel=document.getElementById('r-tel').value.trim();
+  const zona=document.getElementById('r-zona').value.trim();
+  const cbu=document.getElementById('r-cbu').value.trim();
+  const rubros=[...document.querySelectorAll('.rubro-btn.sel')].map(b=>b.dataset.id);
+  const errEl=document.getElementById('err-reg');
+  errEl.classList.remove('show');
+  if(!nombre||!email||!pass||!zona){errEl.textContent='Completá nombre, email, contraseña y zona';errEl.classList.add('show');return;}
+  if(pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';errEl.classList.add('show');return;}
+  if(rubros.length===0){errEl.textContent='Seleccioná al menos un rubro';errEl.classList.add('show');return;}
+  try{
+    const r=await fetch('/api/auth/registro',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre,email,password:pass,rol:'TRABAJADOR',telefono:tel,zona,especialidades:rubros,cbu})});
+    const data=await r.json();
+    if(!r.ok){errEl.textContent=data.mensaje||data.error||'Error al registrar';errEl.classList.add('show');return;}
+    const token=data.token||data.data?.token;
+    if(token){
+      localStorage.setItem('token',token);
+      document.getElementById('reg-overlay').classList.remove('show');
+      const p=JSON.parse(atob(token.split('.')[1]));
+      document.getElementById('p-nombre').textContent=p.nombre||nombre;
+      document.getElementById('p-email').textContent=p.email||email;
+      document.getElementById('p-av').textContent=(nombre||'T')[0].toUpperCase();
+      document.getElementById('card-verificacion').style.display='block';
+      initApp();
+      toast('✅ Registro exitoso. Esperá la verificación.');
     }
+  }catch(e){errEl.textContent='Error de conexión';errEl.classList.add('show');}
+}
 
-    function log(msg, type = 'info') {
-        const logDiv = document.getElementById('eventLog');
-        const entry = document.createElement('div');
-        entry.className = `log-entry ${type}`;
-        entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-        logDiv.insertBefore(entry, logDiv.firstChild);
-    }
+function cerrarSesion(){localStorage.removeItem('token');window.location='/';}
 
-    function conectar() {
-        currentToken = document.getElementById('tokenInput').value.trim();
-        currentRubro = document.getElementById('rubroInput').value;
-        localStorage.setItem('rubro', currentRubro);
-        if (!currentToken) return alert('Token requerido');
-        if (!currentRubro && !localStorage.getItem('rubro')) return alert('Seleccioná tu especialidad');
-        if (!currentRubro) currentRubro = localStorage.getItem('rubro') || '';
+let mapa,markerYo,online=true,pedidoActualId=null,cdrInterval=null,pedidoData=null,gananciaTotal=0,trabajosHoy=0;
+const ESTADOS=['ACEPTADA','EN_PROCESO','REALIZADA','PAGADA'];
+let estadoActual='ACEPTADA';
+let socket;
 
-        const decoded = decodeJWT(currentToken);
-        currentUserId = decoded.userId || decoded.id || '';
-        currentNombre = decoded.nombre || decoded.name || 'Profesional';
-
-        log('Conectando...', 'info');
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('dashboardSection').classList.remove('hidden');
-        document.getElementById('oportunidadesSection').classList.remove('hidden');
-        document.getElementById('statusIndicator').className = 'status online';
-        document.getElementById('statusText').textContent = 'Online — ' + currentRubro;
-        toggleDisponible(true);
-        socket.emit('worker_conectado', {
-            userId: currentUserId,
-            token: currentToken,
-            rubro: currentRubro,
-            zona: 'palermo', // zona por defecto, se actualizará con GPS
-            nombre: currentNombre
-        });
-    }
-
-    function toggleDisponible(disponible) {
-        socket.emit('cambiar_estado', {
-            userId: currentUserId,
-            estado: disponible ? 'disponible' : 'ocupado'
-        });
-        log(`Estado: ${disponible ? 'DISPONIBLE' : 'OCUPADO'}`, disponible ? 'success' : 'error');
-
-        if (disponible) {
-            iniciarGPS();
-        } else {
-            detenerGPS();
-        }
-    }
-
-    function iniciarGPS() {
-        if (gpsInterval) return;
-        document.getElementById('gpsIndicator').classList.remove('hidden');
-        log('GPS activado', 'success');
-
-        // Enviar posición cada 8 segundos
-        gpsInterval = setInterval(() => {
-            if (!pedidoActivoId) return; // Solo enviar GPS si hay trabajo activo
-            navigator.geolocation.getCurrentPosition(pos => {
-                socket.emit('gps_update', {
-                    pedidoId: pedidoActivoId,
-                    trabajadorId: currentUserId,
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude
-                });
-                log(`GPS → ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`, 'info');
-            }, err => {
-                // Fallback: simular movimiento cerca de Buenos Aires (solo para testing)
-                const lat = -34.6 + (Math.random() - 0.5) * 0.02;
-                const lng = -58.4 + (Math.random() - 0.5) * 0.02;
-                socket.emit('gps_update', {
-                    pedidoId: pedidoActivoId,
-                    trabajadorId: currentUserId,
-                    lat, lng
-                });
-            });
-        }, 8000);
-    }
-
-    function detenerGPS() {
-        if (gpsInterval) { clearInterval(gpsInterval); gpsInterval = null; }
-        document.getElementById('gpsIndicator').classList.add('hidden');
-    }
-
-    function aceptarTrabajo(pedidoId, tipoServicio, direccion, descripcion) {
-        socket.emit('aceptar_trabajo', {
-            pedidoId,
-            trabajadorId: currentUserId,
-            trabajadorNombre: currentNombre
-        });
-        log(`Aceptando trabajo ${pedidoId}...`, 'info');
-
-        // Guardar datos del trabajo activo para mostrar en UI
-        pedidoActivoId = pedidoId;
-        document.getElementById('taServicio').textContent = '🛠️ ' + (tipoServicio || '').toUpperCase();
-        document.getElementById('taDireccion').textContent = '📍 ' + (direccion || 'Dirección pendiente');
-        document.getElementById('taDescripcion').textContent = descripcion || '';
-    }
-
-    function marcarCompletado() {
-        if (!pedidoActivoId) return;
-        socket.emit('trabajo_completado', {
-            pedidoId: pedidoActivoId,
-            trabajadorId: currentUserId
-        });
-        log('Marcando trabajo como completado...', 'info');
-    }
-
-    function limpiarLog() { document.getElementById('eventLog').innerHTML = ''; }
-
-    // ── Socket events ────────────────────────────────────────
-    socket.on('connect', () => log('Conectado al servidor', 'success'));
-
-    socket.on('conectado_ok', (data) => {
-        log(`Autenticado: ${data.socketId}`, 'success');
-        document.getElementById('statusIndicator').className = 'status online';
-        document.getElementById('statusText').textContent = 'Online — ' + currentRubro;
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('dashboardSection').classList.remove('hidden');
-        document.getElementById('oportunidadesSection').classList.remove('hidden');
-        // Activar disponible automáticamente al conectar
-        toggleDisponible(true);
+function initApp(){
+  try{socket=io();}catch(ex){console.error('Socket error:',ex);}
+  try{initMapa();}catch(ex){console.error('Mapa error:',ex);}
+  const payload=JSON.parse(atob(TOKEN.split('.')[1]));
+  // rubros en perfil
+  const rubrosEl=document.getElementById('p-rubros');
+  if(payload.especialidades){
+    payload.especialidades.forEach(r=>{
+      const robj=RUBROS.find(x=>x.id===r);
+      const s=document.createElement('span');
+      s.style.cssText='background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:999px;padding:4px 10px;font-size:0.72rem;color:var(--cyan);';
+      s.textContent=(robj?robj.icon+' ':'')+( robj?robj.label:r);
+      rubrosEl.appendChild(s);
     });
+  }
+  if(socket)socket.emit('worker_conectado',{token:TOKEN});
+  socket.on('nuevo_pedido_disponible',onNuevoPedido);
+  socket.on('pedido_cancelado',()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');});
+}
 
-    socket.on('estado_actualizado', (data) => {
-        log(`Estado confirmado: ${data.estado}`, 'success');
-    });
+function initMapa(){
+  mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
+  const ic=L.divIcon({html:'<div style="background:#00E5FF;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(0,229,255,0.9)"></div>',className:'',iconSize:[16,16]});
+  markerYo=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Vos');
+  if(navigator.geolocation){
+    navigator.geolocation.watchPosition(p=>{
+      const lat=p.coords.latitude,lng=p.coords.longitude;
+      markerYo.setLatLng([lat,lng]);mapa.setView([lat,lng],14);
+      if(online&&socket)socket.emit('ubicacion_trabajador',{lat,lng,token:TOKEN});
+    },{enableHighAccuracy:true,maximumAge:5000});
+  }
+}
 
-    socket.on('nueva_oportunidad', (data) => {
-        const precio = data.pago_worker || data.total_estimado || 0;
-        log(`Nueva oportunidad: ${data.tipoServicio} en ${data.zona} — $${precio.toLocaleString('es-AR')}`, 'success');
+function toggleStatus(){
+  online=!online;
+  const btn=document.getElementById('status-btn'),dot=document.getElementById('sdot'),lbl=document.getElementById('slbl');
+  if(online){btn.className='status-pill online';dot.className='sdot online';lbl.textContent='EN LÍNEA';}
+  else{btn.className='status-pill offline';dot.className='sdot offline';lbl.textContent='FUERA DE LÍNEA';}
+  if(socket)socket.emit('cambiar_estado_trabajador',{online,token:TOKEN});
+  document.getElementById('estado-msg').textContent=online?'Estás en línea. Esperando pedidos...':'Estás fuera de línea.';
+}
 
-        const list = document.getElementById('oportunidadesList');
-        // Limpiar placeholder
-        const placeholder = list.querySelector('p');
-        if (placeholder) placeholder.remove();
+function onNuevoPedido(data){
+  if(!online)return;
+  pedidoData=data;
+  const robj=RUBROS.find(x=>x.id===data.servicio);
+  document.getElementById('inc-srv').textContent=(robj?robj.icon+' ':'')+( data.servicio||'').replace(/_/g,' ').toUpperCase();
+  document.getElementById('inc-dir').textContent=data.direccion||'—';
+  document.getElementById('inc-precio').textContent='$ '+(data.precio||0).toLocaleString('es-AR');
+  document.getElementById('inc-gan').textContent='$ '+Math.round((data.precio||0)*0.8).toLocaleString('es-AR');
+  document.getElementById('incoming').classList.add('show');
+  startCdr(30);
+}
 
-        const div = document.createElement('div');
-        div.className = 'oportunidad';
-        div.id = 'op-' + data.pedidoId;
-        div.innerHTML = `
-            <h4>🛠️ ${(data.tipoServicio||'').toUpperCase()}</h4>
-            <div class="zona">📍 ${data.zona || ''} — ${data.descripcion || 'Sin descripción'}</div>
-            <div class="precio">$${precio.toLocaleString('es-AR')} <small style="font-size:0.7rem;opacity:0.7;">(tu parte)</small></div>
-            <button class="btn btn-success" style="margin-top:10px;" 
-                onclick="aceptarTrabajo('${data.pedidoId}','${data.tipoServicio}','${data.direccion||''}','${data.descripcion||''}');this.closest('.oportunidad').remove()">
-                ✅ ACEPTAR TRABAJO
-            </button>
-        `;
-        list.insertBefore(div, list.firstChild);
+function startCdr(s){
+  clearInterval(cdrInterval);let rem=s;
+  const circle=document.getElementById('cdr-circle'),num=document.getElementById('cdr-num');
+  cdrInterval=setInterval(()=>{rem--;num.textContent=rem;circle.style.strokeDashoffset=125.6-(125.6*(rem/s));if(rem<=0){clearInterval(cdrInterval);responder(false);}},1000);
+}
 
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('🔔 Nuevo trabajo disponible', {
-                body: `${data.tipoServicio} en ${data.zona} — $${precio.toLocaleString('es-AR')}`
-            });
-        }
-    });
+function responder(aceptar){
+  clearInterval(cdrInterval);
+  document.getElementById('incoming').classList.remove('show');
+  if(aceptar&&pedidoData){
+    socket.emit('aceptar_pedido',{pedidoId:pedidoData.pedidoId,token:TOKEN});
+    pedidoActualId=pedidoData.pedidoId;estadoActual='ACEPTADA';
+    document.getElementById('c-nombre').textContent=pedidoData.clienteNombre||'Cliente';
+    document.getElementById('c-ini').textContent=(pedidoData.clienteNombre||'C')[0];
+    document.getElementById('c-dir').textContent=pedidoData.direccion||'—';
+    document.getElementById('pedido-activo').classList.add('visible');
+    renderFSM();toast('✅ Pedido aceptado');
+  }else{
+    socket.emit('rechazar_pedido',{pedidoId:pedidoData?.pedidoId,token:TOKEN});
+  }
+}
 
-    socket.on('trabajo_aceptado_ok', (data) => {
-        log('¡TRABAJO ACEPTADO! ' + (data.mensaje||''), 'success');
-        document.getElementById('trabajoActivoSection').classList.remove('hidden');
-        document.getElementById('oportunidadesSection').classList.add('hidden');
-        iniciarGPS(); // Arrancar GPS ahora que hay trabajo activo
-    });
+function renderFSM(){
+  const c=document.getElementById('fsm');c.innerHTML='';
+  ESTADOS.forEach(e=>{
+    const d=document.createElement('div');d.className='fsm-s';
+    const ci=ESTADOS.indexOf(estadoActual),ei=ESTADOS.indexOf(e);
+    if(ei<ci)d.classList.add('done');else if(ei===ci)d.classList.add('active');else d.classList.add('pending');
+    d.textContent=e.replace('_',' ');c.appendChild(d);
+  });
+  const btn=document.getElementById('btn-sig');
+  const idx=ESTADOS.indexOf(estadoActual);
+  btn.disabled=idx>=ESTADOS.length-1;
+  btn.textContent=idx>=ESTADOS.length-1?'✅ Completado':'Pasar a '+ESTADOS[idx+1]+' →';
+}
 
-    socket.on('trabajo_aceptado_error', (data) => {
-        log('Error: ' + (data.mensaje || data.error || 'desconocido'), 'error');
-        pedidoActivoId = null;
-        alert('No se pudo aceptar: ' + (data.mensaje || 'El pedido ya fue tomado'));
-    });
+function avanzar(){
+  const idx=ESTADOS.indexOf(estadoActual);
+  if(idx>=ESTADOS.length-1)return;
+  estadoActual=ESTADOS[idx+1];
+  socket.emit('cambiar_estado_pedido',{pedidoId:pedidoActualId,estado:estadoActual,token:TOKEN});
+  renderFSM();
+  if(estadoActual==='PAGADA'){
+    trabajosHoy++;gananciaTotal+=pedidoData?.precio*0.8||0;
+    document.getElementById('st-hoy').textContent=trabajosHoy;
+    document.getElementById('p-ganancia').textContent='$ '+Math.round(gananciaTotal).toLocaleString('es-AR');
+    setTimeout(()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('💰 Pago confirmado');},1500);
+  }
+}
 
-    socket.on('trabajo_completado_ok', (data) => {
-        log('Trabajo completado confirmado ✓', 'success');
-        detenerGPS();
-        pedidoActivoId = null;
-        document.getElementById('trabajoActivoSection').classList.add('hidden');
-        document.getElementById('dashboardSection').classList.remove('hidden');
-        document.getElementById('oportunidadesSection').classList.remove('hidden');
-        document.getElementById('oportunidadesList').innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Esperando oportunidades...</p>';
-        toggleDisponible(true);
-    });
+async function cargarHist(){
+  try{
+    const r=await fetch('/api/pedidos/mis-trabajos',{headers:{Authorization:'Bearer '+TOKEN}});
+    const data=await r.json();
+    const lista=document.getElementById('lista-hist');
+    if(!data.length){lista.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">Sin trabajos aún</div>';return;}
+    const rmap=Object.fromEntries(RUBROS.map(x=>[x.id,x]));
+    lista.innerHTML=data.map(p=>{const robj=rmap[p.tipoServicio]||{};return`<div class="hist-item"><div><div style="font-weight:600">${robj.icon||''} ${(p.tipoServicio||'').replace(/_/g,' ')}</div><div style="font-size:0.75rem;color:var(--muted)">${new Date(p.createdAt).toLocaleDateString('es-AR')} · $${(p.precio||0).toLocaleString('es-AR')}</div></div><span class="badge ${p.estado}">${p.estado}</span></div>`;}).join('');
+  }catch(e){}
+}
 
-    socket.on('pedido_tomado', (data) => {
-        log('Pedido tomado por otro profesional', 'info');
-        const el = document.getElementById('op-' + data.pedidoId);
-        if (el) el.remove();
-    });
+function irPant(id,btn){
+  document.querySelectorAll('.pantalla').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pant-'+id)?.classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='mapa')setTimeout(()=>mapa?.invalidateSize(),100);
+}
 
-    socket.on('disconnect', () => {
-        log('Desconectado del servidor', 'error');
-        document.getElementById('statusIndicator').className = 'status offline';
-        document.getElementById('statusText').textContent = 'Desconectado';
-        detenerGPS();
-    });
+function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
-    if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-    }
+// ── TÉRMINOS Y CONDICIONES ──
+var _tcChecked=false,_tcScrolled=false,_tcCb=null;
+function tcMostrar(cb){
+  if(localStorage.getItem('srv_tc_v3')==='1'){cb&&cb();return;}
+  _tcCb=cb;_tcChecked=false;_tcScrolled=false;
+  document.getElementById('tcFill').style.width='0%';
+  document.getElementById('tcPct').textContent='0%';
+  document.getElementById('tcHint').classList.remove('hidden');
+  document.getElementById('tcChkRow').classList.remove('unlocked');
+  document.getElementById('tcChkBox').classList.remove('checked');
+  document.getElementById('tcBtnAceptar').disabled=true;
+  document.getElementById('tcFooter').style.display='';
+  document.getElementById('tcOk').classList.remove('show');
+  document.getElementById('tcBody').scrollTop=0;
+  document.getElementById('tcOverlay').classList.add('show');
+}
+(function(){
+  var b=document.getElementById('tcBody');
+  if(!b)return;
+  b.addEventListener('scroll',function(){
+    var r=b.scrollTop/(b.scrollHeight-b.clientHeight);
+    var p=Math.min(100,Math.round(r*100));
+    document.getElementById('tcFill').style.width=p+'%';
+    document.getElementById('tcPct').textContent=p+'%';
+    if(p>=70){document.getElementById('tcHint').classList.add('hidden');
+_tcScrolled=true;
+var btn=document.getElementById('tcBtnAceptar');
+btn.disabled=false;
+btn.style.opacity='1';
+btn.textContent='ACEPTAR Y CONTINUAR';}
+  });
+})();
+function tcToggleChk(){}
+function tcUpdateBtn(){}
+function tcAceptar(){
+  localStorage.setItem('srv_tc_v3','1');
+  document.getElementById('tcFooter').style.display='none';
+  document.getElementById('tcOk').classList.add('show');
+  setTimeout(function(){document.getElementById('tcOverlay').classList.remove('show');if(_tcCb)_tcCb();},1600);
+}
+
+
+// Reset TC - tocar logo 5 veces
+var _tcTaps=0,_tcTimer=null;
+function tcResetTap(){
+  _tcTaps++;
+  clearTimeout(_tcTimer);
+  if(_tcTaps>=5){
+    localStorage.removeItem('srv_tc_v3');
+    _tcTaps=0;
+    tcMostrar(function(){});
+    return;
+  }
+  _tcTimer=setTimeout(function(){_tcTaps=0;},1500);
+}
+
 </script>
+
+<!-- MODAL TÉRMINOS Y CONDICIONES SERVIRED v3.0 -->
+<div class="tc-overlay" id="tcOverlay">
+  <div class="tc-modal">
+    <div class="tc-hdr">
+      <div class="tc-hdr-brand">SERVI<span>RED</span></div>
+      <div class="tc-hdr-sub">Términos y Condiciones de Uso</div>
+      <div class="tc-hdr-ver">Versión 3.0 · República Argentina</div>
+    </div>
+    <div class="tc-prog-wrap">
+      <div class="tc-prog-row">Leído <span id="tcPct">0%</span></div>
+      <div class="tc-prog-track"><div class="tc-prog-fill" id="tcFill"></div></div>
+    </div>
+    <div class="tc-hint" id="tcHint">▼ Desplazate hasta el final para aceptar</div>
+    <div class="tc-body" id="tcBody">
+      <div class="tc-sec"><div class="tc-sec-num">Art. 01</div><div class="tc-sec-title">Aceptación e Integración</div><div class="tc-sec-body">El acceso, registro y uso de ServiRed implica la aceptación total, expresa e irrevocable de los presentes Términos. Constituye un <span class="tc-hl-c">contrato vinculante</span> entre ServiRed y el usuario en rol de <span class="tc-hl-c">Cliente</span> o <span class="tc-hl-c">Técnico</span>.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 02</div><div class="tc-sec-title">Objeto y Rol de la Plataforma</div><div class="tc-sec-body">ServiRed es un <span class="tc-hl-g">intermediario tecnológico independiente</span>. Facilita el contacto entre partes pero no es empleador, contratista ni agencia de empleo. La calidad del servicio es responsabilidad exclusiva de las partes.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 03</div><div class="tc-sec-title">Naturaleza de la Relación — Blindaje Laboral</div><div class="tc-sec-body">La relación con los Técnicos es <span class="tc-hl-o">comercial y autónoma</span>.<ul><li>Sin subordinación jurídica, horaria ni económica</li><li>Técnico responsable de AFIP (Monotributo/Autónomo) y seguros personales</li><li>Renuncia expresa a reclamar relación de dependencia contra ServiRed</li></ul></div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 04</div><div class="tc-sec-title">Herramientas — Motor Aladdín</div><div class="tc-sec-body">Las herramientas de software como <span class="tc-hl-o">"Aladdín"</span> y los sistemas de matching proveen valores <span class="tc-hl-c">estimativos y no vinculantes</span> hasta acuerdo expreso entre partes.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 05</div><div class="tc-sec-title">Comisión</div><div class="tc-sec-body">ServiRed percibe una comisión del <span class="tc-hl-g">20%</span> por operación. Los pagos son procesados por pasarelas externas. ServiRed no custodia fondos como entidad bancaria.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 06</div><div class="tc-sec-title">Cláusula Antielusión</div><div class="tc-sec-body">Está <span class="tc-hl-o">estrictamente prohibido</span> concretar servicios fuera de la plataforma tras el contacto inicial.<ul><li>Suspensión permanente de cuentas</li><li>Penalidad del 100% de la comisión evadida + daños y perjuicios</li></ul></div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 07</div><div class="tc-sec-title">Propiedad Intelectual</div><div class="tc-sec-body">Los algoritmos <span class="tc-hl-o">"Aladdín"</span> y <span class="tc-hl-c">"Glóbulo Rojo"</span> son propiedad exclusiva de ServiRed. Prohibida la ingeniería inversa, copia o extracción de datos.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 08</div><div class="tc-sec-title">Limitación de Responsabilidad</div><div class="tc-sec-body">ServiRed no responde por daños materiales o personales surgidos del servicio. Ante reclamo fundado, la responsabilidad se limita al <span class="tc-hl-c">monto de la comisión</span> de la operación en cuestión.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 09</div><div class="tc-sec-title">Privacidad — Ley 25.326</div><div class="tc-sec-body">El usuario autoriza el tratamiento de datos personales para fines operativos y mejora de algoritmos, conforme a la <span class="tc-hl-g">Ley 25.326</span> de la República Argentina.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 10</div><div class="tc-sec-title">Indemnidad</div><div class="tc-sec-body">El usuario mantiene indemne a ServiRed frente a reclamos judiciales, extrajudiciales o sanciones de organismos públicos derivadas de su conducta.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 11</div><div class="tc-sec-title">Jurisdicción</div><div class="tc-sec-body">Controversias se dirimen ante los <span class="tc-hl-c">Tribunales Ordinarios de CABA</span>, renunciando a cualquier otro fuero. Rige la legislación argentina.</div></div>
+      <div class="tc-sec"><div class="tc-sec-num">Art. 12</div><div class="tc-sec-title">Modificaciones</div><div class="tc-sec-body">ServiRed puede modificar estos términos. El uso continuado implica <span class="tc-hl-g">aceptación de los cambios</span>.</div></div>
+    </div>
+    <div class="tc-ok" id="tcOk">
+      <div class="tc-ok-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h3>¡Términos aceptados!</h3>
+      <p>Continuando...</p>
+    </div>
+    <div class="tc-footer" id="tcFooter">
+      <button class="tc-btn-aceptar" id="tcBtnAceptar" disabled 
+        onclick="tcAceptar()" 
+        ontouchend="event.preventDefault();tcAceptar();"
+        style="opacity:0.4;">
+        ↓ Scrolleá para aceptar
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+
+
+<!-- tc-modal-v3 -->
