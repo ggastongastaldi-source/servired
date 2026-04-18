@@ -168,15 +168,11 @@ input,select,textarea{width:100%;padding:12px;margin:8px 0;border-radius:8px;bor
 </div>
 
 <script>
-// ── ESTADO ─────────────────────────────────────────
 let socket, miToken, miId, miNombre;
-let ordenActual = null;
-let salaActual  = null;
+let ordenActual = null, salaActual = null;
 let mapaL = null, markerWorker = null;
-let calificacion = 5;
-let typingTimer = null;
+let calificacion = 5, typingTimer = null;
 
-// ── AUTO LOGIN ──────────────────────────────────────
 window.onload = () => {
   const t = localStorage.getItem('token');
   if (t) { document.getElementById('tokenInput').value = t; conectar(); }
@@ -186,157 +182,142 @@ function conectar() {
   miToken = document.getElementById('tokenInput').value.trim();
   if (!miToken) return;
   try {
-    const payload = JSON.parse(atob(miToken.split('.')[1]));
-    miId     = payload.id || payload._id;
-    miNombre = payload.nombre || payload.email || 'Cliente';
+    const p = JSON.parse(atob(miToken.split('.')[1]));
+    miId = p.id || p._id || p.userId;
+    miNombre = p.nombre || p.email || 'Cliente';
   } catch(e) { alert('Token inválido'); return; }
   localStorage.setItem('token', miToken);
   localStorage.setItem('userId', miId);
 
   socket = io({ auth: { token: miToken } });
 
-  socket.on('connect',    () => console.log('Socket conectado'));
-  socket.on('disconnect', () => console.log('Socket desconectado'));
+  socket.on('connect', () => {
+    socket.emit('cliente_conectado', { token: miToken, userId: miId });
+  });
 
-  // Orden aceptada
-  socket.on('orden:aceptada', (data) => {
-    ordenActual = data.ordenId;
+  socket.on('pedido_aceptado', (data) => {
+    ordenActual = data.pedidoId || ordenActual;
     document.getElementById('estadoBox').className = 'estado-box estado-aceptada';
     document.getElementById('estadoBox').textContent = '✅ ¡Especialista en camino!';
     document.getElementById('workerInfo').classList.remove('hidden');
     document.getElementById('workerNombre').textContent = data.trabajadorNombre || 'Trabajador';
-    document.getElementById('workerRubro').textContent  = data.rubro || '';
-    document.getElementById('workerETA').textContent    = data.eta ? `ETA: ${data.eta} min` : '';
-    document.getElementById('workerInfo').classList.remove('hidden');
+    document.getElementById('workerRubro').textContent  = data.tipoServicio || '';
+    document.getElementById('workerETA').textContent    = '';
     initMapa();
   });
 
-  // GPS del worker
-  socket.on('trabajador:ubicacion', (data) => {
+  socket.on('estado_pedido', (data) => {
+    if (data.estado === 'ACEPTADA') {
+      document.getElementById('estadoBox').className = 'estado-box estado-aceptada';
+      document.getElementById('estadoBox').textContent = '✅ Especialista en camino';
+      document.getElementById('workerInfo').classList.remove('hidden');
+    } else if (data.estado === 'EN_PROCESO') {
+      document.getElementById('estadoBox').className = 'estado-box estado-proceso';
+      document.getElementById('estadoBox').textContent = '🔧 Trabajo en proceso...';
+      document.getElementById('accionesCliente').classList.remove('hidden');
+    } else if (data.estado === 'REALIZADA') {
+      document.getElementById('estadoBox').className = 'estado-box estado-realizada';
+      document.getElementById('estadoBox').textContent = '✅ Listo — confirmá para pagar';
+      document.getElementById('accionesCliente').classList.remove('hidden');
+    } else if (data.estado === 'PAGADA') {
+      document.getElementById('estadoSection').classList.add('hidden');
+      document.getElementById('calificacionSection').classList.remove('hidden');
+    }
+  });
+
+  socket.on('trabajador_ubicacion', (data) => {
     if (!mapaL) return;
-    const latlng = [data.lat, data.lng];
+    const ll = [data.lat, data.lng];
     if (!markerWorker) {
-      markerWorker = L.marker(latlng, {
-        icon: L.divIcon({ html:'<div style="font-size:24px">🔧</div>', iconSize:[30,30] })
-      }).addTo(mapaL);
-    } else { markerWorker.setLatLng(latlng); }
-    mapaL.setView(latlng, 15);
+      markerWorker = L.marker(ll, { icon: L.divIcon({ html:'<div style="font-size:24px">🔧</div>', iconSize:[30,30] }) }).addTo(mapaL);
+    } else { markerWorker.setLatLng(ll); }
+    mapaL.setView(ll, 15);
   });
 
-  // FSM updates
-  socket.on('orden:enProceso', () => {
-    document.getElementById('estadoBox').className = 'estado-box estado-proceso';
-    document.getElementById('estadoBox').textContent = '🔧 Trabajo en proceso...';
-    document.getElementById('accionesCliente').classList.remove('hidden');
-  });
-  socket.on('orden:realizada', () => {
-    document.getElementById('estadoBox').className = 'estado-box estado-realizada';
-    document.getElementById('estadoBox').textContent = '✅ Trabajo realizado — confirmá para pagar';
-    document.getElementById('accionesCliente').classList.remove('hidden');
-  });
-  socket.on('orden:pagada', () => {
-    document.getElementById('estadoSection').classList.add('hidden');
-    document.getElementById('calificacionSection').classList.remove('hidden');
-  });
-
-  // Chat
   socket.on('chat:nuevoMensaje', (msg) => {
     if (msg.salaId === salaActual) { chatAgregarBurbuja(msg); chatScrollAbajo(); }
-    else { /* badge opcional */ }
   });
-  socket.on('chat:escribiendo',    ({ nombre }) => { document.getElementById('chat-typing').textContent = `${nombre} está escribiendo...`; });
-  socket.on('chat:dejoDeEscribir', () => { document.getElementById('chat-typing').textContent = ''; });
+  socket.on('chat:escribiendo',    ({ nombre }) => { document.getElementById('chat-typing').textContent = nombre + ' está escribiendo...'; });
+  socket.on('chat:dejoDeEscribir', ()           => { document.getElementById('chat-typing').textContent = ''; });
 
   document.getElementById('loginSection').classList.add('hidden');
   document.getElementById('pedidoSection').classList.remove('hidden');
 }
 
-// ── PEDIDO ──────────────────────────────────────────
-function crearPedido() {
-  const servicio    = document.getElementById('tipoServicio').value;
-  const zona        = document.getElementById('zona').value;
-  const descripcion = document.getElementById('descripcion').value.trim();
-  if (!servicio || !zona) { alert('Seleccioná servicio y zona'); return; }
+async function crearPedido() {
+  const tipoServicio = document.getElementById('tipoServicio').value;
+  const zona         = document.getElementById('zona').value;
+  const descripcion  = document.getElementById('descripcion').value.trim();
+  if (!tipoServicio || !zona) { alert('Seleccioná servicio y zona'); return; }
 
-  socket.emit('cliente:pedido', { servicio, zona, descripcion, token: miToken });
+  let lat = -34.6037, lng = -58.3816;
+  try {
+    const pos = await new Promise((res,rej) => navigator.geolocation.getCurrentPosition(res,rej,{timeout:3000}));
+    lat = pos.coords.latitude; lng = pos.coords.longitude;
+  } catch(e) {}
 
-  document.getElementById('pedidoSection').classList.add('hidden');
-  document.getElementById('estadoSection').classList.remove('hidden');
-  document.getElementById('estadoBox').className = 'estado-box estado-buscando';
-  document.getElementById('estadoBox').textContent = '🔍 Buscando especialista...';
-  document.getElementById('workerInfo').classList.add('hidden');
-  document.getElementById('accionesCliente').classList.add('hidden');
+  try {
+    const resp = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+miToken },
+      body: JSON.stringify({ tipoServicio, zona, descripcion, lat, lng })
+    });
+    const data = await resp.json();
+    if (!data.ok) { alert('Error: ' + data.error); return; }
+    ordenActual = data.pedido._id;
+    socket.emit('registrar_pedido', { pedidoId: ordenActual });
+    document.getElementById('pedidoSection').classList.add('hidden');
+    document.getElementById('estadoSection').classList.remove('hidden');
+    document.getElementById('estadoBox').className = 'estado-box estado-buscando';
+    document.getElementById('estadoBox').textContent = '🔍 Buscando especialista...';
+    document.getElementById('workerInfo').classList.add('hidden');
+    document.getElementById('accionesCliente').classList.add('hidden');
+  } catch(e) { alert('Error de red: ' + e.message); }
 }
 
 function cancelarPedido() {
   if (!confirm('¿Cancelar pedido?')) return;
-  socket.emit('cliente:cancelar', { ordenId: ordenActual });
+  if (ordenActual) socket.emit('cancelar_pedido', { pedidoId: ordenActual });
   ordenActual = null;
   document.getElementById('estadoSection').classList.add('hidden');
   document.getElementById('pedidoSection').classList.remove('hidden');
 }
 
-function confirmarRealizado() {
-  socket.emit('cliente:confirmarPago', { ordenId: ordenActual });
-}
+function confirmarRealizado() { socket.emit('confirmar_pago', { pedidoId: ordenActual }); }
 
-// ── MAPA ────────────────────────────────────────────
 function initMapa() {
   const el = document.getElementById('mapaWorker');
   el.classList.remove('hidden');
   if (mapaL) return;
-  mapaL = L.map('mapaWorker').setView([-34.6037, -58.3816], 13);
+  mapaL = L.map('mapaWorker').setView([-34.6037,-58.3816],13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaL);
 }
 
-// ── CALIFICACIÓN ────────────────────────────────────
 function setEstrellas(n) { calificacion = n; }
 function enviarCalificacion() {
-  const comentario = document.getElementById('comentario').value;
-  socket.emit('cliente:calificar', { ordenId: ordenActual, estrellas: calificacion, comentario });
+  socket.emit('calificar_pedido', { pedidoId: ordenActual, estrellas: calificacion, comentario: document.getElementById('comentario').value });
   document.getElementById('calificacionSection').classList.add('hidden');
   document.getElementById('pedidoSection').classList.remove('hidden');
   alert('¡Gracias por tu calificación!');
 }
 
-// ── CHAT ────────────────────────────────────────────
-function abrirChatOrden() {
-  if (!ordenActual) return;
-  salaActual = 'orden_' + ordenActual;
-  document.getElementById('chat-titulo').textContent = '💬 Chat con el trabajador';
-  chatAbrir(salaActual);
-}
-
-function abrirChatGeneral() {
-  salaActual = 'general_' + miId;
-  document.getElementById('chat-titulo').textContent = '💬 Mensajes';
-  chatAbrir(salaActual);
-}
+function abrirChatOrden()   { if (!ordenActual) return; salaActual = 'orden_' + ordenActual; document.getElementById('chat-titulo').textContent = '💬 Chat con el trabajador'; chatAbrir(salaActual); }
+function abrirChatGeneral() { salaActual = 'general_' + miId; document.getElementById('chat-titulo').textContent = '💬 Mensajes'; chatAbrir(salaActual); }
 
 async function chatAbrir(salaId) {
   document.getElementById('chat-mensajes').innerHTML = '';
   document.getElementById('chat-modal').classList.add('abierto');
   document.getElementById('chat-input').focus();
-
   socket.emit('chat:unirse', { salaId, usuarioId: miId, nombre: miNombre, rol: 'cliente' });
-
   try {
-    const r = await fetch('/api/mensajes/sala/' + salaId, {
-      headers: { Authorization: 'Bearer ' + miToken }
-    });
+    const r = await fetch('/api/mensajes/sala/'+salaId, { headers:{ Authorization:'Bearer '+miToken } });
     const d = await r.json();
     if (d.ok) { d.mensajes.forEach(m => chatAgregarBurbuja(m)); chatScrollAbajo(); }
-  } catch(e){}
-
-  fetch('/api/mensajes/leidos/' + salaId, {
-    method:'POST', headers:{ Authorization:'Bearer '+miToken }
-  }).catch(()=>{});
+  } catch(e) {}
+  fetch('/api/mensajes/leidos/'+salaId, { method:'POST', headers:{ Authorization:'Bearer '+miToken } }).catch(()=>{});
 }
 
-function chatCerrar() {
-  document.getElementById('chat-modal').classList.remove('abierto');
-  salaActual = null;
-}
+function chatCerrar() { document.getElementById('chat-modal').classList.remove('abierto'); salaActual = null; }
 
 function chatEnviar() {
   const input = document.getElementById('chat-input');
@@ -358,21 +339,14 @@ function chatAgregarBurbuja(msg) {
   const div = document.createElement('div');
   div.className = 'burbuja-wrap ' + (esPropio ? 'propio' : 'ajeno');
   const hora = new Date(msg.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  div.innerHTML = `
-    ${!esPropio ? `<span class="burbuja-nombre">${msg.remitenteNombre}</span>` : ''}
-    <div class="burbuja ${esPropio?'propio':'ajeno'}">${esc(msg.texto)}</div>
-    <span class="burbuja-hora">${hora}</span>`;
+  div.innerHTML = (!esPropio ? '<span class="burbuja-nombre">'+msg.remitenteNombre+'</span>' : '') +
+    '<div class="burbuja '+(esPropio?'propio':'ajeno')+'">'+esc(msg.texto)+'</div>' +
+    '<span class="burbuja-hora">'+hora+'</span>';
   document.getElementById('chat-mensajes').appendChild(div);
 }
 
-function chatScrollAbajo() {
-  const c = document.getElementById('chat-mensajes');
-  if(c) c.scrollTop = c.scrollHeight;
-}
-
-function esc(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function chatScrollAbajo() { const c=document.getElementById('chat-mensajes'); if(c) c.scrollTop=c.scrollHeight; }
+function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
