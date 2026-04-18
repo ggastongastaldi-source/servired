@@ -9,6 +9,11 @@ module.exports = (io) => {
     console.log('[Socket] Conectado:', socket.id);
 
     // ── CLIENTE se conecta ──────────────────────────────────────
+    socket.on('join_room', ({ room }) => {
+      socket.join(room);
+      console.log('[Socket] join_room:', room);
+    });
+
     socket.on('cliente_conectado', async ({ token, userId, pedidoId }) => {
       socket.join('cliente-' + socket.id);
       // Si viene con pedidoId, lo asociamos para notificarle después
