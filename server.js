@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const rutaMensajes = require('./routes/mensajes');
 const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
@@ -9,11 +10,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 require('./services/socketHandlers')(io);
+require('./services/mensajeriaSocket')(io);;
 
 app.use(cors());
 app.use(express.json());
 
 // Rutas
+app.use('/api/mensajes', rutaMensajes);
 app.use('/api/auth', require('./routes/auth'));
 const pedidosRoute = require('./routes/pedidos');
 app.use('/api/pedidos', pedidosRoute);
