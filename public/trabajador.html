@@ -166,13 +166,20 @@
         currentRubro = document.getElementById('rubroInput').value;
         localStorage.setItem('rubro', currentRubro);
         if (!currentToken) return alert('Token requerido');
-        if (!currentRubro) return alert('Seleccioná tu especialidad');
+        if (!currentRubro && !localStorage.getItem('rubro')) return alert('Seleccioná tu especialidad');
+        if (!currentRubro) currentRubro = localStorage.getItem('rubro') || '';
 
         const decoded = decodeJWT(currentToken);
         currentUserId = decoded.userId || decoded.id || '';
         currentNombre = decoded.nombre || decoded.name || 'Profesional';
 
         log('Conectando...', 'info');
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('dashboardSection').classList.remove('hidden');
+        document.getElementById('oportunidadesSection').classList.remove('hidden');
+        document.getElementById('statusIndicator').className = 'status online';
+        document.getElementById('statusText').textContent = 'Online — ' + currentRubro;
+        toggleDisponible(true);
         socket.emit('worker_conectado', {
             userId: currentUserId,
             token: currentToken,
