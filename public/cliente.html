@@ -212,6 +212,27 @@ select option{background:#1a2236;color:#e2e8f0;}
 
 <script>
 
+function detectarZona(direccion) {
+  const d = (direccion||'').toLowerCase();
+  if (d.includes('palermo')) return 'palermo';
+  if (d.includes('belgrano')) return 'belgrano';
+  if (d.includes('recoleta')) return 'recoleta';
+  if (d.includes('caballito')) return 'caballito';
+  if (d.includes('flores')) return 'flores';
+  if (d.includes('urquiza')) return 'villa_urquiza';
+  if (d.includes('telmo')) return 'san_telmo';
+  if (d.includes('matanza')||d.includes('isidro casanova')||d.includes('laferrere')||d.includes('gonzalez catan')) return 'la_matanza';
+  if (d.includes('lanus')||d.includes('lanús')) return 'lanus';
+  if (d.includes('quilmes')) return 'quilmes';
+  if (d.includes('moron')||d.includes('morón')) return 'moron';
+  if (d.includes('tigre')) return 'tigre';
+  if (d.includes('lomas')) return 'lomas_zamora';
+  if (d.includes('merlo')) return 'merlo';
+  if (d.includes('san isidro')) return 'san_isidro';
+  if (d.includes('vicente lopez')||d.includes('vicente lópez')) return 'vicente_lopez';
+  return 'la_matanza';
+}
+
     // Auto-login desde URL ?t= o localStorage
     window.onload = () => {
       const params = new URLSearchParams(window.location.search);
@@ -278,7 +299,7 @@ if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/clien
 const urlT2=new URLSearchParams(window.location.search).get('t');
 if(urlT2){localStorage.setItem('token',urlT2);}
 const TOKEN=localStorage.getItem('token');
-let rubroActual=null,precioActual=0,comisionActual=0,pagoWorkerActual=0,zonaCliente='palermo',pedidoActivoId=null;
+let rubroActual=null,precioActual=0,comisionActual=0,pagoWorkerActual=0,zonaCliente='la_matanza',pedidoActivoId=null;
 const SERVICIOS = [
   {id:'limpieza',label:'Limpieza',icon:'🧹',precio:12000},
   {id:'plomeria',label:'Plomería',icon:'🔧',precio:55000},
