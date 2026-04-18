@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 let io = null;
+const getIO = () => io;
 const Pedido = require('../models/Pedido');
 const { verificarToken, verificarRol } = require('../middleware/auth');
 const { 
@@ -65,7 +66,7 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     });
 
     const pedidoGuardado = await nuevoPedido.save();
-    console.log('[PEDIDOS] io disponible:', !!io);
+    console.log('[PEDIDOS] io disponible:', !!io, '— pedido:', tipoServicio, zona);
     if (io) {
       const payload = {
         pedidoId: pedidoGuardado._id,
