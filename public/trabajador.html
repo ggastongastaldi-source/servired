@@ -415,6 +415,10 @@ function initApp(){
   try{socket=io();}catch(ex){console.error('Socket error:',ex);}
   try{initMapa();}catch(ex){console.error('Mapa error:',ex);}
   const payload=JSON.parse(atob(TOKEN.split('.')[1]));
+  const USER_ID=payload.id||payload._id||'';
+  const USER_NOMBRE=payload.nombre||'Trabajador';
+  const USER_RUBRO=(payload.especialidades&&payload.especialidades[0])||payload.rubro||'general';
+  const USER_ZONA=payload.zona||'la_matanza';
   // rubros en perfil
   const rubrosEl=document.getElementById('p-rubros');
   if(payload.especialidades){
