@@ -15,6 +15,7 @@ require('./services/mensajeriaSocket')(io);;
 
 app.use(cors());
 app.use(express.json());
+app.get('/version', (req,res) => res.json({v:'f923f4d', built: new Date().toISOString()}));
 
 // Rutas
 app.use('/api/mensajes', rutaMensajes);
