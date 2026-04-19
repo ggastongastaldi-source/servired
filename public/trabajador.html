@@ -426,8 +426,8 @@ function initApp(){
       rubrosEl.appendChild(s);
     });
   }
-  if(socket)socket.emit('worker_conectado',{token:TOKEN});
-  socket.on('nuevo_pedido_disponible',onNuevoPedido);
+  if(socket)socket.emit('worker_conectado',{token:TOKEN,userId:USER_ID,rubro:USER_RUBRO,zona:USER_ZONA,nombre:USER_NOMBRE});
+  socket.on('nueva_oportunidad',onNuevoPedido);
   socket.on('pedido_cancelado',()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');});
 }
 

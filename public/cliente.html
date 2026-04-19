@@ -627,7 +627,7 @@ async function pedirSmartQuote(){
 
 function cerrarSesion(){localStorage.removeItem('token');window.location='/';}
 
-socket.on('pedido_aceptado',data=>{
+socket.on('trabajo_aceptado',data=>{
   pedidoActivo=data.pedidoId;
   document.getElementById('estado-txt').textContent='✅ Trabajador en camino';
   document.getElementById('w-nombre').textContent=data.trabajador.nombre;
