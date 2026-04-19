@@ -29,8 +29,8 @@ module.exports = (io) => {
       // Si viene con pedidoId, lo asociamos para notificarle después
       if (pedidoId) clienteSockets.set(pedidoId, socket.id);
       // Si viene con userId, guardar socketId en DB
-      if (userId) {
-        await Usuario.findByIdAndUpdate(userId, { socketId: socket.id }).catch(() => {});
+      if (safeUserId) {
+        await Usuario.findByIdAndUpdate(safeUserId, { socketId: socket.id }).catch(() => {});
       }
       socket.emit('conectado_ok', { socketId: socket.id });
       console.log('[Socket] Cliente conectado:', socket.id, pedidoId ? `pedido:${pedidoId}` : '');
@@ -47,10 +47,14 @@ module.exports = (io) => {
 
     // ── TRABAJADOR se conecta ───────────────────────────────────
     socket.on('worker_conectado', async ({ userId, rubro, zona, nombre }) => {
+      // SECURITY: preferir userId del JWT verificado sobre el que manda el cliente
+      const jwtPayload = socket.handshake.auth?.token
+        ? (() => { try { return require('jsonwebtoken').verify(socket.handshake.auth.token, process.env.JWT_SECRET || 'servired-2025-cambiar-en-produccion'); } catch(e) { return null; } })()
+        : null;
+      const safeUserId = (jwtPayload?.id || jwtPayload?.userId || userId);
       socket.join('zona_' + zona);
       socket.join('rubro_' + rubro);
-      if (userId) socket.join('worker_' + userId);
-      if (userId) socket.join('worker_' + userId);
+      if (safeUserId) socket.join('worker_' + safeUserId);
       // Guardar socketId en DB para poder localizarlo
       if (userId) {
         await Usuario.findByIdAndUpdate(userId, {
