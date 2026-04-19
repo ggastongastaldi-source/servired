@@ -27,7 +27,7 @@ module.exports = (io) => {
       const clienteRoom = userId ? 'cliente_' + userId : 'cliente_' + socket.id;
       socket.join(clienteRoom);
       // Si viene con pedidoId, lo asociamos para notificarle después
-      if (pedidoId) clienteSockets.get(pedidoId) = socket.id;
+      if (pedidoId) clienteSockets.set(pedidoId, socket.id);
       // Si viene con userId, guardar socketId en DB
       if (userId) {
         await Usuario.findByIdAndUpdate(userId, { socketId: socket.id }).catch(() => {});
@@ -39,7 +39,7 @@ module.exports = (io) => {
     // Cliente asocia pedido a su socket (lo llama después de crear pedido)
     socket.on('registrar_pedido', ({ pedidoId }) => {
       if (pedidoId) {
-        clienteSockets.get(pedidoId) = socket.id;
+        clienteSockets.set(pedidoId, socket.id);
         socket.join('pedido_' + pedidoId);
         console.log('[Socket] Cliente registrado en pedido:', pedidoId);
       }
@@ -49,6 +49,8 @@ module.exports = (io) => {
     socket.on('worker_conectado', async ({ userId, rubro, zona, nombre }) => {
       socket.join('zona_' + zona);
       socket.join('rubro_' + rubro);
+      if (userId) socket.join('worker_' + userId);
+      if (userId) socket.join('worker_' + userId);
       // Guardar socketId en DB para poder localizarlo
       if (userId) {
         await Usuario.findByIdAndUpdate(userId, {
@@ -196,9 +198,7 @@ module.exports = (io) => {
         { socketStatus: 'offline', socketId: null, disponible: false }
       ).catch(() => {});
       // Limpiar clienteSockets si era un cliente
-      for (const [pid, sid] of Object.entries(clienteSockets)) {
-        if (sid === socket.id) delete clienteSockets.get(pid);
-      }
+      // LRU TTL limpia sola
       console.log('[Socket] Desconectado:', socket.id);
     });
   });

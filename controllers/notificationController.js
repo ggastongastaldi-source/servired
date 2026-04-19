@@ -253,13 +253,16 @@ async function iniciarFlujoBusqueda(pedidoId) {
         
         for (const worker of workers) {
             // Enviar por socket si está conectado
-            io.to(`worker_${worker._id}`).emit('nueva_oportunidad', {
+            io.to('worker_' + worker._id).emit('nueva_oportunidad', {
                 pedidoId: pedido._id,
+                tipoServicio: pedido.tipoServicio,
                 rubro: pedido.tipoServicio,
                 zona: pedido.zona,
                 precio: pedido.total_estimado,
+                pagoWorker: pedido.pago_worker,
                 descripcion: pedido.descripcion,
-                direccion: pedido.direccion
+                direccion: pedido.direccion,
+                expiraEn: 300
             });
             notificados++;
             
