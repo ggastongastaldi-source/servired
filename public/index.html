@@ -158,11 +158,11 @@ select option{background:#1a2236;color:#e2e8f0;}
   <div class="modal">
     <div class="modal-title">🔍 Ingresar como Cliente</div>
     <div class="field"><label>Email</label><input type="email" id="cl-email" placeholder="tu@email.com"></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="cl-pass" placeholder="••••••••"></div>
+    <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="cl-pass" placeholder="••••••••" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('cl-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="err" id="cl-err">Email o contraseña incorrectos</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
-      <button class="btn-sm btn-sm-pri" onclick="login('CLIENTE','cl-email','cl-pass','cl-err')">Ingresar →</button>
+      <button class="btn-sm btn-sm-pri" onclick="login('CLIENTE','cl-email','cl-pass','cl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><a href="https://wa.me/54911XXXXXXXX?text=Hola%20ServiRed%2C%20olvidé%20mi%20contraseña" target="_blank" style="font-size:0.72rem;color:#25D366;text-decoration:none;">💬 ¿Olvidaste tu contraseña? Escribinos por WhatsApp</a></div>
     </div>
   </div>
 </div>
@@ -171,11 +171,11 @@ select option{background:#1a2236;color:#e2e8f0;}
   <div class="modal">
     <div class="modal-title">🔧 Ingresar como Trabajador</div>
     <div class="field"><label>Email</label><input type="email" id="wl-email" placeholder="tu@email.com"></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="wl-pass" placeholder="••••••••"></div>
+    <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="wl-pass" placeholder="••••••••" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('wl-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="err" id="wl-err">Email o contraseña incorrectos</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
-      <button class="btn-sm btn-sm-pri" onclick="login('TRABAJADOR','wl-email','wl-pass','wl-err')">Ingresar →</button>
+      <button class="btn-sm btn-sm-pri" onclick="login('TRABAJADOR','wl-email','wl-pass','wl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><a href="https://wa.me/54911XXXXXXXX?text=Hola%20ServiRed%2C%20olvidé%20mi%20contraseña" target="_blank" style="font-size:0.72rem;color:#25D366;text-decoration:none;">💬 ¿Olvidaste tu contraseña? Escribinos por WhatsApp</a></div>
     </div>
   </div>
 </div>
@@ -184,11 +184,11 @@ select option{background:#1a2236;color:#e2e8f0;}
   <div class="modal">
     <div class="modal-title">🔑 Ya tengo cuenta</div>
     <div class="field"><label>Email</label><input type="email" id="gl-email" placeholder="tu@email.com"></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="gl-pass" placeholder="••••••••"></div>
+    <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="gl-pass" placeholder="••••••••" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('gl-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="err" id="gl-err">Email o contraseña incorrectos</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
-      <button class="btn-sm btn-sm-pri" onclick="login(null,'gl-email','gl-pass','gl-err')">Ingresar →</button>
+      <button class="btn-sm btn-sm-pri" onclick="login(null,'gl-email','gl-pass','gl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><a href="https://wa.me/54911XXXXXXXX?text=Hola%20ServiRed%2C%20olvidé%20mi%20contraseña" target="_blank" style="font-size:0.72rem;color:#25D366;text-decoration:none;">💬 ¿Olvidaste tu contraseña? Escribinos por WhatsApp</a></div>
     </div>
   </div>
 </div>
@@ -198,7 +198,7 @@ select option{background:#1a2236;color:#e2e8f0;}
     <div class="modal-title">📝 Registrarme como Cliente</div>
     <div class="field"><label>Nombre completo</label><input type="text" id="rc-nombre" placeholder="Juan García"></div>
     <div class="field"><label>Email</label><input type="email" id="rc-email" placeholder="tu@email.com"></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="rc-pass" placeholder="Mínimo 6 caracteres"></div>
+    <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="rc-pass" placeholder="Mínimo 6 caracteres" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('rc-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="err" id="rc-err">Error al registrar</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
@@ -215,7 +215,7 @@ select option{background:#1a2236;color:#e2e8f0;}
     <div class="field"><label>DNI</label><input type="text" id="rt-dni" placeholder="12345678" maxlength="8" inputmode="numeric"></div>
     <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="rt-tel" placeholder="11 1234-5678" inputmode="tel"></div>
     <div class="field"><label>Email</label><input type="email" id="rt-email" placeholder="tu@email.com"></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="rt-pass" placeholder="Mínimo 6 caracteres"></div>
+    <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="rt-pass" placeholder="Mínimo 6 caracteres" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('rt-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="field"><label>CBU o CVU (22 dígitos)</label><input type="text" id="rt-cbu" placeholder="0000003100114236125474" maxlength="22" inputmode="numeric"><div style="font-size:0.7rem;color:#4a5568;margin-top:4px;">Para recibir tus pagos directamente</div></div>
     <div class="field"><label>Alias bancario (opcional si tenés CBU)</label><input type="text" id="rt-alias" placeholder="mi.alias.mp"></div>
     <div class="field"><label>Tus rubros (elegí todos los que sabés hacer)</label>
@@ -282,7 +282,7 @@ select option{background:#1a2236;color:#e2e8f0;}
   <div class="modal">
     <div class="modal-title">⚙️ Acceso Admin</div>
     <div class="field"><label>Email</label><input type="email" id="al-email" placeholder="admin@servired.com"></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="al-pass" placeholder="••••••••"></div>
+    <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="al-pass" placeholder="••••••••" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('al-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="err" id="al-err">Acceso denegado</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
@@ -409,5 +409,6 @@ async function subirFoto(file){
   return d.ok ? d.url : '';
 }
 </script>
+<script>function togglePass(id,el){const inp=document.getElementById(id);inp.type=inp.type==='password'?'text':'password';el.textContent=inp.type==='password'?'👁️':'🙈';}</script>
 </body>
 </html>
