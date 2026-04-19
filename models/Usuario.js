@@ -21,6 +21,6 @@ const usuarioSchema = new mongoose.Schema({
   fcmToken:     { type: String, default: null },
 }, { timestamps: true });
 
-usuarioSchema.index({ ubicacion: '2dsphere' });
+usuarioSchema.index({ ubicacion: '2dsphere' }, { sparse: true });
 
 module.exports = mongoose.models.Usuario || mongoose.model('Usuario', usuarioSchema);
