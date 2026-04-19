@@ -172,7 +172,7 @@ select option{background:#1a2236;color:#e2e8f0;}
 <div class="header">
   <div class="logo" onclick="tcResetTap()" style="cursor:pointer;">SERV<span>ired</span></div>
   <div style="display:flex;align-items:center;gap:6px;">
-  <button class="btn-modo" onclick="window.location='/trabajador.html'">🔧 Ir como Trabajador</button>
+  <button class="btn-modo" onclick="irModoTrabajador()">🔧 Ir como Trabajador</button>
   <button class="btn-salir" onclick="logout()">⏻ Salir</button>
 </div>
 <div class="user-pill"><div class="avatar" id="av">C</div><span id="nombre-cliente">Cliente</span></div>
@@ -851,6 +851,15 @@ function tcResetTap(){
   </div>
 </div>
 
+<script>
+function irModoTrabajador(){
+  try{
+    const p=JSON.parse(atob(localStorage.getItem('token').split('.')[1]));
+    if(p.rol==='TRABAJADOR'||p.rol==='ADMIN'){window.location='/trabajador.html';}
+    else{window.location='/#registro-trabajador';setTimeout(()=>alert('Para ser trabajador completá el registro en la página principal.'),300);}
+  }catch(e){window.location='/';}
+}
+</script>
 </body>
 </html>
 
@@ -1001,7 +1010,7 @@ select option{background:#1a2236;color:#e2e8f0;}
 <div class="header">
   <div class="logo" onclick="tcResetTap()" style="cursor:pointer;">SERV<span>ired</span></div>
   <div style="display:flex;align-items:center;gap:6px;">
-  <button class="btn-modo" onclick="window.location='/trabajador.html'">🔧 Ir como Trabajador</button>
+  <button class="btn-modo" onclick="irModoTrabajador()">🔧 Ir como Trabajador</button>
   <button class="btn-salir" onclick="logout()">⏻ Salir</button>
 </div>
 <div class="user-pill"><div class="avatar" id="av">C</div><span id="nombre-cliente">Cliente</span></div>
@@ -1851,7 +1860,7 @@ select option{background:#1a2236;color:#e2e8f0;}
 <div class="header">
   <div class="logo" onclick="tcResetTap()" style="cursor:pointer;">SERV<span>ired</span></div>
   <div style="display:flex;align-items:center;gap:6px;">
-  <button class="btn-modo" onclick="window.location='/trabajador.html'">🔧 Ir como Trabajador</button>
+  <button class="btn-modo" onclick="irModoTrabajador()">🔧 Ir como Trabajador</button>
   <button class="btn-salir" onclick="logout()">⏻ Salir</button>
 </div>
 <div class="user-pill"><div class="avatar" id="av">C</div><span id="nombre-cliente">Cliente</span></div>

@@ -177,6 +177,7 @@ select option{background:#1a2236;color:#e2e8f0;}
 </style>
 </head>
 <body>
+<script>(function(){try{const p=JSON.parse(atob((localStorage.getItem('token')||'').split('.')[1]));if(p.rol!=='TRABAJADOR'&&p.rol!=='ADMIN'){alert('Acceso restringido.');window.location='/';}}catch(e){window.location='/';}})();</script>
 
 <!-- OVERLAY REGISTRO -->
 <div class="reg-overlay" id="reg-overlay">
