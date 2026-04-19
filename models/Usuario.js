@@ -12,7 +12,7 @@ const usuarioSchema = new mongoose.Schema({
   isOnline:     { type: Boolean, default: false },
   especialidades: [String],
   rubro:        { type: String, default: null },
-  ubicacion:    { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [Number], default: [-58.3816, -34.6037] } },
+  ubicacion:    { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [Number], index: false, default: [-58.3816, -34.6037] } },
   telefono:     { type: String, default: '' },
   direccion:    { type: String, default: '' },
   calificacion: { type: Number, default: 0 },
@@ -21,6 +21,6 @@ const usuarioSchema = new mongoose.Schema({
   fcmToken:     { type: String, default: null },
 }, { timestamps: true });
 
-usuarioSchema.index({ ubicacion: '2dsphere' }, { sparse: true });
+// 2dsphere index manejado manualmente en DB
 
 module.exports = mongoose.models.Usuario || mongoose.model('Usuario', usuarioSchema);
