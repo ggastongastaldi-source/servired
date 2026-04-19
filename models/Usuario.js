@@ -12,7 +12,7 @@ const usuarioSchema = new mongoose.Schema({
   isOnline:     { type: Boolean, default: false },
   especialidades: [String],
   rubro:        { type: String, default: null },
-  ubicacion:    { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [Number], default: [-58.4, -34.6] } },
+  ubicacion:    { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [Number], default: [-58.3816, -34.6037] } },
   telefono:     { type: String, default: '' },
   direccion:    { type: String, default: '' },
   calificacion: { type: Number, default: 0 },
