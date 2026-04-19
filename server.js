@@ -20,6 +20,7 @@ app.use(express.json());
 app.use('/api/mensajes', rutaMensajes);
 app.use('/api/auth', require('./routes/auth'));
 const pedidosRoute = require('./routes/pedidos')(io);
+app.use('/api/upload', require('./routes/upload'));
 app.use('/api/pedidos', pedidosRoute);
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/matching', require('./routes/matching'));

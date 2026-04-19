@@ -260,6 +260,19 @@ select option{background:#1a2236;color:#e2e8f0;}
     <div class="err" id="rt-err">Error al registrar</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
+      
+    <div class="field" id="campo-selfie">
+      <label>📸 FOTO DE PERFIL (obligatoria)</label>
+      <div id="selfie-preview" style="display:none;margin-bottom:8px;">
+        <img id="selfie-img" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid var(--cyan);">
+        <span style="display:block;font-size:0.72rem;color:var(--cyan);margin-top:4px;">✅ Foto lista</span>
+      </div>
+      <input type="file" id="rt-selfie" accept="image/*" capture="user" style="display:none" onchange="previewSelfie(this)">
+      <button type="button" class="btn btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('rt-selfie').click()">
+        📷 Tomar selfie con cámara frontal
+      </button>
+      <span style="font-size:0.7rem;color:var(--muted);">Tu foto aparecerá en el mapa cuando vayas a trabajar</span>
+    </div>
       <button class="btn-sm btn-sm-pri" onclick="registrarTrabajador()">Registrarme →</button>
     </div>
   </div>
@@ -372,6 +385,29 @@ async function registrarTrabajador(){
 }
 
 // auto-redirect deshabilitado
+</script>
+
+<script>
+// Preview de selfie antes de enviar
+function previewSelfie(input){
+  if(input.files&&input.files[0]){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      document.getElementById('selfie-img').src=e.target.result;
+      document.getElementById('selfie-preview').style.display='block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// Upload foto a /api/upload y retorna URL
+async function subirFoto(file){
+  const fd=new FormData();
+  fd.append('foto',file);
+  const r=await fetch('/api/upload/foto',{method:'POST',body:fd});
+  const d=await r.json();
+  return d.ok ? d.url : '';
+}
 </script>
 </body>
 </html>
