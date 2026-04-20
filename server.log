@@ -1,0 +1,19 @@
+nohup: ignoring input
+◇ injected env (3) from .env // tip: ⌘ enable debugging { debug: true }
+/data/data/com.termux/files/home/servired/src/old_structure/services/socketHandlers.js:137
+        }).catch(() => {});
+         ^
+
+SyntaxError: Unexpected token ')'
+    at wrapSafe (node:internal/modules/cjs/loader:1762:18)
+    at Module._compile (node:internal/modules/cjs/loader:1803:20)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1575:12)
+    at require (node:internal/modules/helpers:191:16)
+    at Object.<anonymous> (/data/data/com.termux/files/home/servired/server.js:13:1)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+
+Node.js v25.8.2
