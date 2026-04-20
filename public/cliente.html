@@ -651,6 +651,18 @@ socket.on('worker_gps', data => {
   if(mapa) mapa.setView(pos, 15);
 });
 socket.on('estado_pedido_actualizado',data=>{document.getElementById('estado-txt').textContent='Estado: '+data.estado.replace(/_/g,' ');});
+socket.on('estado_pedido',data=>{
+  const txt=document.getElementById('estado-txt');
+  if(!txt)return;
+  if(data.fase==='SIN_WORKERS'){txt.textContent='😔 No hay trabajadores disponibles ahora';setTimeout(resetUI,4000);}
+  else if(data.fase==='SEARCHING'){txt.textContent='🔍 '+data.mensaje;}
+  else{txt.textContent=data.titulo||data.fase;}
+});
+socket.on('pedido_creado',data=>{
+  pedidoActivo=data.pedidoId;
+  socket.emit('registrar_pedido',{pedidoId:data.pedidoId});
+  document.getElementById('estado-txt').textContent='✅ Pedido creado. Buscando especialista...';
+});
 socket.on('pedido_completado',()=>{toast('✅ Servicio completado. ¡Gracias!');resetUI();cargarHistorial();irPant('historial',null);});
 socket.on('pedido_cancelado',()=>{toast('Pedido cancelado');resetUI();});
 
@@ -871,7 +883,7 @@ function irModoTrabajador(){
 }
 </script>
 <script src="/js/fleet.js"></script>
-<script>if(typeof socket!=="undefined"){socket.on("worker_update",function(d){socket.emit("confirmar_recepcion",{id:d.id});});}</script>
+
 </body>
 </html>
 
