@@ -134,15 +134,18 @@ module.exports = (io) => {
     });
 
     // ── GPS: trabajador envía ubicación ────────────────────────
+    socket.on('gps_update', async ({ pedidoId, lat, lng, trabajadorId }) => {
+      if (!lat || !lng) return;
+      if (trabajadorId) {
+        await Usuario.findByIdAndUpdate(trabajadorId, {
+          'ubicacion.coordinates': [parseFloat(lng), parseFloat(lat)],
+          ultimaUbicacion: new Date()
         }).catch(() => {});
       }
-
-      // Enviar al cliente del pedido
       const clienteSocketId = clienteSockets.get(pedidoId);
       const targetRoom = clienteSocketId
         ? 'cliente_' + clienteSocketId
         : 'pedido_' + pedidoId;
-
       io.to(targetRoom).emit('worker_gps', {
         pedidoId,
         lat: parseFloat(lat),
