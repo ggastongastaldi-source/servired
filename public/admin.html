@@ -7,26 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-// FINANZAS V4-BACH - Rentabilidad en tiempo real
-let tokenAdmin = localStorage.getItem('token') || '';
-
-async function cargarFinanzas() {
-  try {
-    const res = await fetch('/api/finanzas/dashboard?dias=7', {
-      headers: { 'Authorization': 'Bearer ' + tokenAdmin }
-    });
-    const data = await res.json();
-    if (!data.ok) return;
-    
-    // Actualizar KPIs existentes con datos reales
-    const live = data.metricasLive;
-    const zonas = data.rentabilidadPorZona;
-    
-    // KPI 1: Trabajos hoy (reemplaza el hardcodeado)
-    const kpiTrabajos = document.querySelector('.kpi.g .kpi-num');
-    if (kpiTrabajos && live.hoy) {
-      kpiTrabajos.textContent = live.hoy.trabajos || 0;
-      kpiTrabajos.title = 'Comisiones hoy: 
 <script src="/socket.io/socket.io.js"></script>
 <style>
 :root{--cyan:#00E5FF;--orange:#FF6D00;--bg:#05080f;--surface:#0d1321;--surface2:#111927;--text:#e2e8f0;--muted:#4a5568;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;--purple:#7c3aed;}
