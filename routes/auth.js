@@ -11,8 +11,8 @@ router.post('/registro', async (req, res) => {
     const existe = await Usuario.findOne({ email });
     if (existe) return res.status(400).json({ ok: false, error: 'Email ya registrado' });
     const hash = await bcrypt.hash(password, 10);
-    const u = await Usuario.create({ nombre, email, password: hash, rol: rol || 'CLIENTE', especialidades: especialidades || [], telefono: telefono || '', ubicacion: { type: 'Point', coordinates: [-58.3816, -34.6037] }, ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] } });
-    const token = jwt.sign({ id: u._id, nombre: u.nombre, rol: u.rol }, SECRET, { expiresIn: '7d' });
+    const u = await Usuario.create({ nombre, email, password: hash, rol: rol || 'CLIENTE', especialidades: especialidades || [], telefono: telefono || '', ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] } });
+    const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol }, SECRET, { expiresIn: '7d' });
     res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado } });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
@@ -24,7 +24,7 @@ router.post('/login', async (req, res) => {
     if (!u) return res.status(401).json({ ok: false, error: 'Credenciales incorrectas' });
     const ok = await bcrypt.compare(password, u.password);
     if (!ok) return res.status(401).json({ ok: false, error: 'Credenciales incorrectas' });
-    const token = jwt.sign({ id: u._id, nombre: u.nombre, rol: u.rol }, SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol }, SECRET, { expiresIn: '7d' });
     res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado } });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
