@@ -1,94 +1,101 @@
-// ============================================
-// MOTOR ALADÍN - Método Briones
-// Presupuesto indexado al Combo Big Mac ARS
-// Protege el valor del trabajo contra la inflación
-// Actualizado: Abril 2026
-// ============================================
+const RUBROS = {
+  servicio_domestico:    { precio: 8000,   unidad: "hora",     label: "Servicio Domestico",      minHoras: 4 },
+  pintura:               { precio: 80000,  unidad: "jornada",  label: "Pintura" },
+  aire_acondicionado:    { precio: 120000, unidad: "unidad",   label: "Aire Acondicionado" },
+  electricidad:          { precio: 70000,  unidad: "visita",   label: "Electricista" },
+  plomeria:              { precio: 70000,  unidad: "visita",   label: "Plomeria" },
+  gasista:               { precio: 85000,  unidad: "visita",   label: "Gasista Matriculado" },
+  albanileria:           { precio: 80000,  unidad: "jornada",  label: "Albanileria" },
+  techista:              { precio: 110000, unidad: "visita",   label: "Techista / Filtraciones" },
+  cerrajeria:            { precio: 50000,  unidad: "visita",   label: "Cerrajeria" },
+  jardineria:            { precio: 35000,  unidad: "visita",   label: "Jardineria" },
+  piletas:               { precio: 45000,  unidad: "visita",   label: "Mantenimiento Piletas" },
+  herreria:              { precio: 75000,  unidad: "visita",   label: "Herreria / Soldadura" },
+  carpinteria:           { precio: 70000,  unidad: "visita",   label: "Carpinteria" },
+  durlock:               { precio: 85000,  unidad: "jornada",  label: "Durlock / Steel Frame" },
+  fletes:                { precio: 45000,  unidad: "viaje",    label: "Fletes / Mudanzas" },
+  mecanica:              { precio: 70000,  unidad: "visita",   label: "Mecanica Ligera" },
+  gomeria:               { precio: 40000,  unidad: "auxilio",  label: "Gomeria" },
+  tecnico_pc:            { precio: 55000,  unidad: "visita",   label: "Tecnico PC / Redes" },
+  camaras:               { precio: 65000,  unidad: "punto",    label: "Camaras / Alarmas" },
+  electrodomesticos:     { precio: 50000,  unidad: "visita",   label: "Rep. Electrodomesticos" },
+  fumigacion:            { precio: 60000,  unidad: "visita",   label: "Fumigacion / Plagas" },
+  peluqueria_canina:     { precio: 25000,  unidad: "servicio", label: "Peluqueria Canina" },
+  paseador:              { precio: 15000,  unidad: "semana",   label: "Paseador de Perros" },
+  vidriera:              { precio: 60000,  unidad: "visita",   label: "Vidriera" },
+  tapiceria:             { precio: 65000,  unidad: "visita",   label: "Tapiceria" },
+  hormigon:              { precio: 95000,  unidad: "jornada",  label: "Hormigon Armado" },
+  ascensores:            { precio: 90000,  unidad: "visita",   label: "Ascensores / Bombas" },
+  decoracion:            { precio: 70000,  unidad: "visita",   label: "Decoracion / Drywall" },
+  limpieza_alfombras:    { precio: 45000,  unidad: "visita",   label: "Limpieza de Alfombras" },
+};
 
-class AladdinEngine {
-  constructor() {
+// Multiplicadores por zona - toda la Argentina
+// Filosofia: precio digno en todo el pais, sin penalizar el interior
+const ZONAS = {
+  CABA:            1.20,  // Capital Federal
+  GBA:             1.10,  // Gran Buenos Aires
+  ROSARIO:         1.05,  // Rosario
+  CORDOBA:         1.05,  // Cordoba capital
+  MENDOZA:         1.05,  // Mendoza capital
+  MAR_DEL_PLATA:   1.05,  // Mar del Plata
+  TUCUMAN:         1.00,
+  SALTA:           1.00,
+  NEUQUEN:         1.00,
+  BARILOCHE:       1.00,
+  INTERIOR:        1.00,  // Resto del interior
+  default:         1.00,  // Cualquier localidad
+};
 
-    // Precio combo Big Mac Argentina - Abril 2026
-    this.VALOR_BASE_COMBO_ARS = 9000;
+// Multiplicadores por complejidad
+const COMPLEJIDAD = {
+  baja:   1.0,
+  media:  1.4,
+  alta:   1.8,
+};
 
-    // Coeficientes por rubro y complejidad
-    this.COEFICIENTES = {
-      albanileria:            { baja: 15.0,  alta: 80.0  },
-      plomeria:               { baja: 12.0,  alta: 60.0  },
-      electricidad:           { baja: 12.0,  alta: 65.0  },
-      limpieza_hogar:         { baja: 1.5,   alta: 5.0   },
-      pintura:                { baja: 10.0,  alta: 40.0  },
-      gasista:                { baja: 14.0,  alta: 70.0  },
-      cerrajeria:             { baja: 1.2,   alta: 4.0   },
-      aire_acondicionado:     { baja: 2.5,   alta: 8.0   },
-      durlock:                { baja: 14.0,  alta: 55.0  },
-      impermeabilizacion:     { baja: 2.5,   alta: 10.0  },
-      zingueria:              { baja: 2.0,   alta: 8.0   },
-      construccion_seco:      { baja: 2.0,   alta: 10.0  },
-      pisos_revestimientos:   { baja: 2.5,   alta: 9.0   },
-      herreria:               { baja: 2.0,   alta: 8.0   },
-      carpinteria:            { baja: 1.8,   alta: 7.0   },
-      vidrieria:              { baja: 1.5,   alta: 5.0   },
-      techista:               { baja: 2.5,   alta: 11.0  },
-      jardineria:             { baja: 1.2,   alta: 4.0   },
-      fletes_mudanzas:        { baja: 2.0,   alta: 6.0   },
-      reparacion_celulares:   { baja: 1.0,   alta: 3.0   },
-      servicio_tecnico_pc:    { baja: 1.2,   alta: 4.0   },
-      cuidado_personas:       { baja: 1.0,   alta: 3.5   },
-      peluqueria_domicilio:   { baja: 1.0,   alta: 2.5   },
-      mecanica_ligera:        { baja: 1.5,   alta: 5.0   },
-      costura_arreglos:       { baja: 0.8,   alta: 2.5   },
-      desinfeccion_plagas:    { baja: 2.0,   alta: 6.0   },
-      servicio_domestico:     { baja: 1.5,   alta: 4.0   },
-      camaras_seguridad:      { baja: 3.0,   alta: 10.0  },
-      alarmas:                { baja: 2.5,   alta: 8.0   },
-      domotica_automatizacion:{ baja: 4.0,   alta: 15.0  },
-      camaras_seguridad:      { baja: 3.0,   alta: 10.0  },
-      alarmas:                { baja: 2.5,   alta: 8.0   },
-      domotica_automatizacion:{ baja: 4.0,   alta: 15.0  },
-      techistas:              { baja: 2.5,   alta: 11.0  },
-      antihumedad:            { baja: 2.0,   alta: 8.0   },
-      revestimientos_pvc:     { baja: 1.5,   alta: 6.0   },
-      climatizacion:          { baja: 2.0,   alta: 7.0   },
-      mecanica_auxilio:       { baja: 1.5,   alta: 5.0   },
-      mantenimiento_consorcios:{ baja:1.2,   alta: 4.0   },
-      paneles_solares:        { baja: 8.0,   alta: 30.0  },
-      peluqueria_canina:      { baja: 0.8,   alta: 2.0   },
-      fumigacion:             { baja: 2.0,   alta: 6.0   },
-    };
+function calcular(tipoServicio, zona, complejidad, horas) {
+  const rubro = RUBROS[tipoServicio];
+  if (!rubro) return { ok: false, error: "Rubro no encontrado: " + tipoServicio };
+
+  const zonaKey = (zona || "").toUpperCase().replace(/ /g,"_");
+  const zonaMulti = ZONAS[zonaKey] || ZONAS.default;
+  const compMulti = COMPLEJIDAD[complejidad] || COMPLEJIDAD.baja;
+
+  let precioBase = rubro.precio;
+
+  // Servicio por hora: multiplicar por cantidad de horas con minimo
+  if (rubro.unidad === "hora") {
+    const horasReales = Math.max(horas || rubro.minHoras || 4, rubro.minHoras || 1);
+    precioBase = rubro.precio * horasReales;
   }
 
-  calcularPresupuesto(rubroKey, complejidad = 'baja', complejidadAdicional = 1.0) {
-    const rubro = this.COEFICIENTES[rubroKey];
-    if (!rubro) throw new Error(`Aladdín: rubro [${rubroKey}] no clasificado.`);
+  const precioMercado  = Math.round(precioBase * zonaMulti * compMulti);
+  const precioCliente  = Math.round(precioMercado * 1.20);
+  const pagoWorker     = Math.round(precioMercado * 0.80);
+  const comision       = precioCliente - pagoWorker;
 
-    const nivel = complejidad === 'alta' ? 'alta' : 'baja';
-    const coef  = rubro[nivel];
-
-    // FÓRMULA MAESTRA BRIONES
-    const precioTotal    = Math.round(this.VALOR_BASE_COMBO_ARS * coef * complejidadAdicional);
-    const comision       = Math.round(precioTotal * 0.20);
-    const pagoTrabajador = precioTotal - comision;
-
-    return {
-      rubro:           rubroKey,
-      complejidad:     nivel,
-      precio_total:    precioTotal,
-      comision:        comision,
-      pago_trabajador: pagoTrabajador,
-      big_mac_base:    this.VALOR_BASE_COMBO_ARS,
-      coeficiente:     coef,
-    };
-  }
-
-  setValorBaseARS(nuevoValor) {
-    this.VALOR_BASE_COMBO_ARS = nuevoValor;
-    console.log(`[Aladdín] Índice Big Mac actualizado: ${nuevoValor} ARS`);
-  }
-
-  listarRubros() {
-    return Object.keys(this.COEFICIENTES);
-  }
+  return {
+    ok: true,
+    tipoServicio,
+    label:        rubro.label,
+    unidad:       rubro.unidad,
+    precioMercado,
+    precioCliente,
+    pagoWorker,
+    comision,
+    zona:         zonaKey,
+    complejidad:  complejidad || "baja",
+  };
 }
 
-module.exports = new AladdinEngine();
+function listarRubros() {
+  return Object.entries(RUBROS).map(([id, r]) => ({
+    id,
+    label:     r.label,
+    precioBase: r.precio,
+    unidad:    r.unidad,
+  }));
+}
+
+module.exports = { calcular, listarRubros, RUBROS, ZONAS };
