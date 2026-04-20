@@ -1,6 +1,6 @@
-const Pedido  = require('../models/Pedido');
-const Usuario = require('../models/Usuario');
-const { normalizar } = require('../utils/normalizer');
+const Pedido  = require('../src/old_structure/models/Pedido');
+const Usuario = require('../src/old_structure/models/Usuario');
+const { normalizar } = require('../src/old_structure/utils/normalizer');
 
 const INTERVALO_MS     = 3 * 60 * 1000;  // patrol cada 3 min
 const UMBRAL_HUERFANO  = 4 * 60 * 1000;  // pedido huerfano tras 4 min

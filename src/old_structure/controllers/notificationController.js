@@ -115,11 +115,11 @@ async function ofrecerAumentoPresupuesto(pedido) {
 async function notificarWorkersOffline(pedido) {
   // Buscar workers del rubro que NO estén online
   const workersOffline = await Usuario.find({
-    rol: { \$in: ['TRABAJADOR', 'WORKER'] },
-    rubro: { \$regex: pedido.tipoServicio, \$options: 'i' },
-    \$or: [
+    rol: { $in: ['TRABAJADOR', 'WORKER'] },
+    rubro: { $regex: pedido.tipoServicio, $options: 'i' },
+    $or: [
       { isOnline: false },
-      { socketStatus: { \$ne: 'online' } },
+      { socketStatus: { $ne: 'online' } },
       { disponible: false }
     ]
   }).limit(10);
@@ -127,11 +127,11 @@ async function notificarWorkersOffline(pedido) {
   // Guardar notificaciones pendientes (para push/mail)
   for (const worker of workersOffline) {
     await Usuario.findByIdAndUpdate(worker._id, {
-      \$push: {
+      $push: {
         notificacionesPendientes: {
           tipo: 'oportunidad',
           pedidoId: pedido._id,
-          mensaje: `Tenés una oportunidad: ${pedido.tipoServicio} - \${pedido.total_estimado}`,
+          mensaje: `Tenés una oportunidad: ${pedido.tipoServicio} - ${pedido.total_estimado}`,
           fecha: new Date(),
           expira: new Date(Date.now() + 3600000) // 1 hora
         }
@@ -154,7 +154,7 @@ function detenerFlujo(pedidoId) {
 async function actualizarEstadoPedido(pedidoId, estado) {
   await Pedido.findByIdAndUpdate(pedidoId, {
     estado,
-    \$push: { historialEstados: { estado, fecha: new Date() } }
+    $push: { historialEstados: { estado, fecha: new Date() } }
   });
 }
 
@@ -206,7 +206,7 @@ async function buscarWorkersDisponibles(rubro, zona, lat, lng) {
     
     // Buscar TODOS los workers online del rubro (sin filtro GPS por ahora)
     const workers = await Usuario.find({
-        rol: { \$in: ['TRABAJADOR', 'WORKER'] },
+        rol: { $in: ['TRABAJADOR', 'WORKER'] },
         
         rubro: { $regex: rubroNormalizado, $options: 'i' } // Búsqueda flexible
     });

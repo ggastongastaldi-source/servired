@@ -195,7 +195,7 @@ router.post('/:pedidoId/aceptar-aumento', verificarToken, verificarRol('CLIENTE'
       pago_worker: nuevoPagoWorker,
       'metadata.aumentoAceptado': true,
       'metadata.aumentoPct': 10,
-      \$push: { historialEstados: { estado: 'PRESUPUESTO_AUMENTADO', fecha: new Date() } }
+      $push: { historialEstados: { estado: 'PRESUPUESTO_AUMENTADO', fecha: new Date() } }
     });
     
     // Detener flujo actual y reiniciar con prioridad

@@ -1,4 +1,4 @@
-const { CATALOGO } = require("../public/catalogo.js");
+const { CATALOGO } = require("../../../public/catalogo.js");
 
 // Convertir catalogo a mapa para busqueda rapida
 const RUBROS = {};

@@ -2,8 +2,8 @@ const Usuario = require('../models/Usuario');
 const { registrarTransaccion } = require('../controllers/finanzasController');
 const Pedido = require('../models/Pedido');
 
-const LRU = require('lru-cache');
-const clienteSockets = new LRU({
+const { LRUCache } = require('lru-cache');
+const clienteSockets = new LRUCache({
   max: 5000,
   ttl: 1000 * 60 * 30,
   updateAgeOnGet: true,

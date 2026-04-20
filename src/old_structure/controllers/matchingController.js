@@ -1,5 +1,6 @@
-const { buscarTrabajadores } = require('../globuloRojo/motorInfiltracion');
-const aladdin                = require('../services/aladdinEngine');
+const { buscarTrabajadores } = require('../../../globuloRojo/motorInfiltracion');
+const aladdin = require('../services/aladdinEngine');
+const { toApiResponse } = require('../../responses/presenter');
 
 async function buscar(req, res) {
   try {
@@ -24,13 +25,19 @@ async function buscar(req, res) {
 
     return res.json({ ok: true, ...resultado, presupuesto_estimado: presupuesto });
   } catch (err) {
-    console.error('[Matching]', err);
+    console.error(' ', err);
     return res.status(500).json({ ok: false, error: err.message });
   }
 }
 
 async function listarRubros(req, res) {
-  res.json({ ok: true, rubros: aladdin.listarRubros() });
+  try {
+    const rubros = aladdin.listarRubros();
+    return res.json(toApiResponse('rubros', rubros));
+  } catch (err) {
+    console.error(' ', err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
 }
 
 module.exports = { buscar, listarRubros };

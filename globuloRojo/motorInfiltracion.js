@@ -1,6 +1,6 @@
 const { haversine }           = require('./haversine');
 const { rankearTrabajadores } = require('./briones');
-const groqService             = require('../services/groqService');
+const groqService             = require('../src/old_structure/services/groqService');
 
 const MAPA = {
   'plomero':'plomeria','electricista':'electricidad','gasista':'gasista',
@@ -55,7 +55,7 @@ async function buscarTrabajadores({ descripcion, especialidad, lat, lon, radioKm
 
   let candidatos = [];
   try {
-    const Usuario = require('../models/Usuario');
+    const Usuario = require('../src/old_structure/models/Usuario');
     const query = {
       rol: 'TRABAJADOR',
       estado: 'ACTIVO',
