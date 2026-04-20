@@ -267,6 +267,7 @@ async function iniciarFlujoBusqueda(pedidoId) {
             // EMISION DUAL: por room Y por worker_id directo (garantia)
             io.to('worker_' + worker._id).emit('nueva_oportunidad', payload);
             io.to('rubro_' + pedido.tipoServicio).emit('nueva_oportunidad', payload);
+            io.to('workers_disponibles').emit('nueva_oportunidad', payload);
             notificados++;
             
             // Guardar que fue notificado

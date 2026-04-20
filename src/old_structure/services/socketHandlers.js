@@ -55,6 +55,11 @@ module.exports = (io) => {
       const safeUserId = (jwtPayload?.id || jwtPayload?.userId || userId);
       socket.join('zona_' + zona);
       socket.join('rubro_' + rubro);
+      // Unirse a TODAS las especialidades del JWT
+      const jwtEsp = (jwtPayload?.especialidades || []);
+      jwtEsp.forEach(esp => socket.join('rubro_' + esp));
+      // Room universal para recibir cualquier pedido
+      socket.join('workers_disponibles');
       if (safeUserId) socket.join('worker_' + safeUserId);
       // Guardar socketId en DB para poder localizarlo
       if (userId) {
