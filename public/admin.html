@@ -549,7 +549,7 @@ socket.on('pedido_completado_admin',data=>{
   addEv('💰',`Completado · $${(data.precio||0).toLocaleString('es-AR')}`);cargarPed();
 });
 socket.on('estado_pedido_admin',data=>{addEv('🔄',`Pedido ${data.pedidoId?.slice(-4)} → ${data.estado}`);cargarPed();});
-socket.on('ubicacion_trabajador',data=>{
+socket.on('worker_gps',data=>{
   const ic=L.divIcon({html:'<div style="background:#00E5FF;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px rgba(0,229,255,0.7)"></div>',className:'',iconSize:[12,12]});
   if(mWorkers[data.trabajadorId])mWorkers[data.trabajadorId].setLatLng([data.lat,data.lng]);
   else mWorkers[data.trabajadorId]=L.marker([data.lat,data.lng],{icon:ic}).addTo(mapa).bindPopup(data.nombre||'Trabajador');
