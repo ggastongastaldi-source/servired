@@ -445,7 +445,7 @@ function initMapa(){
     navigator.geolocation.watchPosition(p=>{
       const lat=p.coords.latitude,lng=p.coords.longitude;
       markerYo.setLatLng([lat,lng]);mapa.setView([lat,lng],14);
-      if(online&&socket)socket.emit('ubicacion_trabajador',{lat,lng,token:TOKEN});
+      if(online&&socket)socket.emit('gps_update',{lat:lat,lng:lng,trabajadorId:USER_ID,pedidoId:pedidoActivo||null});
     },{enableHighAccuracy:true,maximumAge:5000});
   }
 }
