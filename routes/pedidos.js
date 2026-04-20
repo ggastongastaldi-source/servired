@@ -37,14 +37,13 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     let pago_worker = 80000;
     
     try {
-      const precios = {
-        plomeria: 180000, electricidad: 180000, domestica: 35000,
-        pintura: 220000, gasista: 220000, cerrajeria: 45000,
-        camaras: 250000, alarmas: 220000, albanileria: 250000
-      };
-      total_estimado = precios[tipoServicio] || 100000;
-      pago_worker = Math.round(total_estimado * 0.8);
-    } catch(e) {}
+      const aladdin = require('../services/aladdinEngine');
+      const calc = aladdin.calcular(tipoServicio, zona, complejidad || 'baja');
+      if (calc.ok) {
+        total_estimado = calc.precioCliente;
+        pago_worker    = calc.pagoWorker;
+      }
+    } catch(e) { console.error('[Pedidos] Aladdin error:', e.message); }
 
     const nuevoPedido = new Pedido({
       cliente: req.user.userId,
