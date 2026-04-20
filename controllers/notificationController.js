@@ -1,3 +1,4 @@
+const { normalizar } = require('../utils/normalizer');
 const Pedido = require('../models/Pedido');
 const Usuario = require('../models/Usuario');
 
@@ -252,8 +253,7 @@ async function iniciarFlujoBusqueda(pedidoId) {
         let notificados = 0;
         
         for (const worker of workers) {
-            // Enviar por socket si está conectado
-            io.to('worker_' + worker._id).emit('nueva_oportunidad', {
+            const payload = {
                 pedidoId: pedido._id,
                 tipoServicio: pedido.tipoServicio,
                 rubro: pedido.tipoServicio,
@@ -263,7 +263,11 @@ async function iniciarFlujoBusqueda(pedidoId) {
                 descripcion: pedido.descripcion,
                 direccion: pedido.direccion,
                 expiraEn: 300
-            });
+            };
+            // EMISION DUAL: por room Y por worker_id directo (garantia)
+            io.to('worker_' + worker._id).emit('nueva_oportunidad', payload);
+            io.to('rubro_' + pedido.tipoServicio).emit('nueva_oportunidad', payload);
+            io.to('zona_' + pedido.zona).emit('nueva_oportunidad', payload);
             notificados++;
             
             // Guardar que fue notificado
