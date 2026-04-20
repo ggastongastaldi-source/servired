@@ -11,6 +11,7 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 global.io = io;
 require('./services/socketHandlers')(io);
+require('./globuloRojo/watchdog').iniciar();
 require('./services/mensajeriaSocket')(io);;
 
 app.use(cors());
