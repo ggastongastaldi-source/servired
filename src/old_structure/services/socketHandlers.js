@@ -17,6 +17,11 @@ module.exports = (io) => {
     console.log('[Socket] Conectado:', socket.id);
 
     // ── CLIENTE se conecta ──────────────────────────────────────
+    socket.on('admin_conectado', ({ token }) => {
+      socket.join('admins');
+      console.log('[Socket] Admin conectado:', socket.id);
+    });
+
     socket.on('join_room', ({ room }) => {
       socket.join(room);
       console.log('[Socket] join_room:', room);
@@ -160,6 +165,7 @@ module.exports = (io) => {
         ? 'cliente_' + clienteSocketId
         : 'pedido_' + pedidoId;
 
+      // Emitir al cliente del pedido
       io.to(targetRoom).emit('worker_gps', {
         pedidoId,
         lat: parseFloat(lat),
