@@ -165,13 +165,10 @@ module.exports = (io) => {
         ? 'cliente_' + clienteSocketId
         : 'pedido_' + pedidoId;
 
-      // Emitir al cliente del pedido
-      io.to(targetRoom).emit('worker_gps', {
-        pedidoId,
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-        timestamp: Date.now()
-      });
+      const payload = { pedidoId, trabajadorId, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: Date.now() };
+      io.to(targetRoom).emit('worker_gps', payload);
+      if (pedidoId) io.to('pedido_' + pedidoId).emit('worker_gps', payload);
+      io.to('admins').emit('worker_gps', payload);
     });
 
     // ── TRABAJADOR termina el trabajo ──────────────────────────
