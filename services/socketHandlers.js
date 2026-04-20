@@ -29,6 +29,7 @@ module.exports = (io) => {
       // Si viene con pedidoId, lo asociamos para notificarle después
       if (pedidoId) clienteSockets.set(pedidoId, socket.id);
       // Si viene con userId, guardar socketId en DB
+      const safeUserId = userId;
       if (safeUserId) {
         await Usuario.findByIdAndUpdate(safeUserId, { socketId: socket.id }).catch(() => {});
       }
@@ -192,6 +193,67 @@ module.exports = (io) => {
         console.log('[Socket] Trabajo completado:', pedidoId);
       } catch (e) {
         socket.emit('error', { mensaje: e.message });
+      }
+    });
+
+
+    // ── CLIENTE crea pedido via socket ─────────────────────────
+    socket.on('nuevo_pedido', async ({ token, servicio, direccion, precio }) => {
+      try {
+        const jwt = require('jsonwebtoken');
+        let decoded;
+        try {
+          decoded = jwt.verify(token, process.env.JWT_SECRET || 'servired-2025-cambiar-en-produccion');
+        } catch(e) {
+          socket.emit('pedido_error', { mensaje: 'Token invalido' });
+          return;
+        }
+        const clienteId = decoded.userId || decoded.id;
+        const Pedido = require('../models/Pedido');
+        const { iniciarFlujoBusqueda } = require('../controllers/notificationController');
+        const cliente = await Usuario.findById(clienteId).lean();
+        const zona = cliente?.zona || cliente?.zonaCobertura || 'GBA_OESTE';
+        const nuevoPedido = new Pedido({
+          cliente: clienteId,
+          tipoServicio: servicio,
+          zona,
+          descripcion: '',
+          direccion: direccion || '',
+          complejidad: 'baja',
+          precio: precio || 100000,
+          total_estimado: precio || 100000,
+          pago_worker: Math.round((precio || 100000) * 0.8),
+          estado: 'PENDIENTE',
+          ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] },
+          fechaCreacion: new Date()
+        });
+        const pedidoGuardado = await nuevoPedido.save();
+        socket.join('pedido_' + pedidoGuardado._id);
+        socket.emit('pedido_creado', {
+          pedidoId: pedidoGuardado._id,
+          mensaje: 'Pedido recibido. Buscando especialistas...'
+        });
+        console.log('[Socket] nuevo_pedido:', pedidoGuardado._id, servicio, zona);
+        setImmediate(() => {
+          iniciarFlujoBusqueda(pedidoGuardado._id)
+            .catch(e => console.error('[Socket] Error flujo:', e.message));
+        });
+      } catch(e) {
+        console.error('[Socket] Error nuevo_pedido:', e.message);
+        socket.emit('pedido_error', { mensaje: e.message });
+      }
+    });
+
+    // ── CLIENTE cancela pedido via socket ──────────────────────
+    socket.on('cancelar_pedido', async ({ pedidoId, token }) => {
+      try {
+        const { cancelarNotificacionesWorkers } = require('../controllers/notificationController');
+        const Pedido = require('../models/Pedido');
+        await Pedido.findByIdAndUpdate(pedidoId, { estado: 'CANCELADA' });
+        await cancelarNotificacionesWorkers(pedidoId, io);
+        socket.emit('pedido_cancelado_ok', { pedidoId });
+      } catch(e) {
+        console.error('[Socket] Error cancelar_pedido:', e.message);
       }
     });
 
