@@ -439,7 +439,7 @@ function initApp(){
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
-  const ic=L.divIcon({html:'<div style="background:#00E5FF;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(0,229,255,0.9)"></div>',className:'',iconSize:[16,16]});
+  const ic=L.divIcon({html:'<div style="background:#ffffff;width:14px;height:14px;border-radius:50%;border:2px solid #00E5FF;box-shadow:0 0 10px rgba(255,255,255,0.9)"></div>',className:'',iconSize:[16,16]});
   markerYo=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Vos');
   if(navigator.geolocation){
     navigator.geolocation.watchPosition(p=>{

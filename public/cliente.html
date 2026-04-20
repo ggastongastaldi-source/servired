@@ -645,7 +645,7 @@ socket.on('worker_gps', data => {
   if(markerTrab) {
     markerTrab.setLatLng(pos);
   } else {
-    const ic = L.divIcon({html:'<div style="background:#FF6D00;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(255,109,0,0.9)"></div>',className:'',iconSize:[16,16]});
+    const ic = L.divIcon({html:'<div style="background:#ffffff;width:14px;height:14px;border-radius:50%;border:2px solid #FF6D00;box-shadow:0 0 10px rgba(255,255,255,0.9)"></div>',className:'',iconSize:[16,16]});
     markerTrab = L.marker(pos, {icon:ic}).addTo(mapa).bindPopup('Trabajador en camino');
   }
   if(mapa) mapa.setView(pos, 15);
