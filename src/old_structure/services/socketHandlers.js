@@ -8,14 +8,18 @@ const clienteSockets = new LRUCache({
   ttl: 1000 * 60 * 30,
   updateAgeOnGet: true,
   dispose: (value, key) => {
+    console.log('[LRU] Expirado:', key);
   }
 });
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
+    console.log('[Socket] Conectado:', socket.id);
 
     // ── CLIENTE se conecta ──────────────────────────────────────
+    socket.on('join_room', ({ room }) => {
       socket.join(room);
+      console.log('[Socket] join_room:', room);
     });
 
     socket.on('cliente_conectado', async ({ token, userId, pedidoId }) => {
@@ -30,6 +34,7 @@ module.exports = (io) => {
         await Usuario.findByIdAndUpdate(safeUserId, { socketId: socket.id }).catch(() => {});
       }
       socket.emit('conectado_ok', { socketId: socket.id });
+      console.log('[Socket] Cliente conectado:', socket.id, pedidoId ? `pedido:${pedidoId}` : '');
     });
 
     // Cliente asocia pedido a su socket (lo llama después de crear pedido)
@@ -37,6 +42,7 @@ module.exports = (io) => {
       if (pedidoId) {
         clienteSockets.set(pedidoId, socket.id);
         socket.join('pedido_' + pedidoId);
+        console.log('[Socket] Cliente registrado en pedido:', pedidoId);
       }
     });
 
@@ -64,6 +70,7 @@ module.exports = (io) => {
         }).catch(() => {});
       }
       socket.emit('conectado_ok', { socketId: socket.id });
+      console.log('[Socket] Worker conectado:', nombre || socket.id, `rubro:${rubro} zona:${zona}`);
     });
 
     // Trabajador cambia estado disponible/ocupado
@@ -75,6 +82,7 @@ module.exports = (io) => {
         }).catch(() => {});
       }
       socket.emit('estado_actualizado', { estado });
+      console.log('[Socket] Estado cambiado:', estado, userId);
     });
 
     // ── TRABAJADOR acepta trabajo ───────────────────────────────
@@ -127,6 +135,7 @@ module.exports = (io) => {
           await Usuario.findByIdAndUpdate(trabajadorId, { disponible: false }).catch(() => {});
         }
 
+        console.log('[Socket] Pedido aceptado:', pedidoId, 'por worker:', trabajadorId);
       } catch (e) {
         console.error('[Socket] Error aceptar_trabajo:', e.message);
         socket.emit('trabajo_aceptado_error', { mensaje: e.message });
@@ -135,17 +144,22 @@ module.exports = (io) => {
 
     // ── GPS: trabajador envía ubicación ────────────────────────
     socket.on('gps_update', async ({ pedidoId, lat, lng, trabajadorId }) => {
-      if (!lat || !lng) return;
+      if (!pedidoId || !lat || !lng) return;
+
+      // Actualizar posición en DB
       if (trabajadorId) {
         await Usuario.findByIdAndUpdate(trabajadorId, {
           'ubicacion.coordinates': [parseFloat(lng), parseFloat(lat)],
           ultimaUbicacion: new Date()
         }).catch(() => {});
       }
+
+      // Enviar al cliente del pedido
       const clienteSocketId = clienteSockets.get(pedidoId);
       const targetRoom = clienteSocketId
         ? 'cliente_' + clienteSocketId
         : 'pedido_' + pedidoId;
+
       io.to(targetRoom).emit('worker_gps', {
         pedidoId,
         lat: parseFloat(lat),
@@ -181,6 +195,7 @@ module.exports = (io) => {
         
         // REGISTRO FINANCIERO AUTOMÁTICO
         registrarTransaccion(pedidoId);
+        console.log('[Socket] Trabajo completado:', pedidoId);
       } catch (e) {
         socket.emit('error', { mensaje: e.message });
       }
@@ -223,6 +238,7 @@ module.exports = (io) => {
           pedidoId: pedidoGuardado._id,
           mensaje: 'Pedido recibido. Buscando especialistas...'
         });
+        console.log('[Socket] nuevo_pedido:', pedidoGuardado._id, servicio, zona);
         setImmediate(() => {
           iniciarFlujoBusqueda(pedidoGuardado._id)
             .catch(e => console.error('[Socket] Error flujo:', e.message));
@@ -254,5 +270,7 @@ module.exports = (io) => {
       ).catch(() => {});
       // Limpiar clienteSockets si era un cliente
       // LRU TTL limpia sola
+      console.log('[Socket] Desconectado:', socket.id);
     });
   });
+};
