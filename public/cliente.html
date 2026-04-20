@@ -639,7 +639,7 @@ socket.on('trabajo_aceptado',data=>{
   markerTrab=L.marker([data.trabajador.lat||(-34.6037),data.trabajador.lng||(-58.3816)],{icon:ic}).addTo(mapa);
   toast('¡Trabajador asignado! Viene en camino 🚀');
 });
-socket.on('ubicacion_trabajador',data=>{if(markerTrab)markerTrab.setLatLng([data.lat,data.lng]);});
+socket.on('worker_gps', data => { if(markerTrab) { markerTrab.setLatLng([data.lat, data.lng]); } });
 socket.on('estado_pedido_actualizado',data=>{document.getElementById('estado-txt').textContent='Estado: '+data.estado.replace(/_/g,' ');});
 socket.on('pedido_completado',()=>{toast('✅ Servicio completado. ¡Gracias!');resetUI();cargarHistorial();irPant('historial',null);});
 socket.on('pedido_cancelado',()=>{toast('Pedido cancelado');resetUI();});
