@@ -75,6 +75,7 @@ module.exports = (io) => {
         }).catch(() => {});
       }
       socket.emit('conectado_ok', { socketId: socket.id });
+      io.to('admins').emit('worker_online', { nombre, rubro, zona, userId: safeUserId });
       console.log('[Socket] Worker conectado:', nombre || socket.id, `rubro:${rubro} zona:${zona}`);
     });
 
@@ -267,10 +268,13 @@ module.exports = (io) => {
 
     // ── DESCONEXIÓN ────────────────────────────────────────────
     socket.on('disconnect', async () => {
-      await Usuario.findOneAndUpdate(
+      const workerOffline = await Usuario.findOneAndUpdate(
         { socketId: socket.id },
         { socketStatus: 'offline', socketId: null, disponible: false }
       ).catch(() => {});
+      if (workerOffline && workerOffline.rol === 'TRABAJADOR') {
+        io.to('admins').emit('worker_offline', { nombre: workerOffline.nombre });
+      }
       // Limpiar clienteSockets si era un cliente
       // LRU TTL limpia sola
       console.log('[Socket] Desconectado:', socket.id);
