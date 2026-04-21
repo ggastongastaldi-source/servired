@@ -170,6 +170,7 @@ module.exports = (io) => {
       io.to(targetRoom).emit('worker_gps', payload);
       if (pedidoId) io.to('pedido_' + pedidoId).emit('worker_gps', payload);
       io.to('admins').emit('worker_gps', payload);
+      io.emit('worker_gps_broadcast', payload);
     });
 
     // ── TRABAJADOR termina el trabajo ──────────────────────────
