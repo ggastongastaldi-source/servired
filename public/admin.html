@@ -529,6 +529,20 @@ socket.on('pedido_completado_admin',data=>{
   addEv('💰',`Completado · $${(data.precio||0).toLocaleString('es-AR')}`);cargarPed();
 });
 socket.on('estado_pedido_admin',data=>{addEv('🔄',`Pedido ${data.pedidoId?.slice(-4)} → ${data.estado}`);cargarPed();});
+// GPS via polling HTTP (mas confiable que socket para admin)
+setInterval(async()=>{
+  try{
+    const r=await fetch('/api/gps/positions',{headers:{Authorization:'Bearer '+TOKEN}});
+    const data=await r.json();
+    if(!data.positions)return;
+    data.positions.forEach(p=>{
+      if(!mapa)return;
+      const ic=L.divIcon({html:'<div style="background:#fff;width:14px;height:14px;border-radius:50%;border:2px solid #00E5FF;box-shadow:0 0 10px #fff"></div>',className:'',iconSize:[14,14]});
+      if(mWorkers[p.workerId])mWorkers[p.workerId].setLatLng([p.lat,p.lng]);
+      else mWorkers[p.workerId]=L.marker([p.lat,p.lng],{icon:ic}).addTo(mapa).bindPopup(p.workerId);
+    });
+  }catch(e){}
+},3000);
 socket.on('worker_gps_broadcast',data=>{
   if(!mapa)return;
   const ic=L.divIcon({html:'<div style="background:#ffffff;width:14px;height:14px;border-radius:50%;border:2px solid #00E5FF;box-shadow:0 0 10px rgba(255,255,255,0.9)"></div>',className:'',iconSize:[14,14]});
