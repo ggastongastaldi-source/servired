@@ -32,7 +32,16 @@ app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
 app.use('/api/smart-quote', require('./src/old_structure/routes/smartQuote'));
 app.use('/api/finanzas', require('./src/old_structure/routes/finanzas'));
 
+// Ruta para actualización de GPSapp.post('/api/gps/update', (req, res) => {    const { workerId, lat, lng } = req.body;        // Emitimos el movimiento por Socket.io    io.emit('position-updated', { workerId, lat, lng, timestamp: Date.now() });        res.json({ status: 'Coordenada retransmitida', workerId });});
 // Static frontend
+// Ruta para actualización de GPS
+app.post('/api/gps/update', (req, res) => {
+    const { workerId, lat, lng } = req.body;
+    if (!workerId || !lat || !lng) return res.status(400).json({ error: 'Datos incompletos' });
+    io.emit('position-updated', { workerId, lat, lng, timestamp: Date.now() });
+    res.json({ status: 'Coordenada retransmitida', workerId });
+});
+
 app.use(express.static('public'));
 app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 
