@@ -32,14 +32,18 @@ app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
 app.use('/api/smart-quote', require('./src/old_structure/routes/smartQuote'));
 app.use('/api/finanzas', require('./src/old_structure/routes/finanzas'));
 
-// Ruta para actualización de GPSapp.post('/api/gps/update', (req, res) => {    const { workerId, lat, lng } = req.body;        // Emitimos el movimiento por Socket.io    io.emit('position-updated', { workerId, lat, lng, timestamp: Date.now() });        res.json({ status: 'Coordenada retransmitida', workerId });});
-// Static frontend
-// Ruta para actualización de GPS
+
+
+// Ruta REST para actualización GPS (fallback HTTP)
 app.post('/api/gps/update', (req, res) => {
     const { workerId, lat, lng } = req.body;
-    if (!workerId || !lat || !lng) return res.status(400).json({ error: 'Datos incompletos' });
-    io.emit('position-updated', { workerId, lat, lng, timestamp: Date.now() });
-    res.json({ status: 'Coordenada retransmitida', workerId });
+    if (!workerId || !lat || !lng) {
+        return res.status(400).json({ error: 'Datos incompletos' });
+    }
+    if (global.io) {
+        global.io.emit('worker_gps_broadcast', { trabajadorId: workerId, lat, lng });
+    }
+    res.json({ status: 'ok', workerId });
 });
 
 app.use(express.static('public'));
