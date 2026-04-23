@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
       try {
         const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
         const chat = await groq.chat.completions.create({
-          model: 'llama-3.3-70b-versatile',
+          model: 'llama-3.1-8b-instant',
           max_tokens: 400,
           messages: [{
             role: 'user',
@@ -95,7 +95,7 @@ router.post('/', async (req, res) => {
     try {
       const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
       const chat = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: 'llama-3.1-8b-instant',
         max_tokens: 80,
         messages: [{
           role: 'user',
