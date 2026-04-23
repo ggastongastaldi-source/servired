@@ -442,10 +442,10 @@ function initMapa(){
   const ic=L.divIcon({html:'<div style="background:#ffffff;width:14px;height:14px;border-radius:50%;border:2px solid #00E5FF;box-shadow:0 0 10px rgba(255,255,255,0.9)"></div>',className:'',iconSize:[16,16]});
   markerYo=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Vos');
   if(navigator.geolocation){
-    navigator.geolocation.watchPosition(p=>{
+    navigator.geolocation.watchPosition(p=>{const lat=p.coords.latitude,lng=p.coords.longitude;
       const lat=p.coords.latitude,lng=p.coords.longitude;
       markerYo.setLatLng([lat,lng]);mapa.setView([lat,lng],14);
-      if(online&&socket)socket.emit('gps_update',{lat:lat,lng:lng,trabajadorId:USER_ID,pedidoId:pedidoActivo||null});
+      if(socket)socket.emit('gps_update',{lat:lat,lng:lng,trabajadorId:USER_ID,pedidoId:pedidoActivo||null});
     },{enableHighAccuracy:true,maximumAge:5000});
   }
 }

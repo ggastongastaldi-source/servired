@@ -22,7 +22,7 @@ const verificarRol = (rolRequerido) => {
         if (!req.user) {
             return res.status(401).json({ ok: false, error: 'No autenticado' });
         }
-        if (req.user.rol !== rolRequerido) {
+        if (req.user.rol !== rolRequerido && !(rolRequerido === "WORKER" && req.user.rol === "TRABAJADOR")) {
             return res.status(403).json({ ok: false, error: 'Acceso denegado' });
         }
         next();
