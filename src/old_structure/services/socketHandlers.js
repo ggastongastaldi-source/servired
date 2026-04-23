@@ -158,6 +158,31 @@ module.exports = (io) => {
       }
     });
 
+    // ── TRABAJADOR avanza estado del pedido ───────────────────────
+    socket.on('cambiar_estado_pedido', async ({ pedidoId, estado, token }) => {
+      try {
+        const estadosValidos = ['EN_PROCESO', 'REALIZADA', 'PAGADA'];
+        if (!estadosValidos.includes(estado)) return;
+        const pedido = await Pedido.findByIdAndUpdate(pedidoId,
+          { estado, ...(estado === 'EN_PROCESO' ? { fechaInicio: new Date() } : {}),
+            ...(estado === 'REALIZADA' ? { fechaFin: new Date() } : {}) },
+          { new: true }
+        );
+        if (!pedido) return;
+        const payload = { pedidoId, estado };
+        io.to('pedido_' + pedidoId).emit('estado_pedido', payload);
+        io.to('admins').emit('estado_pedido_admin', payload);
+        if (pedido.cliente) {
+          const cli = await Usuario.findById(pedido.cliente).lean();
+          if (cli?.socketId) io.to(cli.socketId).emit('estado_pedido', payload);
+          io.to('worker_' + pedido.cliente).emit('estado_pedido', payload);
+        }
+        console.log('[Socket] Estado pedido:', pedidoId, '->', estado);
+      } catch(e) {
+        console.error('[Socket] Error cambiar_estado_pedido:', e.message);
+      }
+    });
+
     // ── GPS: trabajador envía ubicación ────────────────────────
     socket.on('gps_update', async ({ pedidoId, lat, lng, trabajadorId }) => {
       if (!pedidoId || !lat || !lng) return;
