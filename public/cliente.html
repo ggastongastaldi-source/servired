@@ -647,9 +647,22 @@ socket.on('estado_pedido_actualizado',data=>{document.getElementById('estado-txt
 socket.on('estado_pedido',data=>{
   const txt=document.getElementById('estado-txt');
   if(!txt)return;
-  if(data.fase==='SIN_WORKERS'){txt.textContent='😔 No hay trabajadores disponibles ahora';setTimeout(resetUI,4000);}
-  else if(data.fase==='SEARCHING'){txt.textContent='🔍 '+data.mensaje;}
-  else{txt.textContent=data.titulo||data.fase;}
+  const estado=data.fase||data.estado||'';
+  const msgs={
+    'SIN_WORKERS':'😔 No hay trabajadores disponibles ahora',
+    'SEARCHING':'🔍 '+(data.mensaje||'Buscando especialista...'),
+    'ACEPTADA':'✅ Profesional asignado. Viene en camino.',
+    'EN_PROCESO':'🔧 El profesional está trabajando.',
+    'REALIZADA':'🏁 Trabajo completado. Procesando pago...',
+    'PAGADA':'💰 ¡Pago confirmado! Gracias por usar ServiRed.'
+  };
+  if(msgs[estado]){
+    txt.textContent=msgs[estado];
+    if(estado==='SIN_WORKERS')setTimeout(resetUI,4000);
+    if(estado==='PAGADA')setTimeout(()=>{resetUI();cargarHistorial();},3000);
+  } else {
+    txt.textContent=data.titulo||estado;
+  }
 });
 socket.on('pedido_creado',data=>{
   pedidoActivo=data.pedidoId;
