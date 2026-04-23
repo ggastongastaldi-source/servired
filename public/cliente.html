@@ -44,7 +44,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .eta-num{font-size:2rem;font-weight:700;color:var(--cyan);font-family:'Share Tech Mono',monospace;}
 .eta-lbl{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
 .btn-cancelar{width:100%;padding:12px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:10px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;}
-.estado-bar{display:none;align-items:center;gap:10px;padding:10px 20px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.05);}
+.estado-bar{display:none;align-items:center;gap:10px;padding:12px 20px;background:linear-gradient(135deg,rgba(0,229,255,0.1),rgba(124,58,237,0.1));border-bottom:2px solid rgba(0,229,255,0.3);position:sticky;top:60px;z-index:99;}
 .estado-bar.visible{display:flex;}
 .pulse-dot{width:10px;height:10px;border-radius:50%;background:var(--cyan);animation:pulse 1.5s infinite;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.4)}}
@@ -658,6 +658,7 @@ socket.on('estado_pedido',data=>{
   };
   if(msgs[estado]){
     txt.textContent=msgs[estado];
+    window.scrollTo({top:0,behavior:'smooth'});
     if(estado==='SIN_WORKERS')setTimeout(resetUI,4000);
     if(estado==='PAGADA')setTimeout(()=>{resetUI();cargarHistorial();},3000);
   } else {
