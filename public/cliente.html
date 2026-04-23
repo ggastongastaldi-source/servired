@@ -308,6 +308,7 @@ RUBROS.forEach((r,i)=>{
 document.getElementById('precio-display').textContent='$ '+RUBROS[0].precio.toLocaleString('es-AR');
 
 function selSrv(btn,r){
+  if(document.getElementById('btn-pedir').disabled)return;
   document.querySelectorAll('.srv-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   servicioSel=r.id;precioSel=r.precio;
