@@ -118,19 +118,29 @@ module.exports = (io) => {
           descripcion: pedido.descripcion
         });
 
-        // ✅ Notificar al cliente específicamente
+        // ✅ Notificar al cliente por todas las vías posibles
         const clienteSocketId = clienteSockets.get(pedidoId);
-        const targetRoom = clienteSocketId
-          ? 'cliente_' + clienteSocketId
-          : 'pedido_' + pedidoId;
-
-        io.to(targetRoom).emit('trabajo_aceptado', {
+        const payload = {
           pedidoId,
           trabajadorNombre: trabajadorNombre || 'Un profesional',
           mensaje: 'Tu pedido fue aceptado. El profesional está en camino.',
           estado: 'ACEPTADA'
-        });
-        io.to(targetRoom).emit('estado_pedido', { pedidoId, estado: 'ACEPTADA' });
+        };
+        // Via room del pedido
+        io.to('pedido_' + pedidoId).emit('trabajo_aceptado', payload);
+        io.to('pedido_' + pedidoId).emit('estado_pedido', { pedidoId, estado: 'ACEPTADA' });
+        // Via socket directo del cliente
+        if (clienteSocketId) {
+          io.to('cliente_' + clienteSocketId).emit('trabajo_aceptado', payload);
+        }
+        // Via userId del cliente en DB
+        if (pedido.cliente) {
+          io.to('worker_' + pedido.cliente).emit('trabajo_aceptado', payload);
+          const clienteDB = await Usuario.findById(pedido.cliente).lean();
+          if (clienteDB?.socketId) {
+            io.to(clienteDB.socketId).emit('trabajo_aceptado', payload);
+          }
+        }
 
         // También notificar a otros workers que el pedido ya fue tomado
         io.to('rubro_' + pedido.tipoServicio).emit('pedido_tomado', { pedidoId });
