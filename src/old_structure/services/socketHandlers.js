@@ -96,7 +96,7 @@ module.exports = (io) => {
       try {
         // Buscar pedido activo
         const pedido = await Pedido.findOneAndUpdate(
-          { _id: pedidoId, estado: 'PENDIENTE' },
+          { _id: pedidoId, estado: { $in: ['PENDIENTE', 'SEARCHING'] } },
           {
             estado: 'ACEPTADA',
             trabajador: trabajadorId,
