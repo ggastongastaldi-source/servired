@@ -7,27 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    socket.on('connect', () => {
-        if (currentUserId) socket.emit('join_room', { room: 'cliente_' + currentUserId });
-    });
-    socket.on('conectado_ok', () => {
-        socket.emit('join_room', { room: 'cliente_' + currentUserId });
-    });
-    socket.on('estado_busqueda', (data) => {
-        const titulo = document.getElementById('estadoTitulo');
-        const msg   = document.getElementById('estadoMensaje');
-        if (titulo && data.titulo)  titulo.textContent = data.titulo;
-        if (msg    && data.mensaje) msg.textContent    = data.mensaje;
-    });
-
-
-    socket.on('oferta_aumento', (data) => {
-        const box = document.getElementById('estadoBox');
-        const titulo = document.getElementById('estadoTitulo');
-        const msg = document.getElementById('estadoMensaje');
-        
-        titulo.textContent = '💰 ¿Sumar 10% para priorizar?';
-        msg.innerHTML = 'Actual: <b>
 <script src="/socket.io/socket.io.js"></script>
 <style>
 :root{--cyan:#00E5FF;--orange:#FF6D00;--green:#39ff14;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
