@@ -299,12 +299,12 @@ async function aceptarTrabajo(pedidoId, workerId) {
         const pedido = await Pedido.findById(pedidoId);
         if (!pedido) return { ok: false, error: 'Pedido no existe' };
         
-        if (pedido.estado === 'ACEPTADO') {
+        if (pedido.estado === 'ACEPTADA') {
             return { ok: false, error: 'Ya fue tomado por otro' };
         }
         
         pedido.worker = workerId;
-        pedido.estado = 'ACEPTADO';
+        pedido.estado = 'ACEPTADA';
         await pedido.save();
         
         // CRÍTICO: Detener expansión si estaba en curso
