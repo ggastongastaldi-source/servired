@@ -619,15 +619,18 @@ function cerrarSesion(){localStorage.removeItem('token');window.location='/';}
 
 socket.on('trabajo_aceptado',data=>{
   pedidoActivo=data.pedidoId;
-  document.getElementById('estado-txt').textContent='✅ Trabajador en camino';
-  document.getElementById('w-nombre').textContent=data.trabajador.nombre;
-  document.getElementById('w-ini').textContent=data.trabajador.nombre[0];
+  const nombre=data.trabajadorNombre||data.trabajador?.nombre||'Profesional';
+  document.getElementById('estado-txt').textContent='✅ '+nombre+' está en camino';
+  document.getElementById('w-nombre').textContent=nombre;
+  document.getElementById('w-ini').textContent=nombre[0]||'P';
   document.getElementById('eta-num').textContent=data.eta||'~15';
   document.getElementById('worker-card').classList.add('visible');
-  const ic=L.divIcon({html:'<div style="background:#00E5FF;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(0,229,255,0.9)"></div>',className:'',iconSize:[14,14]});
-  if(markerTrab)mapa.removeLayer(markerTrab);
-  markerTrab=L.marker([data.trabajador.lat||(-34.6037),data.trabajador.lng||(-58.3816)],{icon:ic}).addTo(mapa);
-  toast('¡Trabajador asignado! Viene en camino 🚀');
+  if(mapa){
+    const ic=L.divIcon({html:'<div style="background:#ffffff;width:14px;height:14px;border-radius:50%;border:2px solid #00E5FF;box-shadow:0 0 10px #fff"></div>',className:'',iconSize:[14,14]});
+    if(markerTrab)mapa.removeLayer(markerTrab);
+    markerTrab=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa);
+  }
+  toast('¡'+nombre+' aceptó tu pedido! Viene en camino 🚀');
 });
 socket.on('worker_gps', data => {
   if(!mapa) return;
