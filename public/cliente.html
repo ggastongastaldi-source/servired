@@ -672,7 +672,9 @@ socket.on('estado_pedido',data=>{
 socket.on('pedido_creado',data=>{
   pedidoActivo=data.pedidoId;
   socket.emit('registrar_pedido',{pedidoId:data.pedidoId});
-  document.getElementById('estado-txt').textContent='✅ Pedido creado. Buscando especialista...';
+  socket.emit('cliente_conectado',{token:TOKEN,userId:USER_ID,pedidoId:data.pedidoId});
+  document.getElementById('estado-txt').textContent='✅ Pedido #'+data.pedidoId.slice(-4)+' creado. Buscando...';
+  toast('✅ Pedido creado - buscando especialista');
 });
 socket.on('pedido_completado',()=>{toast('✅ Servicio completado. ¡Gracias!');resetUI();cargarHistorial();irPant('historial',null);});
 socket.on('pedido_cancelado',()=>{toast('Pedido cancelado');resetUI();});
