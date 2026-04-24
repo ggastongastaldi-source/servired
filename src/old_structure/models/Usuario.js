@@ -17,6 +17,12 @@ const usuarioSchema = new mongoose.Schema({
   direccion:    { type: String, default: '' },
   calificacion: { type: Number, default: 0 },
   totalTrabajos:{ type: Number, default: 0 },
+  // MERITOCRACIA
+  puntuacionTotal:  { type: Number, default: 0 },
+  cantidadVotos:    { type: Number, default: 0 },
+  promedioEstrellas:{ type: Number, default: 0, min: 0, max: 5 },
+  nivelMerito:      { type: String, enum: ['BRONCE','PLATA','ORO','ELITE'], default: 'BRONCE' },
+  alertaRevision:   { type: Boolean, default: false },
   verificado:   { type: Boolean, default: false },
   fcmToken:     { type: String, default: null },
 }, { timestamps: true });

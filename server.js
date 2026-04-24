@@ -26,6 +26,7 @@ app.use('/api/upload', require('./src/old_structure/routes/upload'));
 app.use('/api/pedidos', pedidosRoute);
 app.use('/api/admin', require('./src/old_structure/routes/admin'));
 app.use('/api/matching', require('./src/old_structure/routes/matching'));
+app.use('/api/rating', require('./src/old_structure/routes/rating'));
 app.use('/api/pagos', require('./src/old_structure/routes/pagos'));
   app.post('/api/admin/broadcast', require('./src/old_structure/commands/emergencyBroadcast').emergencyBroadcast);
 app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
