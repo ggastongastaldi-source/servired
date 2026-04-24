@@ -25,7 +25,7 @@ const PedidoSchema = new mongoose.Schema({
   calificacionCliente: { type: Number, min: 1, max: 5, default: null },
   calificacionWorker:  { type: Number, min: 1, max: 5, default: null },
   calificadoPor:       [{ type: String }],
-  fechaCalificacion:   { type: Date, default: null },,
+  fechaCalificacion:   { type: Date, default: null },
   
   // Tracking de notificaciones
   workersNotificados: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' }],
