@@ -2,7 +2,7 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
-const SECRET = process.env.JWT_SECRET || 'servired_secret';
+const SECRET = process.env.JWT_SECRET;
 
 router.post('/registro', async (req, res) => {
   try {

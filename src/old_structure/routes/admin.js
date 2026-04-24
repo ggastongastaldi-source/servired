@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const SECRET = process.env.JWT_SECRET || 'servired_secret';
+const SECRET = process.env.JWT_SECRET;
 
 function authAdmin(req, res, next) {
   try {

@@ -4,7 +4,7 @@
  */
 
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'cambiar-en-produccion';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 module.exports = {
     patch: (io) => {

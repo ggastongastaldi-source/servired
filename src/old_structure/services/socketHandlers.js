@@ -55,7 +55,7 @@ module.exports = (io) => {
     socket.on('worker_conectado', async ({ userId, rubro, zona, nombre }) => {
       // SECURITY: preferir userId del JWT verificado sobre el que manda el cliente
       const jwtPayload = socket.handshake.auth?.token
-        ? (() => { try { return require('jsonwebtoken').verify(socket.handshake.auth.token, process.env.JWT_SECRET || 'servired-2025-cambiar-en-produccion'); } catch(e) { return null; } })()
+        ? (() => { try { return require('jsonwebtoken').verify(socket.handshake.auth.token, process.env.JWT_SECRET); } catch(e) { return null; } })()
         : null;
       const safeUserId = (jwtPayload?.id || jwtPayload?.userId || userId);
       socket.join('zona_' + zona);
@@ -248,7 +248,7 @@ module.exports = (io) => {
         const jwt = require('jsonwebtoken');
         let decoded;
         try {
-          decoded = jwt.verify(token, process.env.JWT_SECRET || 'servired-2025-cambiar-en-produccion');
+          decoded = jwt.verify(token, process.env.JWT_SECRET);
         } catch(e) {
           socket.emit('pedido_error', { mensaje: 'Token invalido' });
           return;
