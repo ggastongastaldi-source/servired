@@ -584,5 +584,94 @@ window.addEventListener('DOMContentLoaded',()=>{
   initMapa();cargarPed();updKPIs();
 });
 </script>
+
+<script id="servired-audio">
+// ── SERVIRED AUDIO & HAPTIC SYSTEM ──────────────────────────
+const SRAlert = {
+  ctx: null,
+  ready: false,
+
+  init() {
+    if(this.ready) return;
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    this.ready = true;
+    console.log('[SRAlert] Audio listo');
+  },
+
+  vibrar(patron) {
+    if('vibrate' in navigator) navigator.vibrate(patron);
+  },
+
+  // Genera tono sintético
+  tono(frecs, duraciones, tipo='sine', volumen=0.3) {
+    if(!this.ready || !this.ctx) return;
+    frecs.forEach((frec, i) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.type = tipo;
+      osc.frequency.value = frec;
+      const t = this.ctx.currentTime + (duraciones[i] ? duraciones.slice(0,i).reduce((a,b)=>a+b,0)/1000 : 0);
+      gain.gain.setValueAtTime(volumen, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + duraciones[i]/1000);
+      osc.start(t);
+      osc.stop(t + duraciones[i]/1000);
+    });
+  },
+
+  // TRABAJO NUEVO - sirena ascendente + vibración larga
+  trabajoNuevo() {
+    this.tono([440,550,660,880], [150,150,150,300], 'sawtooth', 0.4);
+    this.vibrar([100,50,100,50,400]);
+    console.log('[SRAlert] 🔔 Trabajo nuevo');
+  },
+
+  // PAGO - caja registradora + vibración triple
+  pago() {
+    this.tono([800,600,1000], [80,80,200], 'square', 0.3);
+    this.vibrar([100,100,100,100,100]);
+    console.log('[SRAlert] 💰 Pago recibido');
+  },
+
+  // CLIENTE - worker en camino + vibración doble
+  workerEnCamino() {
+    this.tono([523,659,784], [150,150,300], 'sine', 0.35);
+    this.vibrar([200,100,200]);
+    console.log('[SRAlert] ✅ Worker en camino');
+  },
+
+  // CHAT - pop seco + pulso único
+  chat() {
+    this.tono([1000,800], [60,60], 'sine', 0.2);
+    this.vibrar([50]);
+    console.log('[SRAlert] 💬 Mensaje');
+  },
+
+  // NUEVO WORKER REGISTRADO (admin)
+  workerRegistrado() {
+    this.tono([440,494,523,587,659], [100,100,100,100,300], 'triangle', 0.3);
+    this.vibrar([150,100,150,100,150]);
+    console.log('[SRAlert] 👷 Worker registrado');
+  }
+};
+
+// Activar con primer toque
+document.addEventListener('click', () => SRAlert.init(), {once: true});
+document.addEventListener('touchstart', () => SRAlert.init(), {once: true});
+window.SRAlert = SRAlert;
+</script>
+<script id="sr-admin-triggers">
+document.addEventListener('DOMContentLoaded', () => {
+  const hookSocket = () => {
+    if(!window.socket) { setTimeout(hookSocket, 500); return; }
+    window.socket.on('pago_confirmado', () => SRAlert.pago());
+    window.socket.on('worker_online', () => SRAlert.workerRegistrado());
+    window.socket.on('nuevo_pedido', () => SRAlert.trabajoNuevo());
+    window.socket.on('pedido_completado', () => SRAlert.pago());
+  };
+  setTimeout(hookSocket, 1000);
+});
+</script>
 </body>
 </html>
