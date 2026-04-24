@@ -44,12 +44,69 @@ const PRECIOS = {
 };
 
 const MULT_ZONA = {
-  palermo:1.0, belgrano:1.0, recoleta:1.05, caballito:0.95,
-  flores:0.9, villa_urquiza:0.92, san_telmo:0.95, microcentro:1.05,
-  almagro:0.93, boedo:0.9, colegiales:0.97, nunez:0.98,
-  san_isidro:0.95, tigre:0.88, vicente_lopez:0.97,
-  lanus:0.82, avellaneda:0.83, quilmes:0.80,
-  moron:0.80, merlo:0.75, moreno:0.72, la_matanza:0.75,
+  // ── CABA PREMIUM ─────────────────────────────
+  recoleta:1.10, palermo:1.05, belgrano:1.05, nunez:1.02,
+  microcentro:1.08, san_telmo:1.00, puerto_madero:1.20,
+  colegiales:1.00, villa_urquiza:0.95, caballito:0.95,
+  almagro:0.93, flores:0.90, boedo:0.90,
+
+  // ── GBA NORTE ────────────────────────────────
+  san_isidro:1.00, vicente_lopez:1.00, olivos:1.00,
+  tigre:0.90, pilar:0.88, escobar:0.85, zarate:0.83,
+
+  // ── GBA SUR ──────────────────────────────────
+  lanus:0.83, avellaneda:0.83, quilmes:0.80,
+  berazategui:0.78, florencio_varela:0.75, lomas_de_zamora:0.80,
+
+  // ── GBA OESTE ────────────────────────────────
+  moron:0.82, merlo:0.78, moreno:0.74, la_matanza:0.76,
+  marcos_paz:0.72, lujan:0.75,
+
+  // ── GRAN ROSARIO ─────────────────────────────
+  rosario:0.95, villa_gobernador_galvez:0.82, funes:0.90,
+  fisherton:0.92, quilmes_rosario:0.80,
+
+  // ── GRAN CORDOBA ─────────────────────────────
+  cordoba:0.92, rio_cuarto:0.85, villa_maria:0.82,
+  alta_gracia:0.85, jesus_maria:0.80,
+
+  // ── GRAN MENDOZA ─────────────────────────────
+  mendoza:0.90, godoy_cruz:0.88, maipu:0.83,
+  lujan_de_cuyo:0.88, san_rafael:0.80,
+
+  // ── COSTA ATLANTICA ──────────────────────────
+  mar_del_plata:0.95, pinamar:1.05, villa_gesell:1.00,
+  miramar:0.88, necochea:0.85, monte_hermoso:0.88,
+  san_clemente:0.90, santa_teresita:0.90, mar_de_ajo:0.88,
+
+  // ── PATAGONIA (zona oil + turismo = premium) ──
+  bariloche:1.10, neuquen:1.05, comodoro_rivadavia:1.10,
+  rio_gallegos:1.08, ushuaia:1.25, el_calafate:1.20,
+  viedma:0.92, zapala:0.88, cutral_co:0.95,
+
+  // ── NOA ──────────────────────────────────────
+  salta:0.88, jujuy:0.85, san_miguel_de_tucuman:0.87,
+  tucuman:0.87, catamarca:0.80, la_rioja:0.78,
+
+  // ── NEA ──────────────────────────────────────
+  corrientes:0.82, resistencia:0.80, posadas:0.82,
+  formosa:0.75, paso_de_los_libres:0.75,
+
+  // ── CUYO ─────────────────────────────────────
+  san_juan:0.83, san_luis:0.80, villa_mercedes:0.78,
+
+  // ── PAMPEANA ─────────────────────────────────
+  la_plata:0.88, bahia_blanca:0.88, mar_del_plata:0.95,
+  santa_rosa:0.82, tandil:0.85, olavarria:0.80,
+  junin:0.80, pehuajo:0.75, trenque_lauquen:0.75,
+
+  // ── ENTRE RIOS / LITORAL ─────────────────────
+  parana:0.83, concordia:0.80, gualeguaychu:0.82,
+  santa_fe:0.88, rafaela:0.82, venado_tuerto:0.80,
+
+  // ── FALLBACK GBA_OESTE (default sistema) ─────
+  gba_oeste:0.78, gba_norte:0.92, gba_sur:0.80,
+  amba:0.85, interior:0.80,
 };
 
 router.post('/', async (req, res) => {
