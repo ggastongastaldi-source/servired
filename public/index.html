@@ -442,23 +442,46 @@ let deferredPrompt;
 const installBanner = document.getElementById('install-banner');
 const btnInstall = document.getElementById('btn-install');
 
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+if(isStandalone) {
+  installBanner.style.display = 'none';
+} else if(isIOS) {
+  // Banner especial iOS
+  installBanner.style.display = 'block';
+  installBanner.innerHTML = `
+    <p style="color:#fff;font-family:sans-serif;margin:0 0 10px;font-size:14px;">
+      📱 <strong style="color:#00E5FF;">Instalá ServiRed en tu iPhone</strong>
+    </p>
+    <p style="color:#ccc;font-size:12px;margin:0 0 10px;line-height:1.6;">
+      1. Tocá el botón <strong style="color:#00E5FF;">compartir</strong> 
+      <span style="font-size:18px;">⬆️</span> abajo en Safari<br>
+      2. Elegí <strong style="color:#00E5FF;">"Añadir a pantalla de inicio"</strong> 
+      <span style="font-size:16px;">➕</span><br>
+      3. Tocá <strong style="color:#00E5FF;">"Añadir"</strong> arriba a la derecha
+    </p>
+    <button onclick="document.getElementById('install-banner').style.display='none'" 
+      style="background:transparent;color:#666;border:1px solid #333;padding:6px 16px;cursor:pointer;font-size:12px;border-radius:5px;">
+      Entendido
+    </button>`;
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  installBanner.style.display = 'block';
+  if(!isIOS) installBanner.style.display = 'block';
 });
 
-btnInstall.addEventListener('click', () => {
-  installBanner.style.display = 'none';
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(r => {
-    if(r.outcome === 'accepted') console.log('[PWA] Instalada');
-    deferredPrompt = null;
+if(btnInstall) {
+  btnInstall.addEventListener('click', () => {
+    installBanner.style.display = 'none';
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(r => {
+      if(r.outcome === 'accepted') console.log('[PWA] Instalada');
+      deferredPrompt = null;
+    });
   });
-});
-
-if(window.matchMedia('(display-mode: standalone)').matches) {
-  installBanner.style.display = 'none';
 }
 </script>
 </body>
