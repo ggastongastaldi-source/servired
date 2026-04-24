@@ -431,5 +431,35 @@ async function subirFoto(file){
 }
 </script>
 <script>function togglePass(id,el){const inp=document.getElementById(id);inp.type=inp.type==='password'?'text':'password';el.textContent=inp.type==='password'?'👁️':'🙈';}</script>
+
+<div id="install-banner" style="display:none;background:#0a0e1a;border:2px solid #00E5FF;padding:15px;text-align:center;border-radius:10px;margin:10px;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;width:90%;max-width:360px;box-shadow:0 0 20px rgba(0,229,255,0.3);">
+  <p style="color:#fff;font-family:sans-serif;margin:0 0 10px;font-size:14px;">¡Sumate a la Red! Instalá la App para trabajar mejor.</p>
+  <button id="btn-install" style="background:#00E5FF;color:#000;border:none;padding:10px 24px;font-weight:bold;border-radius:5px;cursor:pointer;font-size:15px;">⚡ INSTALAR SERVIRED</button>
+  <button onclick="document.getElementById('install-banner').style.display='none'" style="background:transparent;color:#666;border:none;padding:5px 10px;cursor:pointer;font-size:12px;display:block;margin:8px auto 0;">Ahora no</button>
+</div>
+<script>
+let deferredPrompt;
+const installBanner = document.getElementById('install-banner');
+const btnInstall = document.getElementById('btn-install');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBanner.style.display = 'block';
+});
+
+btnInstall.addEventListener('click', () => {
+  installBanner.style.display = 'none';
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(r => {
+    if(r.outcome === 'accepted') console.log('[PWA] Instalada');
+    deferredPrompt = null;
+  });
+});
+
+if(window.matchMedia('(display-mode: standalone)').matches) {
+  installBanner.style.display = 'none';
+}
+</script>
 </body>
 </html>
