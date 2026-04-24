@@ -89,6 +89,27 @@ select option{background:#1a2236;color:#e2e8f0;}
 .modal-bg{backdrop-filter:blur(4px);}
 
 </style>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#00E5FF">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ServiRed">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192.png">
+  <!-- SEO -->
+  <meta name="description" content="ServiRed: encontrá plomeros, electricistas, gasistas y más profesionales verificados en AMBA y toda Argentina. Presupuesto instantáneo.">
+  <meta name="keywords" content="plomero, electricista, gasista, servicios del hogar, AMBA, Buenos Aires, ServiRed">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="ServiRed - Servicios Profesionales en Argentina">
+  <meta property="og:description" content="Contratá profesionales verificados en minutos. Precios justos, pago seguro.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://servired.online">
+  <meta property="og:image" content="https://servired.online/assets/icons/icon-512.png">
+  <!-- SW -->
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then(()=>console.log('[SW] ServiRed activo'));</script>
 </head>
 <body>
 
