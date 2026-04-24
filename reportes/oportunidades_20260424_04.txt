@@ -1,0 +1,201 @@
+=== REPORTE FEDERAL SERVIRED - Fri Apr 24 04:00:01 -03 2026 ===
+[CLIENTE POTENCIAL] jardineria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] jardineria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] jardineria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] jardineria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] jardineria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] jardineria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] jardineria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] climatizacion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] jardineria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] gasista - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] pintura - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] electricidad - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] plomeria - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] fletes - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] construccion - Fuente: Redes - Acción: Cotizar
+[CLIENTE POTENCIAL] limpieza - Fuente: Redes - Acción: Cotizar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] pintura - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] pintura - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] pintura - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] pintura - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] pintura - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] electricidad - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] fletes - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] construccion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] limpieza - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] climatizacion - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] jardineria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] plomeria - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] pintura - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] gasista - Fuente: Bolsa Empleo - Acción: Capturar
+[TRABAJADOR AGENCIA] pintura - Fuente: Bolsa Empleo - Acción: Capturar

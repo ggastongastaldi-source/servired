@@ -400,7 +400,8 @@ let colaData=[];
 async function cargarCola(){
   try{
     const r=await fetch('/api/admin/pedidos',{headers:{Authorization:'Bearer '+TOKEN}});
-    const data=await r.json();
+    const resp2=await r.json();
+    const data=resp2.data||resp2;
     colaData=data.filter(p=>p.estado==='PENDIENTE');
     renderCola();
   }catch(e){}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": 2106,
+    "rubro": "fletes",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 6727,
+    "rubro": "construccion",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 17824,
+    "rubro": "climatizacion",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 15383,
+    "rubro": "electricidad",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 21417,
+    "rubro": "pintura",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 5528,
+    "rubro": "fletes",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 13302,
+    "rubro": "construccion",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 9537,
+    "rubro": "jardineria",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 5607,
+    "rubro": "construccion",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  },
+  {
+    "id": 29448,
+    "rubro": "pintura",
+    "capturado": "2026-04-24",
+    "estado": "pendiente_contacto"
+  }
+]
