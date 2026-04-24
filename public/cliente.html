@@ -662,10 +662,57 @@ socket.on('worker_gps', data => {
   if(mapa) mapa.setView(pos, 15);
 });
 socket.on('estado_pedido_actualizado',data=>{document.getElementById('estado-txt').textContent='Estado: '+data.estado.replace(/_/g,' ');});
+// MODAL CALIFICACION
+function mostrarModalCalificacion(pedidoId) {
+  let estrellasSel = 5;
+  const modal = document.createElement('div');
+  modal.id = 'modal-rating';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:#0d1117;border:1px solid #00E5FF;border-radius:16px;padding:28px;max-width:320px;width:90%;text-align:center;">
+      <div style="font-size:40px;margin-bottom:8px;">🏆</div>
+      <h3 style="color:#00E5FF;margin:0 0 6px;">¡Servicio completado!</h3>
+      <p style="color:#aaa;font-size:13px;margin:0 0 20px;">¿Cómo calificás al profesional?</p>
+      <div id="estrellas-rating" style="font-size:36px;cursor:pointer;margin-bottom:20px;">
+        <span data-v="1">⭐</span><span data-v="2">⭐</span><span data-v="3">⭐</span><span data-v="4">⭐</span><span data-v="5">⭐</span>
+      </div>
+      <button id="btn-calificar" style="background:#00E5FF;color:#000;border:none;border-radius:8px;padding:12px 32px;font-weight:bold;font-size:15px;cursor:pointer;width:100%;">Enviar calificación</button>
+      <p id="rating-msg" style="color:#aaa;font-size:12px;margin-top:10px;"></p>
+    </div>`;
+  document.body.appendChild(modal);
+  const spans = modal.querySelectorAll('[data-v]');
+  spans.forEach(s => s.addEventListener('click', () => {
+    estrellasSel = parseInt(s.dataset.v);
+    spans.forEach(x => x.style.filter = parseInt(x.dataset.v) <= estrellasSel ? 'none' : 'grayscale(1)');
+  }));
+  modal.querySelector('#btn-calificar').addEventListener('click', async () => {
+    const msg = modal.querySelector('#rating-msg');
+    msg.textContent = 'Enviando...';
+    try {
+      const r = await fetch('/api/rating/calificar', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('token')},
+        body: JSON.stringify({pedidoId, estrellas: estrellasSel, rol: 'worker'})
+      });
+      const d = await r.json();
+      if (d.ok) {
+        msg.style.color = '#00E5FF';
+        msg.textContent = 'Gracias! Nivel del profesional: ' + d.nivel + ' ' + (d.nivel==='ELITE'?'🏆':d.nivel==='ORO'?'🥇':d.nivel==='PLATA'?'🥈':'🥉');
+        setTimeout(() => modal.remove(), 3000);
+      } else {
+        msg.textContent = d.error || 'Error al calificar';
+      }
+    } catch(e) { msg.textContent = 'Error de conexion'; }
+  });
+}
+
 socket.on('estado_pedido',data=>{
   const txt=document.getElementById('estado-txt');
   if(!txt)return;
   const estado=data.fase||data.estado||'';
+  if((estado==='REALIZADA'||estado==='PAGADA') && pedidoActivo && !document.getElementById('modal-rating')){
+    setTimeout(()=>mostrarModalCalificacion(pedidoActivo), 1500);
+  }
   const msgs={
     'SIN_WORKERS':'😔 No hay trabajadores disponibles ahora',
     'SEARCHING':'🔍 '+(data.mensaje||'Buscando especialista...'),
