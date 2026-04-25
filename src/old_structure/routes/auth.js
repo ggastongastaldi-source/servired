@@ -9,9 +9,33 @@ router.post('/registro', async (req, res) => {
     const { nombre, email, password, rol, especialidades, telefono } = req.body;
     if (!nombre || !email || !password) return res.status(400).json({ ok: false, error: 'Faltan campos' });
     const existe = await Usuario.findOne({ email });
-    if (existe) return res.status(400).json({ ok: false, error: 'Email ya registrado' });
+    const nuevoRol = rol || 'CLIENTE';
+
+    // DUAL ROL: si ya existe, agregar el nuevo rol sin borrar el anterior
+    if (existe) {
+      const rolesActuales = existe.roles || [existe.rol];
+      if (rolesActuales.includes(nuevoRol) && existe.rol === nuevoRol) {
+        return res.status(400).json({ ok: false, error: 'Ya tenés una cuenta con ese email y rol' });
+      }
+      // Agregar nuevo rol y actualizar especialidades si es trabajador
+      const rolesNuevos = [...new Set([...rolesActuales, nuevoRol])];
+      const updateData = {
+        roles: rolesNuevos,
+        ...(nuevoRol === 'TRABAJADOR' ? {
+          rol: 'TRABAJADOR',
+          especialidades: especialidades || existe.especialidades || [],
+          estado: 'PENDIENTE_VERIFICACION'
+        } : {})
+      };
+      await Usuario.findByIdAndUpdate(existe._id, updateData);
+      const uActualizado = await Usuario.findById(existe._id);
+      const token = jwt.sign({ id: uActualizado._id, userId: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, rubro: uActualizado.rubro, especialidades: uActualizado.especialidades, zona: uActualizado.zona }, SECRET, { expiresIn: '7d' });
+      return res.json({ ok: true, token, usuario: { id: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, estado: uActualizado.estado }, mensaje: 'Rol agregado a tu cuenta existente' });
+    }
+
     const hash = await bcrypt.hash(password, 10);
-    const u = await Usuario.create({ nombre, email, password: hash, rol: rol || 'CLIENTE', especialidades: especialidades || [], telefono: telefono || '', ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] } });
+    const estado = nuevoRol === 'TRABAJADOR' ? 'PENDIENTE_VERIFICACION' : 'ACTIVO';
+    const u = await Usuario.create({ nombre, email, password: hash, rol: nuevoRol, roles: [nuevoRol], especialidades: especialidades || [], telefono: telefono || '', estado, ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] } });
     const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
     res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado } });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
