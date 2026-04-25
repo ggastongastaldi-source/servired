@@ -24,7 +24,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .sdot.online{background:var(--success);animation:blink 1.5s infinite;}
 .sdot.offline{background:var(--muted);}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-#mapa{width:100%;height:240px;}
+#mapa{width:100%;height:240px;min-height:240px;background:#1a1f2e;}
 .panel{padding:16px 20px;display:flex;flex-direction:column;gap:14px;padding-bottom:80px;}
 .card{background:var(--surface);border:1px solid rgba(0,229,255,0.12);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--orange));}
@@ -443,6 +443,7 @@ function initApp(){
 
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
+  setTimeout(()=>{ if(mapa) mapa.invalidateSize(); }, 300);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
   const ic=L.divIcon({html:'<div style="background:#ffffff;width:14px;height:14px;border-radius:50%;border:2px solid #00E5FF;box-shadow:0 0 10px rgba(255,255,255,0.9)"></div>',className:'',iconSize:[16,16]});
   markerYo=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Vos');
