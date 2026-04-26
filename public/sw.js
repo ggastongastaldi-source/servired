@@ -16,6 +16,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('/api/')) return;
+  if (e.request.url.includes('tile.openstreetmap') || e.request.url.includes('unpkg.com') || e.request.url.includes('cdnjs')) return;
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
       const clone = resp.clone();
