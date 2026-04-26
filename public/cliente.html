@@ -314,7 +314,16 @@ function selSrv(btn,r){
   document.getElementById('precio-display').textContent='$ '+r.precio.toLocaleString('es-AR');
 }
 
-function logout(){localStorage.removeItem('token');window.location='/';}
+function logout(){
+  try {
+    localStorage.removeItem('token');
+    localStorage.removeItem('srv_tc_v3');
+  } catch(e) {}
+  window.location.href = '/';
+}
+window.onerror = function(msg, src, line) {
+  console.error('[ERROR]', msg, 'linea:', line);
+};
 const urlT=new URLSearchParams(window.location.search).get('t');
 if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/cliente.html');}
 const urlT2=new URLSearchParams(window.location.search).get('t');
