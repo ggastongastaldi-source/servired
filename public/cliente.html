@@ -353,7 +353,20 @@ function initMapa(){
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
   const ic=L.divIcon({html:'<div style="background:#FF6D00;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px rgba(255,109,0,0.8)"></div>',className:'',iconSize:[14,14]});
   markerCli=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Tu ubicación');
-  if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{markerCli.setLatLng([p.coords.latitude,p.coords.longitude]);mapa.setView([p.coords.latitude,p.coords.longitude],14);});
+  if(navigator.geolocation){
+    navigator.geolocation.watchPosition(function(p){
+      const lat = p.coords.latitude;
+      const lng = p.coords.longitude;
+      if(markerCli) markerCli.setLatLng([lat,lng]);
+      if(mapa) mapa.setView([lat,lng],14);
+    }, function(err){
+      console.warn('[GPS cliente]', err.message);
+    }, {
+      enableHighAccuracy: true,
+      maximumAge: 15000,
+      timeout: 20000
+    });
+  }
 }
 
 function pedirServicio(){
