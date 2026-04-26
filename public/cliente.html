@@ -293,13 +293,22 @@ RUBROS.forEach((r,i)=>{
 });
 document.getElementById('precio-display').textContent='$ '+RUBROS[0].precio.toLocaleString('es-AR');
 
-function selSrv(btn,r){
-  if(document.getElementById('btn-pedir').disabled)return;
-  document.querySelectorAll('.srv-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  servicioSel=r.id;precioSel=r.precio;
-  document.getElementById('precio-display').textContent='$ '+r.precio.toLocaleString('es-AR');
+function selSrv(btn, data) {
+  try {
+    console.log('Seleccionando:', data.id);
+    document.querySelectorAll('.srv-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    servicioSel = data.id;
+    precioSel = data.precio;
+    const pDisp = document.getElementById('precio-display');
+    if (pDisp) {
+      pDisp.innerText = '$ ' + Number(data.precio).toLocaleString('es-AR');
+    }
+  } catch (e) {
+    alert('Error en selección: ' + e.message);
+  }
 }
+
 
 function logout(){localStorage.removeItem('token');window.location='/';}
 const urlT=new URLSearchParams(window.location.search).get('t');
