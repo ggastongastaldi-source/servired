@@ -151,6 +151,7 @@ select option{background:#1a2236;color:#e2e8f0;}
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
   <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+window.onerror = function(m, u, l) { alert("ERROR JS: " + m + " en línea " + l); };
 </head>
 <body>
 <div class="header">
@@ -216,6 +217,7 @@ select option{background:#1a2236;color:#e2e8f0;}
 <div class="toast" id="toast"></div>
 
 <script>
+window.onerror = function(m, u, l) { alert("ERROR JS: " + m + " en línea " + l); };
 
 function detectarZona(direccion) {
   const d = (direccion||'').toLowerCase();
@@ -933,6 +935,7 @@ function tcResetTap(){
 </div>
 
 <script>
+window.onerror = function(m, u, l) { alert("ERROR JS: " + m + " en línea " + l); };
 function irModoTrabajador(){
   try{
     const p=JSON.parse(atob(localStorage.getItem('token').split('.')[1]));
