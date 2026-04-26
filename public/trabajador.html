@@ -225,6 +225,24 @@ select option{background:#1a2236;color:#e2e8f0;}
 </div>
 <div class="pantalla active" id="pant-mapa">
   <div id="mapa"></div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var el = document.getElementById("mapa");
+  el.style.width = "100%";
+  el.style.height = "260px";
+  el.style.display = "block";
+  var m = L.map("mapa", {zoomControl:false});
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:19, attribution:"OSM"}).addTo(m);
+  m.setView([-34.6037,-58.3816], 13);
+  window.mapa = m;
+  setTimeout(function(){ m.invalidateSize(); }, 300);
+  setTimeout(function(){ m.invalidateSize(); }, 1000);
+  setTimeout(function(){ m.invalidateSize(); }, 2500);
+  if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(p){
+    m.setView([p.coords.latitude, p.coords.longitude], 14);
+  });
+});
+</script>
   <div class="panel">
     <div class="stats-row">
       <div class="stat-box"><div class="stat-num" id="st-hoy">0</div><div class="stat-lbl">Hoy</div></div>
