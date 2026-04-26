@@ -339,7 +339,7 @@ const SERVICIOS = [
   {id:'informatico',label:'Informático',icon:'💻',precio:35000},
 ];
 
-if(!TOKEN){window.location='/';throw new Error('sin token');}
+if(!TOKEN){window.location='/';}
 const payload=TOKEN?JSON.parse(atob(TOKEN.split('.')[1])):null;
 if(payload&&payload.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';}
 let socket,mapa,markerCli,markerTrab,pedidoActivo=null;
