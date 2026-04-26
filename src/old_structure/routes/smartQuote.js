@@ -126,7 +126,7 @@ router.post('/', async (req, res) => {
           }]
         });
         const raw = chat.choices[0]?.message?.content?.trim() || '';
-        const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+        const match = raw.match(/{[\s\S]*}/); if(match === null) throw new Error('Sin JSON'); const parsed = JSON.parse(match[0]);
         return res.json({ ok: true, modo: 'groq', ...parsed });
       } catch(e) {
         console.error('[smartQuote] Groq texto:', e.message.slice(0,60));
