@@ -456,14 +456,7 @@ function initApp(){
   }
   if(socket)socket.emit('worker_conectado',{token:TOKEN,userId:USER_ID,rubro:USER_RUBRO,zona:USER_ZONA,nombre:USER_NOMBRE});
 
-  if(navigator.geolocation){
-    navigator.geolocation.watchPosition(function(p){
-      var lat=p.coords.latitude,lng=p.coords.longitude;
-      if(socket&&online)socket.emit("worker_gps",{token:TOKEN,lat:lat,lng:lng,userId:USER_ID});
-    },function(err){console.warn("[GPS]",err.message);},{enableHighAccuracy:true,maximumAge:10000,timeout:15000});
-  }
-
-  // GPS continuo - enviar posicion cada vez que cambia
+  // GPS continuo
   if(navigator.geolocation){
     navigator.geolocation.watchPosition(function(p){
       const lat = p.coords.latitude;
@@ -475,12 +468,9 @@ function initApp(){
       }
     }, function(err){
       console.warn('[GPS]',err.message);
-    }, {
-      enableHighAccuracy:true,
-      maximumAge:10000,
-      timeout:15000
-    });
+    }, {enableHighAccuracy:true, maximumAge:10000, timeout:15000});
   }
+
   socket.on('nueva_oportunidad',onNuevoPedido);
   socket.on('pedido_cancelado',()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');});
 }
