@@ -40,7 +40,7 @@ async function calificar(req, res) {
     let calificadoId;
     if (rol === 'cliente') {
       // Worker califica al cliente
-      if (String(pedido.worker || pedido.trabajador) !== String(userId)) {
+      if (String(pedido.workerAcepto || pedido.worker || pedido.trabajador) !== String(userId)) {
         return res.json({ ok: false, error: 'No sos el worker de este pedido' });
       }
       calificadoId = pedido.cliente;
@@ -53,7 +53,7 @@ async function calificar(req, res) {
       if (String(pedido.cliente) !== String(userId)) {
         return res.json({ ok: false, error: 'No sos el cliente de este pedido' });
       }
-      calificadoId = pedido.worker || pedido.trabajador;
+      calificadoId = pedido.workerAcepto || pedido.worker || pedido.trabajador;
       await Pedido.findByIdAndUpdate(pedidoId, {
         calificacionCliente: stars,
         fechaCalificacion: new Date(),
