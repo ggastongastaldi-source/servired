@@ -170,21 +170,6 @@ select option{background:#1a2236;color:#e2e8f0;}
   <button onclick="abrirSmartQuote()" style="width:100%;padding:10px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,58,237,0.15));border:1px solid #00E5FF;border-radius:10px;color:#00E5FF;font-size:0.9rem;font-weight:700;cursor:pointer;">🧠 Presupuesto Inteligente — ¿Cuánto me va a costar?</button>
 </div>
 <div id="mapa"></div>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  var el = document.getElementById("mapa");
-  el.style.width = "100%";
-  el.style.height = "260px";
-  el.style.display = "block";
-  var m = L.map("mapa", {zoomControl:false});
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:19, attribution:"OSM"}).addTo(m);
-  m.setView([-34.6037,-58.3816], 13);
-  window.mapa = m;
-  setTimeout(function(){ m.invalidateSize(); }, 300);
-  setTimeout(function(){ m.invalidateSize(); }, 1000);
-  setTimeout(function(){ m.invalidateSize(); }, 2500);
-});
-</script>
   <div class="panel">
     <div class="card">
       <div class="card-title">// ¿Qué servicio necesitás?</div>
