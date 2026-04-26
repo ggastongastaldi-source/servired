@@ -360,7 +360,7 @@ try{
 function initMapa(){
   mapa=L.map('mapa',{zoomControl:false}).setView([-34.6037,-58.3816],13);
   setTimeout(()=>{ if(mapa) mapa.invalidateSize(); }, 300);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapa);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mapa);
   const ic=L.divIcon({html:'<div style="background:#FF6D00;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px rgba(255,109,0,0.8)"></div>',className:'',iconSize:[14,14]});
   markerCli=L.marker([-34.6037,-58.3816],{icon:ic}).addTo(mapa).bindPopup('Tu ubicación');
   if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{markerCli.setLatLng([p.coords.latitude,p.coords.longitude]);mapa.setView([p.coords.latitude,p.coords.longitude],14);});
