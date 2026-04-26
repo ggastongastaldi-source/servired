@@ -418,7 +418,7 @@ let estadoActual='ACEPTADA';
 let socket;
 
 function initApp(){
-  try{socket=io('http://192.168.0.47:3000', {transports: ['websocket'], upgrade: false});}catch(ex){console.error('Socket error:',ex);}
+  try{socket=io(window.location.origin);}catch(ex){console.error('Socket error:',ex);}
   try{initMapa();}catch(ex){console.error('Mapa error:',ex);}
   const payload=JSON.parse(atob(TOKEN.split('.')[1]));
   const USER_ID=payload.id||payload._id||'';
