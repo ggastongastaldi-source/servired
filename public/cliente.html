@@ -767,7 +767,22 @@ function irPant(id,btn){
 
 function toast(msg,dur=3500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
-window.addEventListener('DOMContentLoaded',initMapa);
+window.addEventListener('DOMContentLoaded', () => {
+  const mapaDiv = document.getElementById('mapa');
+  if (!mapaDiv) return;
+  // Inicializar mapa solo cuando el div sea visible
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !mapa) {
+        initMapa();
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.1 });
+  observer.observe(mapaDiv);
+  // Fallback: si ya es visible al cargar
+  setTimeout(() => { if(!mapa) initMapa(); }, 1000);
+});
 
 // ── TÉRMINOS Y CONDICIONES ──
 var _tcChecked=false,_tcScrolled=false,_tcCb=null;
