@@ -570,11 +570,11 @@ function sqElegir(key){
   });
   sqTrabajo=key;
   document.getElementById('sq-paso1').style.display='none';
-  } catch(e){ alert('ERROR sqElegir: '+e.message); }
   document.getElementById('sq-paso2').style.display='block';
-  document.getElementById('sq-titulo-trabajo').textContent=SQ_TRABAJOS[key].label;
+  document.getElementById('sq-titulo-trabajo').textContent=SQ_TRABAJOS[key]?.label||key;
   const esObra=['banio','cocina','reforma','pintura'].includes(key);
   document.getElementById('sq-fila-m2').style.display=esObra?'block':'none';
+  } catch(e){ alert('ERROR sqElegir: '+e.message); }
 }
 
 async function pedirSmartQuote(){
