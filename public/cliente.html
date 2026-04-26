@@ -770,20 +770,11 @@ function irPant(id,btn){
 function toast(msg,dur=3500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
 window.addEventListener('DOMContentLoaded', () => {
-  const mapaDiv = document.getElementById('mapa');
-  if (!mapaDiv) return;
-  // Inicializar mapa solo cuando el div sea visible
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !mapa) {
-        initMapa();
-        observer.disconnect();
-      }
-    });
-  }, { threshold: 0.1 });
-  observer.observe(mapaDiv);
-  // Fallback: si ya es visible al cargar
-  setTimeout(() => { if(!mapa) initMapa(); }, 1000);
+  // Init directo con delays para asegurar render
+  setTimeout(() => { if(!mapa){ initMapa(); } }, 500);
+  setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 800);
+  setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 1500);
+  setTimeout(() => { if(mapa) mapa.invalidateSize(); }, 3000);
 });
 
 // ── TÉRMINOS Y CONDICIONES ──
