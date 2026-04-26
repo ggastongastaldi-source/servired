@@ -530,30 +530,56 @@ socket.on('pedido_completado_admin',data=>{
   addEv('💰',`Completado · $${(data.precio||0).toLocaleString('es-AR')}`);cargarPed();
 });
 socket.on('estado_pedido_admin',data=>{addEv('🔄',`Pedido ${data.pedidoId?.slice(-4)} → ${data.estado}`);cargarPed();});
-// GPS via polling HTTP (mas confiable que socket para admin)
-setInterval(async()=>{
-  try{
-    const r=await fetch('/api/gps/positions',{headers:{Authorization:'Bearer '+TOKEN}});
-    const data=await r.json();
-    if(!data.positions)return;
-    data.positions.forEach(p=>{
-      if(!mapa)return;
-      const ic=L.divIcon({html:'<div style="background:#fff;width:14px;height:14px;border-radius:50%;border:2px solid #00E5FF;box-shadow:0 0 10px #fff"></div>',className:'',iconSize:[14,14]});
-      if(mWorkers[p.workerId])mWorkers[p.workerId].setLatLng([p.lat,p.lng]);
-      else mWorkers[p.workerId]=L.marker([p.lat,p.lng],{icon:ic}).addTo(mapa).bindPopup(p.workerId);
-    });
-  }catch(e){}
-},3000);
-socket.on('worker_gps_broadcast',data=>{
-  if(!mapa)return;
-  const ic=L.divIcon({html:'<div style="background:#ffffff;width:14px;height:14px;border-radius:50%;border:2px solid #00E5FF;box-shadow:0 0 10px rgba(255,255,255,0.9)"></div>',className:'',iconSize:[14,14]});
-  if(mWorkers[data.trabajadorId])mWorkers[data.trabajadorId].setLatLng([data.lat,data.lng]);
-  else mWorkers[data.trabajadorId]=L.marker([data.lat,data.lng],{icon:ic}).addTo(mapa).bindPopup('Trabajador');
+// GPS Admin - unificado con limpieza de fantasmas
+const WORKER_TIMEOUT = 5 * 60 * 1000;
+const lastSeen = {};
+
+function getWorkerIcon() {
+  return L.divIcon({
+    html: '<div style="background:#00E5FF;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px #00E5FF"></div>',
+    className: '', iconSize: [14, 14]
+  });
+}
+
+function upsertWorker(id, lat, lng, nombre) {
+  if (!mapa) return;
+  lastSeen[id] = Date.now();
+  const pos = [lat, lng];
+  if (mWorkers[id]) {
+    mWorkers[id].setLatLng(pos);
+  } else {
+    mWorkers[id] = L.marker(pos, {icon: getWorkerIcon()})
+      .addTo(mapa)
+      .bindPopup('<b>'+(nombre||'Trabajador')+'</b><br><small>ID: '+id.slice(-4)+'</small>');
+  }
+}
+
+// Limpiador de fantasmas cada 30s
+setInterval(() => {
+  const ahora = Date.now();
+  for (const id in lastSeen) {
+    if (ahora - lastSeen[id] > WORKER_TIMEOUT) {
+      if (mWorkers[id]) { mapa.removeLayer(mWorkers[id]); delete mWorkers[id]; }
+      delete lastSeen[id];
+    }
+  }
+}, 30000);
+
+// Polling HTTP cada 3s
+setInterval(async() => {
+  try {
+    const r = await fetch('/api/gps/positions', {headers:{Authorization:'Bearer '+TOKEN}});
+    const data = await r.json();
+    if (!data.positions) return;
+    data.positions.forEach(p => upsertWorker(p.workerId, p.lat, p.lng, p.nombre||p.workerId));
+  } catch(e) {}
+}, 3000);
+
+socket.on('worker_gps_broadcast', data => {
+  upsertWorker(data.trabajadorId, data.lat, data.lng, data.nombre);
 });
-socket.on('worker_gps',data=>{
-  const ic=L.divIcon({html:'<div style="background:#00E5FF;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px rgba(0,229,255,0.7)"></div>',className:'',iconSize:[12,12]});
-  if(mWorkers[data.trabajadorId])mWorkers[data.trabajadorId].setLatLng([data.lat,data.lng]);
-  else mWorkers[data.trabajadorId]=L.marker([data.lat,data.lng],{icon:ic}).addTo(mapa).bindPopup(data.nombre||'Trabajador');
+socket.on('worker_gps', data => {
+  upsertWorker(data.trabajadorId, data.lat, data.lng, data.nombre);
 });
 socket.on('trabajador_nuevo',data=>{
   addEv('🆕',`Nuevo trabajador: ${data.nombre} — ${data.email}`);
