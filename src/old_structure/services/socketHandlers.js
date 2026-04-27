@@ -177,6 +177,37 @@ module.exports = (io) => {
           if (cli?.socketId) io.to(cli.socketId).emit('estado_pedido', payload);
           io.to('worker_' + pedido.cliente).emit('estado_pedido', payload);
         }
+        // Si pasa a REALIZADA, generar link de pago y enviarlo al cliente
+        if (estado === 'REALIZADA' && pedido.cliente) {
+          try {
+            const { crearPreferencia } = require('../services/pagoService');
+            const result = await crearPreferencia({
+              pedidoId: pedido._id,
+              servicio: pedido.tipoServicio || 'Servicio SERVired',
+              precio: Math.round(pedido.precio || pedido.total_estimado || 100000),
+              clienteEmail: (await Usuario.findById(pedido.cliente).lean())?.email || '',
+              workerId: pedido.workerAcepto
+            });
+            if (result?.init_point) {
+              io.to('pedido_' + pedidoId).emit('link_pago', {
+                url: result.init_point,
+                preference_id: result.preference_id,
+                monto: pedido.precio
+              });
+              if (pedido.cliente) {
+                const cli = await Usuario.findById(pedido.cliente).lean();
+                if (cli?.socketId) io.to(cli.socketId).emit('link_pago', {
+                  url: result.init_point,
+                  preference_id: result.preference_id,
+                  monto: pedido.precio
+                });
+              }
+              console.log('[Socket] Link MP enviado al cliente:', result.init_point.slice(0,60));
+            }
+          } catch(mpErr) {
+            console.error('[Socket] Error MP:', mpErr.message);
+          }
+        }
         console.log('[Socket] Estado pedido:', pedidoId, '->', estado);
       } catch(e) {
         console.error('[Socket] Error cambiar_estado_pedido:', e.message);

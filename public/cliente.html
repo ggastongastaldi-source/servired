@@ -756,6 +756,32 @@ socket.on('pedido_creado',data=>{
   toast('✅ Pedido creado - buscando especialista');
 });
 socket.on('pedido_completado',()=>{toast('✅ Servicio completado. ¡Gracias!');resetUI();cargarHistorial();irPant('historial',null);});
+
+socket.on("link_pago", function(data) {
+  var btn = document.getElementById("btn-pagar-mp");
+  if (btn) {
+    btn.style.display = "block";
+    btn.onclick = function() { window.open(data.url, "_blank"); };
+    btn.textContent = "💳 PAGAR CON MERCADO PAGO - ARS $" + (data.monto||0).toLocaleString("es-AR");
+  }
+  document.getElementById("estado-bar").classList.add("visible");
+  document.getElementById("estado-txt").textContent = "💳 El trabajo está listo. Realizá el pago para confirmar.";
+  toast("💳 Realizá el pago para confirmar el servicio!", 6000);
+  if(window.SRAlert){SRAlert.init();SRAlert.pago();}
+});
+
+socket.on('link_pago', data => {
+  const btn = document.getElementById('btn-pagar-mp');
+  if (btn) {
+    btn.style.display = 'block';
+    btn.onclick = () => window.open(data.url, '_blank');
+    btn.textContent = '💳 PAGAR CON MERCADO PAGO - ARS $' + (data.monto||0).toLocaleString('es-AR');
+  }
+  document.getElementById('estado-bar').classList.add('visible');
+  document.getElementById('estado-txt').textContent = '💳 ¡El trabajo está listo! Realizá el pago para confirmar.';
+  toast('💳 ¡Realizá el pago para confirmar el servicio!', 6000);
+  if(window.SRAlert) { SRAlert.init(); SRAlert.pago(); }
+});
 socket.on('pedido_cancelado',()=>{toast('Pedido cancelado');resetUI();});
 
 async function cargarHistorial(){
