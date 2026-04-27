@@ -517,6 +517,18 @@ function responder(aceptar){
     document.getElementById('c-dir').textContent=pedidoData.direccion||'—';
     document.getElementById('pedido-activo').classList.add('visible');
     renderFSM();toast('✅ Pedido aceptado');
+    // Mostrar ubicacion del cliente en el mapa
+    if(window.mapa && pedidoData.direccion){
+      fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(pedidoData.direccion+', Buenos Aires, Argentina'))
+        .then(r=>r.json()).then(res=>{
+          if(res&&res[0]){
+            const lat=parseFloat(res[0].lat),lng=parseFloat(res[0].lon);
+            const icCli=L.divIcon({html:'<div style="background:#FF6D00;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(255,109,0,0.8)"></div>',className:'',iconSize:[16,16]});
+            L.marker([lat,lng],{icon:icCli}).addTo(window.mapa).bindPopup('📍 '+pedidoData.clienteNombre+' - '+pedidoData.direccion);
+            window.mapa.setView([lat,lng],14);
+          }
+        }).catch(()=>{});
+    }
   }else{
     socket.emit('rechazar_pedido',{pedidoId:pedidoData?.pedidoId,token:TOKEN});
   }
