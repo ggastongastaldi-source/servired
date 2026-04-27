@@ -473,6 +473,20 @@ function initApp(){
 
   socket.on('nueva_oportunidad',onNuevoPedido);
   socket.on('pedido_cancelado',()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');});
+
+socket.on("deuda_comision", function(data) {
+  toast("💰 " + data.mensaje, 8000);
+  var estadoEl = document.getElementById("estado-msg");
+  if(estadoEl) estadoEl.innerHTML = "⚠️ Deuda pendiente: <strong style=\"color:#FF6D00\">$" + (data.monto||0).toLocaleString("es-AR") + "</strong> con SERVired";
+  if(window.SRAlert){SRAlert.init();SRAlert.pago();}
+});
+
+socket.on('deuda_comision', data => {
+  toast('💰 ' + data.mensaje, 8000);
+  const estadoEl = document.getElementById('estado-msg');
+  if(estadoEl) estadoEl.innerHTML = '⚠️ Deuda pendiente: <strong style="color:#FF6D00">$'+data.monto.toLocaleString('es-AR')+'</strong> con SERVired';
+  if(window.SRAlert){SRAlert.init();SRAlert.pago();}
+});
 }
 
 function initMapa(){
@@ -480,6 +494,7 @@ function initMapa(){
 }
 
 function toggleStatus(){
+  if(window.SRAlert){SRAlert.init();}
   online=!online;
   const btn=document.getElementById('status-btn'),dot=document.getElementById('sdot'),lbl=document.getElementById('slbl');
   if(online){btn.className='status-pill online';dot.className='sdot online';lbl.textContent='EN LÍNEA';}

@@ -177,6 +177,12 @@ module.exports = (io) => {
           if (cli?.socketId) io.to(cli.socketId).emit('estado_pedido', payload);
           io.to('worker_' + pedido.cliente).emit('estado_pedido', payload);
         }
+        // Logica de pago segun monto
+        const UMBRAL_PAGO = 50000;
+        const montoPedido = pedido.precio || pedido.total_estimado || 0;
+        const comision = Math.round(montoPedido * 0.20);
+        const pagoWorker = Math.round(montoPedido * 0.80);
+
         // Si pasa a REALIZADA, generar link de pago y enviarlo al cliente
         if (estado === 'REALIZADA' && pedido.cliente) {
           try {
@@ -207,6 +213,28 @@ module.exports = (io) => {
           } catch(mpErr) {
             console.error('[Socket] Error MP:', mpErr.message);
           }
+        }
+        // Monto bajo umbral: registrar deuda del trabajador (modelo Uber Cash)
+        if (estado === 'REALIZADA' && montoPedido <= UMBRAL_PAGO && pedido.workerAcepto) {
+          try {
+            await Usuario.findByIdAndUpdate(pedido.workerAcepto, {
+              $inc: { deudaComision: comision },
+              $push: { historialDeuda: {
+                pedidoId: pedido._id,
+                monto: comision,
+                fecha: new Date(),
+                estado: 'PENDIENTE'
+              }}
+            });
+            const workerSocketEntry = Object.entries(global.trabajadoresOnline||{}).find(([,v])=>String(v.userId)===String(pedido.workerAcepto));
+            if (workerSocketEntry) {
+              io.to(workerSocketEntry[0]).emit('deuda_comision', {
+                monto: comision,
+                mensaje: 'Cobraste $'+montoPedido.toLocaleString('es-AR')+' en efectivo. Debés $'+comision.toLocaleString('es-AR')+' de comision a SERVired. Se descontará de tu próximo trabajo.'
+              });
+            }
+            console.log('[Socket] Deuda registrada al worker: $'+comision);
+          } catch(e) { console.error('[Socket] Error deuda worker:', e.message); }
         }
         console.log('[Socket] Estado pedido:', pedidoId, '->', estado);
       } catch(e) {
