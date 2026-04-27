@@ -116,13 +116,14 @@ async function infiltrar({ pedido, trabajadoresOnline, io }) {
     lat: pedido.lat, lon: pedido.lon, zona: pedido.zona || 'CABA',
   });
   resultado.trabajadores.forEach(t => {
-    const entry = Object.entries(trabajadoresOnline).find(([,v]) => v.userId === String(t._id));
-    if (entry) {
-      io.to(entry[0]).emit('oportunidad_trabajo', {
-        pedidoId: pedido._id, rubro: resultado.rubro, zona: pedido.zona,
-        mensaje: resultado.mensaje_infiltracion || `Hay un pedido de ${resultado.rubro} cerca tuyo`,
-        score: t.scoreBriones, urgencia: resultado.urgencia,
-      });
+    const room = 'worker_' + String(t._id);
+    console.log('[Infiltrar] Emitiendo a room:', room);
+    io.to(room).emit('oportunidad_trabajo', {
+      pedidoId: pedido._id, rubro: resultado.rubro, zona: pedido.zona,
+      mensaje: resultado.mensaje_infiltracion || 'Hay un pedido de ' + resultado.rubro + ' cerca tuyo',
+      score: t.scoreBriones, urgencia: resultado.urgencia,
+    });
+  });
     }
   });
   return resultado;
