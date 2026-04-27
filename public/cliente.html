@@ -191,6 +191,8 @@ select option{background:#1a2236;color:#e2e8f0;}
       <div id="pago-status" style="display:none;text-align:center;padding:10px;border-radius:8px;margin-top:8px;font-size:0.85rem;"></div>
     </div>
     <button class="btn-pedir" id="btn-pedir" onclick="pedirServicio()">⚡ PEDIR AHORA</button>
+    <button id="btn-cancelar-pedido" onclick="cancelarPedido()" style="display:none;width:100%;padding:12px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:10px;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;margin-top:8px;">✕ Cancelar búsqueda</button>
+    <button id="btn-cancelar-pedido" onclick="cancelarPedido()" style="display:none;width:100%;padding:12px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:10px;color:#ef4444;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;margin-top:8px;">✕ Cancelar búsqueda</button>
     <div class="worker-card" id="worker-card">
       <div class="worker-header">
         <div class="w-avatar" id="w-ini">T</div>
@@ -376,6 +378,7 @@ function pedirServicio(){
   btn.disabled=true;btn.textContent='⏳ Buscando trabajador...';
   document.getElementById('estado-bar').classList.add('visible');
   document.getElementById('estado-txt').textContent='Buscando trabajador disponible...';
+  var btnCan=document.getElementById('btn-cancelar-pedido');if(btnCan)btnCan.style.display='block';
   socket.emit('nuevo_pedido',{token:TOKEN,servicio:servicioSel,direccion:dir,precio:precioSel});
 }
 
@@ -387,6 +390,7 @@ function cancelarPedido(){
 function resetUI(){
   const btn=document.getElementById('btn-pedir');
   btn.disabled=false;btn.textContent='⚡ PEDIR AHORA';
+  var btnCan=document.getElementById('btn-cancelar-pedido');if(btnCan)btnCan.style.display='none';
   document.getElementById('estado-bar').classList.remove('visible');
   document.getElementById('worker-card').classList.remove('visible');
   if(markerTrab){mapa.removeLayer(markerTrab);markerTrab=null;}

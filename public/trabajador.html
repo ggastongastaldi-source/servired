@@ -512,13 +512,13 @@ function onNuevoPedido(data){
   document.getElementById('inc-precio').textContent='$ '+(data.precio||0).toLocaleString('es-AR');
   document.getElementById('inc-gan').textContent='$ '+Math.round((data.precio||0)*0.8).toLocaleString('es-AR');
   document.getElementById('incoming').classList.add('show');
-  startCdr(30);
+  startCdr(300);
 }
 
 function startCdr(s){
   clearInterval(cdrInterval);let rem=s;
   const circle=document.getElementById('cdr-circle'),num=document.getElementById('cdr-num');
-  cdrInterval=setInterval(()=>{rem--;num.textContent=rem;circle.style.strokeDashoffset=125.6-(125.6*(rem/s));if(rem<=0){clearInterval(cdrInterval);responder(false);}},1000);
+  cdrInterval=setInterval(()=>{rem--;num.textContent=rem;circle.style.strokeDashoffset=125.6-(125.6*(rem/s));if(rem<=0){clearInterval(cdrInterval);}},1000);
 }
 
 function responder(aceptar){
