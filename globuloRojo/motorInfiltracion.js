@@ -118,7 +118,7 @@ async function infiltrar({ pedido, trabajadoresOnline, io }) {
   resultado.trabajadores.forEach(t => {
     const room = 'worker_' + String(t._id);
     console.log('[Infiltrar] Emitiendo a room:', room);
-    io.to(room).emit('oportunidad_trabajo', {
+    io.to(room).emit('nueva_oportunidad', {
       pedidoId: pedido._id, rubro: resultado.rubro, zona: pedido.zona,
       mensaje: resultado.mensaje_infiltracion || 'Hay un pedido de ' + resultado.rubro + ' cerca tuyo',
       score: t.scoreBriones, urgencia: resultado.urgencia,

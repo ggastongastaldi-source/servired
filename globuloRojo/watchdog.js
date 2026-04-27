@@ -42,7 +42,7 @@ async function emitirAlerta(pedido, workers, urgente) {
 
 function alertarAdmin(mensaje) {
   const io = global.io;
-  if (io) io.to("admin").emit("alerta_critica", { mensaje, timestamp: new Date() });
+  if (io) io.to("admins").emit("alerta_critica", { mensaje, timestamp: new Date() });
   console.error("[WATCHDOG] CRITICO:", mensaje);
 }
 

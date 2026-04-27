@@ -228,7 +228,7 @@ module.exports = (io) => {
             });
             const workerSocketEntry = Object.entries(global.trabajadoresOnline||{}).find(([,v])=>String(v.userId)===String(pedido.workerAcepto));
             if (workerSocketEntry) {
-              io.to(workerSocketEntry[0]).emit('deuda_comision', {
+              io.to("worker_" + String(pedido.workerAcepto)).emit('deuda_comision', {
                 monto: comision,
                 mensaje: 'Cobraste $'+montoPedido.toLocaleString('es-AR')+' en efectivo. Debés $'+comision.toLocaleString('es-AR')+' de comision a SERVired. Se descontará de tu próximo trabajo.'
               });
