@@ -58,7 +58,7 @@ async function buscarTrabajadores({ descripcion, especialidad, lat, lon, radioKm
     const Usuario = require('../src/old_structure/models/Usuario');
     const query = {
       rol: 'TRABAJADOR',
-      estado: 'ACTIVO',
+      estado: { $in: ['ACTIVO', 'VERIFICADO'] },
       disponible: true,
     };
     if (rubroFinal) {
