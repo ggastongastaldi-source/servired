@@ -530,6 +530,7 @@ socket.on('nuevo_pedido_admin',data=>{
   addEv('🔔',`Nuevo pedido: ${(data.servicio||'').replace(/_/g,' ')} · $${(data.precio||0).toLocaleString('es-AR')}`);
   cargarPed();cargarCola();
   if(navigator.vibrate)navigator.vibrate([200,100,200]);
+  if(window.SRAlert){SRAlert.init();SRAlert.trabajoNuevo();}
 });
 socket.on('pedido_aceptado_admin',data=>{addEv('✅',`Aceptado por ${data.trabajadorNombre||'trabajador'}`);cargarPed();cargarCola();});
 socket.on('pedido_completado_admin',data=>{
@@ -592,6 +593,7 @@ socket.on('trabajador_nuevo',data=>{
   addEv('🆕',`Nuevo trabajador: ${data.nombre} — ${data.email}`);
   showToast('🆕 Nuevo trabajador: '+data.nombre);
   if(navigator.vibrate)navigator.vibrate([200,100,200]);
+  if(window.SRAlert){SRAlert.init();SRAlert.trabajoNuevo();}
   try{const ctx=new AudioContext();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);o.start();o.stop(ctx.currentTime+0.5);}catch(e){}
   setTimeout(cargarWor,1000);
 });
