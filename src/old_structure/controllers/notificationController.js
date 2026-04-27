@@ -206,9 +206,15 @@ async function buscarWorkersDisponibles(rubro, zona, lat, lng) {
     
     // Buscar TODOS los workers online del rubro (sin filtro GPS por ahora)
     const workers = await Usuario.find({
-        rol: { $in: ['TRABAJADOR', 'WORKER'] },
-        
-        rubro: { $regex: rubroNormalizado, $options: 'i' } // Búsqueda flexible
+        rol: { $in: ["TRABAJADOR", "WORKER"] },
+        estado: { $in: ["ACTIVO", "VERIFICADO"] },
+        disponible: true,
+        $or: [
+            { rubro: { $regex: rubroNormalizado, $options: "i" } },
+            { especialidades: { $regex: rubroNormalizado, $options: "i" } },
+            { especialidades: "servicio_domestico" },
+            { especialidades: "limpieza_hogar" }
+        ]
     });
     
     console.log(`[BUSCAR] Workers encontrados: ${workers.length}`);
