@@ -62,7 +62,6 @@ app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 
 
 // Estado global
-const trabajadoresOnline = {};
 
 // Health check CRÍTICO para Railway
 app.get('/health', (req, res) => {
@@ -71,7 +70,7 @@ app.get('/health', (req, res) => {
         sistema: 'ServiRed',
         moneda: 'ARS',
         timestamp: new Date().toISOString(),
-        workers: Object.keys(trabajadoresOnline).length,
+        workers: [...(io.sockets.adapter.rooms || new Map())].filter(([k]) => k.startsWith("worker_")).length,
         uptime: process.uptime()
     });
 });
@@ -103,12 +102,12 @@ app.get('/api/servicios', (req, res) => {
         sistema: 'ServiRed',
         moneda: 'ARS',
         mensaje: 'Lista de servicios',
-        trabajadoresActivos: Object.keys(trabajadoresOnline).length
+        trabajadoresActivos: [...(io.sockets.adapter.rooms || new Map())].filter(([k]) => k.startsWith("worker_")).length
     });
 });
 
 app.get('/api/trabajadores', (req, res) => {
-    res.json(trabajadoresOnline);
+    res.json({ workers: [...(io.sockets.adapter.rooms || new Map())].filter(([k]) => k.startsWith("worker_")).map(([k]) => k.replace("worker_","")) });
 });
 
 

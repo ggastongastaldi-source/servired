@@ -226,13 +226,298 @@ module.exports = (io) => {
                 estado: 'PENDIENTE'
               }}
             });
-            const workerSocketEntry = Object.entries(global.trabajadoresOnline||{}).find(([,v])=>String(v.userId)===String(pedido.workerAcepto));
-            if (workerSocketEntry) {
-              io.to("worker_" + String(pedido.workerAcepto)).emit('deuda_comision', {
-                monto: comision,
-                mensaje: 'Cobraste $'+montoPedido.toLocaleString('es-AR')+' en efectivo. Debés $'+comision.toLocaleString('es-AR')+' de comision a SERVired. Se descontará de tu próximo trabajo.'
-              });
-            }
+            io.to('worker_' + String(pedido.workerAcepto)).emit('deuda_comision', {
+              monto: comision,
+              mensaje: 'Cobraste 
+            console.log('[Socket] Deuda registrada al worker: $'+comision);
+          } catch(e) { console.error('[Socket] Error deuda worker:', e.message); }
+        }
+        console.log('[Socket] Estado pedido:', pedidoId, '->', estado);
+      } catch(e) {
+        console.error('[Socket] Error cambiar_estado_pedido:', e.message);
+      }
+    });
+
+    // ── GPS: trabajador envía ubicación ────────────────────────
+    socket.on('gps_update', async ({ pedidoId, lat, lng, trabajadorId }) => {
+      if (!pedidoId || !lat || !lng) return;
+
+      // Actualizar posición en DB
+      if (trabajadorId) {
+        await Usuario.findByIdAndUpdate(trabajadorId, {
+          'ubicacion.coordinates': [parseFloat(lng), parseFloat(lat)],
+          ultimaUbicacion: new Date()
+        }).catch(() => {});
+      }
+
+      // Enviar al cliente del pedido
+      const clienteSocketId = clienteSockets.get(pedidoId);
+      const targetRoom = clienteSocketId
+        ? 'cliente_' + clienteSocketId
+        : 'pedido_' + pedidoId;
+
+      const payload = { pedidoId, trabajadorId, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: Date.now() };
+      io.to(targetRoom).emit('worker_gps', payload);
+      if (pedidoId) io.to('pedido_' + pedidoId).emit('worker_gps', payload);
+      io.to('admins').emit('worker_gps', payload);
+      io.emit('worker_gps_broadcast', payload);
+    });
+
+    // ── TRABAJADOR termina el trabajo ──────────────────────────
+    socket.on('trabajo_completado', async ({ pedidoId, trabajadorId }) => {
+      try {
+        await Pedido.findByIdAndUpdate(pedidoId, {
+          estado: 'REALIZADA',
+          fechaRealizacion: new Date()
+        });
+
+        const clienteSocketId = clienteSockets.get(pedidoId);
+        const targetRoom = clienteSocketId
+          ? 'cliente_' + clienteSocketId
+          : 'pedido_' + pedidoId;
+
+        io.to(targetRoom).emit('estado_pedido', {
+          pedidoId,
+          estado: 'REALIZADA',
+          mensaje: 'El trabajo fue completado. Por favor confirmá el pago.'
+        });
+
+        if (trabajadorId) {
+          await Usuario.findByIdAndUpdate(trabajadorId, { disponible: true }).catch(() => {});
+        }
+
+        socket.emit('trabajo_completado_ok', { pedidoId });
+        
+        // REGISTRO FINANCIERO AUTOMÁTICO
+        registrarTransaccion(pedidoId);
+        console.log('[Socket] Trabajo completado:', pedidoId);
+      } catch (e) {
+        socket.emit('error', { mensaje: e.message });
+      }
+    });
+
+
+    // ── CLIENTE crea pedido via socket ─────────────────────────
+    socket.on('nuevo_pedido', async ({ token, servicio, direccion, precio }) => {
+      try {
+        const jwt = require('jsonwebtoken');
+        let decoded;
+        try {
+          decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch(e) {
+          socket.emit('pedido_error', { mensaje: 'Token invalido' });
+          return;
+        }
+        const clienteId = decoded.userId || decoded.id;
+        const Pedido = require('../models/Pedido');
+        const { iniciarFlujoBusqueda } = require('../controllers/notificationController');
+        const cliente = await Usuario.findById(clienteId).lean();
+        const zona = cliente?.zona || cliente?.zonaCobertura || 'GBA_OESTE';
+        const nuevoPedido = new Pedido({
+          cliente: clienteId,
+          tipoServicio: servicio,
+          zona,
+          descripcion: '',
+          direccion: direccion || '',
+          complejidad: 'baja',
+          precio: precio || 100000,
+          total_estimado: precio || 100000,
+          pago_worker: Math.round((precio || 100000) * 0.8),
+          estado: 'PENDIENTE',
+          ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] },
+          fechaCreacion: new Date()
+        });
+        const pedidoGuardado = await nuevoPedido.save();
+        socket.join('pedido_' + pedidoGuardado._id);
+        socket.emit('pedido_creado', {
+          pedidoId: pedidoGuardado._id,
+          mensaje: 'Pedido recibido. Buscando especialistas...'
+        });
+        console.log('[Socket] nuevo_pedido:', pedidoGuardado._id, servicio, zona);
+        setImmediate(() => {
+          iniciarFlujoBusqueda(pedidoGuardado._id)
+            .catch(e => console.error('[Socket] Error flujo:', e.message));
+        });
+      } catch(e) {
+        console.error('[Socket] Error nuevo_pedido:', e.message);
+        socket.emit('pedido_error', { mensaje: e.message });
+      }
+    });
+
+    // ── CLIENTE cancela pedido via socket ──────────────────────
+    socket.on('cancelar_pedido', async ({ pedidoId, token }) => {
+      try {
+        const { cancelarNotificacionesWorkers } = require('../controllers/notificationController');
+        const Pedido = require('../models/Pedido');
+        await Pedido.findByIdAndUpdate(pedidoId, { estado: 'CANCELADA' });
+        await cancelarNotificacionesWorkers(pedidoId, io);
+        socket.emit('pedido_cancelado_ok', { pedidoId });
+      } catch(e) {
+        console.error('[Socket] Error cancelar_pedido:', e.message);
+      }
+    });
+
+    // ── DESCONEXIÓN ────────────────────────────────────────────
+    socket.on('disconnect', async () => {
+      const workerOffline = await Usuario.findOneAndUpdate(
+        { socketId: socket.id },
+        { socketStatus: 'offline', socketId: null, disponible: false }
+      ).catch(() => {});
+      if (workerOffline && workerOffline.rol === 'TRABAJADOR') {
+        io.to('admins').emit('worker_offline', { nombre: workerOffline.nombre });
+      }
+      // Limpiar clienteSockets si era un cliente
+      // LRU TTL limpia sola
+      console.log('[Socket] Desconectado:', socket.id);
+    });
+  });
+};
++montoPedido.toLocaleString('es-AR')+' en efectivo. Debés 
+            console.log('[Socket] Deuda registrada al worker: $'+comision);
+          } catch(e) { console.error('[Socket] Error deuda worker:', e.message); }
+        }
+        console.log('[Socket] Estado pedido:', pedidoId, '->', estado);
+      } catch(e) {
+        console.error('[Socket] Error cambiar_estado_pedido:', e.message);
+      }
+    });
+
+    // ── GPS: trabajador envía ubicación ────────────────────────
+    socket.on('gps_update', async ({ pedidoId, lat, lng, trabajadorId }) => {
+      if (!pedidoId || !lat || !lng) return;
+
+      // Actualizar posición en DB
+      if (trabajadorId) {
+        await Usuario.findByIdAndUpdate(trabajadorId, {
+          'ubicacion.coordinates': [parseFloat(lng), parseFloat(lat)],
+          ultimaUbicacion: new Date()
+        }).catch(() => {});
+      }
+
+      // Enviar al cliente del pedido
+      const clienteSocketId = clienteSockets.get(pedidoId);
+      const targetRoom = clienteSocketId
+        ? 'cliente_' + clienteSocketId
+        : 'pedido_' + pedidoId;
+
+      const payload = { pedidoId, trabajadorId, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: Date.now() };
+      io.to(targetRoom).emit('worker_gps', payload);
+      if (pedidoId) io.to('pedido_' + pedidoId).emit('worker_gps', payload);
+      io.to('admins').emit('worker_gps', payload);
+      io.emit('worker_gps_broadcast', payload);
+    });
+
+    // ── TRABAJADOR termina el trabajo ──────────────────────────
+    socket.on('trabajo_completado', async ({ pedidoId, trabajadorId }) => {
+      try {
+        await Pedido.findByIdAndUpdate(pedidoId, {
+          estado: 'REALIZADA',
+          fechaRealizacion: new Date()
+        });
+
+        const clienteSocketId = clienteSockets.get(pedidoId);
+        const targetRoom = clienteSocketId
+          ? 'cliente_' + clienteSocketId
+          : 'pedido_' + pedidoId;
+
+        io.to(targetRoom).emit('estado_pedido', {
+          pedidoId,
+          estado: 'REALIZADA',
+          mensaje: 'El trabajo fue completado. Por favor confirmá el pago.'
+        });
+
+        if (trabajadorId) {
+          await Usuario.findByIdAndUpdate(trabajadorId, { disponible: true }).catch(() => {});
+        }
+
+        socket.emit('trabajo_completado_ok', { pedidoId });
+        
+        // REGISTRO FINANCIERO AUTOMÁTICO
+        registrarTransaccion(pedidoId);
+        console.log('[Socket] Trabajo completado:', pedidoId);
+      } catch (e) {
+        socket.emit('error', { mensaje: e.message });
+      }
+    });
+
+
+    // ── CLIENTE crea pedido via socket ─────────────────────────
+    socket.on('nuevo_pedido', async ({ token, servicio, direccion, precio }) => {
+      try {
+        const jwt = require('jsonwebtoken');
+        let decoded;
+        try {
+          decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch(e) {
+          socket.emit('pedido_error', { mensaje: 'Token invalido' });
+          return;
+        }
+        const clienteId = decoded.userId || decoded.id;
+        const Pedido = require('../models/Pedido');
+        const { iniciarFlujoBusqueda } = require('../controllers/notificationController');
+        const cliente = await Usuario.findById(clienteId).lean();
+        const zona = cliente?.zona || cliente?.zonaCobertura || 'GBA_OESTE';
+        const nuevoPedido = new Pedido({
+          cliente: clienteId,
+          tipoServicio: servicio,
+          zona,
+          descripcion: '',
+          direccion: direccion || '',
+          complejidad: 'baja',
+          precio: precio || 100000,
+          total_estimado: precio || 100000,
+          pago_worker: Math.round((precio || 100000) * 0.8),
+          estado: 'PENDIENTE',
+          ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] },
+          fechaCreacion: new Date()
+        });
+        const pedidoGuardado = await nuevoPedido.save();
+        socket.join('pedido_' + pedidoGuardado._id);
+        socket.emit('pedido_creado', {
+          pedidoId: pedidoGuardado._id,
+          mensaje: 'Pedido recibido. Buscando especialistas...'
+        });
+        console.log('[Socket] nuevo_pedido:', pedidoGuardado._id, servicio, zona);
+        setImmediate(() => {
+          iniciarFlujoBusqueda(pedidoGuardado._id)
+            .catch(e => console.error('[Socket] Error flujo:', e.message));
+        });
+      } catch(e) {
+        console.error('[Socket] Error nuevo_pedido:', e.message);
+        socket.emit('pedido_error', { mensaje: e.message });
+      }
+    });
+
+    // ── CLIENTE cancela pedido via socket ──────────────────────
+    socket.on('cancelar_pedido', async ({ pedidoId, token }) => {
+      try {
+        const { cancelarNotificacionesWorkers } = require('../controllers/notificationController');
+        const Pedido = require('../models/Pedido');
+        await Pedido.findByIdAndUpdate(pedidoId, { estado: 'CANCELADA' });
+        await cancelarNotificacionesWorkers(pedidoId, io);
+        socket.emit('pedido_cancelado_ok', { pedidoId });
+      } catch(e) {
+        console.error('[Socket] Error cancelar_pedido:', e.message);
+      }
+    });
+
+    // ── DESCONEXIÓN ────────────────────────────────────────────
+    socket.on('disconnect', async () => {
+      const workerOffline = await Usuario.findOneAndUpdate(
+        { socketId: socket.id },
+        { socketStatus: 'offline', socketId: null, disponible: false }
+      ).catch(() => {});
+      if (workerOffline && workerOffline.rol === 'TRABAJADOR') {
+        io.to('admins').emit('worker_offline', { nombre: workerOffline.nombre });
+      }
+      // Limpiar clienteSockets si era un cliente
+      // LRU TTL limpia sola
+      console.log('[Socket] Desconectado:', socket.id);
+    });
+  });
+};
++comision.toLocaleString('es-AR')+' de comision a SERVired. Se descontará de tu próximo trabajo.'
+            });
             console.log('[Socket] Deuda registrada al worker: $'+comision);
           } catch(e) { console.error('[Socket] Error deuda worker:', e.message); }
         }
