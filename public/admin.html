@@ -357,15 +357,22 @@ async function verificar(id){
   if(!confirm('¿Aprobar este trabajador?'))return;
   try{
     const rv=await fetch(`/api/admin/trabajadores/${id}/verificar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
-    if(rv.ok){toast('✅ Trabajador aprobado');cargarWor();addEv('✅',`Trabajador verificado`);}
-  }catch(e){}
+    const data=await rv.json();
+    if(data.ok){
+      toast('✅ Trabajador aprobado');
+      addEv('✅','Trabajador verificado');
+      await cargarWor();
+    } else {
+      toast('❌ Error: '+(data.error||'sin respuesta'));
+    }
+  }catch(e){toast('❌ Error de conexión');}
 }
 
 async function rechazarWorker(id){
   if(!confirm('¿Rechazar y eliminar este trabajador?'))return;
   try{
     const rv=await fetch(`/api/admin/trabajadores/${id}`,{method:'DELETE',headers:{Authorization:'Bearer '+TOKEN}});
-    if(rv.ok){toast('🗑️ Trabajador rechazado');cargarWor();}
+    if(rv.ok){toast('🗑️ Trabajador rechazado');setTimeout(()=>{cargarWor();},800);}
     else toast('❌ Error al rechazar');
   }catch(e){}
 }
@@ -374,7 +381,7 @@ async function desactivarWorker(id){
   if(!confirm('¿Desactivar este trabajador?'))return;
   try{
     const rv=await fetch(`/api/admin/trabajadores/${id}/desactivar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
-    if(rv.ok){toast('⏸️ Trabajador desactivado');cargarWor();}
+    if(rv.ok){toast('⏸️ Trabajador desactivado');setTimeout(()=>{cargarWor();},800);}
   }catch(e){}
 }
 
