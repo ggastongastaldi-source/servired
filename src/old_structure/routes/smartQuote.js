@@ -111,7 +111,7 @@ const MULT_ZONA = {
 
 router.post('/', async (req, res) => {
   try {
-    const { rubro, complejidad, zona, descripcion, texto } = req.body;
+    const { rubro, complejidad, zona, descripcion, texto, horas } = req.body;
 
     // Modo texto libre con Groq
     if (texto && !rubro) {
@@ -142,7 +142,8 @@ router.post('/', async (req, res) => {
     const zKey = Object.keys(MULT_ZONA).find(k => (zona||'').toLowerCase().includes(k));
     const multZona = zKey ? MULT_ZONA[zKey] : 1.0;
 
-    const precioTotal = Math.round(precioBase * multZona);
+    const horasReales = Math.max(1, parseFloat(horas) || 1);
+    const precioTotal = Math.round(precioBase * multZona * horasReales);
     const comision = Math.round(precioTotal * 0.20);
     const manoObra = Math.round(precioTotal * 0.65);
     const materiales = Math.round(precioTotal * 0.15);
@@ -173,6 +174,8 @@ router.post('/', async (req, res) => {
       mano_de_obra: manoObra,
       materiales: materiales,
       comision: comision,
+      precioCliente: precioTotal,
+      pagoWorker: precioTotal - comision,
       pago_worker: precioTotal - comision,
       descripcion_ia: descripcionIA,
       big_mac_base: 10500,
