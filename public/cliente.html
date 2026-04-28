@@ -723,15 +723,15 @@ function mostrarModalCalificacion(pedidoId) {
       if (d.ok) {
         msg.style.color = '#00E5FF';
         msg.textContent = 'Gracias! Calificacion enviada.';
-        setTimeout(() => modal.remove(), 2000);
+        setTimeout(() => { if(modal.parentNode) modal.remove(); }, 2000);
       } else {
         msg.style.color = '#FF6D00';
         msg.textContent = d.error || 'Error al calificar';
-        setTimeout(() => modal.remove(), 2500);
+        setTimeout(() => { if(modal.parentNode) modal.remove(); }, 2500);
       }
     } catch(e) {
       modal.querySelector('#rating-msg').textContent = 'Error de conexion';
-      setTimeout(() => modal.remove(), 2500);
+      setTimeout(() => { if(modal.parentNode) modal.remove(); }, 2500);
     }
   });
 }

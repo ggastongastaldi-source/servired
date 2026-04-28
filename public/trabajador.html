@@ -739,10 +739,10 @@ const SRAlert = {
 
   // TRABAJO NUEVO - sirena ascendente + vibración larga
   trabajoNuevo() {
-    try { if(this.ctx && this.ctx.state==='suspended') this.ctx.resume(); } catch(e){}
-    if(!this.ready) this.init();
+    try { if(!this.ready) this.init(); if(this.ctx && this.ctx.state==='suspended') this.ctx.resume(); } catch(e){}
+    this.tono([440,550,660,880], [150,150,150,300], 'sawtooth', 0.4);
     this.vibrar([100,50,100,50,400]);
-    console.log('[SRAlert] 🔔 Trabajo nuevo');
+    console.log('[SRAlert] Trabajo nuevo');
   },
 
   // PAGO - caja registradora + vibración triple

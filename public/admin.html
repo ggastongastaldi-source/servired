@@ -702,10 +702,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!window.socket) { setTimeout(hookSocket, 500); return; }
     window.socket.on('pago_confirmado', () => SRAlert.pago());
     window.socket.on('worker_online', () => SRAlert.workerRegistrado());
-    window.socket.on('nuevo_pedido', () => SRAlert.trabajoNuevo());
-    window.socket.on('nueva_oportunidad', () => SRAlert.trabajoNuevo());
-    window.socket.on('nuevo_servicio', () => SRAlert.trabajoNuevo());
-    window.socket.on('nuevo_pedido_admin', () => SRAlert.trabajoNuevo());
+    ['nuevo_pedido','nueva_oportunidad','nuevo_servicio','nuevo_pedido_admin'].forEach(ev => {
+      window.socket.off(ev);
+      window.socket.on(ev, () => SRAlert.trabajoNuevo());
+    });
     window.socket.on('pedido_completado', () => SRAlert.pago());
   };
   setTimeout(hookSocket, 1000);
