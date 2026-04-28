@@ -6,7 +6,7 @@ const Groq = require('groq-sdk');
 // Fuente: relevamiento AMBA + indice Big Mac
 const PRECIOS = {
   limpieza:          { baja: 35000,   alta: 75000   },
-  servicio_domestico:{ baja: 35000,   alta: 75000   },
+  servicio_domestico:{ baja: 8500,    alta: 11000   }, // precio por hora ARS
   plomeria:          { baja: 180000,  alta: 480000  },
   electricidad:      { baja: 180000,  alta: 480000  },
   albanileria:       { baja: 250000,  alta: 750000  },
