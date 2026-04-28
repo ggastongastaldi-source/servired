@@ -707,6 +707,9 @@ function mostrarModalCalificacion(pedidoId) {
     estrellasSel = parseInt(s.dataset.v);
     spans.forEach(x => x.style.filter = parseInt(x.dataset.v) <= estrellasSel ? 'none' : 'grayscale(1)');
   }));
+  // Cerrar modal al clickear fuera
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
   modal.querySelector('#btn-calificar').addEventListener('click', async () => {
     const msg = modal.querySelector('#rating-msg');
     msg.textContent = 'Enviando...';
@@ -719,13 +722,19 @@ function mostrarModalCalificacion(pedidoId) {
       const d = await r.json();
       if (d.ok) {
         msg.style.color = '#00E5FF';
-        msg.textContent = 'Gracias! Nivel del profesional: ' + d.nivel + ' ' + (d.nivel==='ELITE'?'🏆':d.nivel==='ORO'?'🥇':d.nivel==='PLATA'?'🥈':'🥉');
-        setTimeout(() => modal.remove(), 3000);
+        msg.textContent = 'Gracias! Calificacion enviada.';
+        setTimeout(() => modal.remove(), 2000);
       } else {
+        msg.style.color = '#FF6D00';
         msg.textContent = d.error || 'Error al calificar';
+        setTimeout(() => modal.remove(), 2500);
       }
-    } catch(e) { msg.textContent = 'Error de conexion'; }
+    } catch(e) {
+      modal.querySelector('#rating-msg').textContent = 'Error de conexion';
+      setTimeout(() => modal.remove(), 2500);
+    }
   });
+}
 }
 
 socket.on('estado_pedido',data=>{
