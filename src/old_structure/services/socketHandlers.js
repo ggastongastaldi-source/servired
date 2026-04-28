@@ -234,7 +234,7 @@ module.exports = (io) => {
             });
             io.to('worker_' + String(pedido.workerAcepto)).emit('deuda_comision', {
               monto: comision,
-              mensaje: 'Cobraste 
+              mensaje: 'Cobraste $' + comision,
             console.log('[Socket] Deuda registrada al worker: $'+comision);
           } catch(e) { console.error('[Socket] Error deuda worker:', e.message); }
         }
