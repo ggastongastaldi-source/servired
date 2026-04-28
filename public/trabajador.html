@@ -471,7 +471,20 @@ function initApp(){
     }, {enableHighAccuracy:true, maximumAge:10000, timeout:15000});
   }
 
-  socket.on('nueva_oportunidad',onNuevoPedido);
+  // Listeners registrados en connect para sobrevivir reconexiones
+  function registrarListeners() {
+    socket.off('nueva_oportunidad');
+    socket.off('pedido_cancelado');
+    socket.on('nueva_oportunidad', onNuevoPedido);
+    socket.on('pedido_cancelado', () => {
+      document.getElementById('pedido-activo').classList.remove('visible');
+      pedidoActualId = null;
+      toast('⚠️ Cliente canceló el pedido');
+    });
+  }
+  registrarListeners();
+  socket.on('connect', registrarListeners);
+  socket.on('reconnect', registrarListeners);
   socket.on('pedido_cancelado',()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');});
 
 socket.on("deuda_comision", function(data) {
