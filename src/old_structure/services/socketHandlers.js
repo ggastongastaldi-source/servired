@@ -2,10 +2,7 @@ const Usuario = require('../models/Usuario');
 
 // ── GPS HELPER — fuente única de verdad ──────────────────
 function emitWorkerGPS(io, targetRoom, pedidoId, payload) {
-  io.to(targetRoom).emit('worker_gps', payload);
-  if (pedidoId) io.to('pedido_' + pedidoId).emit('worker_gps', payload);
-  io.to('admins').emit('worker_gps', payload);
-  io.emit('worker_gps_broadcast', payload);
+  emitWorkerGPS(io, targetRoom, pedidoId, payload);
 }
 
 const { registrarTransaccion } = require('../controllers/finanzasController');
