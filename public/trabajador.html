@@ -739,7 +739,8 @@ const SRAlert = {
 
   // TRABAJO NUEVO - sirena ascendente + vibración larga
   trabajoNuevo() {
-    this.tono([440,550,660,880], [150,150,150,300], 'sawtooth', 0.4);
+    try { if(this.ctx && this.ctx.state==='suspended') this.ctx.resume(); } catch(e){}
+    if(!this.ready) this.init();
     this.vibrar([100,50,100,50,400]);
     console.log('[SRAlert] 🔔 Trabajo nuevo');
   },
@@ -787,6 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.socket.on('nueva_oportunidad', () => SRAlert.trabajoNuevo());
     window.socket.on('trabajo_asignado', () => SRAlert.trabajoNuevo());
     window.socket.on('nuevo_pedido_disponible', () => SRAlert.trabajoNuevo());
+    window.socket.on('nuevo_servicio', () => SRAlert.trabajoNuevo());
   };
   setTimeout(hookSocket, 1000);
 });

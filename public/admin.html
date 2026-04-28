@@ -703,6 +703,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.socket.on('pago_confirmado', () => SRAlert.pago());
     window.socket.on('worker_online', () => SRAlert.workerRegistrado());
     window.socket.on('nuevo_pedido', () => SRAlert.trabajoNuevo());
+    window.socket.on('nueva_oportunidad', () => SRAlert.trabajoNuevo());
+    window.socket.on('nuevo_servicio', () => SRAlert.trabajoNuevo());
+    window.socket.on('nuevo_pedido_admin', () => SRAlert.trabajoNuevo());
     window.socket.on('pedido_completado', () => SRAlert.pago());
   };
   setTimeout(hookSocket, 1000);
