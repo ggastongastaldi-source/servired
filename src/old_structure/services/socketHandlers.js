@@ -263,10 +263,7 @@ module.exports = (io) => {
         : 'pedido_' + pedidoId;
 
       const payload = { pedidoId, trabajadorId, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: Date.now() };
-      io.to(targetRoom).emit('worker_gps', payload);
-      if (pedidoId) io.to('pedido_' + pedidoId).emit('worker_gps', payload);
-      io.to('admins').emit('worker_gps', payload);
-      io.emit('worker_gps_broadcast', payload);
+      emitWorkerGPS(io, targetRoom, pedidoId, payload);
     });
 
     // ── TRABAJADOR termina el trabajo ──────────────────────────
@@ -407,10 +404,7 @@ module.exports = (io) => {
         : 'pedido_' + pedidoId;
 
       const payload = { pedidoId, trabajadorId, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: Date.now() };
-      io.to(targetRoom).emit('worker_gps', payload);
-      if (pedidoId) io.to('pedido_' + pedidoId).emit('worker_gps', payload);
-      io.to('admins').emit('worker_gps', payload);
-      io.emit('worker_gps_broadcast', payload);
+      emitWorkerGPS(io, targetRoom, pedidoId, payload);
     });
 
     // ── TRABAJADOR termina el trabajo ──────────────────────────
@@ -552,10 +546,7 @@ module.exports = (io) => {
         : 'pedido_' + pedidoId;
 
       const payload = { pedidoId, trabajadorId, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: Date.now() };
-      io.to(targetRoom).emit('worker_gps', payload);
-      if (pedidoId) io.to('pedido_' + pedidoId).emit('worker_gps', payload);
-      io.to('admins').emit('worker_gps', payload);
-      io.emit('worker_gps_broadcast', payload);
+      emitWorkerGPS(io, targetRoom, pedidoId, payload);
     });
 
     // ── TRABAJADOR termina el trabajo ──────────────────────────
