@@ -109,6 +109,7 @@ select option{background:#1a2236;color:#e2e8f0;}
   <meta property="og:url" content="https://servired.online">
   <meta property="og:image" content="https://servired.online/assets/icons/icon-512.png">
   <!-- SW -->
+  <script src="/js/rubros.js"></script>
   <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then(()=>console.log('[SW] ServiRed activo'));</script>
 </head>
 <body>
@@ -240,37 +241,21 @@ select option{background:#1a2236;color:#e2e8f0;}
     <div class="field"><label>CBU o CVU (22 dígitos)</label><input type="text" id="rt-cbu" placeholder="0000003100114236125474" maxlength="22" inputmode="numeric"><div style="font-size:0.7rem;color:#4a5568;margin-top:4px;">Para recibir tus pagos directamente</div></div>
     <div class="field"><label>Alias bancario (opcional si tenés CBU)</label><input type="text" id="rt-alias" placeholder="mi.alias.mp"></div>
     <div class="field"><label>Tus rubros (elegí todos los que sabés hacer)</label>
-      <div id="rt-rubros-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px;">
-        <div onclick="toggleRubro(this)" data-id="albanileria" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🧱 Albañilería</div>
-        <div onclick="toggleRubro(this)" data-id="plomeria" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🔧 Plomería</div>
-        <div onclick="toggleRubro(this)" data-id="electricidad" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">⚡ Electricidad</div>
-        <div onclick="toggleRubro(this)" data-id="limpieza_hogar" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🧹 Limpieza</div>
-        <div onclick="toggleRubro(this)" data-id="pintura" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🎨 Pintura</div>
-        <div onclick="toggleRubro(this)" data-id="gasista" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🔥 Gasista</div>
-        <div onclick="toggleRubro(this)" data-id="cerrajeria" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🔑 Cerrajería</div>
-        <div onclick="toggleRubro(this)" data-id="aire_acondicionado" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">❄️ Aire Acond.</div>
-        <div onclick="toggleRubro(this)" data-id="durlock" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🪣 Durlock</div>
-        <div onclick="toggleRubro(this)" data-id="techistas" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🏚️ Techista</div>
-        <div onclick="toggleRubro(this)" data-id="herreria" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">⚒️ Herrería</div>
-        <div onclick="toggleRubro(this)" data-id="carpinteria" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🪚 Carpintería</div>
-        <div onclick="toggleRubro(this)" data-id="revestimientos_pvc" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🧱 Revest. PVC</div>
-        <div onclick="toggleRubro(this)" data-id="antihumedad" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">💧 Antihumedad</div>
-        <div onclick="toggleRubro(this)" data-id="climatizacion" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">❄️ Climatización</div>
-        <div onclick="toggleRubro(this)" data-id="camaras_seguridad" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">📷 Cámaras CCTV</div>
-        <div onclick="toggleRubro(this)" data-id="alarmas" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🚨 Alarmas</div>
-        <div onclick="toggleRubro(this)" data-id="domotica_automatizacion" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🏠 Domótica</div>
-        <div onclick="toggleRubro(this)" data-id="paneles_solares" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">☀️ Paneles Solares</div>
-        <div onclick="toggleRubro(this)" data-id="mecanica_auxilio" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🔩 Mecánica/Auxilio</div>
-        <div onclick="toggleRubro(this)" data-id="mantenimiento_consorcios" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🏢 Consorcios</div>
-        <div onclick="toggleRubro(this)" data-id="peluqueria_canina" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🐕 Peluq. Canina</div>
-        <div onclick="toggleRubro(this)" data-id="fumigacion" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🦟 Fumigación</div>
-        <div onclick="toggleRubro(this)" data-id="jardineria" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🌿 Jardinería</div>
-        <div onclick="toggleRubro(this)" data-id="fletes_mudanzas" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">📦 Mudanzas</div>
-        <div onclick="toggleRubro(this)" data-id="servicio_tecnico_pc" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">💻 Técnico PC</div>
-        <div onclick="toggleRubro(this)" data-id="cuidado_personas" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🧑‍⚕️ Cuidador/a</div>
-        <div onclick="toggleRubro(this)" data-id="peluqueria_domicilio" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">✂️ Peluquería</div>
-        <div onclick="toggleRubro(this)" data-id="desinfeccion_plagas" style="background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;">🪲 Plagas</div>
-      </div>
+      <div id="rt-rubros-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px;"></div>
+      <script>
+      (function(){
+        const grid = document.getElementById('rt-rubros-grid');
+        if(!grid || typeof RUBROS_SERVIRED === 'undefined') return;
+        RUBROS_SERVIRED.forEach(r => {
+          const d = document.createElement('div');
+          d.onclick = function(){ toggleRubro(this); };
+          d.setAttribute('data-id', r.id);
+          d.style.cssText = 'background:#111927;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;font-size:0.8rem;';
+          d.textContent = r.icon + ' ' + r.label;
+          grid.appendChild(d);
+        });
+      })();
+      </script>
     </div>
     <div style="background:#111927;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;margin-bottom:12px;">
       <div style="font-size:0.8rem;font-weight:600;margin-bottom:6px;">📄 Certificado de Antecedentes Penales</div>

@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/rubros.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <style>
 :root{--cyan:#00E5FF;--orange:#FF6D00;--green:#39ff14;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
@@ -252,34 +253,7 @@ function detectarZona(direccion) {
         if (el) { el.value = t; conectar(); }
       }
     };
-const RUBROS=[
-  {id:'servicio_domestico',label:'Doméstico',icon:'🧹',precio:8000},
-  {id:'plomeria',label:'Plomería',icon:'🔧',precio:12000},
-  {id:'electricidad',label:'Electricidad',icon:'⚡',precio:14000},
-  {id:'pintura',label:'Pintura',icon:'🎨',precio:10000},
-  {id:'jardineria',label:'Jardín',icon:'🌿',precio:9000},
-  {id:'mudanza',label:'Mudanza',icon:'📦',precio:18000},
-  {id:'gasista',label:'Gasista',icon:'🔥',precio:13000},
-  {id:'carpintero',label:'Carpintería',icon:'🪚',precio:11000},
-  {id:'cerrajero',label:'Cerrajería',icon:'🔑',precio:9500},
-  {id:'albanil',label:'Albañilería',icon:'🧱',precio:15000},
-  {id:'techista',label:'Techista',icon:'🏚️',precio:16000},
-  {id:'herrero',label:'Herrería',icon:'⚒️',precio:12000},
-  {id:'mecanico',label:'Mecánico',icon:'🔩',precio:14000},
-  {id:'refrigeracion',label:'Refrigeración',icon:'❄️',precio:15000},
-  {id:'informatico',label:'Informático',icon:'💻',precio:10000},
-  {id:'yesero',label:'Yesero',icon:'🪣',precio:11000},
-  {id:'cuidador',label:'Cuidador/a',icon:'🧑‍⚕️',precio:9000},
-  {id:'enfermero',label:'Enfermero/a',icon:'💊',precio:12000},
-  {id:'instructor',label:'Instructor',icon:'🏋️',precio:10000},
-  {id:'fotografo',label:'Fotógrafo',icon:'📷',precio:11000},
-  {id:'chofer',label:'Chofer',icon:'🚗',precio:9000},
-  {id:'cocinero',label:'Cocinero/a',icon:'👨‍🍳',precio:10000},
-  {id:'delivery',label:'Delivery',icon:'🛵',precio:6000},
-  {id:'seguridad',label:'Seguridad',icon:'🛡️',precio:13000},
-  {id:'peluquero',label:'Peluquero/a',icon:'✂️',precio:8000},
-  {id:'masajista',label:'Masajista',icon:'💆',precio:10000},
-];
+const RUBROS = RUBROS_SERVIRED;
 
 // Construir grilla
 let servicioSel=RUBROS[0].id,precioSel=RUBROS[0].precio;

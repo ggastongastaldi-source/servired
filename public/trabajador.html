@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/rubros.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <style>
 :root{--cyan:#00E5FF;--orange:#FF6D00;--green:#39ff14;--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--text:#e2e8f0;--muted:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;}
@@ -338,34 +339,7 @@ document.addEventListener("DOMContentLoaded", function() {
         conectar(); }
       }
     };
-const RUBROS=[
-  {id:'albanileria',label:'Albañilería',icon:'🧱'},
-  {id:'plomeria',label:'Plomería',icon:'🔧'},
-  {id:'electricidad',label:'Electricidad',icon:'⚡'},
-  {id:'gasista',label:'Gasista',icon:'🔥'},
-  {id:'pintura',label:'Pintura',icon:'🎨'},
-  {id:'techistas',label:'Techista',icon:'🏚️'},
-  {id:'herreria',label:'Herrería',icon:'⚒️'},
-  {id:'carpinteria',label:'Carpintería',icon:'🪚'},
-  {id:'durlock',label:'Durlock/Yesero',icon:'🪣'},
-  {id:'pisos_revestimientos',label:'Pisos/Cerámicos',icon:'🏠'},
-  {id:'revestimientos_pvc',label:'Revestim. PVC',icon:'🧱'},
-  {id:'antihumedad',label:'Antihumedad',icon:'💧'},
-  {id:'cerrajeria',label:'Cerrajería',icon:'🔑'},
-  {id:'climatizacion',label:'Climatización',icon:'❄️'},
-  {id:'camaras_seguridad',label:'Cámaras CCTV',icon:'📷'},
-  {id:'alarmas',label:'Alarmas',icon:'🚨'},
-  {id:'domotica_automatizacion',label:'Domótica',icon:'🏠'},
-  {id:'paneles_solares',label:'Paneles Solares',icon:'☀️'},
-  {id:'mecanica_auxilio',label:'Mecánica/Auxilio',icon:'🔩'},
-  {id:'jardineria',label:'Jardinería',icon:'🌿'},
-  {id:'limpieza_hogar',label:'Limpieza',icon:'🧹'},
-  {id:'servicio_domestico',label:'Serv. Doméstico',icon:'🧹'},
-  {id:'mantenimiento_consorcios',label:'Consorcios',icon:'🏢'},
-  {id:'fletes_mudanzas',label:'Mudanzas/Fletes',icon:'📦'},
-  {id:'peluqueria_canina',label:'Peluq. Canina',icon:'🐕'},
-  {id:'fumigacion',label:'Fumigación',icon:'🦟'},
-];
+const RUBROS = RUBROS_SERVIRED;
 
 function logout(){localStorage.removeItem('token');window.location='/';}
 
