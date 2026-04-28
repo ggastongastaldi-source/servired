@@ -296,18 +296,34 @@ document.getElementById('precio-display').textContent='$ '+RUBROS[0].precio.toLo
 
 function selSrv(btn, data) {
   try {
-    console.log('Seleccionando:', data.id);
     document.querySelectorAll('.srv-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     servicioSel = data.id;
-    precioSel = data.precio;
+    precioSel = data.precio; // fallback mientras carga Aladín
     const pDisp = document.getElementById('precio-display');
-    if (pDisp) {
-      pDisp.innerText = '$ ' + Number(data.precio).toLocaleString('es-AR');
-    }
-  } catch (e) {
-    alert('Error en selección: ' + e.message);
-  }
+    if (pDisp) pDisp.innerText = '⏳ Calculando...';
+    // Llamar a Aladín para precio real
+    fetch('/api/smart-quote', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({rubro: data.id, complejidad: 'baja', horas: 2, zona: zonaCliente || 'CABA', descripcion: ''})
+    }).then(r=>r.json()).then(d=>{
+      if (d.ok) {
+        precioSel = d.precioCliente || d.total_estimado || data.precio;
+        pagoWorkerActual = d.pagoWorker || Math.round(precioSel * 0.8);
+        comisionActual = d.comision || Math.round(precioSel * 0.2);
+        if (pDisp) pDisp.innerText = '$ ' + Number(precioSel).toLocaleString('es-AR');
+        const zonaEl = document.getElementById('zona-display');
+        if (zonaEl) zonaEl.textContent = 'Zona: ' + (d.zona||zonaCliente) + ' · Comisión SERVired: $' + comisionActual.toLocaleString('es-AR');
+      } else {
+        precioSel = data.precio;
+        if (pDisp) pDisp.innerText = '$ ' + Number(data.precio).toLocaleString('es-AR');
+      }
+    }).catch(()=>{
+      precioSel = data.precio;
+      if (pDisp) pDisp.innerText = '$ ' + Number(data.precio).toLocaleString('es-AR');
+    });
+  } catch(e) { console.error('selSrv error:', e.message); }
 }
 
 
