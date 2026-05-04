@@ -125,8 +125,5 @@ async function infiltrar({ pedido, trabajadoresOnline, io }) {
     });
   });
     }
-  });
-  return resultado;
-}
 
 module.exports = { buscarTrabajadores, infiltrar };
