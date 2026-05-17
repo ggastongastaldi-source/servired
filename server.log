@@ -67,3 +67,212 @@
 [Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
 [Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
 [Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
+◇ injected env (4) from .env // tip: ⌘ override existing { override: true }
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+✅ MongoDB conectado
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: limpieza
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: pisos
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: instalacion_de_split
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: kit_de_camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: impermeabilizacion
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
+[Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
+◇ injected env (4) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+✅ MongoDB conectado
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: limpieza
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: pisos
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: aire_acondicionado
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: impermeabilizacion
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
+[Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
+◇ injected env (4) from .env // tip: ⌘ enable debugging { debug: true }
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+✅ MongoDB conectado
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: limpieza
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: pisos
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: aire_acondicionado
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: impermeabilizacion
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
+[Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
+◇ injected env (4) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
+
+Node.js v25.8.2
+◇ injected env (4) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+✅ MongoDB conectado
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: limpieza
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: pisos
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: aire_acondicionado
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: impermeabilizacion
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
+[Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
+◇ injected env (4) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
+
+Node.js v25.8.2
+[PEDIDOS] io disponible: true — pedido: electricidad la_matanza
+[Socket] nueva_oportunidad emitida: electricidad la_matanza
+[PEDIDOS] Creado: 6a0a28fbea3adc96990bb605 - electricidad en la_matanza
+[FLUJO] Iniciando: electricidad en la_matanza
+[BUSCAR] Rubro: "electricidad" | Zona: la_matanza | Coords: -34.6,-58.4
+[BUSCAR] Workers encontrados: 20
+   - Leonardo Flores | rubro: electricidad | disponible: true
+   - Valentin Reyes | rubro: electricidad | disponible: true
+   - Bruno Fernandez | rubro: electricidad | disponible: true
+   - Sandra Marin | rubro: electricidad | disponible: true
+   - Gabriela Rios | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+[FLUJO] ✅ Notificados 20 workers
+[PEDIDOS] io disponible: true — pedido: electricidad la_matanza
+[Socket] nueva_oportunidad emitida: electricidad la_matanza
+[PEDIDOS] Creado: 6a0a2a2fea3adc96990bb606 - electricidad en la_matanza
+[FLUJO] Iniciando: electricidad en la_matanza
+[BUSCAR] Rubro: "electricidad" | Zona: la_matanza | Coords: -34.6,-58.4
+[BUSCAR] Workers encontrados: 20
+   - Leonardo Flores | rubro: electricidad | disponible: true
+   - Valentin Reyes | rubro: electricidad | disponible: true
+   - Bruno Fernandez | rubro: electricidad | disponible: true
+   - Sandra Marin | rubro: electricidad | disponible: true
+   - Gabriela Rios | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+[FLUJO] ✅ Notificados 20 workers
+[PEDIDOS] io disponible: true — pedido: electricidad la_matanza
+[Socket] nueva_oportunidad emitida: electricidad la_matanza
+[PEDIDOS] Creado: 6a0a2a68ea3adc96990bb607 - electricidad en la_matanza
+[FLUJO] Iniciando: electricidad en la_matanza
+[BUSCAR] Rubro: "electricidad" | Zona: la_matanza | Coords: -34.6,-58.4
+[BUSCAR] Workers encontrados: 20
+   - Leonardo Flores | rubro: electricidad | disponible: true
+   - Valentin Reyes | rubro: electricidad | disponible: true
+   - Bruno Fernandez | rubro: electricidad | disponible: true
+   - Sandra Marin | rubro: electricidad | disponible: true
+   - Gabriela Rios | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+[FLUJO] ✅ Notificados 20 workers
+[PEDIDOS] io disponible: true — pedido: electricidad la_matanza
+[Socket] nueva_oportunidad emitida: electricidad la_matanza
+[PEDIDOS] Creado: 6a0a2bb0ea3adc96990bb608 - electricidad en la_matanza
+[FLUJO] Iniciando: electricidad en la_matanza
+[BUSCAR] Rubro: "electricidad" | Zona: la_matanza | Coords: -34.6,-58.4
+[BUSCAR] Workers encontrados: 20
+   - Leonardo Flores | rubro: electricidad | disponible: true
+   - Valentin Reyes | rubro: electricidad | disponible: true
+   - Bruno Fernandez | rubro: electricidad | disponible: true
+   - Sandra Marin | rubro: electricidad | disponible: true
+   - Gabriela Rios | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+   - Prospecto electricidad | rubro: electricidad | disponible: true
+[FLUJO] ✅ Notificados 20 workers

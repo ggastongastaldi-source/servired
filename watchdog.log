@@ -13,3 +13,13 @@ Sun May 17 13:58:06 -03 2026 ▶ Watchdog iniciado.
 Sun May 17 13:58:06 -03 2026 ⚠️  /health = 000. Fallo 1/4
 Sun May 17 13:58:36 -03 2026 ✅ Node vivo tras 1 fallos.
 Sun May 17 16:29:00 -03 2026 ▶ Watchdog iniciado.
+Sun May 17 17:05:56 -03 2026 ▶ Watchdog+GIA iniciado.
+Sun May 17 17:05:56 -03 2026 ⚠️  /health=000 Fallo 1/4
+Sun May 17 17:06:26 -03 2026 ⚠️  /health=000 Fallo 2/4
+Sun May 17 17:10:02 -03 2026 ▶ Watchdog+GIA iniciado.
+Sun May 17 17:13:22 -03 2026 ▶ Watchdog+GIA iniciado.
+Sun May 17 17:14:22 -03 2026 ▶ Watchdog+GIA iniciado.
+Sun May 17 17:20:31 -03 2026 ▶ Watchdog+GIA iniciado.
+Sun May 17 17:21:22 -03 2026 ▶ Watchdog+GIA iniciado.
+Sun May 17 17:39:06 -03 2026 ▶ Watchdog+GIA iniciado.
+Sun May 17 17:39:38 -03 2026 ▶ Watchdog+GIA iniciado.

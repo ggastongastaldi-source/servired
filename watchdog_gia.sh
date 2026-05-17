@@ -1,10 +1,10 @@
-#!/data/data/com.termux/files/home/usr/bin/bash
+#!/data/data/com.termux/files/usr/bin/bash
 # ═══════════════════════════════════════════
 # WATCHDOG + GIA — ServiRed Auto-Healing
 # ═══════════════════════════════════════════
 
-LOG=~/servired/watchdog.log
-SERVER_LOG=~/servired/server.log
+LOG=/data/data/com.termux/files/home/servired/watchdog.log
+SERVER_LOG=/data/data/com.termux/files/home/servired/server.log
 PUERTO=3000
 FALLOS=0
 MAX_FALLOS=4
