@@ -1,0 +1,8 @@
+Sun May 17 08:25:58 -03 2026 ▶ Watchdog iniciado.
+Sun May 17 08:25:58 -03 2026 ⚠️  ServiRed NO responde (HTTP 000). Intento 1/5
+Sun May 17 08:26:59 -03 2026 ⚠️  ServiRed NO responde (HTTP 000). Intento 2/5
+Sun May 17 08:27:59 -03 2026 ⚠️  ServiRed NO responde (HTTP 000). Intento 3/5
+Sun May 17 08:28:59 -03 2026 ⚠️  ServiRed NO responde (HTTP 000). Intento 4/5
+Sun May 17 08:29:59 -03 2026 ⚠️  ServiRed NO responde (HTTP 000). Intento 5/5
+Sun May 17 08:29:59 -03 2026 🔴 MAX reintentos alcanzado. Matando proceso...
+Sun May 17 08:30:02 -03 2026 🟢 ServiRed relanzado. PID: 30260

@@ -111,4 +111,43 @@ function iniciar() {
   setTimeout(patrol, 60000);
 }
 
-module.exports = { iniciar, patrol };
+
+// ════════════════════════════════════════
+// QUARANTINE — Limpieza cada 12hs
+// ════════════════════════════════════════
+const cleanHouse = async () => {
+  try {
+    const mongoose = require('mongoose');
+    const db = mongoose.connection;
+    const ahora = new Date();
+
+    const trash = await Pedido.find({
+      $or: [
+        { total_estimado: { $in: [0, null] } },
+        { estado: 'CANCELADO_SISTEMA',
+          updatedAt: { $lt: new Date(ahora - 7 * 24 * 60 * 60 * 1000) } }
+      ]
+    });
+
+    if (trash.length > 0) {
+      const col = db.collection('quarantine_orders');
+      await col.insertMany(trash.map(t => ({
+        ...t.toObject(),
+        archivedAt: ahora,
+        reason: (!t.total_estimado || t.total_estimado === 0)
+          ? 'precio_invalido'
+          : 'cancelado_viejo'
+      })));
+      const ids = trash.map(t => t._id);
+      await Pedido.deleteMany({ _id: { $in: ids } });
+      console.log('[CLEANHOUSE] ' + trash.length + ' pedidos → quarantine_orders');
+    }
+  } catch(e) {
+    console.error('[CLEANHOUSE] Error:', e.message);
+  }
+};
+
+setInterval(cleanHouse, 12 * 60 * 60 * 1000);
+setTimeout(cleanHouse, 5 * 60 * 1000); // Primer barrido a los 5 min
+
+module.exports = { iniciar, patrol, cleanHouse };
