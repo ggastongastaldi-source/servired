@@ -236,6 +236,8 @@ select option{background:#1a2236;color:#e2e8f0;}
 <div class="toast" id="toast"></div>
 
 <script>
+const urlT=new URLSearchParams(window.location.search).get('t');
+if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/admin.html');}
 const TOKEN=localStorage.getItem('token');
 if(!TOKEN){window.location='/';}
 function logout(){localStorage.removeItem('token');window.location='/';}
