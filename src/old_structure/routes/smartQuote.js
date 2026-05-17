@@ -2,6 +2,30 @@ const express = require('express');
 const router = express.Router();
 const Groq = require('groq-sdk');
 
+// ── MICRO-CACHE 15 min — evita llamadas repetidas a Groq/APIs ──
+const _cache = new Map();
+function cacheGet(key) {
+  const hit = _cache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.ts > 15 * 60 * 1000) { _cache.delete(key); return null; }
+  return hit.val;
+}
+function cacheSet(key, val) { _cache.set(key, { val, ts: Date.now() }); }
+
+// ── GROQ SINGLETON — una sola instancia en memoria ──
+let _groq = null;
+function getGroq() {
+  if (!_groq) _groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  return _groq;
+}
+
+// ── INDICES ECONÓMICOS — valores con micro-cache ──
+const INDICES = {
+  bigMac: 10500,   // ARS abril 2026
+  dolarBlue: 1450, // ARS abril 2026
+  inflacionUmbral: 0.15, // 15% mensual dispara alerta háptica
+};
+
 // Precios reales abril 2026 indexados Big Mac $10.500
 // Fuente: relevamiento AMBA + indice Big Mac
 const PRECIOS = {
@@ -116,7 +140,7 @@ router.post('/', async (req, res) => {
     // Modo texto libre con Groq
     if (texto && !rubro) {
       try {
-        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        const groq = getGroq();
         const chat = await groq.chat.completions.create({
           model: 'llama-3.1-8b-instant',
           max_tokens: 400,
@@ -136,6 +160,11 @@ router.post('/', async (req, res) => {
 
     if (!rubro) return res.json({ ok: false, error: 'Falta rubro', total_estimado: 0 });
 
+    // ── MICRO-CACHE: misma cotización en 15 min sin llamar Groq ──
+    const cacheKey = `sq_${rubro}_${complejidad}_${zona}_${horas}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json({ ...cached, cached: true });
+
     const nivel = (complejidad === 'alta' || complejidad === 'complejo') ? 'alta' : 'baja';
     const precioBase = PRECIOS[rubro]?.[nivel] || 80000;
 
@@ -151,7 +180,7 @@ router.post('/', async (req, res) => {
     // Descripcion IA
     let descripcionIA = '';
     try {
-      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      const groq = getGroq();
       const chat = await groq.chat.completions.create({
         model: 'llama-3.1-8b-instant',
         max_tokens: 80,
@@ -165,7 +194,7 @@ router.post('/', async (req, res) => {
       console.error('[smartQuote] Groq IA:', e.message.slice(0,60));
     }
 
-    res.json({
+    const respuesta = {
       ok: true, modo: 'aladin',
       rubro, zona: zona||'CABA',
       complejidad: nivel,
@@ -178,8 +207,10 @@ router.post('/', async (req, res) => {
       pagoWorker: precioTotal - comision,
       pago_worker: precioTotal - comision,
       descripcion_ia: descripcionIA,
-      big_mac_base: 10500,
-    });
+      big_mac_base: INDICES.bigMac,
+    };
+    cacheSet(cacheKey, respuesta);
+    res.json(respuesta);
 
   } catch(e) {
     console.error('[smartQuote] Error:', e.message);
@@ -190,3 +221,36 @@ router.post('/', async (req, res) => {
 module.exports = router;
 // cache-bust Tue Apr 28 01:05:54 -03 2026
 // bust-1777349554
+
+// ── SMARTWATCH API — endpoints minimalistas ──────────────────
+// GET /api/smart-quote/watch/indices
+// Devuelve BigMac + dólar + umbral inflación (JSON < 100 bytes)
+router.get('/watch/indices', (req, res) => {
+  res.json(INDICES);
+});
+
+// GET /api/smart-quote/watch/precio?r=plomeria&z=palermo
+// Cotización ultra-rápida sin IA, solo tabla local
+router.get('/watch/precio', (req, res) => {
+  const { r, z, h } = req.query;
+  if (!r) return res.json({ e: 'falta r' });
+  const base = PRECIOS[r]?.baja || 80000;
+  const zKey = Object.keys(MULT_ZONA).find(k => (z||'').toLowerCase().includes(k));
+  const mult = zKey ? MULT_ZONA[zKey] : 1.0;
+  const hrs = Math.max(1, parseFloat(h) || 1);
+  const total = Math.round(base * mult * hrs);
+  // Respuesta minimalista para pantalla chica
+  res.json({ r, total, worker: Math.round(total * 0.8), srv: Math.round(total * 0.2) });
+});
+
+// POST /api/smart-quote/watch/alerta-inflacion
+// El watch puede configurar el umbral háptico
+router.post('/watch/alerta-inflacion', (req, res) => {
+  const { umbral } = req.body;
+  if (umbral && umbral > 0 && umbral < 1) {
+    INDICES.inflacionUmbral = umbral;
+    res.json({ ok: true, umbral });
+  } else {
+    res.json({ ok: false, error: 'umbral debe ser decimal entre 0 y 1' });
+  }
+});
