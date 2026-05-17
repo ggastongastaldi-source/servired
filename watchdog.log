@@ -6,3 +6,9 @@ Sun May 17 08:28:59 -03 2026 ⚠️  ServiRed NO responde (HTTP 000). Intento 4/
 Sun May 17 08:29:59 -03 2026 ⚠️  ServiRed NO responde (HTTP 000). Intento 5/5
 Sun May 17 08:29:59 -03 2026 🔴 MAX reintentos alcanzado. Matando proceso...
 Sun May 17 08:30:02 -03 2026 🟢 ServiRed relanzado. PID: 30260
+Sun May 17 13:46:20 -03 2026 ▶ Watchdog iniciado.
+Sun May 17 13:46:20 -03 2026 ⚠️  /health = 000. Fallo 1/4
+Sun May 17 13:46:51 -03 2026 ✅ Node vivo tras 1 fallos.
+Sun May 17 13:58:06 -03 2026 ▶ Watchdog iniciado.
+Sun May 17 13:58:06 -03 2026 ⚠️  /health = 000. Fallo 1/4
+Sun May 17 13:58:36 -03 2026 ✅ Node vivo tras 1 fallos.

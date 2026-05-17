@@ -439,7 +439,7 @@ function initApp(){
       rubrosEl.appendChild(s);
     });
   }
-  if(socket)socket.emit('worker_conectado',{token:TOKEN,userId:USER_ID,rubro:USER_RUBRO,zona:USER_ZONA,nombre:USER_NOMBRE});
+  // worker_conectado se emite en el handler 'connect' (ver abajo)
 
   // GPS continuo
   if(navigator.geolocation){
@@ -456,35 +456,45 @@ function initApp(){
     }, {enableHighAccuracy:true, maximumAge:10000, timeout:15000});
   }
 
-  // Listeners registrados en connect para sobrevivir reconexiones
+  // Listeners — registrados en connect para sobrevivir reconexiones
   function registrarListeners() {
     socket.off('nueva_oportunidad');
     socket.off('pedido_cancelado');
+    socket.off('deuda_comision');
+
     socket.on('nueva_oportunidad', onNuevoPedido);
+
     socket.on('pedido_cancelado', () => {
       document.getElementById('pedido-activo').classList.remove('visible');
       pedidoActualId = null;
       toast('⚠️ Cliente canceló el pedido');
     });
+
+    socket.on('deuda_comision', function(data) {
+      toast('💰 ' + data.mensaje, 8000);
+      const estadoEl = document.getElementById('estado-msg');
+      if(estadoEl) estadoEl.innerHTML = '⚠️ Deuda pendiente: <strong style="color:#FF6D00">$' + (data.monto||0).toLocaleString('es-AR') + '</strong> con SERVired';
+      if(window.SRAlert){ SRAlert.init(); SRAlert.pago(); }
+    });
   }
-  registrarListeners();
-  socket.on('connect', registrarListeners);
-  socket.on('reconnect', registrarListeners);
-  socket.on('pedido_cancelado',()=>{document.getElementById('pedido-activo').classList.remove('visible');pedidoActualId=null;toast('⚠️ Cliente canceló el pedido');});
 
-socket.on("deuda_comision", function(data) {
-  toast("💰 " + data.mensaje, 8000);
-  var estadoEl = document.getElementById("estado-msg");
-  if(estadoEl) estadoEl.innerHTML = "⚠️ Deuda pendiente: <strong style=\"color:#FF6D00\">$" + (data.monto||0).toLocaleString("es-AR") + "</strong> con SERVired";
-  if(window.SRAlert){SRAlert.init();SRAlert.pago();}
-});
+  // Emitir worker_conectado solo cuando el socket esté efectivamente conectado
+  socket.on('connect', () => {
+    socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
+    registrarListeners();
+  });
+  socket.on('reconnect', () => {
+    socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
+    registrarListeners();
+  });
 
-socket.on('deuda_comision', data => {
-  toast('💰 ' + data.mensaje, 8000);
-  const estadoEl = document.getElementById('estado-msg');
-  if(estadoEl) estadoEl.innerHTML = '⚠️ Deuda pendiente: <strong style="color:#FF6D00">$'+data.monto.toLocaleString('es-AR')+'</strong> con SERVired';
-  if(window.SRAlert){SRAlert.init();SRAlert.pago();}
-});
+  // Si ya está conectado al momento de initApp (reconexión rápida)
+  if(socket.connected) {
+    socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
+    registrarListeners();
+  }
+
+// deuda_comision — ver registrarListeners()
 }
 
 function initMapa(){
