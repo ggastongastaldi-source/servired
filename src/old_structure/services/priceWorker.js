@@ -74,6 +74,11 @@ async function ejecutarCicloAladin() {
   let actualizados = 0;
   for (const [rubro, vals] of Object.entries(precios)) {
     if (!vals.baja || !vals.alta) continue;
+    // WHITELIST — ignorar cualquier rubro que Groq haya inventado
+    if (!RUBROS.includes(rubro)) {
+      console.log(`[Aladdín-Worker] ⚠️  Rubro espurio ignorado: ${rubro}`);
+      continue;
+    }
     await PrecioMercado.findOneAndUpdate(
       { rubro },
       {
