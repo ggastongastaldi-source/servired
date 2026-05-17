@@ -183,7 +183,9 @@ select option{background:#1a2236;color:#e2e8f0;}
     </div>
     <div class="card">
       <div class="card-title">// Precio estimado · Motor Aladín</div>
-      <div class="precio-row"><span style="color:var(--muted)">Base estimada</span><span class="precio-valor" id="precio-display">$ —</span></div>
+      <div class="precio-row"><span style="color:var(--muted)">Base estimada</span><span class="precio-valor" id="precio-display">$ —</span>
+      <span id="aladdin-badge" style="display:none;font-size:0.7rem;font-weight:700;margin-left:8px;letter-spacing:0.5px;"></span>
+      <span id="aladdin-unidad" style="font-size:0.75rem;color:#64748b;margin-left:6px;"></span></div>
       <div id="sq-desc-ia" style="font-size:0.75rem;color:#64748b;margin-top:4px;min-height:16px;font-style:italic;"></div>
       <div id="sq-desglose" style="font-size:0.7rem;color:#FF6D00;margin-top:2px;font-family:'Share Tech Mono',monospace;"></div>
       <button id="btn-pagar-mp" onclick="pagarConMP()" style="display:none;width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#00b9e8,#009ee3);border:none;border-radius:10px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:1px;">
@@ -289,6 +291,15 @@ function selSrv(btn, data) {
         if (pDisp) pDisp.innerText = '$ ' + Number(precioSel).toLocaleString('es-AR');
         const zonaEl = document.getElementById('zona-display');
         if (zonaEl) zonaEl.textContent = 'Zona: ' + (d.zona||zonaCliente) + ' · Comisión SERVired: $' + comisionActual.toLocaleString('es-AR');
+        const badgeEl = document.getElementById('aladdin-badge');
+        if (badgeEl) {
+          const esVivo = d.fuente === 'aladdin-mongo' || d.f === 'aladdin-mongo';
+          badgeEl.textContent = esVivo ? '🧠 PRECIO VIVO' : '⏱️ ESTIMADO';
+          badgeEl.style.color = esVivo ? '#00E5FF' : '#94a3b8';
+          badgeEl.style.display = 'inline';
+        }
+        const unidadEl = document.getElementById('aladdin-unidad');
+        if (unidadEl && d.unidad) unidadEl.textContent = 'por ' + d.unidad;
       } else {
         precioSel = data.precio;
         if (pDisp) pDisp.innerText = '$ ' + Number(data.precio).toLocaleString('es-AR');

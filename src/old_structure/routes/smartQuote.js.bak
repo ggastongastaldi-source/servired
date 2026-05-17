@@ -232,37 +232,16 @@ router.get('/watch/indices', (req, res) => {
 
 // GET /api/smart-quote/watch/precio?r=plomeria&z=palermo
 // Cotización ultra-rápida sin IA, solo tabla local
-router.get('/watch/precio', async (req, res) => {
+router.get('/watch/precio', (req, res) => {
   const { r, z, h } = req.query;
   if (!r) return res.json({ e: 'falta r' });
-
-  let base;
-  let unidad = 'hora';
-  let fuente = 'aladdin-mongo';
-
-  try {
-    const vivo = await PrecioMercado.findOne({ rubro: r.toLowerCase() }).lean();
-    if (vivo) {
-      base = vivo.baja;
-      unidad = vivo.unidad || 'hora';
-    } else {
-      base = PRECIOS[r]?.baja || 85000;
-      fuente = 'static-fallback';
-      console.log(`[SmartQuote] ⚠️ Rubro ${r} no en DB, usando fallback.`);
-    }
-  } catch (err) {
-    console.error('[SmartQuote] ❌ Error DB:', err.message);
-    base = PRECIOS[r]?.baja || 90000;
-    fuente = 'emergency-hardcoded';
-  }
-
-  const base_usado = base;
+  const base = PRECIOS[r]?.baja || 80000;
   const zKey = Object.keys(MULT_ZONA).find(k => (z||'').toLowerCase().includes(k));
   const mult = zKey ? MULT_ZONA[zKey] : 1.0;
   const hrs = Math.max(1, parseFloat(h) || 1);
-  const total = Math.round(base_usado * mult * hrs);
-  console.log(`[SmartQuote] 💰 ${r} | $${total} | fuente: ${fuente}`);
-  res.json({ r, total, unidad, worker: Math.round(total * 0.8), srv: Math.round(total * 0.2), f: fuente });
+  const total = Math.round(base * mult * hrs);
+  // Respuesta minimalista para pantalla chica
+  res.json({ r, total, worker: Math.round(total * 0.8), srv: Math.round(total * 0.2) });
 });
 
 // POST /api/smart-quote/watch/alerta-inflacion
