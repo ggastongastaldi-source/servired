@@ -35,7 +35,7 @@ Referencias orientativas mayo 2026:
 
 Rubros a cotizar: \${RUBROS.join(', ')}
 
-Respondé SOLO con un JSON válido, sin explicaciones, sin markdown, sin backticks.
+CRÍTICO: Las keys del JSON deben ser EXACTAMENTE los nombres del array que te di, sin traducir ni renombrar. Respondé SOLO con un JSON válido, sin explicaciones, sin markdown, sin backticks.
 Formato exacto — incluí los \${RUBROS.length} rubros:
 {
   "plomeria": { "baja": 18000, "alta": 35000, "unidad": "hora" },
