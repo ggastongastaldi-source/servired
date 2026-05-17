@@ -53,3 +53,17 @@
 [Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
 [Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
 [Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
+◇ injected env (4) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+✅ MongoDB conectado
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: limpieza
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: pisos
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: aire_acondicionado
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: impermeabilizacion
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
+[Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
