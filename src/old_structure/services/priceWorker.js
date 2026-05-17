@@ -73,7 +73,7 @@ async function ejecutarCicloAladin() {
         confidence: 0.75,
         actualizadoEn: new Date()
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     );
     actualizados++;
   }
