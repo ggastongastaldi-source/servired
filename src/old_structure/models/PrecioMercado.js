@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 
 const PrecioMercadoSchema = new mongoose.Schema({
-  rubro:       { type: String, required: true, unique: true },
-  baja:        { type: Number, required: true },
-  alta:        { type: Number, required: true },
-  fuente:      { type: String, default: 'manual' }, // manual | tavily | mercadolibre
-  actualizadoEn: { type: Date, default: Date.now },
-}, { timestamps: true });
+  rubro:    { type: String, required: true, unique: true },
+  baja:     { type: Number, required: true },
+  alta:     { type: Number, required: true },
+  fuente:   { type: String, default: 'groq-estimacion' },
+  confidence: { type: Number, default: 0.5 },
+  actualizadoEn: { type: Date, default: Date.now }
+});
 
 module.exports = mongoose.model('PrecioMercado', PrecioMercadoSchema);

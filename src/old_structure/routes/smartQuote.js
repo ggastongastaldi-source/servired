@@ -1,4 +1,5 @@
 const express = require('express');
+const PrecioMercado = require('../models/PrecioMercado');
 const router = express.Router();
 const Groq = require('groq-sdk');
 

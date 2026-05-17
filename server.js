@@ -135,3 +135,12 @@ module.exports = { app, server, io };
 // restart-1777349710
 // redeploy 1777350915
 // force 1777352750
+
+// ── ALADDÍN PRICE BRAIN — latido cada 12h ──────────────────
+const cron = require('node-cron');
+const { ejecutarCicloAladin } = require('./src/old_structure/services/priceWorker');
+cron.schedule('0 8,20 * * *', () => {
+  ejecutarCicloAladin().catch(err => console.error('[Aladdín-Cron] Error:', err.message));
+});
+// Corrida inicial al arrancar (diferida 10s para que Mongo conecte)
+setTimeout(() => ejecutarCicloAladin().catch(console.error), 10000);
