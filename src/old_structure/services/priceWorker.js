@@ -18,20 +18,30 @@ function getGroq() {
 }
 
 async function consultarPreciosGroq() {
-  const hoy = new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-  const prompt = `Sos un experto en precios de servicios del hogar en Argentina (AMBA/Buenos Aires) a ${hoy}.
-Dame una estimación realista en pesos argentinos de los siguientes rubros.
-Para cada rubro devolve: precio mínimo (baja) y precio máximo (alta) por hora o unidad típica de cobro.
+  const prompt = `Sos un experto analista de precios de gremios y servicios del hogar en Argentina (AMBA/Gran Buenos Aires). Estamos en MAYO 2026. La inflación acumulada de los últimos 12 meses fue aproximadamente 45%. Los precios deben reflejar la realidad de la calle HOY.
 
-Rubros: ${RUBROS.join(', ')}
+Para cada rubro determiná la unidad de cobro lógica:
+- "hora" para servicios de mano de obra por hora (plomería, electricidad, limpieza, etc.)
+- "m2" para trabajos que se cobran por metro cuadrado (pintura, pisos, durlock, etc.)
+- "trabajo" para instalaciones o trabajos que se cotizan como proyecto completo (paneles solares, aire acondicionado, impermeabilización, alarmas, cámaras, domótica)
+
+Referencias orientativas mayo 2026:
+- Un plomero en CABA cobra entre $18.000 y $35.000 por hora
+- Un electricista entre $16.000 y $30.000 por hora
+- Pintura interior entre $8.000 y $15.000 por m2
+- Instalación de split 3000 frigorías entre $180.000 y $350.000 por trabajo
+- Kit 4 cámaras instalado entre $200.000 y $500.000 por trabajo
+- Paneles solares 3kw instalados entre $2.000.000 y $4.500.000 por trabajo
+
+Rubros a cotizar: \${RUBROS.join(', ')}
 
 Respondé SOLO con un JSON válido, sin explicaciones, sin markdown, sin backticks.
-Formato exacto:
+Formato exacto — incluí los \${RUBROS.length} rubros:
 {
-  "plomeria": { "baja": 15000, "alta": 25000 },
-  "electricidad": { "baja": 14000, "alta": 22000 }
-}
-Incluí los ${RUBROS.length} rubros.`;
+  "plomeria": { "baja": 18000, "alta": 35000, "unidad": "hora" },
+  "pintura": { "baja": 8000, "alta": 15000, "unidad": "m2" },
+  "paneles_solares": { "baja": 2000000, "alta": 4500000, "unidad": "trabajo" }
+}`;
 
   const resp = await getGroq().chat.completions.create({
     model: 'llama-3.3-70b-versatile',
@@ -69,6 +79,7 @@ async function ejecutarCicloAladin() {
       {
         baja: vals.baja,
         alta: vals.alta,
+        unidad: vals.unidad || 'hora',
         fuente: 'groq-estimacion',
         confidence: 0.75,
         actualizadoEn: new Date()
