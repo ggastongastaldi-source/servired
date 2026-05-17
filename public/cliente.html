@@ -151,7 +151,9 @@ select option{background:#1a2236;color:#e2e8f0;}
   <meta name="theme-color" content="#00E5FF">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
-  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <script>
+function logout(){localStorage.removeItem('token');window.location='/';}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
   <script>window.onerror = function(m, u, l) { alert("ERROR JS: " + m + " en linea " + l); };</script>
 </head>
 <body>
@@ -312,11 +314,8 @@ function selSrv(btn, data) {
 }
 
 
-function logout(){localStorage.removeItem('token');window.location='/';}
 const urlT=new URLSearchParams(window.location.search).get('t');
 if(urlT){localStorage.setItem('token',urlT);history.replaceState(null,'','/cliente.html');}
-const urlT2=new URLSearchParams(window.location.search).get('t');
-if(urlT2){localStorage.setItem('token',urlT2);}
 const TOKEN=localStorage.getItem('token');
 let rubroActual=null,precioActual=0,comisionActual=0,pagoWorkerActual=0,zonaCliente='la_matanza',pedidoActivoId=null;
 
@@ -782,18 +781,7 @@ socket.on("link_pago", function(data) {
   if(window.SRAlert){SRAlert.init();SRAlert.pago();}
 });
 
-socket.on('link_pago', data => {
-  const btn = document.getElementById('btn-pagar-mp');
-  if (btn) {
-    btn.style.display = 'block';
-    btn.onclick = () => window.open(data.url, '_blank');
-    btn.textContent = '💳 PAGAR CON MERCADO PAGO - ARS $' + (data.monto||0).toLocaleString('es-AR');
-  }
-  document.getElementById('estado-bar').classList.add('visible');
-  document.getElementById('estado-txt').textContent = '💳 ¡El trabajo está listo! Realizá el pago para confirmar.';
-  toast('💳 ¡Realizá el pago para confirmar el servicio!', 6000);
-  if(window.SRAlert) { SRAlert.init(); SRAlert.pago(); }
-});
+
 socket.on('pedido_cancelado',()=>{toast('Pedido cancelado');resetUI();});
 
 async function cargarHistorial(){
