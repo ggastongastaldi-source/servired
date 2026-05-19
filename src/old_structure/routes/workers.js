@@ -45,9 +45,9 @@ router.post('/session', authJWT, async (req, res) => {
     );
 
     // Emitir nuevo reconnectToken (válido 8h)
-    const reconnectToken = await Worker.issueReconnectToken(workerId);
+    const { rawToken, version } = await Worker.issueReconnectToken(workerId);
 
-    res.json({ ok: true, workerId, reconnectToken });
+    res.json({ ok: true, workerId, reconnectToken: rawToken, reconnectTokenVersion: version });
   } catch (e) {
     console.error('[GR3] /api/workers/session error:', e.message);
     res.status(500).json({ ok: false, error: e.message });

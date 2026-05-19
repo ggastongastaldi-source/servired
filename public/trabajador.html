@@ -423,6 +423,7 @@ function initApp(){
       if (data.ok && data.reconnectToken) {
         localStorage.setItem('gr3_reconnectToken', data.reconnectToken);
         localStorage.setItem('gr3_workerId', data.workerId);
+        localStorage.setItem('gr3_tokenVersion', String(data.reconnectTokenVersion || 0));
         console.log('[GR3] reconnectToken obtenido workerId=' + data.workerId);
         return data;
       }
@@ -439,12 +440,15 @@ function initApp(){
       if (!data) return;
       return gr3_restoreSession(socket);
     }
+    const _gr3v = parseInt(localStorage.getItem('gr3_tokenVersion') || '0', 10);
     socket.emit('worker:restore-session', {
       workerId,
       reconnectToken,
+      reconnectTokenVersion: _gr3v,
       runtimeData: {
         platform:     navigator.userAgent,
         networkType:  navigator.connection?.effectiveType || 'unknown',
+        batteryLevel: window._gr3_batteryLevel ?? null,
         appVersion:   '3.0.0',
       }
     }, (ack) => {
@@ -453,7 +457,7 @@ function initApp(){
         console.log('[GR3] Restore OK — fsmState=' + ack.fsmState + ' v=' + ack.sessionVersion);
         if (ack.reliabilityFlags?.length)
           console.warn('[GR3] Flags:', ack.reliabilityFlags);
-      } else if (ack.reason === 'INVALID_TOKEN' || ack.reason === 'TOKEN_EXPIRED') {
+      } else if (['INVALID_TOKEN','TOKEN_EXPIRED','INVALID_TOKEN_VERSION','TOKEN_VERSION_MISMATCH'].includes(ack.reason)) {
         console.warn('[GR3] Token inválido/expirado, renovando...');
         localStorage.removeItem('gr3_reconnectToken');
         localStorage.removeItem('gr3_workerId');
@@ -481,10 +485,7 @@ function initApp(){
     reconnectionDelay:2000,
     reconnectionDelayMax:10000
   });
-  socket.on('reconnect',()=>{
-    console.log('Socket reconectado');
-    if(typeof registrarWorker==='function') registrarWorker();
-  });
+  // [GR3] reconnect manejado abajo junto con connect
 }catch(ex){console.error('Socket error:',ex);}
   try{initMapa();}catch(ex){console.error('Mapa error:',ex);}
   const payload=JSON.parse(atob(TOKEN.split('.')[1]));
@@ -546,10 +547,12 @@ function initApp(){
   socket.on('connect', () => {
     socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
     registrarListeners();
+    gr3_restoreSession(socket);
   });
   socket.on('reconnect', () => {
     socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
     registrarListeners();
+    gr3_restoreSession(socket);
   });
 
   // Si ya está conectado al momento de initApp (reconexión rápida)
