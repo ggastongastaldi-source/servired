@@ -411,6 +411,70 @@ let socket;
 
 function initApp(){
   try{
+
+  // ── GR3: obtener/renovar reconnectToken ─────────────────────────────────
+  async function gr3_fetchReconnectToken() {
+    try {
+      const res = await fetch('/api/workers/session', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.ok && data.reconnectToken) {
+        localStorage.setItem('gr3_reconnectToken', data.reconnectToken);
+        localStorage.setItem('gr3_workerId', data.workerId);
+        console.log('[GR3] reconnectToken obtenido workerId=' + data.workerId);
+        return data;
+      }
+    } catch (e) { console.warn('[GR3] fetchReconnectToken error:', e.message); }
+    return null;
+  }
+
+  async function gr3_restoreSession(socket) {
+    const reconnectToken = localStorage.getItem('gr3_reconnectToken');
+    const workerId       = localStorage.getItem('gr3_workerId');
+    if (!reconnectToken || !workerId) {
+      // No tenemos token aún — pedirlo primero
+      const data = await gr3_fetchReconnectToken();
+      if (!data) return;
+      return gr3_restoreSession(socket);
+    }
+    socket.emit('worker:restore-session', {
+      workerId,
+      reconnectToken,
+      runtimeData: {
+        platform:     navigator.userAgent,
+        networkType:  navigator.connection?.effectiveType || 'unknown',
+        appVersion:   '3.0.0',
+      }
+    }, (ack) => {
+      if (!ack) return;
+      if (ack.ok) {
+        console.log('[GR3] Restore OK — fsmState=' + ack.fsmState + ' v=' + ack.sessionVersion);
+        if (ack.reliabilityFlags?.length)
+          console.warn('[GR3] Flags:', ack.reliabilityFlags);
+      } else if (ack.reason === 'INVALID_TOKEN' || ack.reason === 'TOKEN_EXPIRED') {
+        console.warn('[GR3] Token inválido/expirado, renovando...');
+        localStorage.removeItem('gr3_reconnectToken');
+        localStorage.removeItem('gr3_workerId');
+        gr3_fetchReconnectToken().then(() => gr3_restoreSession(socket));
+      } else {
+        console.error('[GR3] Restore fallido:', ack.reason);
+      }
+    });
+  }
+
+  // ── GR3: heartbeat cada 20s ──────────────────────────────────────────────
+  let gr3_heartbeatInterval = null;
+  function gr3_startHeartbeat(socket) {
+    if (gr3_heartbeatInterval) clearInterval(gr3_heartbeatInterval);
+    const workerId = localStorage.getItem('gr3_workerId');
+    gr3_heartbeatInterval = setInterval(() => {
+      if (!socket.connected || !workerId) return;
+      socket.emit('worker:heartbeat', { workerId });
+    }, 20000);
+  }
+
   socket=io(window.location.origin,{
     reconnection:true,
     reconnectionAttempts:Infinity,
