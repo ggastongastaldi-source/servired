@@ -10,7 +10,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 global.io = io;
+const registerWorkerHandlers = require('./sockets/worker.handler');
 require('./src/old_structure/services/socketHandlers')(io);
+io.on('connection', (socket) => { registerWorkerHandlers(io, socket); });
 require('./globuloRojo/watchdog').iniciar();
 require('./src/old_structure/services/mensajeriaSocket')(io);;
 
