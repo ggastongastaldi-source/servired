@@ -144,3 +144,23 @@ cron.schedule('0 8,20 * * *', () => {
 });
 // Corrida inicial al arrancar (diferida 10s para que Mongo conecte)
 setTimeout(() => ejecutarCicloAladin().catch(console.error), 10000);
+
+// ===============================
+// KEEPALIVE / ANTI-SPINDOWN
+// ===============================
+
+app.get('/ping', (req, res) => {
+  res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
+});
+
+const https = require('https');
+const KEEPALIVE_URL = process.env.RENDER_EXTERNAL_URL || 'https://servired-6e5r.onrender.com/ping';
+
+setInterval(() => {
+  https.get(KEEPALIVE_URL, (res) => {
+    console.log('[KEEPALIVE]', new Date().toISOString(), res.statusCode);
+  }).on('error', (err) => {
+    console.error('[KEEPALIVE ERROR]', err.message);
+  });
+}, 90 * 1000);
+

@@ -276,3 +276,66 @@ Node.js v25.8.2
    - Prospecto electricidad | rubro: electricidad | disponible: true
    - Prospecto electricidad | rubro: electricidad | disponible: true
 [FLUJO] ✅ Notificados 20 workers
+◇ injected env (5) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+✅ MongoDB conectado
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: limpieza
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: pisos
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: aire_acondicionado
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: impermeabilizacion
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
+[Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
+◇ injected env (5) from .env // tip: ⌘ suppress logs { quiet: true }
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+✅ MongoDB conectado
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: limpieza
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: pisos
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: aire_acondicionado
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: impermeabilizacion
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
+[Aladdín-Worker] ✅ 6 rubros actualizados en MongoDB.
+◇ injected env (5) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at Server.setupListenHandle [as _listen2] (node:net:2008:16)
+    at listenInCluster (node:net:2065:12)
+    at node:net:2274:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2044:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
+
+Node.js v25.8.2
+◇ injected env (5) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+✅ MongoDB conectado
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: limpieza
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: aire_acondicionado
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: impermeabilizacion
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: camaras
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: domotica
+[Aladdín-Worker] ✅ 5 rubros actualizados en MongoDB.
