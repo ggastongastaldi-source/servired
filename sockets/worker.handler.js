@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const sha256 = (str) => crypto.createHash('sha256').update(str).digest('hex');
 
 const liveConnections = new Map();
-const restoreLocks    = new Map(); // Guardamos timestamp para el timeout del mutex
+const restoreLocks    = new Map();
 const heartbeatTimers = new Map();
 const HEARTBEAT_TIMEOUT_MS = 35000;
 const MUTEX_TIMEOUT_MS = 5000;
@@ -54,7 +54,6 @@ module.exports = function registerWorkerHandlers(io, socket) {
       return ack?.({ ok: false, reason: 'MISSING_CREDENTIALS' });
     }
 
-    // Limpieza de candados viejos por timeout (Mutex de seguridad)
     if (restoreLocks.has(workerId)) {
       const lockTime = restoreLocks.get(workerId);
       if (now.getTime() - lockTime > MUTEX_TIMEOUT_MS) {
@@ -69,11 +68,9 @@ module.exports = function registerWorkerHandlers(io, socket) {
 
     try {
       const hash = sha256(reconnectToken);
-      // Validamos token + versión incremental atómica
       const worker = await Worker.verifyReconnectToken(workerId, reconnectToken, reconnectTokenVersion);
       
       if (!worker) {
-        // Validación agresiva anti-replay / secuestro
         const checkWorker = await Worker.findOne({ workerId });
         if (checkWorker && checkWorker.auth.reconnectTokenVersion !== reconnectTokenVersion) {
           console.error(`🚨 [GR3] CRÍTICO: Token version mismatch detectado en workerId=${workerId}. Posible ataque o duplicado extremo. Invalidando sesión.`);
@@ -83,7 +80,6 @@ module.exports = function registerWorkerHandlers(io, socket) {
         return ack?.({ ok: false, reason: 'INVALID_TOKEN_OR_EXPIRED' });
       }
 
-      // Desconexión asíncrona de zombis con setImmediate para no bloquear el Event Loop
       const oldSocketId = liveConnections.get(workerId);
       if (oldSocketId && oldSocketId !== socket.id) {
         console.log(`🩸 [GR3] Ejecting zombie socket=${oldSocketId} para workerId=${workerId}`);
@@ -122,15 +118,12 @@ module.exports = function registerWorkerHandlers(io, socket) {
       liveConnections.set(workerId, socket.id);
       socket.join(`worker:${workerId}`);
 
-      // Suscribir a canales de despacho por zona y rubros
       if (updated.dispatch.zona && updated.dispatch.rubros?.length) {
         for (const rubro of updated.dispatch.rubros) {
-          const room = `despacho:${updated.dispatch.zona}:${rubro}`;
-          socket.join(room);
+          socket.join(`despacho:${updated.dispatch.zona}:${rubro}`);
         }
       }
 
-      // Si estaba en medio de un viaje, reconectarlo a la sala del pedido
       if (updated.dispatch.currentJobId) {
         const jobRoom = `pedido:${updated.dispatch.currentJobId}`;
         socket.join(jobRoom);
@@ -146,7 +139,6 @@ module.exports = function registerWorkerHandlers(io, socket) {
       
       const flags = updated.reliabilityFlags;
       
-      // Emit de evento de arquitectura interna para plugins o auditoría
       io.emit('gr3:session-restored', { 
         workerId, 
         socketId: socket.id, 
@@ -155,9 +147,7 @@ module.exports = function registerWorkerHandlers(io, socket) {
         timestamp: now 
       });
 
-      // Evento legacy encapsulado [DEPRECATED]
       io.emit('worker_conectado', { workerId, socketId: socket.id, deprecated: true });
-      console.log(`🩸 [GR3][DEPRECATED] Emitido evento legacy 'worker_conectado' para workerId=${workerId}`);
 
       console.log(`🩸 [GR3] Restore OK workerId=${workerId} v=${updated.connection.sessionVersion} fsm=${updated.fsmState}`);
       
@@ -181,7 +171,6 @@ module.exports = function registerWorkerHandlers(io, socket) {
     const { workerId } = payload || {};
     if (!workerId) return;
     
-    // Guard estricto de estado de socket asignado en liveConnections
     if (liveConnections.get(workerId) !== socket.id) { 
       console.warn(`🩸 [GR3] Heartbeat rechazado para socket no emparejado. Forzando desconexión.`);
       socket.disconnect(true); 
@@ -201,7 +190,6 @@ module.exports = function registerWorkerHandlers(io, socket) {
       clearHeartbeatTimer(wId);
       liveConnections.delete(wId);
       
-      // Manejo inteligente: si es corte abrupto celular, pasamos a RECONECTANDO transicional antes de tirarlo offline definitivo
       if (reason === 'transport close' || reason === 'ping timeout') {
         await Worker.findOneAndUpdate({ workerId: wId }, { $set: { 'connection.reconnecting': true } });
         console.log(`🩸 [GR3] Tránsito FSM intermedio: Worker ${wId} seteado en RECONECTANDO.`);
