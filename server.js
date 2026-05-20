@@ -152,6 +152,11 @@ setTimeout(() => ejecutarCicloAladin().catch(console.error), 10000);
 // KEEPALIVE / ANTI-SPINDOWN
 // ===============================
 
+// Aladín Vision
+app.use(require('express').json({ limit: '10mb' }));
+const presupuestoCtrl = require('./controllers/presupuestoController');
+app.post('/api/presupuesto/analizar', presupuestoCtrl.analizarPresupuesto);
+
 app.get('/ping', (req, res) => {
   res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
 });
