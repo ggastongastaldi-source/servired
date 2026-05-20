@@ -118,8 +118,15 @@ exports.analizarPresupuesto = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('[ALADÍN-VISION]', error);
-    res.status(500).json({ error: 'Error al procesar presupuesto.' });
+    const msg = error?.error?.error?.message || error?.message || '';
+    console.error('[ALADÍN-VISION]', msg);
+    if (error.status === 400 && msg.includes('pixel')) {
+        return res.status(400).json({ success: false, code: 'IMAGEN_INVALIDA', error: 'Imagen demasiado pequeña. Sacá otra foto más cerca.' });
+    }
+    if (error.status === 401) {
+        return res.status(503).json({ success: false, code: 'GROQ_AUTH', error: 'Error de autenticación con el motor de visión.' });
+    }
+    res.status(503).json({ success: false, code: 'VISION_NO_DISPONIBLE', error: 'Servicio de análisis temporalmente ocupado. Reintentá en unos segundos.' });
   }
 };
 
