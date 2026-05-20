@@ -33,7 +33,7 @@ app.use('/api/pagos', require('./src/old_structure/routes/pagos'));
   app.post('/api/admin/broadcast', require('./src/old_structure/commands/emergencyBroadcast').emergencyBroadcast);
 app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
 app.use('/api/smart-quote', require('./src/old_structure/routes/smartQuote'));
-app.use('/api/workers', require('./src/old_structure/routes/workers'));
+// [DESACTIVADO] app.use('/api/workers', null // [DESACTIVADO] worker.model no existe);
 app.use('/api/finanzas', require('./src/old_structure/routes/finanzas'));
 
 
