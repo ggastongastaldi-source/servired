@@ -564,6 +564,9 @@ function sqReset(){
 function sqElegir(key){
   try {
   rubroActual = key;
+  window.rubroSeleccionado = key;
+  const aladinDiv = document.getElementById('aladinVision');
+  if (aladinDiv) aladinDiv.style.display = 'block';
   const srv = RUBROS.find(s=>s.id===key) || RUBROS.find(s=>s.id==='servicio_domestico') || {label:key, precio:10000};
   document.getElementById('precio-display').textContent = '$ calculando...';
   fetch('/api/smart-quote',{
