@@ -15,13 +15,34 @@ const PresupuestoSchema = new mongoose.Schema({
 });
 const Presupuesto = mongoose.models.Presupuesto || mongoose.model('Presupuesto', PresupuestoSchema);
 
+let mlToken = process.env.ML_ACCESS_TOKEN || '';
+let mlTokenExpiry = 0;
+
+async function renovarTokenML() {
+  try {
+    const res = await fetch('https://api.mercadolibre.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=client_credentials&client_id=${process.env.ML_CLIENT_ID}&client_secret=${process.env.ML_CLIENT_SECRET}`
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      mlToken = data.access_token;
+      mlTokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
+      console.log('[ML-API] Token renovado OK');
+    }
+  } catch (err) {
+    console.error('[ML-API] Error renovando token:', err.message);
+  }
+}
+
 async function buscarPrecioML(nombreMaterial) {
   try {
     const query = encodeURIComponent(nombreMaterial);
     const url = `https://api.mercadolibre.com/sites/MLA/search?q=${query}&limit=3`;
-    const tkn = process.env.ML_ACCESS_TOKEN || '';
-    console.log('[ML-API] buscando:', nombreMaterial, 'token:', tkn ? tkn.slice(0,20)+'...' : 'VACIO');
-    const res = await fetch(url, { headers: { Authorization: 'Bearer ' + tkn } });
+    if (!mlToken || Date.now() > mlTokenExpiry) await renovarTokenML();
+    console.log('[ML-API] buscando:', nombreMaterial, 'token:', mlToken ? mlToken.slice(0,20)+'...' : 'VACIO');
+    const res = await fetch(url, { headers: { Authorization: 'Bearer ' + mlToken } });
     console.log('[ML-API] status:', res.status);
     const data = await res.json();
     if (data.results && data.results.length > 0) {
