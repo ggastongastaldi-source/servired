@@ -1,0 +1,33 @@
+# DIRECTRICES DE DESARROLLO PARA SERVIRED (ENTORNO TERMUX)
+
+[CONVENCIONES GENERALES]
+- Entorno: Termux (Android). Sin IDEs. Solo consola.
+- Respuestas: Código directo, sin teoría, sin saludos.
+- Comentarios: Español rioplatense, concisos.
+
+[ARQUITECTURA]
+- API éxito:  { "success": true, "data": { ... } }
+- API error:  { "success": false, "error": "msg", "code": "CÓDIGO" }
+- Campos Mongoose: nunca renombrar (ej: costoEstimadoARS es inamovible).
+
+[PRINCIPIOS OBLIGATORIOS]
+1. Imágenes: comprimir a WebP/JPEG max 1024x1024 o <500KB antes de enviar.
+2. Fallback: si falla ML o Groq, retornar 0 o modo manual. Nunca colapsar.
+3. Logs con prefijo grep-able: [ALADÍN-VISION] [ML-API] [MONGO] [GR3] [FSM]
+
+[TERMUX WORKFLOW]
+- Todo en un solo bloque bash pegable.
+- Nunca usar /tmp/. Usar ~/ siempre.
+- Parches de archivos: python3 heredoc con open().read().replace().
+- Finalizar siempre: git add -A && git commit -m "msg" && git push.
+- Nunca usar ! en node -e inline.
+
+[STACK]
+- Backend: Node.js/Express en server.js
+- DB: MongoDB Atlas cluster0.fjqkqhf
+- IA: Groq (llama-3.3-70b-versatile / llama-3.2-11b-vision-preview)
+- Pagos: Mercado Pago
+- Precios materiales: Mercado Libre API (MLA)
+- Hosting: Render (servired-6e5r.onrender.com)
+- Túnel local: cloudflared
+- Repo: github.com/ggastongastaldi-source/servired.git
