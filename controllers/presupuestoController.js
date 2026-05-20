@@ -29,10 +29,8 @@ async function buscarPrecioML(nombreMaterial) {
   }
   try {
     const query = encodeURIComponent(nombreMaterial);
-    const url = `https://api.mercadolibre.com/sites/${ML_CONFIG.siteId}/search?q=${query}&limit=3`;
-    const res = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${process.env.ML_ACCESS_TOKEN}` }
-    });
+    const url = `https://api.mercadolibre.com/sites/${ML_CONFIG.siteId}/search?q=${query}&limit=3&access_token=${ML_CONFIG.clientId}`;
+    const res = await fetch(url);
     const data = await res.json();
     if (data.results && data.results.length > 0) {
       // Promedio de los 3 primeros resultados
