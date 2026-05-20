@@ -24,12 +24,9 @@ const ML_CONFIG = {
 };
 
 async function buscarPrecioML(nombreMaterial) {
-  if (!ML_CONFIG.clientId || !ML_CONFIG.clientSecret) {
-    return 0; // Sin credenciales: devuelve 0, no rompe nada
-  }
   try {
     const query = encodeURIComponent(nombreMaterial);
-    const url = `https://api.mercadolibre.com/sites/${ML_CONFIG.siteId}/search?q=${query}&limit=3&access_token=${ML_CONFIG.clientId}`;
+    const url = `https://api.mercadolibre.com/sites/MLA/search?q=${query}&limit=3`;
     const res = await fetch(url);
     const data = await res.json();
     if (data.results && data.results.length > 0) {
@@ -111,8 +108,8 @@ exports.analizarPresupuesto = async (req, res) => {
       materialesDesglose: desglose,
       totalMateriales,
       totalARS,
-      mlActivo:           !!(ML_CONFIG.clientId),
-      nota:               ML_CONFIG.clientId ? 'Precios de Mercado Libre activos' : 'Precios ML pendientes de credenciales'
+      mlActivo:           true,
+      nota:               'Precios de Mercado Libre activos'
     });
 
   } catch (error) {
