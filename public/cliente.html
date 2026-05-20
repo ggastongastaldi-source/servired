@@ -564,9 +564,6 @@ function sqReset(){
 function sqElegir(key){
   try {
   rubroActual = key;
-  window.rubroSeleccionado = key;
-  const aladinDiv = document.getElementById('aladinVision');
-  if (aladinDiv) aladinDiv.style.display = 'block';
   const srv = RUBROS.find(s=>s.id===key) || RUBROS.find(s=>s.id==='servicio_domestico') || {label:key, precio:10000};
   document.getElementById('precio-display').textContent = '$ calculando...';
   fetch('/api/smart-quote',{
@@ -1095,19 +1092,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(hookSocket, 1000);
 });
 </script>
-
-<!-- ALADÍN VISION -->
-<div id="aladinVision" style="display:none; padding:16px; background:#fff; border-radius:12px; margin:12px 0;">
-  <h3 style="color:#e53935; margin:0 0 12px;">📸 Presupuesto Inteligente</h3>
-  <input type="file" id="fotoObra" accept="image/*,video/*" capture="environment" style="display:none;">
-  <button onclick="document.getElementById('fotoObra').click()" style="background:#e53935;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-size:15px;width:100%;">📷 Sacar Foto / Adjuntar</button>
-  <div id="previewFoto" style="margin-top:10px;display:none;">
-    <img id="imgPreview" style="width:100%;border-radius:8px;max-height:200px;object-fit:cover;">
-  </div>
-  <div id="resultadoAladín" style="margin-top:12px;display:none;">
-    <div id="desgloseContenido" style="font-size:14px;"></div>
-  </div>
-</div>
-
 </body>
 </html>

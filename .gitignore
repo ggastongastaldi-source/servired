@@ -3,7 +3,4 @@ backups/
 backups/
 reportes/
 potenciales_socios.json
-claude-code
-*.tmp
-.bash_history*
 .env

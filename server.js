@@ -10,9 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 global.io = io;
-const registerWorkerHandlers = require('./sockets/worker.handler');
 require('./src/old_structure/services/socketHandlers')(io);
-io.on('connection', (socket) => { registerWorkerHandlers(io, socket); });
 require('./globuloRojo/watchdog').iniciar();
 require('./src/old_structure/services/mensajeriaSocket')(io);;
 
@@ -33,7 +31,6 @@ app.use('/api/pagos', require('./src/old_structure/routes/pagos'));
   app.post('/api/admin/broadcast', require('./src/old_structure/commands/emergencyBroadcast').emergencyBroadcast);
 app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
 app.use('/api/smart-quote', require('./src/old_structure/routes/smartQuote'));
-// [DESACTIVADO] app.use('/api/workers', null // [DESACTIVADO] worker.model no existe);
 app.use('/api/finanzas', require('./src/old_structure/routes/finanzas'));
 
 
@@ -151,12 +148,6 @@ setTimeout(() => ejecutarCicloAladin().catch(console.error), 10000);
 // ===============================
 // KEEPALIVE / ANTI-SPINDOWN
 // ===============================
-
-// Aladín Vision
-app.use(require('express').json({ limit: '10mb' }));
-const presupuestoCtrl = require('./controllers/presupuestoController');
-app.post('/api/presupuesto/analizar', presupuestoCtrl.analizarPresupuesto);
-app.get('/api/presupuesto/historial/:clienteId', presupuestoCtrl.obtenerHistorial);
 
 app.get('/ping', (req, res) => {
   res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
