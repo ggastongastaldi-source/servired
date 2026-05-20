@@ -110,7 +110,7 @@ module.exports = (io) => {
             trabajador: trabajadorId,
             fechaAceptacion: new Date()
           },
-          { new: true }
+          { returnDocument: "after" }
         );
 
         if (!pedido) {
@@ -174,7 +174,7 @@ module.exports = (io) => {
         const pedido = await Pedido.findByIdAndUpdate(pedidoId,
           { estado, ...(estado === 'EN_PROCESO' ? { fechaInicio: new Date() } : {}),
             ...(estado === 'REALIZADA' ? { fechaFin: new Date() } : {}) },
-          { new: true }
+          { returnDocument: "after" }
         );
         if (!pedido) return;
         const payload = { pedidoId, estado };

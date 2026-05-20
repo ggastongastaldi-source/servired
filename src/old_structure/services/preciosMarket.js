@@ -105,7 +105,7 @@ async function actualizarPreciosEnSmartQuote(precios) {
       await PrecioMercado.findOneAndUpdate(
         { rubro },
         { baja: Math.round(vals.baja), alta: Math.round(vals.alta), fuente: 'tavily', actualizadoEn: new Date() },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
       );
       actualizados++;
     } catch(e) { console.error('[preciosMarket] Error guardando', rubro, e.message); }

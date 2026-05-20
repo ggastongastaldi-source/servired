@@ -76,7 +76,7 @@ async function emitJobEvent(jobId, { type, source, idempotencyKey, metadata = {}
   };
 
   const Pedido = mongoose.model('Pedido');
-  const result = await Pedido.findOneAndUpdate(filter, update, { new: true });
+  const result = await Pedido.findOneAndUpdate(filter, update, { returnDocument: "after" });
 
   const latencyMs = Date.now() - t0;
 
