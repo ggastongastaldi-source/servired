@@ -33,11 +33,13 @@ async function buscarPrecioML(nombreMaterial) {
     if (data.results && data.results.length > 0) {
       // Promedio de los 3 primeros resultados
       const precios = data.results.map(r => r.price);
-      return Math.round(precios.reduce((a, b) => a + b, 0) / precios.length);
+      const precio = Math.round(precios.reduce((a, b) => a + b, 0) / precios.length);
+      console.log('[ML-API] OK:', nombreMaterial, '->', precio, 'ARS');
+      return precio;
     }
     return 0;
   } catch (err) {
-    console.error('[ML-API]', err.message);
+    console.error('[ML-API] ERROR:', err.message, 'material:', nombreMaterial);
     return 0;
   }
 }
