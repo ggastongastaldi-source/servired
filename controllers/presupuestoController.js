@@ -44,6 +44,11 @@ async function buscarPrecioML(nombreMaterial) {
     console.log('[ML-API] buscando:', nombreMaterial, 'token:', mlToken ? mlToken.slice(0,20)+'...' : 'VACIO');
     const res = await fetch(url, { headers: { Authorization: 'Bearer ' + mlToken } });
     console.log('[ML-API] status:', res.status);
+    if (res.status === 403) {
+      const local = require('../config/precios').obtenerPrecio(nombreMaterial);
+      console.log('[ML-API] 403 -> fallback local:', nombreMaterial, '->', local, 'ARS');
+      return local;
+    }
     const data = await res.json();
     if (data.results && data.results.length > 0) {
       const precios = data.results.map(r => r.price);
@@ -51,8 +56,9 @@ async function buscarPrecioML(nombreMaterial) {
       console.log('[ML-API] OK:', nombreMaterial, '->', precio, 'ARS');
       return precio;
     }
-    console.log('[ML-API] sin resultados para:', nombreMaterial);
-    return 0;
+    const local = require('../config/precios').obtenerPrecio(nombreMaterial);
+    console.log('[ML-API] sin resultados -> fallback local:', nombreMaterial, '->', local, 'ARS');
+    return local;
   } catch (err) {
     console.error('[ML-API] ERROR:', err.message, 'material:', nombreMaterial);
     return 0;
