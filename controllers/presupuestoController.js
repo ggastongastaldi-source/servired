@@ -53,6 +53,7 @@ exports.analizarPresupuesto = async (req, res) => {
       ? `El usuario necesita un servicio de ${rubro}. Enfocate en detectar materiales específicos de ese oficio.`
       : 'Analizá la imagen de obra o reparación.';
 
+    console.log('[ALADÍN-VISION] img size:', imageBase64.length, 'rubro:', rubro);
     const chatCompletion = await groq.chat.completions.create({
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       messages: [{
