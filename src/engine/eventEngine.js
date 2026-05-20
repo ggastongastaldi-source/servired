@@ -41,6 +41,19 @@ async function emitJobEvent(jobId, { type, source, idempotencyKey, metadata = {}
   const t0 = Date.now();
   const eventId = uuidv4();
   const key = idempotencyKey || `${jobId}:${type}:${eventId}`;
+  const envelope = {
+    eventId,
+    eventVersion: '1.0',
+    eventTypeVersion: metadata.eventTypeVersion || '1.0',
+    correlationId: metadata.correlationId || eventId,
+    timestamp: new Date().toISOString(),
+    aggregateId: String(jobId),
+    type,
+    payload: metadata.payload || {},
+    metadata: { node: source, version: '1.0', ...metadata },
+    origin: { node: source, version: '1.0' },
+    status: 'PENDING'
+  };
 
   let filter, snapshot;
   try {
