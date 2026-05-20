@@ -108,7 +108,7 @@ exports.analizarPresupuesto = async (req, res) => {
       materialesDesglose: desglose,
       totalMateriales,
       totalARS,
-      mlActivo:           true,
+      mlActivo:           true, // ML-ACTIVE-v2
       nota:               'Precios de Mercado Libre activos'
     });
 
