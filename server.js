@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const sinapsisRouter = require('./src/routes/sinapsis');
+
 const rutaMensajes = require('./src/old_structure/routes/mensajes');
 const http = require('http');
 const { Server } = require('socket.io');

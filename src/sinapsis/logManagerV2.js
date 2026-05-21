@@ -130,4 +130,17 @@ async function getHealth() {
   return replay(1);
 }
 
-module.exports = { seal, replay, getHealth, SinapsisLogV2, computeHash };
+
+async function getHeadIntegrity() {
+  const last = await SinapsisLogV2.findOne().sort({ sequence: -1 }).lean();
+  if (!last) return { valid: true, tip: "0x0000", sequence: 0 };
+  const recomputed = computeHash(last);
+  return {
+    valid: recomputed === last.entryHash,
+    tip: last.entryHash.slice(0, 10),
+    sequence: last.sequence
+  };
+}
+
+module.exports = { seal, replay, getHealth, SinapsisLogV2, computeHash, getHeadIntegrity
+};
