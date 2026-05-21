@@ -67,6 +67,9 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     });
 
     const pedidoGuardado = await nuevoPedido.save();
+  // SINAPSIS AUDIT MODE
+  const { auditOrder } = require('../../sinapsis/auditMode');
+  auditOrder(pedidoGuardado.toObject(), 'servired.pedidos.route').catch(e => console.error('[SINAPSIS]', e.message));
     console.log('[PEDIDOS] io disponible:', !!io, '— pedido:', tipoServicio, zona);
     if (io) {
       const payload = {
