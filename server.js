@@ -159,6 +159,18 @@ const presupuestoCtrl = require('./controllers/presupuestoController');
 app.post('/api/presupuesto/analizar', presupuestoCtrl.analizarPresupuesto);
 app.get('/api/presupuesto/historial/:clienteId', presupuestoCtrl.obtenerHistorial);
 
+// SINAPSIS Health Dashboard
+app.get('/api/sinapsis/health', async (req, res) => {
+  try {
+    const { getHealth } = require('./src/sinapsis/logManagerV2');
+    const health = await getHealth();
+    res.json({ ok: true, sinapsis: 'v1.0', ...health,
+      status: health.integrityOk ? 'VERIFIED' : 'CORRUPTED' });
+  } catch(err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 app.get('/ping', (req, res) => {
   res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
 });
