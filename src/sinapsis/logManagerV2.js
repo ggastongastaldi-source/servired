@@ -45,12 +45,14 @@ function computeHash(entry) {
   return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-async function seal(event, policyResult) {
+async function seal(event, policyResult, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
   try {
-    // Obtener último registro para chain
+    // Obtener último registro para chain — con retry ante race condition
     const last = await SinapsisLogV2.findOne().sort({ sequence: -1 }).lean();
     const sequence = last ? last.sequence + 1 : 1;
     const prevHash = last ? last.entryHash : '0'.repeat(64);
+    // sealedAt fijo ANTES del hash para garantizar reproducibilidad
     const sealedAt = new Date();
 
     const entry = {
@@ -70,6 +72,7 @@ async function seal(event, policyResult) {
       sealedAt
     };
 
+    // Hash computado con sealedAt fijo — reproducible en replay
     entry.entryHash = computeHash(entry);
 
     const saved = await SinapsisLogV2.create(entry);
@@ -85,11 +88,17 @@ async function seal(event, policyResult) {
 
   } catch (err) {
     if (err.code === 11000) {
-      console.warn(`[LOG_MANAGER_V2] Duplicado ignorado: ${event.eventId}`);
-      return null;
+      // Duplicate eventId — idempotente
+      if (err.message.includes('eventId')) { console.warn(`[LOG_MANAGER_V2] Evento duplicado: ${event.eventId}`); return null; }
+      // Duplicate sequence — race condition, retry
+      console.warn(`[LOG_MANAGER_V2] Race en sequence, retry ${attempt+1}/${maxRetries}`);
+      await new Promise(r => setTimeout(r, 10 * (attempt+1)));
+      continue;
     }
     throw err;
   }
+  } // end retry loop
+  throw new Error('[LOG_MANAGER_V2] Max retries alcanzado — sequence race no resuelta');
 }
 
 // Replay — reconstruye SHI desde historia sin memoria
