@@ -28,6 +28,7 @@ app.use('/api/upload', require('./src/old_structure/routes/upload'));
 app.use('/api/pedidos', pedidosRoute);
 app.use('/api/admin', require('./src/old_structure/routes/admin'));
 app.use('/api/matching', require('./src/old_structure/routes/matching'));
+app.use('/api/sinapsis', sinapsisRouter);
 app.use('/api/rating', require('./src/old_structure/routes/rating'));
 app.use('/api/pagos', require('./src/old_structure/routes/pagos'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
