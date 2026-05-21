@@ -127,14 +127,25 @@ async function replay(fromSequence = 1) {
     (await SinapsisLogV2.findOne({ sequence: fromSequence - 1 }).lean())?.entryHash || '0'.repeat(64);
 
   let valid = 0, invalid = 0, failed = 0, rejected = 0, escalated = 0;
+  const gaps = [];
+  let expectedSeq = fromSequence;
 
   for (const entry of entries) {
+    // Detección de gaps — sequence counter avanzó pero log vacío
+    if (entry.sequence !== expectedSeq) {
+      for (let g = expectedSeq; g < entry.sequence; g++) {
+        gaps.push(g);
+        console.error(`[REPLAY] GAP detectado en sequence ${g} — posible crash entre counter y create`);
+      }
+    }
+    expectedSeq = entry.sequence + 1;
+
     const expectedHash = computeHash(entry);
     const chainOk = entry.entryHash === expectedHash && entry.prevHash === prevHash;
 
     if (!chainOk) {
       invalid++;
-      console.error(`[REPLAY] Chain rota en sequence ${entry.sequence}`);
+      console.error(`[REPLAY] Chain rota en sequence ${entry.sequence} — hash esperado: ${expectedHash.slice(0,12)}... got: ${entry.entryHash.slice(0,12)}...`);
     } else {
       valid++;
     }
@@ -149,7 +160,7 @@ async function replay(fromSequence = 1) {
   const total = entries.length;
   const shi = total > 0 ? (((total - failed - invalid) / total) * 100).toFixed(1) : 100;
 
-  return { total, valid, invalid, failed, rejected, escalated, shi, fromSequence };
+  return { total, valid, invalid, failed, rejected, escalated, gaps, gapCount: gaps.length, shi, fromSequence, integrityOk: invalid === 0 && gaps.length === 0 };
 }
 
 async function getHealth() {
