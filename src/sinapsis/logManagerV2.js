@@ -128,7 +128,9 @@ async function replay(fromSequence = 1) {
 
   let valid = 0, invalid = 0, failed = 0, rejected = 0, escalated = 0;
   const gaps = [];
-  let expectedSeq = fromSequence;
+  // Si fromSequence es 1, arrancar desde el primer doc real
+  const firstDoc = entries.length > 0 ? entries[0].sequence : fromSequence;
+  let expectedSeq = fromSequence === 1 ? firstDoc : fromSequence;
 
   for (const entry of entries) {
     // Detección de gaps — sequence counter avanzó pero log vacío
