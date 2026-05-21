@@ -5,6 +5,23 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 
 // Schema con hash chaining
+// Atomic counter para sequence — elimina race condition
+const CounterSchema = new mongoose.Schema({
+  _id:     { type: String, required: true },
+  seq:     { type: Number, default: 0 }
+});
+const Counter = mongoose.models.SinapsisCounter ||
+  mongoose.model('SinapsisCounter', CounterSchema);
+
+async function nextSequence() {
+  const doc = await Counter.findOneAndUpdate(
+    { _id: 'sinapsis_log_v2' },
+    { $inc: { seq: 1 } },
+    { upsert: true, returnDocument: 'after' }
+  );
+  return doc.seq;
+}
+
 const SinapsisLogV2Schema = new mongoose.Schema({
   eventId:      { type: String, required: true, unique: true },
   sequence:     { type: Number, required: true },
@@ -48,9 +65,9 @@ function computeHash(entry) {
 async function seal(event, policyResult, maxRetries = 3) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
   try {
-    // Obtener último registro para chain — con retry ante race condition
-    const last = await SinapsisLogV2.findOne().sort({ sequence: -1 }).lean();
-    const sequence = last ? last.sequence + 1 : 1;
+    // Sequence atómica — sin race condition
+    const sequence = await nextSequence();
+    const last = await SinapsisLogV2.findOne({ sequence: sequence - 1 }).lean();
     const prevHash = last ? last.entryHash : '0'.repeat(64);
     // sealedAt fijo ANTES del hash para garantizar reproducibilidad
     const sealedAt = new Date();
