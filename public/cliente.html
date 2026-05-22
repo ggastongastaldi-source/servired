@@ -423,7 +423,7 @@ const SQ_TRABAJOS={
     {r:'plomeria',label:'Plomería',coef:4},
     {r:'electricidad',label:'Electricidad',coef:3},
     {r:'albanileria',label:'Albañilería/revoque',coef:6},
-    {r:'pisos_revestimientos',label:'Cerámicos',coef:4},
+    {r:'revestimientos_pvc',label:'Cerámicos',coef:4},
     {r:'durlock',label:'Durlock/cielorraso',coef:3},
     {r:'pintura',label:'Pintura final',coef:2},
   ]},
@@ -431,7 +431,7 @@ const SQ_TRABAJOS={
     {r:'plomeria',label:'Plomería',coef:3},
     {r:'electricidad',label:'Electricidad',coef:4},
     {r:'albanileria',label:'Albañilería',coef:5},
-    {r:'pisos_revestimientos',label:'Revestimientos',coef:3},
+    {r:'revestimientos_pvc',label:'Revestimientos',coef:3},
     {r:'pintura',label:'Pintura',coef:2},
   ]},
   camaras:{label:'📷 Cámaras de seguridad',rubros:[
@@ -518,7 +518,7 @@ const SQ_TRABAJOS={
     {r:'plomeria',label:'Plomería',coef:8},
     {r:'electricidad',label:'Electricidad',coef:8},
     {r:'durlock',label:'Durlock',coef:6},
-    {r:'pisos_revestimientos',label:'Pisos',coef:6},
+    {r:'revestimientos_pvc',label:'Pisos',coef:6},
     {r:'pintura',label:'Pintura',coef:5},
   ]},
 };
@@ -557,7 +557,7 @@ async function pedirGroq(){
       </div>`;
     document.getElementById('sq-result').style.display='block';
     document.getElementById('sq-paso3').style.display='none';
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){toast('Error al calcular: '+e.message, 4000); console.error('[SQ]',e);}
   finally{btn.textContent='🧠 Calcular con IA';btn.disabled=false;}
 }
 
@@ -677,7 +677,7 @@ async function pedirSmartQuote(){
         <div style="font-size:0.7rem;color:#64748b;margin-top:8px;">* Estimación orientativa. Puede variar según materiales y condición del lugar.</div>
       </div>`;
     document.getElementById('sq-result').style.display='block';
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){toast('Error al calcular: '+e.message, 4000); console.error('[SQ]',e);}
   finally{btn.textContent='⚡ Calcular presupuesto';btn.disabled=false;}
 }
 
