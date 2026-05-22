@@ -1008,7 +1008,23 @@ function sqTomarFoto(){
   // Guardar dataUrl globalmente para enviar con el pedido
   window._sqFotoBase64 = dataUrl;
   sqCerrarCamara();
-  toast('📷 Foto capturada. Ahora describí el trabajo o presioná Calcular con IA.');
+  var _prev = document.getElementById('sq-foto-preview-inline');
+  if(_prev) _prev.remove();
+  var _paso = (document.getElementById('sq-paso2') && document.getElementById('sq-paso2').style.display !== 'none')
+    ? document.getElementById('sq-paso2') : document.getElementById('sq-paso3');
+  if(_paso){
+    var _div = document.createElement('div');
+    _div.id = 'sq-foto-preview-inline';
+    _div.style.cssText = 'margin:8px 0;text-align:center;';
+    _div.innerHTML = '<img src="'+dataUrl+'" style="width:100%;max-width:180px;border-radius:8px;border:2px solid #00E5FF;"/>'
+      + '<div style="color:#10b981;font-size:0.75rem;margin-top:4px;">📷 Foto adjunta</div>'
+      + '<button onclick="window._sqFotoBase64=null;document.getElementById(\'sq-foto-preview-inline\').remove()" style="background:none;border:none;color:#64748b;font-size:0.72rem;cursor:pointer;">✕ quitar</button>';
+    var _ref = document.getElementById('sq-btn-calcular') || document.getElementById('sq-btn-groq');
+    if(_ref) _ref.parentNode.insertBefore(_div, _ref);
+    else _paso.appendChild(_div);
+  }
+  try{if(navigator.vibrate){navigator.vibrate(80);}}catch(e){}
+  toast('📷 Foto adjunta al presupuesto.');
 }
 function sqCerrarCamara(){
   if(_sqCamStream){ _sqCamStream.getTracks().forEach(function(t){t.stop();}); _sqCamStream=null; }
