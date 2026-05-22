@@ -557,6 +557,8 @@ async function pedirGroq(){
       </div>`;
     document.getElementById('sq-result').style.display='block';
     try{if(navigator.vibrate){navigator.vibrate([100,50,100]);}}catch(e){}
+    window._sqTotalCalculado = total;
+    window._sqServicioCalculado = sqTrabajo;
     document.getElementById('sq-paso3').style.display='none';
   }catch(e){toast('Error al calcular: '+e.message, 4000); console.error('[SQ]',e);}
   finally{
@@ -683,6 +685,8 @@ async function pedirSmartQuote(){
       </div>`;
     document.getElementById('sq-result').style.display='block';
     try{if(navigator.vibrate){navigator.vibrate([100,50,100]);}}catch(e){}
+    window._sqTotalCalculado = total;
+    window._sqServicioCalculado = sqTrabajo;
   }catch(e){toast('Error al calcular: '+e.message, 4000); console.error('[SQ]',e);}
   finally{
     btn.textContent='⚡ Calcular presupuesto';
@@ -1130,7 +1134,7 @@ function sqCerrarCamara(){
       <div id="sq-content"></div>
       <div style="display:flex;gap:8px;margin-top:12px;">
         <button onclick="sqReset()" style="flex:1;padding:10px;background:rgba(100,116,139,0.2);border:1px solid #64748b;border-radius:8px;color:#94a3b8;font-size:0.85rem;cursor:pointer;">← Nuevo presupuesto</button>
-        <button onclick="document.getElementById('sq-modal').style.display='none'" style="flex:1;padding:10px;background:rgba(0,229,255,0.15);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.85rem;cursor:pointer;">👷 Pedir profesional</button>
+        <button onclick="sqPedirProfesional()" style="flex:1;padding:10px;background:rgba(0,229,255,0.15);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.85rem;cursor:pointer;">👷 Pedir profesional</button>
       </div>
     </div>
   </div>
@@ -1323,5 +1327,39 @@ function cerrarModalMP(){
 }
 </script>
 
+<script>
+
+function sqPedirProfesional(){
+  // Transferir precio calculado por SmartQuote a la pantalla de pedido
+  if(window._sqTotalCalculado && window._sqTotalCalculado > 0){
+    precioSel = window._sqTotalCalculado;
+    pagoWorkerActual = Math.round(precioSel * 0.8);
+    comisionActual = Math.round(precioSel * 0.2);
+    var pDisp = document.getElementById('precio-display');
+    if(pDisp) pDisp.innerText = '$ ' + Number(precioSel).toLocaleString('es-AR');
+    // Actualizar display del motor Aladin
+    var baseDisp = document.querySelector('#precio-estimado-display, .precio-base, [id*="precio"]');
+  }
+  if(window._sqServicioCalculado){
+    // Mapear key de SQ_TRABAJOS de vuelta al id de RUBROS
+    var reverseMap = {};
+    if(window.SQ_ID_MAP){
+      Object.entries(SQ_ID_MAP).forEach(function(e){ reverseMap[e[1]] = reverseMap[e[1]] || e[0]; });
+    }
+    var rubroId = reverseMap[_sqServicioCalculado] || _sqServicioCalculado;
+    servicioSel = rubroId;
+    // Marcar el boton activo en la grilla
+    document.querySelectorAll('.srv-btn').forEach(function(b){
+      b.classList.toggle('active', b.dataset.tipo === rubroId);
+    });
+  }
+  document.getElementById('sq-modal').style.display = 'none';
+  toast('💰 Precio del presupuesto aplicado: $' + Number(precioSel).toLocaleString('es-AR'));
+  // Scroll al boton PEDIR AHORA
+  var btnPedir = document.getElementById('btn-pedir') || document.querySelector('[onclick*="pedir"]');
+  if(btnPedir) setTimeout(function(){ btnPedir.scrollIntoView({behavior:'smooth'}); }, 300);
+}
+
+</script>
 </body>
 </html>
