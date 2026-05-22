@@ -335,8 +335,16 @@ try {
 }
 if(payload&&payload.exp<Date.now()/1000){localStorage.removeItem('token');window.location='/';}
 let socket,mapa,markerCli,markerTrab,pedidoActivo=null;
-try{document.getElementById('nombre-cliente').textContent=payload?.nombre||'Cliente';}catch(ex){}
-try{document.getElementById('av').textContent=(payload?.nombre||'C')[0].toUpperCase();}catch(ex){}
+try{
+  var _nm=payload?.nombre||'Cliente';
+  try{_nm=decodeURIComponent(escape(_nm));}catch(e){}
+  document.getElementById('nombre-cliente').textContent=_nm;
+}catch(ex){}
+try{
+  var _av=payload?.nombre||'C';
+  try{_av=decodeURIComponent(escape(_av));}catch(e){}
+  document.getElementById('av').textContent=_av[0].toUpperCase();
+}catch(ex){}
 try{
   socket=io({auth:{token:TOKEN},transports:['websocket','polling']});
   socket.on('connect',()=>{
@@ -769,15 +777,37 @@ socket.on('pedido_creado',data=>{
 socket.on('pedido_completado',()=>{toast('✅ Servicio completado. ¡Gracias!');resetUI();cargarHistorial();irPant('historial',null);});
 
 socket.on("link_pago", function(data) {
+  // Actualizar btn original si existe
   var btn = document.getElementById("btn-pagar-mp");
   if (btn) {
     btn.style.display = "block";
     btn.onclick = function() { window.open(data.url, "_blank"); };
     btn.textContent = "💳 PAGAR CON MERCADO PAGO - ARS $" + (data.monto||0).toLocaleString("es-AR");
   }
-  document.getElementById("estado-bar").classList.add("visible");
-  document.getElementById("estado-txt").textContent = "💳 El trabajo está listo. Realizá el pago para confirmar.";
-  toast("💳 Realizá el pago para confirmar el servicio!", 6000);
+  // Estado bar
+  try{document.getElementById("estado-bar").classList.add("visible");}catch(e){}
+  try{document.getElementById("estado-txt").textContent = "💳 El trabajo está listo. Realizá el pago.";}catch(e){}
+  // Modal MP dedicado — se abre SIEMPRE encima de todo
+  var mpModal = document.getElementById('mp-pago-modal');
+  if(!mpModal){
+    mpModal = document.createElement('div');
+    mpModal.id = 'mp-pago-modal';
+    document.body.appendChild(mpModal);
+  }
+  mpModal.innerHTML = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">'
+    + '<div style="background:#111827;border:2px solid #009ee3;border-radius:20px;padding:28px 22px;max-width:360px;width:100%;text-align:center;">'
+    + '<div style="font-size:2.5rem;margin-bottom:8px;">💳</div>'
+    + '<div style="font-size:1.2rem;font-weight:700;color:#00E5FF;margin-bottom:6px;">¡Servicio completado!</div>'
+    + '<div style="font-size:0.9rem;color:#94a3b8;margin-bottom:18px;">Realizá el pago para confirmar el trabajo</div>'
+    + '<div style="background:#1a2236;border-radius:10px;padding:14px;margin-bottom:20px;">'
+    + '<div style="font-size:0.8rem;color:#64748b;margin-bottom:4px;">TOTAL A PAGAR</div>'
+    + '<div style="font-size:2rem;font-weight:700;color:#10b981;">ARS $' + (data.monto||0).toLocaleString('es-AR') + '</div>'
+    + '</div>'
+    + '<a href="' + data.url + '" target="_blank" style="display:block;width:100%;padding:15px;background:linear-gradient(135deg,#009ee3,#00b9e8);border:none;border-radius:12px;color:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;text-decoration:none;letter-spacing:1px;margin-bottom:12px;">💳 PAGAR CON MERCADO PAGO</a>'
+    + '<button onclick="document.getElementById('mp-pago-modal').style.display='none'" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#64748b;padding:8px 20px;cursor:pointer;font-size:0.85rem;">Pagar después</button>'
+    + '</div></div>';
+  mpModal.style.display = 'block';
+  toast("💳 ¡Es momento de pagar! Abrí Mercado Pago", 6000);
   if(window.SRAlert){SRAlert.init();SRAlert.pago();}
 });
 
@@ -863,6 +893,90 @@ function tcResetTap(){
   _tcTimer=setTimeout(function(){_tcTaps=0;},1500);
 }
 
+
+// ── VOZ en SmartQuote ─────────────────────────────────────
+function sqIniciarVoz(){
+  var btn = document.getElementById('sq-btn-voz');
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+    toast('Tu navegador no soporta reconocimiento de voz. Usá Chrome.');
+    return;
+  }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var rec = new SR();
+  rec.lang = 'es-AR';
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.onstart = function(){ btn.textContent='🔴 Escuchando...'; btn.style.borderColor='#ef4444'; };
+  rec.onresult = function(e){
+    var texto = e.results[0][0].transcript;
+    var ta = document.getElementById('sq-texto-libre');
+    ta.value = (ta.value ? ta.value + ' ' : '') + texto;
+    btn.textContent='🎤 Hablar'; btn.style.borderColor='#7c3aed';
+    toast('✅ Voz capturada');
+  };
+  rec.onerror = function(e){
+    toast('Error de voz: ' + e.error);
+    btn.textContent='🎤 Hablar'; btn.style.borderColor='#7c3aed';
+  };
+  rec.onend = function(){ btn.textContent='🎤 Hablar'; btn.style.borderColor='#7c3aed'; };
+  rec.start();
+}
+
+// ── CÁMARA en SmartQuote ──────────────────────────────────
+var _sqCamStream = null;
+function sqAbrirCamara(){
+  var modal = document.getElementById('sq-cam-modal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'sq-cam-modal';
+    modal.innerHTML = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;">'
+      + '<div style="color:#00E5FF;font-weight:700;font-size:1rem;margin-bottom:12px;">📷 Sacar foto del trabajo</div>'
+      + '<video id="sq-cam-video" autoplay playsinline style="width:100%;max-width:360px;border-radius:12px;border:2px solid #00E5FF;"></video>'
+      + '<canvas id="sq-cam-canvas" style="display:none;"></canvas>'
+      + '<div style="display:flex;gap:12px;margin-top:16px;">'
+      + '<button onclick="sqTomarFoto()" style="padding:12px 24px;background:#00E5FF;border:none;border-radius:10px;color:#000;font-weight:700;cursor:pointer;font-size:1rem;">📸 Sacar foto</button>'
+      + '<button onclick="sqCerrarCamara()" style="padding:12px 24px;background:none;border:1px solid #64748b;border-radius:10px;color:#64748b;cursor:pointer;">✕ Cancelar</button>'
+      + '</div>'
+      + '<div id="sq-cam-preview" style="margin-top:12px;"></div>'
+      + '</div>';
+    document.body.appendChild(modal);
+  }
+  modal.style.display = 'block';
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+    .then(function(stream){
+      _sqCamStream = stream;
+      document.getElementById('sq-cam-video').srcObject = stream;
+    })
+    .catch(function(err){
+      toast('No se pudo acceder a la cámara: ' + err.message);
+      modal.style.display = 'none';
+    });
+}
+function sqTomarFoto(){
+  var video = document.getElementById('sq-cam-video');
+  var canvas = document.getElementById('sq-cam-canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+  // Mostrar preview
+  document.getElementById('sq-cam-preview').innerHTML =
+    '<img src="'+dataUrl+'" style="width:120px;border-radius:8px;border:1px solid #00E5FF;" />'
+    + '<div style="color:#10b981;font-size:0.75rem;margin-top:4px;text-align:center;">✅ Foto lista</div>';
+  // Guardar en textarea como referencia
+  var ta = document.getElementById('sq-texto-libre');
+  if(!ta.value.includes('[foto adjunta]')) ta.value = (ta.value?ta.value+' ':'') + '[foto adjunta]';
+  // Guardar dataUrl globalmente para enviar con el pedido
+  window._sqFotoBase64 = dataUrl;
+  sqCerrarCamara();
+  toast('📷 Foto capturada. Ahora describí el trabajo o presioná Calcular con IA.');
+}
+function sqCerrarCamara(){
+  if(_sqCamStream){ _sqCamStream.getTracks().forEach(function(t){t.stop();}); _sqCamStream=null; }
+  var m = document.getElementById('sq-cam-modal');
+  if(m) m.style.display = 'none';
+}
+// ─────────────────────────────────────────────────────────
 </script>
 
 <!-- SMART QUOTE MODAL -->
@@ -912,7 +1026,15 @@ function tcResetTap(){
       <button onclick="sqReset()" style="background:none;border:none;color:#64748b;font-size:0.8rem;cursor:pointer;margin-bottom:12px;">← Volver</button>
       <div style="font-size:1rem;font-weight:700;color:#a78bfa;margin-bottom:12px;">✏️ Describí tu trabajo</div>
       <textarea id="sq-texto-libre" placeholder="Ej: Necesito instalar cámaras de seguridad en la entrada y el garaje, con grabación en la nube..." style="width:100%;padding:12px;background:#1a2236;border:1px solid rgba(124,58,237,0.4);border-radius:10px;color:#e2e8f0;font-size:0.9rem;resize:none;height:100px;margin-bottom:12px;"></textarea>
-      <button id="sq-btn-groq" onclick="pedirGroq()" style="width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">🧠 Calcular con IA</button>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+  <button id="sq-btn-voz" onclick="sqIniciarVoz()" style="flex:1;padding:10px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(124,58,237,0.1));border:1px solid #7c3aed;border-radius:10px;color:#a78bfa;font-size:0.85rem;font-weight:700;cursor:pointer;">
+    🎤 Hablar
+  </button>
+  <button id="sq-btn-cam" onclick="sqAbrirCamara()" style="flex:1;padding:10px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(0,229,255,0.1));border:1px solid #00E5FF;border-radius:10px;color:#00E5FF;font-size:0.85rem;font-weight:700;cursor:pointer;">
+    📷 Foto
+  </button>
+</div>
+<button id="sq-btn-groq" onclick="pedirGroq()" style="width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">🧠 Calcular con IA</button>
     </div>
     <!-- PASO 2: dimensiones y complejidad -->
     <div id="sq-paso2" style="display:none;">
