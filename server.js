@@ -16,6 +16,14 @@ require('./globuloRojo/watchdog').iniciar();
 require('./src/old_structure/services/mensajeriaSocket')(io);;
 
 app.use(cors());
+
+// Permissions-Policy: habilitar microfono y camara para la PWA
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'microphone=*, camera=*, geolocation=*');
+  res.setHeader('Feature-Policy', 'microphone * ; camera * ; geolocation *');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  next();
+});
 app.use(express.json());
 app.get('/version', (req,res) => res.json({v:'f923f4d', built: new Date().toISOString()}));
 
