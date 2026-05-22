@@ -1,3 +1,4 @@
+const { emitEvent } = require('../../../nexus/events/emitEvent');
 const Usuario = require('../models/Usuario');
 
 // ── GPS HELPER — fuente única de verdad ──────────────────
@@ -170,6 +171,9 @@ module.exports = (io) => {
     socket.on('cambiar_estado_pedido', async ({ pedidoId, estado, token }) => {
       try {
         const estadosValidos = ['EN_PROCESO', 'REALIZADA', 'PAGADA'];
+        if (estado === 'REALIZADA') {
+          emitEvent({ entityType: 'job', type: 'JOB_COMPLETED', aggregateId: pedidoId, payload: { rubro: pedido.tipoServicio, precio: pedido.precio, zona: pedido.zona || 'desconocida' } });
+        }
         if (!estadosValidos.includes(estado)) return;
         const pedido = await Pedido.findByIdAndUpdate(pedidoId,
           { estado, ...(estado === 'EN_PROCESO' ? { fechaInicio: new Date() } : {}),

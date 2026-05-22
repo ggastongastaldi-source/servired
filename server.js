@@ -9,9 +9,11 @@ const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-// ── NEXUS — Shadow Mode ─────────────────────────────────
-const { iniciarObserver } = require('./nexus/reactive/changeStreamObserver');
 // ────────────────────────────────────────────────────────
+// ── NEXUS Phase 0 — Shadow Mode ─────────────────────
+const { ensureEventStore } = require('./nexus/bootstrap/ensureEventStore');
+const { iniciarObserver }  = require('./nexus/reactive/changeStreamObserver');
+// ─────────────────────────────────────────────────────
 const io = new Server(server, { cors: { origin: '*' } });
 global.io = io;
 require('./src/old_structure/services/socketHandlers')(io);
