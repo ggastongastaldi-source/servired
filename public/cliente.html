@@ -569,8 +569,42 @@ function sqReset(){
   document.getElementById('sq-result').style.display='none';
 }
 
+
+var SQ_ID_MAP = {
+  'servicio_domestico':       'limpieza',
+  'plomeria':                 'plomeria',
+  'electricidad':             'electricidad',
+  'pintura':                  'pintura',
+  'gasista':                  'gasista',
+  'cerrajeria':               'cerrajeria',
+  'jardineria':               'jardineria',
+  'fletes_mudanzas':          'mudanza',
+  'albanileria':              'albanileria',
+  'techistas':                'techistas',
+  'herreria':                 'herreria',
+  'carpinteria':              'carpinteria',
+  'durlock':                  'durlock',
+  'revestimientos_pvc':       'revestimientos',
+  'antihumedad':              'antihumedad',
+  'climatizacion':            'climatizacion',
+  'mecanica_auxilio':         'mecanica',
+  'mantenimiento_consorcios': 'consorcios',
+  'fumigacion':               'fumigacion',
+  'peluqueria_canina':        'peluqueria_canina',
+  'paneles_solares':          'paneles_solares',
+  'camaras_seguridad':        'camaras',
+  'alarmas':                  'alarmas',
+  'domotica_automatizacion':  'domotica',
+  'impermeabilizacion':       'impermeabilizacion',
+  'servicio_tecnico_pc':      'tecnico_pc',
+  'cuidado_personas':         'cuidado_personas',
+  'peluqueria_domicilio':     'peluqueria_domicilio',
+  'desinfeccion_plagas':      'fumigacion',
+  'limpieza_hogar':           'limpieza',
+};
+
 function sqElegir(key){
-  // Abrir el modal si no esta abierto
+  if(window.SQ_ID_MAP && SQ_ID_MAP[key]) key = SQ_ID_MAP[key];
   var modal = document.getElementById('sq-modal');
   if(modal) modal.style.display = 'block';
   try {
