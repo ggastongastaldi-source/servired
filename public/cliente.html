@@ -1220,6 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>
 function sqIniciarVoz2(){
   var btn = document.getElementById('sq-btn-voz2');
   if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
@@ -1257,6 +1258,7 @@ function cerrarModalMP(){
   var m = document.getElementById('mp-pago-modal');
   if(m) m.style.display = 'none';
 }
+</script>
 
 </body>
 </html>
