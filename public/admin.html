@@ -300,6 +300,8 @@ async function cargarWor(){
     const r=await fetch('/api/admin/trabajadores',{headers:{Authorization:'Bearer '+TOKEN}});
     const resp=await r.json();
     todosWorkers=resp.data||resp;
+    // Excluir prospectos del Globulo Rojo del conteo visible
+    var realesCount = todosWorkers.filter(w=>!(w.email&&w.email.includes('prospecto_')&&w.email.includes('@servired.online'))).length;
     renderWorkers(todosWorkers);
     // Sección pendientes destacada
     const pendientes=todosWorkers.filter(w=>w.estado==='PENDIENTE_VERIFICACION');
@@ -316,6 +318,7 @@ async function cargarWor(){
 
 function workerCard(w,destacado=false){
   const esPend=w.estado==='PENDIENTE_VERIFICACION';
+  const esProspecto=w.email&&w.email.includes('prospecto_')&&w.email.includes('@servired.online');
   return `<div class="w-row" data-worker-id="${w._id}" style="${destacado?'border:1px solid rgba(245,158,11,0.4);':''}">
     <div class="w-av" style="${destacado?'background:linear-gradient(135deg,#f59e0b,#d97706);':''}">${(w.nombre||'?')[0]}</div>
     <div class="w-info">
@@ -331,6 +334,9 @@ function workerCard(w,destacado=false){
       ${esPend
         ?`<button class="btn-ver" onclick="verificar('${w._id}')">✓ APROBAR</button>
            <button class="btn-danger" onclick="rechazarWorker('${w._id}')">✗ RECHAZAR</button>`
+        :esProspecto
+        ?`<span style="font-size:0.65rem;color:#f59e0b;">🤖 Glóbulo Rojo</span>
+          <button class="btn-danger" onclick="rechazarWorker('${w._id}')" style="font-size:0.55rem;">ELIMINAR</button>`
         :`<span style="font-size:0.65rem;color:var(--success);">✓ OK</span>
           <button class="btn-danger" onclick="desactivarWorker('${w._id}')" style="font-size:0.55rem;">DESACTIVAR</button>`
       }
@@ -363,7 +369,16 @@ async function verificar(id){
     if(data.ok){
       toast('✅ Trabajador aprobado');
       addEv('✅','Trabajador verificado');
-      await cargarWor();
+      // Remover card inmediatamente del DOM
+      var card = document.querySelector('[data-worker-id="'+id+'"]');
+      if(card) card.remove();
+      // Actualizar contador pendientes
+      var pendCards = document.querySelectorAll('#lista-pendientes [data-worker-id]');
+      if(pendCards.length === 0){
+        var sec = document.getElementById('sec-pendientes');
+        if(sec) sec.style.display='none';
+      }
+      setTimeout(()=>cargarWor(), 1500);
     } else {
       toast('❌ Error: '+(data.error||'sin respuesta'));
     }
