@@ -33,6 +33,7 @@ app.use('/api/auth', require('./src/old_structure/routes/auth'));
 const pedidosRoute = require('./src/old_structure/routes/pedidos')(io);
 app.use('/api/upload', require('./src/old_structure/routes/upload'));
 app.use('/api/pedidos', pedidosRoute);
+app.use('/api/leads', require('./src/old_structure/routes/leads'));
 app.use('/api/admin', require('./src/old_structure/routes/admin'));
 app.use('/api/matching', require('./src/old_structure/routes/matching'));
 app.use('/api/rating', require('./src/old_structure/routes/rating'));
