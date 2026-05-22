@@ -21,6 +21,7 @@ const RUBROS_BUSQUEDA = {
   carpinteria:             'precio hora carpintero mueble a medida CABA Buenos Aires 2026',
   revestimientos_pvc:      'precio metro cuadrado cielorraso PVC colocación Buenos Aires 2026',
   antihumedad:             'precio tratamiento antihumedad humedad muro CABA Buenos Aires 2026',
+  impermeabilizacion:      'precio impermeabilizacion techo losa terraza membrana liquida Buenos Aires 2026',
   climatizacion:           'precio instalación aire acondicionado split CABA Buenos Aires 2026',
   camaras_seguridad:       'precio instalación 4 cámaras seguridad CCTV DVR kit hogar Buenos Aires Argentina 2026 pesos',
   camaras_seguridad_ml:    'kit 4 camaras seguridad instalacion precio mercadolibre argentina 2026',

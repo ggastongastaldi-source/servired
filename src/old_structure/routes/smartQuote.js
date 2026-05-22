@@ -44,6 +44,7 @@ const PRECIOS = {
   refrigeracion:     { baja: 80000,   alta: 250000  },
   durlock:           { baja: 180000,  alta: 500000  },
   antihumedad:       { baja: 150000,  alta: 450000  },
+  impermeabilizacion: { baja: 180000,  alta: 550000  },
   revestimientos:    { baja: 220000,  alta: 650000  },
   carpinteria:       { baja: 180000,  alta: 550000  },
   herreria:          { baja: 180000,  alta: 500000  },
