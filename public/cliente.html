@@ -556,6 +556,7 @@ async function pedirGroq(){
         <div style="font-size:0.65rem;color:#475569;margin-top:4px;">Confianza estimación: ${d.confianza||'media'}</div>
       </div>`;
     document.getElementById('sq-result').style.display='block';
+    try{if(navigator.vibrate){navigator.vibrate([100,50,100]);}}catch(e){}
     document.getElementById('sq-paso3').style.display='none';
   }catch(e){toast('Error al calcular: '+e.message, 4000); console.error('[SQ]',e);}
   finally{btn.textContent='🧠 Calcular con IA';btn.disabled=false;}
@@ -677,6 +678,7 @@ async function pedirSmartQuote(){
         <div style="font-size:0.7rem;color:#64748b;margin-top:8px;">* Estimación orientativa. Puede variar según materiales y condición del lugar.</div>
       </div>`;
     document.getElementById('sq-result').style.display='block';
+    try{if(navigator.vibrate){navigator.vibrate([100,50,100]);}}catch(e){}
   }catch(e){toast('Error al calcular: '+e.message, 4000); console.error('[SQ]',e);}
   finally{btn.textContent='⚡ Calcular presupuesto';btn.disabled=false;}
 }
