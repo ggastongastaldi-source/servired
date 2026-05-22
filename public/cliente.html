@@ -909,7 +909,7 @@ function sqIniciarVoz(){
   rec.onstart = function(){ btn.textContent='🔴 Escuchando...'; btn.style.borderColor='#ef4444'; };
   rec.onresult = function(e){
     var texto = e.results[0][0].transcript;
-    var ta = document.getElementById('sq-texto-libre');
+    var ta = document.getElementById(window._sqCamTarget || 'sq-texto-libre');
     ta.value = (ta.value ? ta.value + ' ' : '') + texto;
     btn.textContent='🎤 Hablar'; btn.style.borderColor='#7c3aed';
     toast('✅ Voz capturada');
@@ -964,7 +964,7 @@ function sqTomarFoto(){
     '<img src="'+dataUrl+'" style="width:120px;border-radius:8px;border:1px solid #00E5FF;" />'
     + '<div style="color:#10b981;font-size:0.75rem;margin-top:4px;text-align:center;">✅ Foto lista</div>';
   // Guardar en textarea como referencia
-  var ta = document.getElementById('sq-texto-libre');
+  var ta = document.getElementById(window._sqCamTarget || 'sq-texto-libre');
   if(!ta.value.includes('[foto adjunta]')) ta.value = (ta.value?ta.value+' ':'') + '[foto adjunta]';
   // Guardar dataUrl globalmente para enviar con el pedido
   window._sqFotoBase64 = dataUrl;
@@ -1055,7 +1055,12 @@ function sqCerrarCamara(){
           <option value="alta">Premium</option>
         </select>
       </div>
-      <button id="sq-btn-calcular" onclick="pedirSmartQuote()" style="width:100%;padding:12px;background:#00E5FF;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:16px;">⚡ Calcular presupuesto</button>
+      <button id="sq-btn-voz2-wrap" style="display:none"></div>
+<div style="display:flex;gap:8px;margin-bottom:10px;">
+  <button id="sq-btn-voz2" onclick="sqIniciarVoz2()" style="flex:1;padding:10px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(124,58,237,0.1));border:1px solid #7c3aed;border-radius:10px;color:#a78bfa;font-size:0.85rem;font-weight:700;cursor:pointer;">🎤 Hablar</button>
+  <button onclick="sqAbrirCamara()" style="flex:1;padding:10px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(0,229,255,0.1));border:1px solid #00E5FF;border-radius:10px;color:#00E5FF;font-size:0.85rem;font-weight:700;cursor:pointer;">📷 Foto</button>
+</div>
+<button id="sq-btn-calcular" onclick="pedirSmartQuote()" style="width:100%;padding:12px;background:#00E5FF;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:16px;">⚡ Calcular presupuesto</button>
     </div>
     <!-- RESULTADO -->
     <div id="sq-result" style="display:none;">
@@ -1214,5 +1219,38 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(hookSocket, 1000);
 });
 </script>
+
+function sqIniciarVoz2(){
+  var btn = document.getElementById('sq-btn-voz2');
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+    toast('Usá Chrome para reconocimiento de voz.');
+    return;
+  }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var rec = new SR();
+  rec.lang = 'es-AR';
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.onstart = function(){ btn.textContent='🔴 Escuchando...'; btn.style.borderColor='#ef4444'; };
+  rec.onresult = function(e){
+    var texto = e.results[0][0].transcript;
+    var ta = document.getElementById('sq-descripcion');
+    if(ta) ta.value = (ta.value ? ta.value + ' ' : '') + texto;
+    btn.textContent='🎤 Hablar'; btn.style.borderColor='#7c3aed';
+    toast('✅ Voz capturada');
+  };
+  rec.onerror = function(e){
+    toast('Error de voz: ' + e.error);
+    btn.textContent='🎤 Hablar'; btn.style.borderColor='#7c3aed';
+  };
+  rec.onend = function(){ btn.textContent='🎤 Hablar'; btn.style.borderColor='#7c3aed'; };
+  rec.start();
+}
+// sqAbrirCamara2 redirige al mismo modal de camara pero guarda en sq-descripcion
+function sqAbrirCamara2(){
+  window._sqCamTarget = 'sq-descripcion';
+  sqAbrirCamara();
+}
+
 </body>
 </html>
