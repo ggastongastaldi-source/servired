@@ -804,7 +804,7 @@ socket.on("link_pago", function(data) {
     + '<div style="font-size:2rem;font-weight:700;color:#10b981;">ARS $' + (data.monto||0).toLocaleString('es-AR') + '</div>'
     + '</div>'
     + '<a href="' + data.url + '" target="_blank" style="display:block;width:100%;padding:15px;background:linear-gradient(135deg,#009ee3,#00b9e8);border:none;border-radius:12px;color:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;text-decoration:none;letter-spacing:1px;margin-bottom:12px;">💳 PAGAR CON MERCADO PAGO</a>'
-    + '<button onclick="document.getElementById('mp-pago-modal').style.display='none'" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#64748b;padding:8px 20px;cursor:pointer;font-size:0.85rem;">Pagar después</button>'
+    + '<button onclick="cerrarModalMP()" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#64748b;padding:8px 20px;cursor:pointer;font-size:0.85rem;">Pagar después</button>'
     + '</div></div>';
   mpModal.style.display = 'block';
   toast("💳 ¡Es momento de pagar! Abrí Mercado Pago", 6000);
@@ -1250,6 +1250,12 @@ function sqIniciarVoz2(){
 function sqAbrirCamara2(){
   window._sqCamTarget = 'sq-descripcion';
   sqAbrirCamara();
+}
+
+
+function cerrarModalMP(){
+  var m = document.getElementById('mp-pago-modal');
+  if(m) m.style.display = 'none';
 }
 
 </body>
