@@ -30,8 +30,8 @@ const INDICES = {
 // Precios reales abril 2026 indexados Big Mac $10.500
 // Fuente: relevamiento AMBA + indice Big Mac
 const PRECIOS = {
-  limpieza:          { baja: 35000,   alta: 75000   },
-  servicio_domestico:{ baja: 8500,    alta: 11000   }, // precio por hora ARS
+  limpieza:          { baja: 30000,   alta: 65000   },
+  servicio_domestico:{ baja: 30000,   alta: 65000   }, // precio trabajo (min 3hs)
   plomeria:          { baja: 180000,  alta: 480000  },
   electricidad:      { baja: 180000,  alta: 480000  },
   albanileria:       { baja: 250000,  alta: 750000  },

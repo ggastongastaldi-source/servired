@@ -5,8 +5,7 @@ const TAVILY_KEY = process.env.TAVILY_API_KEY;
 
 const RUBROS_BUSQUEDA = {
   limpieza_hogar:          'precio hora empleada doméstica limpieza por hora CABA GBA abril 2026 pesos',
-  servicio_domestico:      'precio hora servicio doméstico empleada cama adentro afuera Buenos Aires 2026',
-  plomeria:                'precio hora plomero plomería urgencia CABA Buenos Aires 2026',
+  servicio_domestico:      'precio servicio domestico limpieza hogar por trabajo Buenos Aires GBA 2026 pesos'precio hora plomero plomería urgencia CABA Buenos Aires 2026',
   electricidad:            'precio hora electricista electricidad domiciliaria CABA Buenos Aires 2026',
   gasista:                 'precio hora gasista matriculado instalación CABA Buenos Aires 2026',
   pintura:                 'precio metro cuadrado pintura interior exterior CABA Buenos Aires 2026',
