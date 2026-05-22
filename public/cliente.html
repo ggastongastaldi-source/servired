@@ -267,7 +267,7 @@ RUBROS.forEach((r,i)=>{
   b.className='srv-btn'+(i===0?' active':'');
   b.dataset.tipo=r.id;b.dataset.precio=r.precio;
   b.innerHTML=`<span class="icon">${r.icon}</span><span class="label">${r.label}</span>`;
-  b.onclick=()=>selSrv(b,r);
+  b.onclick=()=>{selSrv(b,r); setTimeout(()=>sqElegir(r.id),300);};
   grid.appendChild(b);
 });
 document.getElementById('precio-display').textContent='$ '+RUBROS[0].precio.toLocaleString('es-AR');
@@ -570,6 +570,9 @@ function sqReset(){
 }
 
 function sqElegir(key){
+  // Abrir el modal si no esta abierto
+  var modal = document.getElementById('sq-modal');
+  if(modal) modal.style.display = 'block';
   try {
   rubroActual = key;
   const srv = RUBROS.find(s=>s.id===key) || RUBROS.find(s=>s.id==='servicio_domestico') || {label:key, precio:10000};

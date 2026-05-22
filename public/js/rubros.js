@@ -29,5 +29,6 @@ const RUBROS_SERVIRED = [
   {id:'cuidado_personas',      label:'Cuidador/a',       icon:'🧑‍⚕️', precio:35000},
   {id:'peluqueria_domicilio',  label:'Peluquería',       icon:'✂️', precio:20000},
   {id:'desinfeccion_plagas',   label:'Plagas',           icon:'🪲', precio:55000},
+  {id:'impermeabilizacion',  label:'Impermeabilización', icon:'🏠', precio:180000},
   {id:'limpieza_hogar',        label:'Limpieza Hogar',   icon:'🧽', precio:35000},
 ];
