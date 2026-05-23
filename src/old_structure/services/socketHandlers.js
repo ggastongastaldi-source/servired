@@ -178,6 +178,18 @@ module.exports = (io) => {
           { returnDocument: "after" }
         );
         if (!pedido) return;
+        // Nexus — post findByIdAndUpdate (commit boundary correcto)
+        if (estado === 'REALIZADA') {
+          emitEvent({ entityType: 'job', type: 'JOB_COMPLETED', aggregateId: pedido._id,
+            payload: { workerId: String(pedido.workerAcepto||''), rubro: pedido.tipoServicio,
+                       zona: pedido.zona||'desconocida', precio: pedido.precio } });
+        } else if (estado === 'EN_PROCESO') {
+          emitEvent({ entityType: 'job', type: 'JOB_STARTED', aggregateId: pedido._id,
+            payload: { workerId: String(pedido.workerAcepto||''), rubro: pedido.tipoServicio } });
+        } else if (estado === 'PAGADA') {
+          emitEvent({ entityType: 'job', type: 'JOB_PAID', aggregateId: pedido._id,
+            payload: { precio: pedido.precio, rubro: pedido.tipoServicio } });
+        }
         const payload = { pedidoId, estado };
         io.to('pedido_' + pedidoId).emit('estado_pedido', payload);
         io.to('admins').emit('estado_pedido_admin', payload);
