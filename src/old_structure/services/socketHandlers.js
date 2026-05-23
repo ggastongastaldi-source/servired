@@ -338,6 +338,7 @@ module.exports = (io) => {
           fechaCreacion: new Date()
         });
         const pedidoGuardado = await nuevoPedido.save();
+        emitEvent({ entityType: 'job', type: 'JOB_CREATED', aggregateId: pedidoGuardado._id, payload: { clienteId: pedidoGuardado.cliente, rubro: pedidoGuardado.tipoServicio, zona: pedidoGuardado.zona || 'desconocida', precio: pedidoGuardado.precio } });
         socket.join('pedido_' + pedidoGuardado._id);
         socket.emit('pedido_creado', {
           pedidoId: pedidoGuardado._id,
