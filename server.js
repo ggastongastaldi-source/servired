@@ -129,7 +129,18 @@ app.get('/api/trabajadores', (req, res) => {
 
 // MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
-    .then(() => console.log('✅ MongoDB conectado'))
+    .then(() => {
+      console.log('✅ MongoDB conectado');
+      const { ensureEventStore } = require('./nexus/bootstrap/ensureEventStore');
+      const { iniciarObserver }  = require('./nexus/reactive/changeStreamObserver');
+      const { runActuator }      = require('./nexus/shadow/shadowPricingActuator');
+      ensureEventStore()
+        .then(() => iniciarObserver(io))
+        .then(() => console.log('[Nexus] ✅ Ecosistema reactivo OK'))
+        .catch(e => console.error('[Nexus-Init-Failed]:', e.message));
+      setTimeout(() => { runActuator().catch(()=>{}); }, 8000);
+      setInterval(() => { runActuator().catch(()=>{}); }, 60000);
+    })
     .catch(err => console.error('❌ MongoDB error:', err.message));
 
 // Puerto CRÍTICO: Railway asigna process.env.PORT
