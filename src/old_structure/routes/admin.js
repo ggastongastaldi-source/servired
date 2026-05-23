@@ -60,3 +60,29 @@ router.get('/stats', authAdmin, async (req, res) => {
 });
 
 module.exports = router;
+
+// Replay Runner — solo admin
+router.post('/nexus/replay', authAdmin, async (req, res) => {
+  try {
+    const { replay } = require('../../../nexus/analytics/replayRunner');
+    const { desde, hasta, borrarProjections, verbose } = req.body;
+    console.log('[Admin] 🔄 Replay solicitado por admin');
+    const result = await replay({ desde, hasta, borrarProjections: !!borrarProjections, verbose: !!verbose });
+    res.json({ ok: true, result });
+  } catch(e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Stats de projections
+router.get('/nexus/projections', authAdmin, async (req, res) => {
+  try {
+    const jobs    = await mongoose.connection.collection('proj_jobs').countDocuments();
+    const leads   = await mongoose.connection.collection('proj_leads').countDocuments();
+    const zonas   = await mongoose.connection.collection('proj_zona_metrics').find({}).toArray();
+    const eventos = await mongoose.connection.collection('events').countDocuments();
+    res.json({ ok: true, data: { jobs, leads, zonas, eventos } });
+  } catch(e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
