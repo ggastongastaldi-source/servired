@@ -47,7 +47,7 @@ async function getSensorData() {
     ? (asignados1m / creados1m)
     : null;
 
-  const systemUnderStress = assignmentRate !== null && assignmentRate < 0.5;
+  const systemUnderStress = assignmentRate != null && assignmentRate < 0.5 && (creados1m || 0) > 3;
 
   return { conversionRate, assignmentRate, systemUnderStress, creados1m, asignados1m, totalJobs5m, completados5m };
 }
@@ -57,7 +57,9 @@ async function runActuator() {
     const sensor = await getSensorData();
 
     // EMA sobre conversion
-    state.emaConversion = ema(state.emaConversion, sensor.conversionRate ?? 0);
+    if (sensor.conversionRate != null) {
+      state.emaConversion = ema(state.emaConversion, sensor.conversionRate);
+    }
 
     // Calcular shadow multiplier (NUNCA se aplica al pricing real)
     let shadowMultiplier = 1.0;
@@ -71,7 +73,7 @@ async function runActuator() {
     state.lastRun = new Date();
 
     // Conversion Drift — diferencia entre shadow y real (siempre 1.0)
-    const conversionDrift = Math.abs(shadowMultiplier - 1.0);
+    const conversionDrift = !sensor.conversionRate ? 0 : Math.abs(shadowMultiplier - 1.0);
 
     // Log en shadow_metrics_log — NUNCA modifica pricing real
     await mongoose.connection.collection('shadow_metrics_log').insertOne({
