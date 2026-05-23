@@ -1,5 +1,8 @@
-// Nexus Runtime Manager — ciclo de vida encapsulado
-// Single-flight por proceso. Sin contaminacion global.
+// Nexus Runtime Manager — Sidecar Resiliente
+// Decisión arquitectónica: Nexus NO es kernel dependency.
+// Si Nexus falla, ServiRed sigue operando normalmente.
+// El server NUNCA espera a Nexus para levantar.
+
 const state = {
   initialized: false,
   timeoutId:   null,
@@ -7,10 +10,9 @@ const state = {
 };
 
 async function initNexus(io) {
-  // Single-flight guard — per-process (suficiente para Render free tier)
   if (state.initialized) {
-    console.warn('[Nexus] initNexus ya fue llamado en este proceso — ignorando');
-    return;
+    console.warn('[Nexus] Ya inicializado en este proceso — ignorando');
+    return { status: 'already_initialized' };
   }
   state.initialized = true;
 
@@ -18,28 +20,27 @@ async function initNexus(io) {
   const { iniciarObserver }  = require('./reactive/changeStreamObserver');
   const { runActuator }      = require('./shadow/shadowPricingActuator');
 
-  // Lifecycle: beforeInit
-  console.log('[Nexus] 🚀 Iniciando runtime...');
+  console.log('[Nexus] 🚀 Iniciando runtime (sidecar)...');
 
-  // Bootstrap secuencial — falla fuerte si EventStore no levanta
   await ensureEventStore();
   await iniciarObserver(io);
 
   console.log('[Nexus] ✅ Ecosistema reactivo OK');
 
-  // Shadow actuator — primer run a los 8s, luego cada 60s
+  // Timers en state local — nunca global
   state.timeoutId  = setTimeout(() => { runActuator().catch(()=>{}); }, 8000);
   state.intervalId = setInterval(() => { runActuator().catch(()=>{}); }, 60000);
 
-  // Lifecycle: afterInit — shutdown handler
   process.once('SIGTERM', () => shutdown('SIGTERM'));
   process.once('SIGINT',  () => shutdown('SIGINT'));
+
+  return { status: 'ok' };
 }
 
 function shutdown(signal) {
-  console.log(`[Nexus] 🛑 Shutdown (${signal}) — limpiando timers`);
-  if (state.timeoutId)  clearTimeout(state.timeoutId);
-  if (state.intervalId) clearInterval(state.intervalId);
+  console.log(`[Nexus] 🛑 Shutdown (${signal})`);
+  if (state.timeoutId)  { clearTimeout(state.timeoutId);   state.timeoutId  = null; }
+  if (state.intervalId) { clearInterval(state.intervalId); state.intervalId = null; }
   state.initialized = false;
 }
 

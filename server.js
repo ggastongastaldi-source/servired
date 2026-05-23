@@ -127,7 +127,9 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
     .then(() => {
       console.log('✅ MongoDB conectado');
       const { initNexus } = require('./nexus/initNexus');
-      initNexus(io).catch(e => console.error('[Nexus-Init-Failed]:', e.message));
+      initNexus(io)
+        .then(r => console.log('[Server] Nexus:', r?.status || 'OK'))
+        .catch(e => console.error('[Server] Nexus failed (non-critical):', e.message));
     })
     .catch(err => console.error('❌ MongoDB error:', err.message));
 
