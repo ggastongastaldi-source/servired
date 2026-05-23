@@ -1,78 +1,121 @@
-// Nexus Single Reactive Observer v1.3 — Protected Core
-// Observa coleccion 'events'. NUNCA modifica estado.
-const mongoose        = require('mongoose');
+// Nexus Single Reactive Observer v2.0 — War Mode
+// Observa 'events'. NUNCA modifica estado. Resiliente a caidas de Atlas.
+const mongoose         = require('mongoose');
 const StreamCheckpoint = require('./StreamCheckpoint');
 
 let isReconnecting = false;
+let activeStream   = null;
 
 async function iniciarObserver(io) {
+  // Cerrar stream previo si existe (evitar zombies)
+  if (activeStream) {
+    try { await activeStream.close(); } catch(_) {}
+    activeStream = null;
+  }
+
   try {
     const col        = mongoose.connection.collection('events');
-    const checkpoint = await StreamCheckpoint.findOne({ streamId: 'universal_events_stream' });
-    const options    = checkpoint?.resumeToken ? { resumeAfter: checkpoint.resumeToken } : {};
+    const checkpoint = await StreamCheckpoint.findOne({ streamId: 'universal_events_stream' })
+      .lean().catch(() => null);
 
-    const stream = col.watch([], options);
-    console.log('[Nexus] 👁️ Change Stream activo sobre: events',
-      checkpoint ? '(desde checkpoint)' : '(desde ahora)');
+    const options = {
+      fullDocument:   'updateLookup',
+      maxAwaitTimeMS: 10000, // evita hang silencioso
+      ...(checkpoint?.resumeToken ? { resumeAfter: checkpoint.resumeToken } : {})
+    };
 
-    stream.on('change', async (change) => {
-      if (change.operationType !== 'insert') return;
+    activeStream = col.watch([{ $match: { operationType: 'insert' } }], options);
+
+    console.log('[Nexus] 👁️  Observer v2.0 activo — events',
+      checkpoint?.resumeToken ? '(desde checkpoint)' : '(desde ahora)');
+
+    activeStream.on('change', async (change) => {
       const event = change.fullDocument;
+      if (!event?.entityType || !event?.type) return;
 
-      // Persistir resume token — async silencioso
+      // Persistir resumeToken — async silencioso, nunca bloquea
       StreamCheckpoint.updateOne(
         { streamId: 'universal_events_stream' },
         { $set: { resumeToken: change._id, updatedAt: new Date() } },
         { upsert: true }
-      ).catch(e => console.error('[Nexus-Checkpoint]:', e.message));
+      ).catch(e => console.error('[Nexus-Checkpoint-Error]:', e.message));
+
+      // Log estructurado
+      console.log(`[Nexus] 📥 ${event.entityType.toUpperCase()}:${event.type} | agg:${event.aggregateId} | ${new Date().toISOString()}`);
 
       // Routing por dominio
-      if      (event.entityType === 'job')     procesarJobEvent(event, io);
-      else if (event.entityType === 'lead')    procesarLeadEvent(event, io);
-      else if (event.entityType === 'worker')  { /* futuro */ }
-      else if (event.entityType === 'payment') { /* futuro */ }
+      try {
+        if      (event.entityType === 'job')     procesarJobEvent(event, io);
+        else if (event.entityType === 'lead')    procesarLeadEvent(event, io);
+        else if (event.entityType === 'worker')  { /* Sprint 2 */ }
+        else if (event.entityType === 'payment') { /* Sprint 3 */ }
+      } catch(e) {
+        console.error('[Nexus-Routing-Error]:', e.message, '| event:', event.type);
+      }
     });
 
-    stream.on('error', (err) => {
+    activeStream.on('error', (err) => {
       console.error('[Nexus-Stream-Error]:', err.message);
+      scheduleReconnect(io);
     });
 
-    // Singleton reconnect guard — evita loops y listeners duplicados
-    stream.on('close', () => {
-      if (isReconnecting) return;
-      isReconnecting = true;
-      console.warn('[Nexus] Stream cerrado — reconectando en 5s...');
-      setTimeout(async () => {
-        isReconnecting = false;
-        await iniciarObserver(io).catch(() => {});
-      }, 5000);
+    activeStream.on('close', () => {
+      console.warn('[Nexus] Stream cerrado inesperadamente');
+      scheduleReconnect(io);
     });
 
   } catch(err) {
-    console.error('[Nexus-Observer-Init]:', err.message);
-    if (!isReconnecting) {
-      isReconnecting = true;
-      setTimeout(async () => {
-        isReconnecting = false;
-        await iniciarObserver(io).catch(() => {});
-      }, 10000);
-    }
+    console.error('[Nexus-Observer-Init-Error]:', err.message);
+    scheduleReconnect(io);
   }
 }
 
+function scheduleReconnect(io) {
+  if (isReconnecting) return;
+  isReconnecting = true;
+  const delay = 5000;
+  console.warn(`[Nexus] Reconectando en ${delay/1000}s...`);
+  setTimeout(async () => {
+    isReconnecting = false;
+    await iniciarObserver(io).catch(e =>
+      console.error('[Nexus-Reconnect-Error]:', e.message)
+    );
+  }, delay);
+}
+
+// ── Processors ───────────────────────────────────────────
+
 function procesarJobEvent(event, io) {
-  console.log(`[Nexus-Reactive] ⚡ job: ${event.type}`);
-  if (event.type === 'JOB_CREATED')
-    io.to('admins').emit('nexus:job:created', { pedidoId: event.aggregateId, ...event.payload });
-  else if (event.type === 'JOB_ASSIGNED')
-    io.to('admins').emit('nexus:job:assigned', { pedidoId: event.aggregateId, ...event.payload });
-  else if (event.type === 'JOB_COMPLETED')
-    io.to('admins').emit('nexus:job:completed', { pedidoId: event.aggregateId, ...event.payload });
+  const { type, aggregateId, payload } = event;
+  const base = { pedidoId: aggregateId, ...payload, _nexusTs: new Date().toISOString() };
+
+  switch(type) {
+    case 'JOB_CREATED':
+      io.to('admins').emit('nexus:job:created', base);
+      break;
+    case 'JOB_ASSIGNED':
+      io.to('admins').emit('nexus:job:assigned', base);
+      if (payload?.workerId)
+        io.to('worker_' + payload.workerId).emit('nexus:job:assigned', base);
+      break;
+    case 'JOB_COMPLETED':
+      io.to('admins').emit('nexus:job:completed', base);
+      break;
+    case 'JOB_CANCELED':
+      io.to('admins').emit('nexus:job:canceled', base);
+      break;
+    default:
+      console.log('[Nexus] Evento job sin handler:', type);
+  }
 }
 
 function procesarLeadEvent(event, io) {
-  console.log(`[Nexus-Reactive] ⚡ lead: ${event.type}`);
-  io.to('admins').emit('nexus:lead', { type: event.type, leadId: event.aggregateId, ...event.payload });
+  // LEAD_RECEIVED, LEAD_ASSIGNED — preparado para Sprint 2
+  const { type, aggregateId, payload } = event;
+  io.to('admins').emit('nexus:lead', {
+    type, leadId: aggregateId, ...payload,
+    _nexusTs: new Date().toISOString()
+  });
 }
 
 module.exports = { iniciarObserver };

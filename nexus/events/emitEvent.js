@@ -31,3 +31,16 @@ function emitEvent({ entityType, type, aggregateId, payload = {} }) {
 }
 
 module.exports = { emitEvent };
+
+// ── Lead Event Taxonomy — preparado para Sprint 2 ────────
+// LEAD_RECEIVED   → lead ingresa al pipeline
+// LEAD_ASSIGNED   → lead asignado a un worker/zona
+// LEAD_CONTACTED  → primer contacto realizado
+// LEAD_RESPONDED  → lead respondio
+// LEAD_REGISTERED → lead se registró en ServiRed
+// LEAD_DISCARDED  → lead descartado
+//
+// Uso futuro (NO implementado todavía):
+// emitEvent({ entityType: 'lead', type: 'LEAD_RECEIVED',
+//   aggregateId: lead._id, payload: { rubro, zona, source } });
+// ─────────────────────────────────────────────────────────
