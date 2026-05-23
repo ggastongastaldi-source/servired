@@ -56,6 +56,18 @@ function render(s) {
   }
 
   L.push(sep);
+  // Shadow metrics
+  try {
+    const sh = await mongoose.connection.collection('shadow_metrics_log').find({}).sort({timestamp:-1}).limit(1).toArray();
+    if(sh[0]){
+      const sm = sh[0];
+      L.push(fn('yellow','  ── SHADOW PRICING ───────────────────'));
+      L.push('  Real:   ' + fn('green','1.000') + '   Shadow: ' + fn('cyan',(sm.shadowMultiplier||1).toFixed(3)));
+      L.push('  Drift:  ' + fn(sm.conversionDrift>0.1?'red':sm.conversionDrift>0.05?'yellow':'green',(sm.conversionDrift||0).toFixed(3)) + '   ' + fn(sm.diagnosis==='SIGNAL'?'red':sm.diagnosis==='INDETERMINADO'?'yellow':'gray',sm.diagnosis||'—'));
+      L.push('  Stress: ' + fn(sm.systemUnderStress?'red':'green',sm.systemUnderStress?'⚠ SI':'✓ NO'));
+      L.push(sep);
+    }
+  } catch(_){}
   L.push(`  ${fn('yellow','ÚLTIMOS EVENTOS')}`);
   if (s.ultimos.length === 0) {
     L.push(fn('gray','  (sin eventos aún — hacé un pedido de prueba)'));
