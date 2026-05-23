@@ -9,11 +9,6 @@ const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-// ────────────────────────────────────────────────────────
-// ── NEXUS Phase 0 — Shadow Mode ─────────────────────
-const { ensureEventStore } = require('./nexus/bootstrap/ensureEventStore');
-const { iniciarObserver }  = require('./nexus/reactive/changeStreamObserver');
-// ─────────────────────────────────────────────────────
 const io = new Server(server, { cors: { origin: '*' } });
 global.io = io;
 require('./src/old_structure/services/socketHandlers')(io);
@@ -131,8 +126,6 @@ app.get('/api/trabajadores', (req, res) => {
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
     .then(() => {
       console.log('✅ MongoDB conectado');
-      const { ensureEventStore } = require('./nexus/bootstrap/ensureEventStore');
-      const { iniciarObserver }  = require('./nexus/reactive/changeStreamObserver');
       const { runActuator }      = require('./nexus/shadow/shadowPricingActuator');
       ensureEventStore()
         .then(() => iniciarObserver(io))
