@@ -1,7 +1,9 @@
-// Nexus Universal Emitter v1.3 — Shadow Mode / Fire-and-Forget
-// NUNCA usar con await. Nunca bloquea el request lifecycle.
+// Nexus Universal Emitter v2.0 — con Dixie Gate interceptor
+// Fire-and-forget. NUNCA usar con await.
 const crypto   = require('crypto');
 const mongoose = require('mongoose');
+
+const DIXIE_MODE = process.env.DIXIE_MODE || 'observe';
 
 function emitEvent({ entityType, type, aggregateId, payload = {} }) {
   if (!entityType || !type || !aggregateId) {
@@ -10,13 +12,13 @@ function emitEvent({ entityType, type, aggregateId, payload = {} }) {
   }
 
   const event = {
-    eventId:    crypto.randomUUID(),
-    version:    1,
-    entityType: String(entityType).toLowerCase(),
-    type:       String(type).toUpperCase(),
-    aggregateId:String(aggregateId),
+    eventId:     crypto.randomUUID(),
+    version:     1,
+    entityType:  String(entityType).toLowerCase(),
+    type:        String(type).toUpperCase(),
+    aggregateId: String(aggregateId),
     payload,
-    timestamp:  new Date(),
+    timestamp:   new Date(),
     metadata: {
       environment: process.env.NODE_ENV || 'production',
       source:      'servired-legacy',
@@ -25,22 +27,37 @@ function emitEvent({ entityType, type, aggregateId, payload = {} }) {
     }
   };
 
+  // Dixie Gate interceptor — async, nunca bloquea el emit
+  _dixieIntercept(event).catch(() => {});
+
+  // Persistencia fire-and-forget
   mongoose.connection.collection('events').insertOne(event)
     .then(() => console.log(`[Nexus] 📡 [${event.entityType}] ${event.type} → ${event.aggregateId}`))
     .catch(err => console.error(`[Nexus-Shadow-Error] [${entityType}:${type}]:`, err.message));
 }
 
-module.exports = { emitEvent };
+async function _dixieIntercept(event) {
+  try {
+    const { validate, getAggregateState, audit } = require('../dixie/gate');
+    const state  = await getAggregateState(event.aggregateId);
+    const result = validate(state, event);
 
-// ── Lead Event Taxonomy — preparado para Sprint 2 ────────
-// LEAD_RECEIVED   → lead ingresa al pipeline
-// LEAD_ASSIGNED   → lead asignado a un worker/zona
-// LEAD_CONTACTED  → primer contacto realizado
-// LEAD_RESPONDED  → lead respondio
-// LEAD_REGISTERED → lead se registró en ServiRed
-// LEAD_DISCARDED  → lead descartado
-//
-// Uso futuro (NO implementado todavía):
-// emitEvent({ entityType: 'lead', type: 'LEAD_RECEIVED',
-//   aggregateId: lead._id, payload: { rubro, zona, source } });
-// ─────────────────────────────────────────────────────────
+    // En enforce: bloquear eventos inválidos (futuro)
+    // En observe: solo auditar
+    if (result.issues.length > 0) {
+      await audit(event, state, result);
+      if (DIXIE_MODE === 'enforce' && !result.allowed) {
+        throw new Error(`[DixieGate] Evento bloqueado: ${event.type}`);
+      }
+    }
+  } catch(e) {
+    // Dixie Gate nunca rompe el flujo principal en observe
+    if (DIXIE_MODE !== 'enforce') {
+      console.error('[DixieGate] Error en intercept (ignorado):', e.message);
+    } else {
+      throw e;
+    }
+  }
+}
+
+module.exports = { emitEvent };
