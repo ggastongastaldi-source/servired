@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 const SECRET = process.env.JWT_SECRET;
+const { enviarBienvenidaWorker, enviarBienvenidaCliente } = require('../services/emailService');
 
 router.post('/registro', async (req, res) => {
   try {
@@ -37,6 +38,14 @@ router.post('/registro', async (req, res) => {
     const estado = nuevoRol === 'TRABAJADOR' ? 'PENDIENTE_VERIFICACION' : 'ACTIVO';
     const u = await Usuario.create({ nombre, email, password: hash, rol: nuevoRol, roles: [nuevoRol], especialidades: especialidades || [], telefono: telefono || '', estado, ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] } });
     const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
+    // Email de bienvenida (async, no bloquea el registro)
+    try {
+      if (nuevoRol === 'TRABAJADOR') {
+        enviarBienvenidaWorker({ nombre: u.nombre, email: u.email, especialidades: u.especialidades }).catch(()=>{});
+      } else {
+        enviarBienvenidaCliente({ nombre: u.nombre, email: u.email }).catch(()=>{});
+      }
+    } catch(e) {}
     res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado } });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
@@ -49,6 +58,14 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, u.password);
     if (!ok) return res.status(401).json({ ok: false, error: 'Credenciales incorrectas' });
     const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
+    // Email de bienvenida (async, no bloquea el registro)
+    try {
+      if (nuevoRol === 'TRABAJADOR') {
+        enviarBienvenidaWorker({ nombre: u.nombre, email: u.email, especialidades: u.especialidades }).catch(()=>{});
+      } else {
+        enviarBienvenidaCliente({ nombre: u.nombre, email: u.email }).catch(()=>{});
+      }
+    } catch(e) {}
     res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado } });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
