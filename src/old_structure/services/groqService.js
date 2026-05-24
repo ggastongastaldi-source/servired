@@ -1,8 +1,4 @@
-// ============================================
 // GROQ SERVICE - Motor de inferencia ultra-rápida
-// Matching en tiempo real + mensajes de infiltración
-// ============================================
-
 class GroqService {
   constructor() {
     this.apiKey = process.env.GROQ_API_KEY;
@@ -14,7 +10,6 @@ class GroqService {
     if (!this.apiKey) return null;
     const { execute } = require('../../../nexus/infrastructure/circuitBreaker');
     return execute('groq', async () => {
-      try {
       const res = await fetch(this.url, {
         method: 'POST',
         headers: {
@@ -30,17 +25,14 @@ class GroqService {
       });
       const data = await res.json();
       return data.choices?.[0]?.message?.content || null;
-    } catch (e) {
-      console.error('[Groq]', e.message);
-      return null;
-    }
+    }, () => null);
   }
 
   async generarMensajeInfiltracion({ nombreTrabajador, rubro, zona, scoreBriones }) {
     return this.inferir(
-      `Sos Glóbulo Rojo, el motor de Servired en GBA Argentina. 
-       Escribí un mensaje breve en español rioplatense para notificar al trabajador "${nombreTrabajador}" 
-       que hay un pedido de "${rubro}" cerca suyo en ${zona}. 
+      `Sos Glóbulo Rojo, el motor de Servired en GBA Argentina.
+       Escribí un mensaje breve en español rioplatense para notificar al trabajador "${nombreTrabajador}"
+       que hay un pedido de "${rubro}" cerca suyo en ${zona}.
        Su score de perfil es ${scoreBriones}/100.
        Máximo 2 oraciones, directo, motivador, sin emojis raros.`,
       150
