@@ -119,3 +119,11 @@ function procesarLeadEvent(event, io) {
 }
 
 module.exports = { iniciarObserver };
+
+// NarrativeObserver hook — evalúa cada evento con TRS
+async function _notifyNarrative(event) {
+  try {
+    const { observe } = require('../application/narrativeObserver');
+    await observe(event);
+  } catch(e) {}
+}

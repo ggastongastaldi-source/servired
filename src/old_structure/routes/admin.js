@@ -203,6 +203,23 @@ router.get('/chaos/validate', authAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// NarrativeObserver — Marketing Outbox
+router.get('/narrative/feed', authAdmin, async (req, res) => {
+  try {
+    const { getFeed } = require('../../../nexus/application/narrativeObserver');
+    const feed = await getFeed(20);
+    res.json({ ok: true, feed });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.get('/narrative/trs', authAdmin, async (req, res) => {
+  try {
+    const { getTRSStats } = require('../../../nexus/application/narrativeObserver');
+    res.json({ ok: true, stats: await getTRSStats() });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin
