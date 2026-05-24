@@ -55,8 +55,13 @@ router.get('/stats', authAdmin, async (req, res) => {
       db.collection('usuarios').countDocuments({ rol: 'TRABAJADOR' }),
       db.collection('usuarios').countDocuments({ rol: 'CLIENTE' }),
     ]);
-    res.json({ ok: true, pedidos, trabajadores, clientes });
-  } catch(e) { res.json({ ok: true, pedidos: 0, trabajadores: 0, clientes: 0 }); }
+    // Workers online via Socket.IO rooms
+    const io = global._io;
+    const online = io
+      ? [...(io.sockets.adapter.rooms||new Map())].filter(([k])=>k.startsWith('worker_')).length
+      : 0;
+    res.json({ ok: true, pedidos, trabajadores, clientes, online });
+  } catch(e) { res.json({ ok: true, pedidos: 0, trabajadores: 0, clientes: 0, online: 0 }); }
 });
 
 
