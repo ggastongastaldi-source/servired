@@ -127,6 +127,24 @@ router.get('/outbox/stats', authAdmin, async (req, res) => {
   } catch(e) { res.json({ ok: true, stats: {} }); }
 });
 
+
+// Workflow Engine — replay y integrity check
+router.get('/workflow/snapshot/:entityType/:id', authAdmin, async (req, res) => {
+  try {
+    const { loadSnapshot } = require('../../../nexus/application/workflowEngine');
+    const snap = await loadSnapshot(req.params.entityType, req.params.id);
+    res.json({ ok: true, snapshot: snap });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.post('/workflow/integrity/:entityType/:id', authAdmin, async (req, res) => {
+  try {
+    const { checkIntegrity } = require('../../../nexus/application/workflowEngine');
+    const result = await checkIntegrity(req.params.entityType, req.params.id);
+    res.json({ ok: true, ...result });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin
