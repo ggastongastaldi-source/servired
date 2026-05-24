@@ -276,7 +276,8 @@ function irTab(id,btn){
 async function cargarPed(){
   try{
     const r=await fetch('/api/admin/pedidos',{headers:{Authorization:'Bearer '+TOKEN}});
-    const data=await r.json();
+    const resp=await r.json();
+    const data=resp.data||resp;
     const el=document.getElementById('lista-ped');
     if(!data.length){el.innerHTML='<div style="color:#00E5FF;text-align:center;padding:20px;font-size:0.85rem">Sin pedidos</div>';return;}
     el.innerHTML=data.map(p=>`
@@ -369,16 +370,15 @@ async function verificar(id){
     if(data.ok){
       toast('✅ Trabajador aprobado');
       addEv('✅','Trabajador verificado');
-      // Remover card inmediatamente del DOM
-      var card = document.querySelector('[data-worker-id="'+id+'"]');
-      if(card) card.remove();
-      // Actualizar contador pendientes
+      // Remover card de ambos contenedores
+      document.querySelectorAll('[data-worker-id="'+id+'"]').forEach(function(c){c.remove();});
+      // Ocultar sección pendientes si quedó vacía
       var pendCards = document.querySelectorAll('#lista-pendientes [data-worker-id]');
       if(pendCards.length === 0){
         var sec = document.getElementById('sec-pendientes');
         if(sec) sec.style.display='none';
       }
-      setTimeout(()=>cargarWor(), 1500);
+      cargarWor();
     } else {
       toast('❌ Error: '+(data.error||'sin respuesta'));
     }
@@ -406,7 +406,7 @@ async function cancelarPedido(id){
   if(!confirm('¿Cancelar este pedido?'))return;
   try{
     const rv=await fetch(`/api/admin/pedidos/${id}/cancelar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
-    if(rv.ok){toast('❌ Pedido cancelado');cargarPed();}
+    if(rv.ok){toast('❌ Pedido cancelado');cargarPed();if(typeof cargarCola==='function')cargarCola();}
   }catch(e){}
 }
 
@@ -414,7 +414,7 @@ async function reasignarPedido(id){
   toast('🔄 Reasignando pedido...');
   try{
     const rv=await fetch(`/api/admin/pedidos/${id}/reasignar`,{method:'POST',headers:{Authorization:'Bearer '+TOKEN}});
-    if(rv.ok){toast('✅ Pedido reasignado');cargarPed();}
+    if(rv.ok){toast('✅ Pedido reasignado');cargarPed();if(typeof cargarCola==='function')cargarCola();}
     else toast('❌ Sin workers disponibles');
   }catch(e){}
 }
