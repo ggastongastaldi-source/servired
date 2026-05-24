@@ -109,6 +109,15 @@ router.post('/pedidos/:id/reasignar', authAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// Circuit Breaker status
+router.get('/circuit-breaker', authAdmin, (req, res) => {
+  try {
+    const { getAll } = require('../../../nexus/infrastructure/circuitBreaker');
+    res.json({ ok: true, circuits: getAll() });
+  } catch(e) { res.json({ ok: true, circuits: [] }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin

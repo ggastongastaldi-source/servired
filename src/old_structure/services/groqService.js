@@ -12,7 +12,9 @@ class GroqService {
 
   async inferir(prompt, maxTokens = 300) {
     if (!this.apiKey) return null;
-    try {
+    const { execute } = require('../../../nexus/infrastructure/circuitBreaker');
+    return execute('groq', async () => {
+      try {
       const res = await fetch(this.url, {
         method: 'POST',
         headers: {
