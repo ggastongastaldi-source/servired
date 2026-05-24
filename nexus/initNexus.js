@@ -18,6 +18,7 @@ async function initNexus(io) {
 
   const { ensureEventStore } = require('./bootstrap/ensureEventStore');
   const { init: initDispatcher } = require('./infrastructure/outboxDispatcher');
+  const { startPulse } = require('./application/governanceLayer');
   const { iniciarObserver }  = require('./reactive/changeStreamObserver');
   const { runActuator }      = require('./shadow/shadowPricingActuator');
 
@@ -27,6 +28,7 @@ async function initNexus(io) {
   await iniciarObserver(io);
 
   initDispatcher(io);
+  startPulse(io);
   console.log('[Nexus] ✅ Ecosistema reactivo OK');
 
   // Timers en state local — nunca global

@@ -145,6 +145,39 @@ router.post('/workflow/integrity/:entityType/:id', authAdmin, async (req, res) =
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// Governance Layer
+router.get('/governance/policies', authAdmin, (req, res) => {
+  try {
+    const { getPolicies } = require('../../../nexus/application/governanceLayer');
+    res.json({ ok: true, policies: getPolicies() });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.post('/governance/emergencia', authAdmin, (req, res) => {
+  try {
+    const { activarModoEmergencia } = require('../../../nexus/application/governanceLayer');
+    activarModoEmergencia(req.body.motivo || 'activado manualmente');
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.delete('/governance/emergencia', authAdmin, (req, res) => {
+  try {
+    const { desactivarModoEmergencia } = require('../../../nexus/application/governanceLayer');
+    desactivarModoEmergencia();
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.patch('/governance/politica', authAdmin, (req, res) => {
+  try {
+    const { actualizarPolitica } = require('../../../nexus/application/governanceLayer');
+    actualizarPolitica(req.body.key, req.body.value);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin
