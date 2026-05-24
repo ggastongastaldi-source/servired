@@ -178,6 +178,31 @@ router.patch('/governance/politica', authAdmin, (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// Chaos Lab — SOLO para testing, nunca en producción automático
+router.get('/chaos/faults', authAdmin, (req, res) => {
+  try {
+    const { listFaults } = require('../../../nexus/application/chaosLab');
+    res.json({ ok: true, faults: listFaults() });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.post('/chaos/inject/:fault', authAdmin, async (req, res) => {
+  try {
+    const { injectFault } = require('../../../nexus/application/chaosLab');
+    const result = await injectFault(req.params.fault);
+    res.json({ ok: true, result });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.get('/chaos/validate', authAdmin, async (req, res) => {
+  try {
+    const { validate } = require('../../../nexus/application/chaosLab');
+    const result = await validate();
+    res.json({ ok: true, ...result });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin
