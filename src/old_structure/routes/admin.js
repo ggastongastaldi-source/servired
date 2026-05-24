@@ -59,6 +59,51 @@ router.get('/stats', authAdmin, async (req, res) => {
   } catch(e) { res.json({ ok: true, pedidos: 0, trabajadores: 0, clientes: 0 }); }
 });
 
+
+// Eliminar (rechazar) trabajador
+router.delete('/trabajadores/:id', authAdmin, async (req, res) => {
+  try {
+    await mongoose.connection.db.collection('usuarios').deleteOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) }
+    );
+    if (global._io) global._io.to('admins').emit('trabajador_eliminado', { id: req.params.id });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Desactivar trabajador
+router.post('/trabajadores/:id/desactivar', authAdmin, async (req, res) => {
+  try {
+    await mongoose.connection.db.collection('usuarios').updateOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) },
+      { $set: { estado: 'DESACTIVADO', activo: false } }
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Cancelar pedido
+router.post('/pedidos/:id/cancelar', authAdmin, async (req, res) => {
+  try {
+    await mongoose.connection.db.collection('pedidos').updateOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) },
+      { $set: { estado: 'CANCELADO' } }
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Reasignar pedido
+router.post('/pedidos/:id/reasignar', authAdmin, async (req, res) => {
+  try {
+    await mongoose.connection.db.collection('pedidos').updateOne(
+      { _id: new mongoose.Types.ObjectId(req.params.id) },
+      { $set: { estado: 'PENDIENTE', trabajadorId: null } }
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin

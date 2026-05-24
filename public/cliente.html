@@ -1018,25 +1018,35 @@ function sqTomarFoto(){
   var ta = document.getElementById(window._sqCamTarget || 'sq-texto-libre');
   if(!ta.value.includes('[foto adjunta]')) ta.value = (ta.value?ta.value+' ':'') + '[foto adjunta]';
   // Guardar dataUrl globalmente para enviar con el pedido
-  window._sqFotoBase64 = dataUrl;
+  if(!window._sqFotosBase64) window._sqFotosBase64 = [];
+  window._sqFotosBase64.push(dataUrl);
   sqCerrarCamara();
-  var _prev = document.getElementById('sq-foto-preview-inline');
-  if(_prev) _prev.remove();
-  var _paso = (document.getElementById('sq-paso2') && document.getElementById('sq-paso2').style.display !== 'none')
-    ? document.getElementById('sq-paso2') : document.getElementById('sq-paso3');
-  if(_paso){
-    var _div = document.createElement('div');
-    _div.id = 'sq-foto-preview-inline';
-    _div.style.cssText = 'margin:8px 0;text-align:center;';
-    _div.innerHTML = '<img src="'+dataUrl+'" style="width:100%;max-width:180px;border-radius:8px;border:2px solid #00E5FF;"/>'
-      + '<div style="color:#10b981;font-size:0.75rem;margin-top:4px;">📷 Foto adjunta</div>'
-      + '<button onclick="window._sqFotoBase64=null;document.getElementById(\'sq-foto-preview-inline\').remove()" style="background:none;border:none;color:#64748b;font-size:0.72rem;cursor:pointer;">✕ quitar</button>';
-    var _ref = document.getElementById('sq-btn-calcular') || document.getElementById('sq-btn-groq');
-    if(_ref) _ref.parentNode.insertBefore(_div, _ref);
-    else _paso.appendChild(_div);
-  }
+  sqRebuildPreview();
   try{if(navigator.vibrate){navigator.vibrate(80);}}catch(e){}
   toast('📷 Foto adjunta al presupuesto.');
+}
+function sqRebuildPreview(){
+  var _paso = (document.getElementById('sq-paso2') && document.getElementById('sq-paso2').style.display !== 'none')
+    ? document.getElementById('sq-paso2') : document.getElementById('sq-paso3');
+  if(!_paso) return;
+  var _prev = document.getElementById('sq-foto-preview-inline');
+  if(_prev) _prev.remove();
+  if(!(window._sqFotosBase64||[]).length) return;
+  var _div = document.createElement('div');
+  _div.id = 'sq-foto-preview-inline';
+  _div.style.cssText = 'margin:8px 0;';
+  var imgs = window._sqFotosBase64.map(function(url,i){
+    return '<div style="display:inline-block;margin:4px;position:relative;">'
+      +'<img src="'+url+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #00E5FF;"/>'
+      +'<button onclick="window._sqFotosBase64.splice('+i+',1);sqRebuildPreview()" style="position:absolute;top:-6px;right:-6px;background:#ef4444;border:none;border-radius:50%;color:#fff;font-size:0.65rem;width:18px;height:18px;cursor:pointer;line-height:18px;padding:0;">x</button>'
+      +'</div>';
+  }).join('');
+  _div.innerHTML = '<div style="color:#10b981;font-size:0.75rem;margin-bottom:6px;">📷 '+window._sqFotosBase64.length+' foto(s) adjunta(s) <button onclick="window._sqFotosBase64=[];sqRebuildPreview()" style="background:none;border:none;color:#64748b;font-size:0.7rem;cursor:pointer;">✕ quitar todas</button></div>'
+    +'<div style="display:flex;flex-wrap:wrap;">'+imgs+'</div>'
+    +'<button onclick="sqAbrirCamara()" style="margin-top:6px;background:none;border:1px dashed #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.75rem;padding:4px 10px;cursor:pointer;">+ Agregar otra foto</button>';
+  var _ref = document.getElementById('sq-btn-calcular') || document.getElementById('sq-btn-groq');
+  if(_ref) _ref.parentNode.insertBefore(_div, _ref);
+  else _paso.appendChild(_div);
 }
 function sqCerrarCamara(){
   if(_sqCamStream){ _sqCamStream.getTracks().forEach(function(t){t.stop();}); _sqCamStream=null; }
