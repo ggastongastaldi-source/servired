@@ -1,39 +1,83 @@
-// Nexus Universal Emitter v2.0 — con Dixie Gate interceptor
-// Fire-and-forget. NUNCA usar con await.
+// ServiRed — Nexus Universal Emitter v3.0
+// Event Envelope completo según prompt maestro
+// eventId, correlationId, causationId, rootCauseId
+
 const crypto   = require('crypto');
 const mongoose = require('mongoose');
+const { AsyncLocalStorage } = require('async_hooks');
 
 const DIXIE_MODE = process.env.DIXIE_MODE || 'observe';
 
-function emitEvent({ entityType, type, aggregateId, payload = {} }) {
+// Context Propagation — AsyncLocalStorage para correlationId
+const contextStorage = new AsyncLocalStorage();
+
+function getContext() {
+  return contextStorage.getStore() || {};
+}
+
+function runWithContext(ctx, fn) {
+  return contextStorage.run(ctx, fn);
+}
+
+function startCorrelation(correlationId, rootCauseId) {
+  return {
+    correlationId: correlationId || crypto.randomUUID(),
+    rootCauseId:   rootCauseId   || correlationId || crypto.randomUUID(),
+    causationId:   null,
+  };
+}
+
+function emitEvent({
+  entityType,
+  type,
+  aggregateId,
+  payload = {},
+  causationId = null,
+  correlationId = null,
+  rootCauseId = null,
+}) {
   if (!entityType || !type || !aggregateId) {
     console.warn('[Nexus] ⚠️ Evento omitido — faltan campos obligatorios');
     return;
   }
 
+  // Heredar contexto del AsyncLocalStorage si existe
+  const ctx = getContext();
+
   const event = {
-    eventId:     crypto.randomUUID(),
-    version:     1,
-    entityType:  String(entityType).toLowerCase(),
-    type:        String(type).toUpperCase(),
-    aggregateId: String(aggregateId),
+    eventId:       crypto.randomUUID(),
+    correlationId: correlationId || ctx.correlationId || crypto.randomUUID(),
+    causationId:   causationId   || ctx.causationId   || null,
+    rootCauseId:   rootCauseId   || ctx.rootCauseId   || null,
+    version:       1,
+    entityType:    String(entityType).toLowerCase(),
+    type:          String(type).toUpperCase(),
+    aggregateId:   String(aggregateId),
     payload,
-    timestamp:   new Date(),
+    timestamp:     new Date(),
     metadata: {
-      environment: process.env.NODE_ENV || 'production',
-      source:      'servired-legacy',
-      nodeVersion: process.version,
-      pid:         process.pid
+      environment:     process.env.NODE_ENV || 'production',
+      source:          'servired-nexus',
+      nodeVersion:     process.version,
+      pid:             process.pid,
+      workflowVersion: '1.0',
+      policyVersion:   '1.0',
+      channel:         ctx.channel || 'internal',
+      zone:            ctx.zone    || 'AMBA',
+      circuitState:    ctx.circuitState || 'CLOSED',
+      traceDepth:      (ctx.traceDepth || 0) + 1,
     }
   };
 
-  // Dixie Gate interceptor — async, nunca bloquea el emit
+  // Dixie Gate interceptor — async, nunca bloquea
   _dixieIntercept(event).catch(() => {});
 
   // Persistencia fire-and-forget
   mongoose.connection.collection('events').insertOne(event)
-    .then(() => console.log(`[Nexus] 📡 [${event.entityType}] ${event.type} → ${event.aggregateId}`))
-    .catch(err => console.error(`[Nexus-Shadow-Error] [${entityType}:${type}]:`, err.message));
+    .then(() => console.log(
+      `[Nexus] 📡 [${event.entityType}] ${event.type} → ${event.aggregateId} | corr:${event.correlationId.slice(0,8)}`
+    ))
+    .catch(err => console.error(`[Nexus-Error] [${entityType}:${type}]:`, err.message));
 }
 
 async function _dixieIntercept(event) {
@@ -41,9 +85,6 @@ async function _dixieIntercept(event) {
     const { validate, getAggregateState, audit } = require('../dixie/gate');
     const state  = await getAggregateState(event.aggregateId);
     const result = validate(state, event);
-
-    // En enforce: bloquear eventos inválidos (futuro)
-    // En observe: solo auditar
     if (result.issues.length > 0) {
       await audit(event, state, result);
       if (DIXIE_MODE === 'enforce' && !result.allowed) {
@@ -51,13 +92,12 @@ async function _dixieIntercept(event) {
       }
     }
   } catch(e) {
-    // Dixie Gate nunca rompe el flujo principal en observe
     if (DIXIE_MODE !== 'enforce') {
-      console.error('[DixieGate] Error en intercept (ignorado):', e.message);
+      console.error('[DixieGate] Error (ignorado):', e.message);
     } else {
       throw e;
     }
   }
 }
 
-module.exports = { emitEvent };
+module.exports = { emitEvent, runWithContext, startCorrelation, getContext, contextStorage };

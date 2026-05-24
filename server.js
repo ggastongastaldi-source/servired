@@ -41,6 +41,10 @@ app.use('/api/pagos', require('./src/old_structure/routes/pagos'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
   app.post('/api/admin/broadcast', require('./src/old_structure/commands/emergencyBroadcast').emergencyBroadcast);
 app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
+// Context Propagation — correlationId en cada request
+const { httpContextMiddleware } = require('./nexus/infrastructure/contextMiddleware');
+app.use(httpContextMiddleware);
+
 app.use('/api/smart-quote', require('./src/old_structure/routes/smartQuote'));
 app.use('/api/finanzas', require('./src/old_structure/routes/finanzas'));
 
