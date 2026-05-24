@@ -243,6 +243,27 @@ if(!TOKEN){window.location='/';}
 function logout(){localStorage.removeItem('token');window.location='/';}
 const socket=io();
 let mapa,mWorkers={},revenue=0,comision=0,pedidosHoy=0,workersOnline=0,pedidosComp=0;
+
+async function initKPIs(){
+  try{
+    // Pedidos de hoy
+    const r=await fetch('/api/admin/pedidos',{headers:{Authorization:'Bearer '+TOKEN}});
+    const resp=await r.json();
+    const pedidos=resp.data||resp;
+    const hoy=new Date().toDateString();
+    pedidosHoy=pedidos.filter(p=>new Date(p.createdAt).toDateString()===hoy).length;
+    // Revenue de pedidos PAGADA o REALIZADA
+    const comp=pedidos.filter(p=>p.estado==='PAGADA'||p.estado==='REALIZADA');
+    pedidosComp=comp.length;
+    revenue=comp.reduce((acc,p)=>acc+(p.precio||0),0);
+    comision=Math.round(revenue*0.2);
+    // Workers online via stats
+    const r2=await fetch('/api/admin/stats',{headers:{Authorization:'Bearer '+TOKEN}});
+    const s=await r2.json();
+    workersOnline=s.online||0;
+    updKPIs();
+  }catch(e){console.error('[KPI]',e);}
+}
 let todosWorkers=[];
 let colaTimers={};
 const RUBROS_ICONOS={
@@ -633,7 +654,7 @@ setInterval(()=>{
 },30000);
 
 window.addEventListener('DOMContentLoaded',()=>{
-  initMapa();cargarPed();updKPIs();
+  initMapa();cargarPed();initKPIs();
 });
 </script>
 
