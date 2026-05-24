@@ -986,6 +986,8 @@ function sqAbrirCamara(){
       + '<canvas id="sq-cam-canvas" style="display:none;"></canvas>'
       + '<div style="display:flex;gap:12px;margin-top:16px;">'
       + '<button onclick="sqTomarFoto()" style="padding:12px 24px;background:#00E5FF;border:none;border-radius:10px;color:#000;font-weight:700;cursor:pointer;font-size:1rem;">📸 Sacar foto</button>'
+      + '<button onclick="sqAbrirGaleria()" style="padding:12px 24px;background:none;border:1px solid #00E5FF;border-radius:10px;color:#00E5FF;font-weight:700;cursor:pointer;font-size:1rem;">🖼️ Galería</button>'
+      + '<input type="file" id="sq-galeria-input" accept="image/*" multiple style="display:none;" onchange="sqCargarDeGaleria(event)">'
       + '<button onclick="sqCerrarCamara()" style="padding:12px 24px;background:none;border:1px solid #64748b;border-radius:10px;color:#64748b;cursor:pointer;">✕ Cancelar</button>'
       + '</div>'
       + '<div id="sq-cam-preview" style="margin-top:12px;"></div>'
@@ -1047,6 +1049,30 @@ function sqRebuildPreview(){
   var _ref = document.getElementById('sq-btn-calcular') || document.getElementById('sq-btn-groq');
   if(_ref) _ref.parentNode.insertBefore(_div, _ref);
   else _paso.appendChild(_div);
+}
+function sqAbrirGaleria(){
+  document.getElementById('sq-galeria-input').click();
+}
+function sqCargarDeGaleria(event){
+  var files = Array.from(event.target.files);
+  if(!files.length) return;
+  if(!window._sqFotosBase64) window._sqFotosBase64 = [];
+  var pending = files.length;
+  files.forEach(function(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      window._sqFotosBase64.push(e.target.result);
+      pending--;
+      if(pending === 0){
+        sqCerrarCamara();
+        sqRebuildPreview();
+        toast('🖼️ ' + files.length + ' foto(s) cargada(s) desde galería.');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  // reset input para permitir volver a elegir las mismas fotos
+  event.target.value = '';
 }
 function sqCerrarCamara(){
   if(_sqCamStream){ _sqCamStream.getTracks().forEach(function(t){t.stop();}); _sqCamStream=null; }
