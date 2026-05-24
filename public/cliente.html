@@ -419,43 +419,8 @@ const SQ_TRABAJOS={
   cerrajeria:{label:'🔑 Cerrajería',rubros:[{r:'cerrajeria',label:'Cerrajería',coef:1}]},
   jardineria:{label:'🌿 Jardinería',rubros:[{r:'jardineria',label:'Jardinería',coef:1}]},
   mudanza:{label:'🚛 Mudanza',rubros:[{r:'fletes_mudanzas',label:'Flete',coef:1}]},
-  banio:{label:'🚿 Baño completo',rubros:[
-    {r:'plomeria',label:'Plomería',coef:4},
-    {r:'electricidad',label:'Electricidad',coef:3},
-    {r:'albanileria',label:'Albañilería/revoque',coef:6},
-    {r:'revestimientos_pvc',label:'Cerámicos',coef:4},
-    {r:'durlock',label:'Durlock/cielorraso',coef:3},
-    {r:'pintura',label:'Pintura final',coef:2},
-  ]},
-  cocina:{label:'🍳 Cocina completa',rubros:[
-    {r:'plomeria',label:'Plomería',coef:3},
-    {r:'electricidad',label:'Electricidad',coef:4},
-    {r:'albanileria',label:'Albañilería',coef:5},
-    {r:'revestimientos_pvc',label:'Revestimientos',coef:3},
-    {r:'pintura',label:'Pintura',coef:2},
-  ]},
-  camaras:{label:'📷 Cámaras de seguridad',rubros:[
-    {r:'camaras_seguridad',label:'Instalación cámaras',coef:1},
-    {r:'electricidad',label:'Cableado/alimentación',coef:1},
-  ]},
-  alarmas:{label:'🚨 Sistema de alarmas',rubros:[
-    {r:'alarmas',label:'Alarma perimetral',coef:1},
-    {r:'electricidad',label:'Cableado',coef:1},
-  ]},
-  domotica:{label:'🏠 Domótica/Automatización',rubros:[
-    {r:'domotica_automatizacion',label:'Automatización',coef:1},
-    {r:'electricidad',label:'Instalación eléctrica',coef:1},
-  ]},
-  albanileria:{label:"🧱 Albañilería",rubros:[{r:"albanileria",label:"Albañilería",coef:1}]},
-  durlock:{label:"🪣 Durlock",rubros:[{r:"durlock",label:"Durlock/cielorraso",coef:1}]},
-  revestimientos:{label:"🧱 Revest. PVC",rubros:[{r:"revestimientos_pvc",label:"Revestimiento PVC",coef:1}]},
-  antihumedad:{label:"💧 Antihumedad",rubros:[{r:"antihumedad",label:"Tratamiento muros",coef:1.2}]},
-  climatizacion:{label:"❄️ Climatización",rubros:[{r:"climatizacion",label:"Instalación AC",coef:1}]},
-  mecanica:{label:"🔩 Mecánica",rubros:[{r:"mecanica_auxilio",label:"Mecánica",coef:1}]},
-  consorcios:{label:"🏢 Consorcios",rubros:[{r:"mantenimiento_consorcios",label:"Mantenimiento",coef:1}]},
-  fumigacion:{label:"🦟 Fumigación",rubros:[{r:"fumigacion",label:"Control plagas",coef:1}]},
-  peluqueria_canina:{label:"🐕 Peluq. Canina",rubros:[{r:"peluqueria_canina",label:"Baño y corte",coef:1}]},
-  paneles_solares:{label:"☀️ Paneles Solares",rubros:[{r:"paneles_solares",label:"Instalación",coef:1.5}]},
+  albanileria:{label:'🧱 Albañilería',rubros:[{r:'albanileria',label:'Albañilería',coef:1}]},
+  durlock:{label:'🪣 Durlock',rubros:[{r:'durlock',label:'Durlock/cielorraso',coef:1}]},
   techistas:{label:'🏚️ Techistas',rubros:[
     {r:'techistas',label:'Techo de chapa/losa',coef:1},
     {r:'techistas',label:'Impermeabilización',coef:1.2},
@@ -489,17 +454,17 @@ const SQ_TRABAJOS={
     {r:'mantenimiento_consorcios',label:'Mantenimiento general',coef:1},
     {r:'mantenimiento_consorcios',label:'Limpieza áreas comunes',coef:0.9},
   ]},
-  paneles_solares:{label:'☀️ Paneles Solares',rubros:[
-    {r:'paneles_solares',label:'Instalación residencial',coef:1.5},
-    {r:'paneles_solares',label:'Mantenimiento paneles',coef:1},
+  fumigacion:{label:'🦟 Fumigación',rubros:[
+    {r:'fumigacion',label:'Control plagas',coef:1},
+    {r:'fumigacion',label:'Desinfección integral',coef:1.2},
   ]},
   peluqueria_canina:{label:'🐕 Peluquería Canina',rubros:[
     {r:'peluqueria_canina',label:'Baño y corte',coef:1},
     {r:'peluqueria_canina',label:'Corte raza',coef:1.2},
   ]},
-  fumigacion:{label:'🦟 Fumigación',rubros:[
-    {r:'fumigacion',label:'Control plagas',coef:1},
-    {r:'fumigacion',label:'Desinfección integral',coef:1.2},
+  paneles_solares:{label:'☀️ Paneles Solares',rubros:[
+    {r:'paneles_solares',label:'Instalación residencial',coef:1.5},
+    {r:'paneles_solares',label:'Mantenimiento paneles',coef:1},
   ]},
   camaras:{label:'📷 Cámaras de seguridad',rubros:[
     {r:'camaras_seguridad',label:'Instalación cámaras',coef:1},
@@ -512,6 +477,21 @@ const SQ_TRABAJOS={
   domotica:{label:'🏠 Domótica/Automatización',rubros:[
     {r:'domotica_automatizacion',label:'Automatización',coef:1},
     {r:'electricidad',label:'Instalación eléctrica',coef:1},
+  ]},
+  banio:{label:'🚿 Baño completo',rubros:[
+    {r:'plomeria',label:'Plomería',coef:4},
+    {r:'electricidad',label:'Electricidad',coef:3},
+    {r:'albanileria',label:'Albañilería/revoque',coef:6},
+    {r:'revestimientos_pvc',label:'Cerámicos',coef:4},
+    {r:'durlock',label:'Durlock/cielorraso',coef:3},
+    {r:'pintura',label:'Pintura final',coef:2},
+  ]},
+  cocina:{label:'🍳 Cocina completa',rubros:[
+    {r:'plomeria',label:'Plomería',coef:3},
+    {r:'electricidad',label:'Electricidad',coef:4},
+    {r:'albanileria',label:'Albañilería',coef:5},
+    {r:'revestimientos_pvc',label:'Revestimientos',coef:3},
+    {r:'pintura',label:'Pintura',coef:2},
   ]},
   reforma:{label:'🏗️ Reforma integral',rubros:[
     {r:'albanileria',label:'Albañilería',coef:20},
