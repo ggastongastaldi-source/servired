@@ -118,6 +118,15 @@ router.get('/circuit-breaker', authAdmin, (req, res) => {
   } catch(e) { res.json({ ok: true, circuits: [] }); }
 });
 
+
+// Outbox stats
+router.get('/outbox/stats', authAdmin, async (req, res) => {
+  try {
+    const { stats } = require('../../../nexus/infrastructure/outbox');
+    res.json({ ok: true, stats: await stats() });
+  } catch(e) { res.json({ ok: true, stats: {} }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin
