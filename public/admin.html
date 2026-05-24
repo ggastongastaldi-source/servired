@@ -156,6 +156,7 @@ select option{background:#1a2236;color:#e2e8f0;}
   <div class="tab" onclick="irTab('intel',this)">INTEL</div>
   <div class="tab" onclick="irTab('finanzas',this)">FINANZAS</div>
   <div class="tab" onclick="irTab('live',this)">LIVE</div>
+  <div class="tab" onclick="irTab('nexus',this)">NEXUS</div>
 </div>
 
 <!-- TAB PEDIDOS -->
@@ -227,6 +228,52 @@ select option{background:#1a2236;color:#e2e8f0;}
   <div class="fin-row"><span>Ticket promedio</span><span class="fin-v neu" id="f-avg">$ 0</span></div>
 </div>
 
+<!-- TAB NEXUS -->
+<div id="tab-nexus" class="tab-content" style="display:none;padding:12px;">
+  <div style="font-size:0.65rem;letter-spacing:2px;color:#00E5FF;margin-bottom:12px;">// NEXUS MONITOR</div>
+
+  <!-- Circuit Breakers -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:0.7rem;color:#94a3b8;margin-bottom:8px;letter-spacing:1px;">⚡ CIRCUIT BREAKERS</div>
+    <div id="nexus-circuits" style="display:flex;flex-direction:column;gap:6px;">
+      <div style="color:#475569;font-size:0.75rem;">Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Outbox Stats -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:0.7rem;color:#94a3b8;margin-bottom:8px;letter-spacing:1px;">📥 OUTBOX</div>
+    <div id="nexus-outbox" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+      <div style="color:#475569;font-size:0.75rem;">Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Governance -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:0.7rem;color:#94a3b8;margin-bottom:8px;letter-spacing:1px;">🏛️ GOVERNANCE</div>
+    <div id="nexus-governance" style="background:#1a2236;border-radius:8px;padding:10px;font-size:0.75rem;color:#94a3b8;">
+      Cargando...
+    </div>
+  </div>
+
+  <!-- Chaos Lab -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:0.7rem;color:#ef4444;margin-bottom:8px;letter-spacing:1px;">🔥 CHAOS LAB</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+      <button onclick="chaosInject('groq_latency')" style="padding:8px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:6px;color:#ef4444;font-size:0.65rem;cursor:pointer;">Groq Latency</button>
+      <button onclick="chaosInject('email_down')" style="padding:8px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:6px;color:#ef4444;font-size:0.65rem;cursor:pointer;">Email Down</button>
+      <button onclick="chaosInject('outbox_flood')" style="padding:8px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:6px;color:#ef4444;font-size:0.65rem;cursor:pointer;">Outbox Flood</button>
+      <button onclick="chaosInject('recovery_test')" style="padding:8px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:6px;color:#ef4444;font-size:0.65rem;cursor:pointer;">Recovery Test</button>
+      <button onclick="chaosInject('circuit_reset')" style="padding:8px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:6px;color:#ef4444;font-size:0.65rem;cursor:pointer;">Circuit Reset</button>
+      <button onclick="chaosInject('governance_emergency')" style="padding:8px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:6px;color:#ef4444;font-size:0.65rem;cursor:pointer;">Emergency 30s</button>
+    </div>
+    <button onclick="chaosValidate()" style="width:100%;padding:10px;background:rgba(16,185,129,0.15);border:1px solid #10b981;border-radius:8px;color:#10b981;font-size:0.75rem;font-weight:700;cursor:pointer;">✅ VALIDATION SUITE</button>
+    <div id="nexus-chaos-result" style="margin-top:8px;font-size:0.72rem;background:#1a2236;border-radius:8px;padding:10px;display:none;"></div>
+  </div>
+
+  <button onclick="nexusRefresh()" style="width:100%;padding:8px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;border-radius:8px;color:#00E5FF;font-size:0.75rem;cursor:pointer;">🔄 Refrescar</button>
+</div>
+
 <!-- TAB LIVE -->
 <div class="tc" id="tc-live">
   <div class="sec-title">// Feed en tiempo real</div>
@@ -289,6 +336,7 @@ function irTab(id,btn){
   btn.classList.add('active');
   if(id==='pedidos')cargarPed();
   if(id==='workers')cargarWor();
+  if(id==='nexus')cargarNexus();
   if(id==='cola')cargarCola();
   if(id==='intel')cargarIntel();
   setTimeout(()=>mapa?.invalidateSize(),50);
