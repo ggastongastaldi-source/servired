@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const B = require('../../config/branding');
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -39,6 +40,12 @@ async function enviarBienvenidaWorker({ nombre, email, especialidades = [] }) {
       </a>
     </div>
     <p style="font-size:0.8rem;color:#475569;text-align:center;">¿Tenés dudas? Respondé este mail y te ayudamos.</p>
+    <div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:24px;padding-top:16px;text-align:center;">
+      <a href="https://youtube.com/@servired.online" style="color:#00E5FF;text-decoration:none;margin:0 10px;font-size:0.85rem;">📺 Tutorial YouTube</a>
+      <a href="https://wa.me/5491168360746" style="color:#25D366;text-decoration:none;margin:0 10px;font-size:0.85rem;">💬 WhatsApp</a>
+      <a href="https://www.servired.online" style="color:#a78bfa;text-decoration:none;margin:0 10px;font-size:0.85rem;">🌐 servired.online</a>
+    </div>
+    <p style="font-size:0.75rem;color:#334155;text-align:center;margin-top:12px;">© 2026 SERVired · Buenos Aires, Argentina</p>
   </div>
 </div>`
   });
@@ -78,6 +85,12 @@ async function enviarBienvenidaCliente({ nombre, email }) {
       </a>
     </div>
     <p style="font-size:0.8rem;color:#475569;text-align:center;">¿Necesitás ayuda? Respondé este mail.</p>
+    <div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:24px;padding-top:16px;text-align:center;">
+      <a href="https://youtube.com/@servired.online" style="color:#00E5FF;text-decoration:none;margin:0 10px;font-size:0.85rem;">📺 Tutorial YouTube</a>
+      <a href="https://wa.me/5491168360746" style="color:#25D366;text-decoration:none;margin:0 10px;font-size:0.85rem;">💬 WhatsApp</a>
+      <a href="https://www.servired.online" style="color:#a78bfa;text-decoration:none;margin:0 10px;font-size:0.85rem;">🌐 servired.online</a>
+    </div>
+    <p style="font-size:0.75rem;color:#334155;text-align:center;margin-top:12px;">© 2026 SERVired · Buenos Aires, Argentina</p>
   </div>
 </div>`
   });
