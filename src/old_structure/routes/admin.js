@@ -249,6 +249,18 @@ router.post('/auditor/autopsia/:circuitId', authAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// Auction Engine
+router.get('/auction/last', authAdmin, async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const events = await mongoose.connection.collection('events')
+      .find({ entityType: 'auction', type: 'AUCTION_COMPLETED' })
+      .sort({ timestamp: -1 }).limit(10).toArray();
+    res.json({ ok: true, auctions: events });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin

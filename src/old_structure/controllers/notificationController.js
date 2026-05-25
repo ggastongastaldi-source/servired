@@ -171,6 +171,34 @@ async function cancelarNotificacionesWorkers(pedidoId, io) {
   }
 }
 
+// AuctionEngine integrado
+const { subastar, dispatch: auctionDispatch } = require('../../../nexus/application/auctionEngine');
+
+async function buscarYSubastarWorkers(pedido, io) {
+  try {
+    // Buscar workers disponibles
+    const Usuario = require('../models/Usuario');
+    const workers = await Usuario.find({
+      rol: 'TRABAJADOR',
+      disponible: true,
+      estado: 'VERIFICADO',
+      especialidades: { $elemMatch: { $regex: pedido.tipoServicio, $options: 'i' } },
+    }).limit(20).lean();
+
+    if (!workers.length) {
+      console.log('[AuctionEngine] Sin workers disponibles para', pedido.tipoServicio);
+      return null;
+    }
+
+    const result = await subastar({ pedido, workers });
+    auctionDispatch({ result, io, pedidoId: String(pedido._id) });
+    return result;
+  } catch(e) {
+    console.error('[AuctionEngine] Error:', e.message);
+    return null;
+  }
+}
+
 module.exports = {
   detenerFlujo,
   cancelarNotificacionesWorkers,
