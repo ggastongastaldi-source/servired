@@ -220,6 +220,35 @@ router.get('/narrative/trs', authAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// Shadow Auditor + Forensic Lab
+router.get('/auditor/dispatches', authAdmin, async (req, res) => {
+  try {
+    const { getAudits } = require('../../../nexus/application/claudeAuditor');
+    res.json({ ok: true, audits: await getAudits() });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.get('/auditor/autopsies', authAdmin, async (req, res) => {
+  try {
+    const { getAutopsies } = require('../../../nexus/application/claudeAuditor');
+    res.json({ ok: true, autopsies: await getAutopsies() });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.post('/auditor/autopsia/:circuitId', authAdmin, async (req, res) => {
+  try {
+    const { autopsiaForense } = require('../../../nexus/application/claudeAuditor');
+    const result = await autopsiaForense({
+      circuitId: req.params.circuitId,
+      estado: 'MANUAL_TRIGGER',
+      traceLogs: [],
+      duracionMs: 0,
+    });
+    res.json({ ok: true, autopsia: result });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin

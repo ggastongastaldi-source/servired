@@ -19,6 +19,8 @@ async function initNexus(io) {
   const { ensureEventStore } = require('./bootstrap/ensureEventStore');
   const { init: initDispatcher } = require('./infrastructure/outboxDispatcher');
   const { startPulse } = require('./application/governanceLayer');
+  const { setOnOpenHook } = require('./infrastructure/circuitBreaker');
+  const { autopsiaForense } = require('./application/claudeAuditor');
   const { iniciarObserver }  = require('./reactive/changeStreamObserver');
   const { runActuator }      = require('./shadow/shadowPricingActuator');
 
@@ -29,6 +31,14 @@ async function initNexus(io) {
 
   initDispatcher(io);
   startPulse(io);
+  // Registrar autopsia forense cuando circuit va a OPEN
+  setOnOpenHook(async (c) => {
+    const mongoose = require('mongoose');
+    const traceLogs = await mongoose.connection.collection('events')
+      .find({ entityType: 'circuit' })
+      .sort({ timestamp: -1 }).limit(10).toArray();
+    await autopsiaForense({ circuitId: c.circuitId, estado: 'OPEN', traceLogs, duracionMs: c.cooldownMs });
+  });
   console.log('[Nexus] ✅ Ecosistema reactivo OK');
 
   // Timers en state local — nunca global

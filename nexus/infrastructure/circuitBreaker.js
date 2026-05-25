@@ -93,6 +93,10 @@ function getAll() {
 function _transition(c, newState) {
   const prev = c.state;
   c.state = newState;
+  // Hook externo para autopsia — sin acoplamiento
+  if (newState === STATES.OPEN && _onOpenHook) {
+    _onOpenHook(c).catch(()=>{});
+  }
   console.log(`[CircuitBreaker] 🔄 ${c.circuitId}: ${prev} → ${newState}`);
   // Emitir al Nexus si está disponible
   try {
@@ -134,4 +138,11 @@ async function execute(circuitId, fn, fallback = null) {
   }
 }
 
-module.exports = { execute, canDispatch, recordSuccess, recordFailure, getState, getAll, STATES };
+// Hook para autopsia — inyectable sin acoplamiento
+let _onOpenHook = null;
+function setOnOpenHook(fn) { _onOpenHook = fn; }
+
+// Llamar hook en transición a OPEN
+const _originalTransition = _transition;
+
+module.exports = { execute, canDispatch, recordSuccess, recordFailure, getState, getAll, STATES, setOnOpenHook };
