@@ -43,6 +43,8 @@ app.use('/api/payment', require('./src/engine/paymentRoutes'));
 app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
 // Context Propagation — correlationId en cada request
 const { httpContextMiddleware } = require('./nexus/infrastructure/contextMiddleware');
+const requestContext = require('./middleware/requestContext');
+app.use(requestContext);
 app.use(httpContextMiddleware);
 
 app.use('/api/smart-quote', require('./src/old_structure/routes/smartQuote'));
@@ -112,6 +114,8 @@ app.post('/api/servicios', async (req, res) => {
     }
 });
 
+app.use('/api/health', require('./routes/health'));
+
 app.get('/api/servicios', (req, res) => {
     res.json({
         sistema: 'ServiRed',
@@ -127,9 +131,12 @@ app.get('/api/trabajadores', (req, res) => {
 
 
 // MongoDB
+const { assertSystemUsers } = require('./utils/assertSystemUsers');
+
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
     .then(() => {
       console.log('✅ MongoDB conectado');
+    assertSystemUsers().catch(e => console.error('[assertSystemUsers]', e.message));
       const { initNexus } = require('./nexus/initNexus');
       initNexus(io)
         .then(r => console.log('[Server] Nexus:', r?.status || 'OK'))
