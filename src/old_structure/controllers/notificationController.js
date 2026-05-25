@@ -78,23 +78,52 @@ async function iniciarFlujoBusqueda(pedidoId) {
       return;
     }
 
+    // ── NEXUS AUCTION ENGINE — reemplaza broadcast por subasta ──
+    const auctionResult = await buscarYSubastarWorkers({
+      ...pedido.toObject ? pedido.toObject() : pedido,
+      lat, lng,
+      tipoServicio: pedido.tipoServicio,
+      zona: pedido.zona,
+    }, io);
+
     let notificados = 0;
-    for (const worker of workers) {
-      const payload = {
-        pedidoId: pedido._id,
-        tipoServicio: pedido.tipoServicio,
-        zona: pedido.zona,
-        precio: pedido.total_estimado,
-        pagoWorker: pedido.pago_worker,
-        descripcion: pedido.descripcion,
-        direccion: pedido.direccion,
-        expiraEn: 300
-      };
-      if (io) io.to('worker_' + worker._id).emit('nueva_oportunidad', payload);
-      notificados++;
-      await Pedido.findByIdAndUpdate(pedidoId, {
-        $addToSet: { workersNotificados: worker._id }
-      });
+    if (auctionResult) {
+      // Registrar workers notificados en DB
+      const notifiedIds = [
+        auctionResult.winner?.workerId,
+        auctionResult.secondary?.workerId,
+        ...auctionResult.backup.map(b => b.workerId),
+      ].filter(Boolean);
+
+      for (const wId of notifiedIds) {
+        await Pedido.findByIdAndUpdate(pedidoId, {
+          $addToSet: { workersNotificados: wId }
+        });
+        notificados++;
+      }
+
+      console.log(`[AuctionEngine] 📊 Winner: ${auctionResult.winner?.nombre||'ninguno'} | Notificados: ${notificados}`);
+    } else {
+      // Fallback al broadcast original si la subasta falla
+      for (const worker of workers) {
+        const payload = {
+          pedidoId: pedido._id,
+          tipoServicio: pedido.tipoServicio,
+          zona: pedido.zona,
+          precio: pedido.total_estimado,
+          pagoWorker: pedido.pago_worker,
+          descripcion: pedido.descripcion,
+          direccion: pedido.direccion,
+          expiraEn: 300,
+          tipo: 'BROADCAST_FALLBACK',
+        };
+        if (io) io.to('worker_' + worker._id).emit('nueva_oportunidad', payload);
+        notificados++;
+        await Pedido.findByIdAndUpdate(pedidoId, {
+          $addToSet: { workersNotificados: worker._id }
+        });
+      }
+      console.log(`[AuctionEngine] ⚠️ Fallback broadcast: ${notificados} workers`);
     }
 
     await Pedido.findByIdAndUpdate(pedidoId, { estado: 'SEARCHING' });
