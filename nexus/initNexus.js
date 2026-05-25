@@ -32,6 +32,12 @@ async function initNexus(io) {
   initDispatcher(io);
   startPulse(io);
   // Registrar autopsia forense cuando circuit va a OPEN
+  // Inicializar circuits conocidos para que aparezcan en validación
+  const { getState } = require('./infrastructure/circuitBreaker');
+  getState('groq');
+  getState('email');
+  getState('mercadopago');
+
   setOnOpenHook(async (c) => {
     const mongoose = require('mongoose');
     const traceLogs = await mongoose.connection.collection('events')
