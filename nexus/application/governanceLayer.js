@@ -82,6 +82,7 @@ async function _checkHealth(io) {
       });
     }
 
+    global._governanceLastTick = Date.now();
     if (issues.length > 0) {
       console.warn('[Governance] ⚠️ Issues detectados:', issues.join(' | '));
     } else {

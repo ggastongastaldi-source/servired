@@ -31,6 +31,7 @@ const JobEventSchema = new mongoose.Schema({
 
 }, {
   collection: 'job_events',
+  suppressReservedKeysWarning: true,
   // NUNCA modificar documentos existentes
   strict: false
 });

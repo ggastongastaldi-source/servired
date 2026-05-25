@@ -25,6 +25,7 @@ const LeadEventSchema = new mongoose.Schema({
 
 }, {
   collection: 'lead_events',
+  suppressReservedKeysWarning: true,
   strict: false
 });
 
