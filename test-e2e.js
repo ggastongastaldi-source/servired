@@ -39,7 +39,7 @@ async function run() {
 
   // ── 2. LOGIN ADMIN ───────────────────────────────────────
   console.log('\n🔐 2. Auth Admin');
-  const la = await req('POST', '/api/auth/login', { email: 'gaston@servired.com', password: process.env.ADMIN_PASS || 'admin123' });
+  const la = await req('POST', '/api/auth/login', { email: 'gaston@servired.com', password: 'admin123' });
   ok('Login admin', la.data.ok && la.data.token, JSON.stringify(la.data));
   tokenAdmin = la.data.token;
 
