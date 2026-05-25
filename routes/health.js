@@ -71,7 +71,8 @@ router.get('/', async (req, res) => {
   try {
     const lastCheck = global._watchdogLastCheck;
     const ageMs = lastCheck ? Date.now() - lastCheck : null;
-    const stale = ageMs === null || ageMs > 5 * 60 * 1000;
+    const uptimeMs = process.uptime() * 1000;
+    const stale = ageMs === null ? uptimeMs > 5 * 60 * 1000 : ageMs > 5 * 60 * 1000;
     services.watchdog = { status: stale ? 'STALE' : 'OK', last_check_ago_ms: ageMs };
     if (stale && status === 'HEALTHY') status = 'DEGRADED';
   } catch(e) {
