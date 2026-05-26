@@ -40,7 +40,7 @@ const SinapsisLogV2Schema = new mongoose.Schema({
   prevHash:     { type: String, required: true }, // hash del evento anterior
   chainValid:   { type: Boolean, default: true },
   sealedAt:     { type: Date, default: Date.now }
-}, { collection: 'sinapsis_log_v2' });
+}, { suppressReservedKeysWarning: true, collection: 'sinapsis_log_v2' });
 
 SinapsisLogV2Schema.index({ sequence: 1 }, { unique: true });
 SinapsisLogV2Schema.index({ eventId: 1 }, { unique: true });

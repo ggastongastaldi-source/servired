@@ -6,7 +6,7 @@ const EngineConfigSchema = new mongoose.Schema({
   key:       { type: String, required: true, unique: true },
   value:     { type: mongoose.Schema.Types.Mixed },
   updatedAt: { type: Date, default: Date.now }
-}, { collection: 'engine_config' });
+}, { suppressReservedKeysWarning: true, collection: 'engine_config' });
 
 const EngineConfig = mongoose.models.EngineConfig ||
   mongoose.model('EngineConfig', EngineConfigSchema);

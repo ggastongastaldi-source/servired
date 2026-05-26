@@ -16,7 +16,7 @@ const SinapsisLogSchema = new mongoose.Schema({
   status:      { type: String, enum: ['PENDING','PROCESSED','FAILED'], default: 'PENDING' },
   latencyMs:   { type: Number },
   sealedAt:    { type: Date, default: Date.now }
-}, { collection: 'sinapsis_log' });
+}, { suppressReservedKeysWarning: true, collection: 'sinapsis_log' });
 
 // Índices para trazabilidad
 SinapsisLogSchema.index({ eventId: 1 }, { unique: true });

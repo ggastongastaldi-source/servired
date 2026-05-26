@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const StreamCheckpointSchema = new mongoose.Schema({
-  collection:  { type: String, required: true, unique: true },
+  targetCollection: { type: String, required: true, unique: true },
   resumeToken: { type: mongoose.Schema.Types.Mixed },
   updatedAt:   { type: Date, default: Date.now }
 });
