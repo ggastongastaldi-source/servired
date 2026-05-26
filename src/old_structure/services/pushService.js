@@ -1,7 +1,7 @@
 const webpush = require('web-push');
 
 webpush.setVapidDetails(
-  process.env.VAPID_EMAIL || 'mailto:servired.online1@gmail.com',
+  process.env.VAPID_EMAIL?.startsWith('mailto:') ? process.env.VAPID_EMAIL : 'mailto:' + (process.env.VAPID_EMAIL || 'servired.online1@gmail.com'),
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
