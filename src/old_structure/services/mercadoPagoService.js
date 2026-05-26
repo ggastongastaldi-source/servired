@@ -4,7 +4,7 @@ const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
 });
 
-const BASE_URL = 'https://servired-production.up.railway.app';
+const BASE_URL = process.env.BASE_URL || 'https://www.servired.online';
 
 async function crearPreferencia({ pedidoId, servicio, precio, clienteEmail, workerId }) {
   const preference = new Preference(client);
@@ -57,4 +57,9 @@ async function verificarPago(paymentId) {
   };
 }
 
-module.exports = { crearPreferencia, verificarPago };
+async function getPaymentDetails(paymentId) {
+  const payment = new Payment(client);
+  return payment.get({ id: paymentId });
+}
+
+module.exports = { crearPreferencia, verificarPago, getPaymentDetails };
