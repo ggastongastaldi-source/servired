@@ -74,10 +74,6 @@ function emitEvent({
 
   // Persistencia con OCC — sequenceNumber monotónico
   _appendEvent(event).catch(err => console.error(`[Nexus-Error] [${entityType}:${type}]:`, err.message));
-    .then(() => console.log(
-      `[Nexus] 📡 [${event.entityType}] ${event.type} → ${event.aggregateId} | corr:${event.correlationId.slice(0,8)}`
-    ))
-    .catch(err => console.error(`[Nexus-Error] [${entityType}:${type}]:`, err.message));
 }
 
 async function _dixieIntercept(event) {
