@@ -70,4 +70,19 @@ router.post('/login', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// Guardar suscripción push del worker
+router.post('/push-subscribe', async (req, res) => {
+  try {
+    const { subscription, userId } = req.body;
+    if (!subscription || !userId) return res.json({ ok: false, error: 'Faltan datos' });
+    const Usuario = require('../models/Usuario');
+    await Usuario.findByIdAndUpdate(userId, { pushSubscription: subscription });
+    console.log('[Push] Suscripción guardada para:', userId);
+    res.json({ ok: true });
+  } catch(e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;

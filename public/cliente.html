@@ -284,7 +284,7 @@ function selSrv(btn, data) {
     fetch('/api/smart-quote', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-      body: JSON.stringify({rubro: data.id, complejidad: 'baja', horas: 2, zona: zonaCliente || 'CABA', descripcion: ''})
+      body: JSON.stringify({rubro: data.id, complejidad: 'baja', horas: 1, zona: zonaCliente || 'CABA', descripcion: ''})
     }).then(r=>r.json()).then(d=>{
       if (d.ok) {
         precioSel = d.precioCliente || d.total_estimado || data.precio;

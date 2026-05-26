@@ -103,6 +103,28 @@ async function iniciarFlujoBusqueda(pedidoId) {
       }
 
       console.log(`[AuctionEngine] 📊 Winner: ${auctionResult.winner?.nombre||'ninguno'} | Notificados: ${notificados}`);
+    
+    // Push notifications para workers sin socket activo
+    try {
+      const Usuario = require('../models/Usuario');
+      const allBids = auctionResult.bids.filter(b => b.action !== 'IGNORE');
+      for (const bid of allBids) {
+        const w = await Usuario.findById(bid.workerId).select('pushSubscription nombre').lean();
+        if (w?.pushSubscription) {
+          const tipo = bid.action === 'HARD_DISPATCH' ? 'HARD_DISPATCH' : 'SOFT_OFFER';
+          await enviarPushWorker(w.pushSubscription, {
+            title: tipo === 'HARD_DISPATCH' ? '🔔 ¡Nuevo trabajo para vos!' : '💼 Trabajo disponible cerca',
+            body: `${pedido.tipoServicio?.replace(/_/g,' ')} en ${pedido.zona || 'tu zona'} — $${(pedido.total_estimado||0).toLocaleString('es-AR')}`,
+            url: '/trabajador.html',
+            tipo,
+            pedidoId: String(pedido._id),
+            vibrate: tipo === 'HARD_DISPATCH' ? [300,100,300,100,300] : [100],
+          });
+        }
+      }
+    } catch(pushErr) {
+      console.error('[Push] Error enviando notificaciones:', pushErr.message);
+    }
     } else {
       // Fallback al broadcast original si la subasta falla
       for (const worker of workers) {
@@ -202,6 +224,7 @@ async function cancelarNotificacionesWorkers(pedidoId, io) {
 
 // AuctionEngine integrado
 const { subastar, dispatch: auctionDispatch } = require('../../../nexus/application/auctionEngine');
+const { enviarPushWorker } = require('../services/pushService');
 
 async function buscarYSubastarWorkers(pedido, io) {
   try {
