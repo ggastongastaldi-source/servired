@@ -62,6 +62,29 @@ const REDUCERS = {
 // ── SNAPSHOT ENGINE ─────────────────────────────────────────
 // Guarda y recupera snapshots con checksum para detectar divergencia
 
+async function _pruneSnapshots(entityType, aggregateId) {
+  const col = mongoose.connection.collection('snapshots');
+  const toKeep = await col
+    .find({ entityType, aggregateId })
+    .sort({ version: -1 })
+    .limit(3)
+    .project({ _id: 1 })
+    .toArray();
+  
+  if (toKeep.length < 3) return;
+  
+  const keepIds = toKeep.map(s => s._id);
+  const deleted = await col.deleteMany({
+    entityType,
+    aggregateId,
+    _id: { $nin: keepIds }
+  });
+  
+  if (deleted.deletedCount > 0) {
+    console.log(`[WorkflowEngine] 🧹 Pruning: ${deleted.deletedCount} snapshots eliminados para ${entityType}/${aggregateId}`);
+  }
+}
+
 async function saveSnapshot(entityType, aggregateId, state) {
   const checksum = crypto.createHash('sha256')
     .update(JSON.stringify(state))
@@ -79,6 +102,8 @@ async function saveSnapshot(entityType, aggregateId, state) {
     }},
     { upsert: true }
   );
+  // Pruning automático — mantener solo últimos 3
+  _pruneSnapshots(entityType, aggregateId).catch(() => {});
   return checksum;
 }
 

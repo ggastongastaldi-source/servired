@@ -17,4 +17,9 @@ async function ensureEventStore() {
   }
 }
 
+const { ensureEventStoreIndexes } = require('./ensureEventStoreIndexes');
+
+// Llamar al arrancar
+ensureEventStoreIndexes().catch(e => console.error('[EventStore] Index error:', e.message));
+
 module.exports = { ensureEventStore };

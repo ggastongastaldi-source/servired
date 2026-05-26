@@ -72,8 +72,8 @@ function emitEvent({
   // Dixie Gate interceptor — async, nunca bloquea
   _dixieIntercept(event).catch(() => {});
 
-  // Persistencia fire-and-forget
-  mongoose.connection.collection('events').insertOne(event)
+  // Persistencia con OCC — sequenceNumber monotónico
+  _appendEvent(event).catch(err => console.error(`[Nexus-Error] [${entityType}:${type}]:`, err.message));
     .then(() => console.log(
       `[Nexus] 📡 [${event.entityType}] ${event.type} → ${event.aggregateId} | corr:${event.correlationId.slice(0,8)}`
     ))
@@ -94,6 +94,35 @@ async function _dixieIntercept(event) {
   } catch(e) {
     if (DIXIE_MODE !== 'enforce') {
       console.error('[DixieGate] Error (ignorado):', e.message);
+    } else {
+      throw e;
+    }
+  }
+}
+
+// OCC append con sequenceNumber monotónico
+async function _appendEvent(event) {
+  const col = mongoose.connection.collection('events');
+  
+  // Obtener último sequenceNumber para este stream
+  const last = await col.findOne(
+    { aggregateId: event.aggregateId, entityType: event.entityType },
+    { sort: { sequenceNumber: -1 }, projection: { sequenceNumber: 1 } }
+  );
+  
+  event.sequenceNumber = (last?.sequenceNumber ?? -1) + 1;
+
+  try {
+    await col.insertOne(event);
+    console.log(
+      `[Nexus] 📡 [${event.entityType}] ${event.type} → ${event.aggregateId} | seq:${event.sequenceNumber} | corr:${event.correlationId?.slice(0,8)}`
+    );
+  } catch(e) {
+    if (e.code === 11000) {
+      // Duplicate key — retry con nuevo sequenceNumber
+      console.warn(`[Nexus] ⚡ OCC conflict en ${event.aggregateId} seq:${event.sequenceNumber} — retry`);
+      event.sequenceNumber++;
+      await col.insertOne(event);
     } else {
       throw e;
     }
