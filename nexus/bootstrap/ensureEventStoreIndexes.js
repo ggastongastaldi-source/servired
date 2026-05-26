@@ -16,10 +16,10 @@ async function ensureEventStoreIndexes() {
     { unique: true, background: true }
   );
 
-  // events — query temporal
+  // events — query temporal (nombre consistente con Atlas)
   await db.collection('events').createIndex(
     { aggregateId: 1, timestamp: 1 },
-    { background: true }
+    { name: 'idx_aggregate_timeline', background: true }
   );
 
   // snapshots — último por aggregate
