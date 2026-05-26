@@ -7,7 +7,7 @@ async function ensureEventStoreIndexes() {
   // events — índice único por eventId
   await db.collection('events').createIndex(
     { eventId: 1 },
-    { unique: true, background: true }
+    { unique: true, sparse: true, background: true }
   );
 
   // events — índice único por streamId + sequenceNumber (OCC)
