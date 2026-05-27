@@ -173,6 +173,81 @@ cron.schedule('0 8,20 * * *', () => {
 // Corrida inicial al arrancar (diferida 10s para que Mongo conecte)
 setTimeout(() => ejecutarCicloAladin().catch(console.error), 10000);
 
+// ── PACTO NOCTURNO — dispara a las 20:00 todos los días ────
+const TemporalAssuranceState = require('./models/TemporalAssuranceState');
+cron.schedule('0 20 * * *', async () => {
+  console.log('[PACTO NOCTURNO] Iniciando barrido...');
+  try {
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    manana.setHours(0, 0, 0, 0);
+    const pasadoManana = new Date(manana);
+    pasadoManana.setDate(pasadoManana.getDate() + 1);
+
+    const pendientes = await TemporalAssuranceState.find({
+      pactState: 'AWAITING_NIGHT_PACT',
+      scheduledFor: { $gte: manana, $lt: pasadoManana }
+    }).populate('pedidoId clienteId workerId');
+
+    console.log(`[PACTO NOCTURNO] ${pendientes.length} turno(s) para mañana`);
+
+    for (const assurance of pendientes) {
+      // Notificar al cliente via Socket.IO
+      if (assurance.clienteId?.socketId) {
+        io.to(assurance.clienteId.socketId).emit('pacto_nocturno', {
+          pedidoId:     assurance.pedidoId._id,
+          scheduledFor: assurance.scheduledFor,
+          workerNombre: assurance.workerId?.nombre || 'Tu profesional',
+          mensaje:      '¿Confirmás tu turno para mañana? Tenés hasta las 22:00 hs.'
+        });
+      }
+      // Notificar via room del pedido (por si el cliente está conectado)
+      io.to('pedido_' + assurance.pedidoId._id).emit('pacto_nocturno', {
+        pedidoId:     assurance.pedidoId._id,
+        scheduledFor: assurance.scheduledFor,
+        workerNombre: assurance.workerId?.nombre || 'Tu profesional',
+        mensaje:      '¿Confirmás tu turno para mañana? Tenés hasta las 22:00 hs.'
+      });
+      console.log(`[PACTO NOCTURNO] Banner enviado | pedido: ${assurance.pedidoId._id}`);
+    }
+  } catch (err) {
+    console.error('[PACTO NOCTURNO] Error:', err.message);
+  }
+});
+
+// ── TIMEOUT NOCTURNO — a las 22:00 marca como BROKEN los que no confirmaron ──
+cron.schedule('0 22 * * *', async () => {
+  console.log('[TIMEOUT NOCTURNO] Procesando no-confirmados...');
+  try {
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    manana.setHours(0, 0, 0, 0);
+    const pasadoManana = new Date(manana);
+    pasadoManana.setDate(pasadoManana.getDate() + 1);
+
+    const noConfirmados = await TemporalAssuranceState.find({
+      pactState: 'AWAITING_NIGHT_PACT',
+      scheduledFor: { $gte: manana, $lt: pasadoManana }
+    });
+
+    for (const assurance of noConfirmados) {
+      const cp = assurance.checkpoints.find(c => c.type === 'NIGHT_PACT' && c.resolution === 'PENDING');
+      if (cp) { cp.resolution = 'TIMEOUT'; cp.resolvedAt = new Date(); }
+      assurance.pactState      = 'BROKEN';
+      assurance.cancelledBy    = 'SISTEMA';
+      assurance.cancelReason   = 'Timeout pacto nocturno — cliente no confirmó antes de las 22:00';
+      assurance.reputationDelta = -15;
+      assurance.resolvedAt     = new Date();
+      await assurance.save();
+      console.log(`[TIMEOUT NOCTURNO] Pacto roto por timeout | pedido: ${assurance.pedidoId}`);
+    }
+
+    console.log(`[TIMEOUT NOCTURNO] ${noConfirmados.length} pacto(s) marcados BROKEN`);
+  } catch (err) {
+    console.error('[TIMEOUT NOCTURNO] Error:', err.message);
+  }
+});
+
 // ===============================
 // KEEPALIVE / ANTI-SPINDOWN
 // ===============================
