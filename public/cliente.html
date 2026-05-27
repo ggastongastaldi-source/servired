@@ -184,6 +184,14 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</sc
       <div class="dir-input"><span style="color:var(--orange)">📍</span><input type="text" id="dir-input" placeholder="Av. Corrientes 1234, CABA"></div>
     </div>
     <div class="card">
+      <div class="card-title">// ¿Cuántas horas necesitás?</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <button onclick="setHoras(this,1)" class="horas-btn active" style="flex:1;padding:8px;background:rgba(0,229,255,0.15);border:1.5px solid var(--cyan);border-radius:8px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:700;cursor:pointer;">1h</button>
+        <button onclick="setHoras(this,2)" class="horas-btn" style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;cursor:pointer;">2h</button>
+        <button onclick="setHoras(this,3)" class="horas-btn" style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;cursor:pointer;">3h</button>
+        <button onclick="setHoras(this,4)" class="horas-btn" style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;cursor:pointer;">4h</button>
+      </div>
+      <input type="hidden" id="horas-sel" value="1">
       <div class="card-title">// Precio estimado · Motor Aladín</div>
       <div class="precio-row"><span style="color:var(--muted)">Base estimada</span><span class="precio-valor" id="precio-display">$ —</span>
       <span id="aladdin-badge" style="display:none;font-size:0.7rem;font-weight:700;margin-left:8px;letter-spacing:0.5px;"></span>
@@ -601,13 +609,13 @@ function sqElegir(key){
   fetch('/api/smart-quote',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({rubro:key, descripcion: srv.label, zona: zonaCliente||'palermo', complejidad:'estandar'})
+    body: JSON.stringify({rubro:key, descripcion: srv.label, zona: zonaCliente||'palermo', complejidad:'estandar', horas: parseInt(document.getElementById('horas-sel')?.value||1)})
   }).then(r=>r.json()).then(d=>{
     if(d.ok){
-      precioActual = d.estimado;
+      precioActual = d.precioCliente || d.total_estimado || d.estimado;
       comisionActual = d.comision;
       pagoWorkerActual = d.pago_worker;
-      document.getElementById('precio-display').textContent = '$ '+d.estimado.toLocaleString('es-AR');
+      document.getElementById('precio-display').textContent = '$ '+precioActual.toLocaleString('es-AR');
       if(d.descripcion_ia) document.getElementById('sq-desc-ia').textContent = d.descripcion_ia;
       document.getElementById('sq-desglose').textContent = 'Zona: '+d.zona+' · Comisión SERVired: $'+d.comision.toLocaleString('es-AR');
     }
@@ -1710,6 +1718,20 @@ socket.on('ultimo_aviso_pacto', function(data) {
   mostrarVentanaCritica(data);
 });
 
+
+function setHoras(btn, n) {
+  document.querySelectorAll('.horas-btn').forEach(b => {
+    b.style.background = 'rgba(255,255,255,0.05)';
+    b.style.border = '1.5px solid rgba(255,255,255,0.1)';
+    b.style.color = '#fff';
+  });
+  btn.style.background = 'rgba(0,229,255,0.15)';
+  btn.style.border = '1.5px solid var(--cyan)';
+  btn.style.color = 'var(--cyan)';
+  document.getElementById('horas-sel').value = n;
+  // Recalcular precio con nuevas horas
+  if(rubroActual) seleccionarRubro(rubroActual);
+}
 </script>
 </body>
 </html>
