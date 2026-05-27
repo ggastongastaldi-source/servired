@@ -1377,5 +1377,187 @@ function sqPedirProfesional(){
 }
 
 </script>
+
+<!-- ══════════════════════════════════════════════════════════
+     PACTO NOCTURNO — Banner de confirmación de turno
+     ══════════════════════════════════════════════════════════ -->
+<div id="pacto-nocturno-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#0f172a;border:1px solid #334155;border-radius:20px;max-width:380px;width:100%;padding:28px 24px;box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+    
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:2.2rem;margin-bottom:8px;">🤝</div>
+      <h2 style="color:#f1f5f9;font-size:1.15rem;font-weight:700;margin:0 0 6px;">Pacto de mañana</h2>
+      <p style="color:#94a3b8;font-size:0.85rem;margin:0;">¿Seguimos comprometidos con el turno?</p>
+    </div>
+
+    <!-- Info del turno -->
+    <div style="background:#1e293b;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="font-size:1.4rem;" id="pacto-rubro-icon">🔧</span>
+        <div>
+          <div style="color:#f1f5f9;font-weight:600;font-size:0.95rem;" id="pacto-rubro-nombre">Servicio</div>
+          <div style="color:#64748b;font-size:0.8rem;" id="pacto-worker-nombre">Profesional asignado</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;color:#38bdf8;font-size:0.9rem;">
+        <span>📅</span>
+        <span id="pacto-fecha-hora" style="font-weight:600;">Mañana</span>
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="color:#64748b;font-size:0.78rem;margin-bottom:4px;">Tenés hasta las 22:00 para confirmar</div>
+      <div style="color:#f59e0b;font-size:1.1rem;font-weight:700;" id="pacto-countdown">--:--:--</div>
+    </div>
+
+    <!-- Acciones -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button onclick="responderPacto('CONFIRMAR')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:12px;padding:14px;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%;">
+        ✅ Confirmar visita
+      </button>
+      <button onclick="responderPacto('REPROGRAMAR')" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:12px;padding:12px;font-size:0.88rem;cursor:pointer;width:100%;">
+        ⏰ Reprogramar
+      </button>
+      <button onclick="responderPacto('CANCELAR')" style="background:transparent;color:#ef4444;border:none;border-radius:12px;padding:10px;font-size:0.85rem;cursor:pointer;width:100%;">
+        ❌ Cancelar turno
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+// ══════════════════════════════════════════════════════════
+// PACTO NOCTURNO — Lógica del banner
+// ══════════════════════════════════════════════════════════
+var _pactoPedidoId = null;
+var _pactoCountdownInterval = null;
+
+function mostrarPactoNocturno(data) {
+  _pactoPedidoId = data.pedidoId;
+
+  // Persistir en localStorage por si el cliente recarga
+  localStorage.setItem('pacto_pendiente', JSON.stringify({
+    pedidoId:    data.pedidoId,
+    workerNombre: data.workerNombre || 'Tu profesional',
+    scheduledFor: data.scheduledFor,
+    rubro:        data.rubro || 'Servicio',
+    timestamp:   Date.now()
+  }));
+
+  // Poblar UI
+  document.getElementById('pacto-worker-nombre').textContent = data.workerNombre || 'Tu profesional';
+  document.getElementById('pacto-rubro-nombre').textContent  = data.rubro || 'Servicio';
+
+  if (data.scheduledFor) {
+    var d = new Date(data.scheduledFor);
+    var opciones = { weekday:'long', hour:'2-digit', minute:'2-digit' };
+    document.getElementById('pacto-fecha-hora').textContent = d.toLocaleDateString('es-AR', opciones);
+  }
+
+  // Iconos por rubro
+  var iconos = {
+    'electricista':'⚡','plomeria':'🔧','cerrajeria':'🔑','limpieza_hogar':'🧹',
+    'jardineria':'🌿','gasista':'🔥','pintura':'🎨','albanileria':'🏗️',
+    'servicio_domestico':'🏠','peluqueria_canina':'🐶'
+  };
+  var rubro = (data.rubro || '').toLowerCase().replace(/ /g,'_');
+  document.getElementById('pacto-rubro-icon').textContent = iconos[rubro] || '🔧';
+
+  // Mostrar overlay
+  var overlay = document.getElementById('pacto-nocturno-overlay');
+  overlay.style.display = 'flex';
+
+  // Countdown hasta las 22:00
+  if (_pactoCountdownInterval) clearInterval(_pactoCountdownInterval);
+  _pactoCountdownInterval = setInterval(function() {
+    var ahora   = new Date();
+    var limite  = new Date();
+    limite.setHours(22, 0, 0, 0);
+    var diff = limite - ahora;
+    if (diff <= 0) {
+      clearInterval(_pactoCountdownInterval);
+      document.getElementById('pacto-countdown').textContent = 'Tiempo agotado';
+      return;
+    }
+    var h = Math.floor(diff / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('pacto-countdown').textContent =
+      String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }, 1000);
+
+  // Sonido sutil (opcional, no bloquea)
+  try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA').play(); } catch(e) {}
+}
+
+function cerrarPactoNocturno() {
+  var overlay = document.getElementById('pacto-nocturno-overlay');
+  if (overlay) overlay.style.display = 'none';
+  if (_pactoCountdownInterval) clearInterval(_pactoCountdownInterval);
+}
+
+function responderPacto(accion) {
+  if (!_pactoPedidoId) return;
+
+  if (accion === 'CONFIRMAR') {
+    fetch('/api/pedidos/' + _pactoPedidoId + '/confirmar-pacto', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + (localStorage.getItem('token') || '') }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      localStorage.removeItem('pacto_pendiente');
+      cerrarPactoNocturno();
+      toast('✅ Turno confirmado. ¡Nos vemos mañana!');
+    })
+    .catch(function() { toast('Error al confirmar. Intentá de nuevo.'); });
+
+  } else if (accion === 'REPROGRAMAR') {
+    cerrarPactoNocturno();
+    toast('⏰ Contactá a tu profesional para reprogramar.');
+    // TODO: abrir flujo de reprogramación
+
+  } else if (accion === 'CANCELAR') {
+    if (!confirm('¿Seguro que cancelás el turno? Puede afectar tu reputación.')) return;
+    fetch('/api/pedidos/' + _pactoPedidoId + '/cancelar', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + (localStorage.getItem('token') || '') },
+      body: JSON.stringify({ cancelledBy: 'CLIENTE', reason: 'Cancelación desde pacto nocturno' })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function() {
+      localStorage.removeItem('pacto_pendiente');
+      cerrarPactoNocturno();
+      toast('Turno cancelado.');
+    })
+    .catch(function() { toast('Error al cancelar.'); });
+  }
+}
+
+// Escuchar evento del backend
+socket.on('pacto_nocturno', function(data) {
+  mostrarPactoNocturno(data);
+});
+
+// Recuperar pacto pendiente al recargar (por si el cliente cerró sin responder)
+(function() {
+  var guardado = localStorage.getItem('pacto_pendiente');
+  if (!guardado) return;
+  try {
+    var pacto = JSON.parse(guardado);
+    // Solo mostrar si tiene menos de 24hs de antigüedad
+    if (Date.now() - pacto.timestamp < 86400000) {
+      setTimeout(function() { mostrarPactoNocturno(pacto); }, 1500);
+    } else {
+      localStorage.removeItem('pacto_pendiente');
+    }
+  } catch(e) { localStorage.removeItem('pacto_pendiente'); }
+})();
+
+</script>
 </body>
 </html>
