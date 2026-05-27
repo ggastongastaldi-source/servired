@@ -16,6 +16,22 @@ const usuarioSchema = new mongoose.Schema({
   telefono:     { type: String, default: '' },
   direccion:    { type: String, default: '' },
   calificacion: { type: Number, default: 0 },
+
+  // ── REPUTACIÓN CONDUCTUAL ─────────────────────────────────
+  reliabilityScore: { type: Number, default: 100 },   // 0-100, arranca en 100
+  trustTier: {
+    type: String,
+    enum: ['ELITE','ORO','PLATA','BRONCE','RESTRINGIDO'],
+    default: 'PLATA'
+  },
+  conductualHistory: {
+    nightPactsConfirmed:   { type: Number, default: 0 },
+    nightPactsBroken:      { type: Number, default: 0 },
+    lateCancellations:     { type: Number, default: 0 },
+    criticalCancellations: { type: Number, default: 0 },
+    noShows:               { type: Number, default: 0 },
+    totalJobs:             { type: Number, default: 0 }
+  },
   totalTrabajos:{ type: Number, default: 0 },
   // MERITOCRACIA
   puntuacionTotal:  { type: Number, default: 0 },
