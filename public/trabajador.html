@@ -415,7 +415,8 @@ function initApp(){
     reconnection:true,
     reconnectionAttempts:Infinity,
     reconnectionDelay:2000,
-    reconnectionDelayMax:10000
+    reconnectionDelayMax:10000,
+    auth:{ token: TOKEN }
   });
   socket.on('reconnect',()=>{
     console.log('Socket reconectado');
@@ -480,12 +481,18 @@ function initApp(){
 
   // Emitir worker_conectado solo cuando el socket esté efectivamente conectado
   socket.on('connect', () => {
-    socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
     registrarListeners();
+    setTimeout(() => {
+      socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
+      console.log('[Socket] worker_conectado emitido, userId:', USER_ID);
+    }, 300);
   });
   socket.on('reconnect', () => {
-    socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
     registrarListeners();
+    setTimeout(() => {
+      socket.emit('worker_conectado', {token:TOKEN, userId:USER_ID, rubro:USER_RUBRO, zona:USER_ZONA, nombre:USER_NOMBRE});
+      console.log('[Socket] worker_conectado (reconnect), userId:', USER_ID);
+    }, 300);
   });
 
   // Si ya está conectado al momento de initApp (reconexión rápida)
