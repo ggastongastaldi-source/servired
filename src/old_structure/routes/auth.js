@@ -53,19 +53,13 @@ router.post('/registro', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const u = await Usuario.findOne({ email });
+    const identifier = (email || '').trim();
+    const u = await Usuario.findOne({ $or: [{ email: identifier }, { telefono: identifier }] });
     if (!u) return res.status(401).json({ ok: false, error: 'Credenciales incorrectas' });
     const ok = await bcrypt.compare(password, u.password);
     if (!ok) return res.status(401).json({ ok: false, error: 'Credenciales incorrectas' });
     const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
     // Email de bienvenida (async, no bloquea el registro)
-    try {
-      if (nuevoRol === 'TRABAJADOR') {
-        enviarBienvenidaWorker({ nombre: u.nombre, email: u.email, especialidades: u.especialidades }).catch(()=>{});
-      } else {
-        enviarBienvenidaCliente({ nombre: u.nombre, email: u.email }).catch(()=>{});
-      }
-    } catch(e) {}
     res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado } });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
@@ -83,6 +77,42 @@ router.post('/push-subscribe', async (req, res) => {
   } catch(e) {
     res.status(500).json({ ok: false, error: e.message });
   }
+});
+
+
+// ── RECUPERACIÓN DE CONTRASEÑA ──
+const crypto = require('crypto');
+const resetTokens = new Map(); // token -> { userId, expira }
+
+router.post('/recuperar', async (req, res) => {
+  try {
+    const identifier = (req.body.identifier || '').trim();
+    if (!identifier) return res.status(400).json({ ok: false, error: 'Ingresá tu email o teléfono' });
+    const u = await Usuario.findOne({ $or: [{ email: identifier }, { telefono: identifier }] });
+    // Siempre responder igual para no revelar si existe o no
+    if (!u || !u.email) return res.json({ ok: true, mensaje: 'Si tu cuenta existe, vas a recibir un email con instrucciones.' });
+    // Generar token único de 1 hora
+    const token = crypto.randomBytes(32).toString('hex');
+    resetTokens.set(token, { userId: u._id.toString(), expira: Date.now() + 3600000 });
+    const link = `${process.env.BASE_URL || 'https://servired-6e5r.onrender.com'}/reset-password.html?token=${token}`;
+    const { enviarEmailRecuperacion } = require('../services/emailService');
+    await enviarEmailRecuperacion({ nombre: u.nombre, email: u.email, link });
+    res.json({ ok: true, mensaje: 'Si tu cuenta existe, vas a recibir un email con instrucciones.' });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password || password.length < 6) return res.status(400).json({ ok: false, error: 'Datos inválidos' });
+    const datos = resetTokens.get(token);
+    if (!datos || Date.now() > datos.expira) return res.status(400).json({ ok: false, error: 'El link expiró o es inválido' });
+    const bcrypt = require('bcryptjs');
+    const hash = await bcrypt.hash(password, 10);
+    await Usuario.findByIdAndUpdate(datos.userId, { password: hash });
+    resetTokens.delete(token);
+    res.json({ ok: true, mensaje: 'Contraseña actualizada. Ya podés ingresar.' });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 module.exports = router;

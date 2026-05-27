@@ -31,7 +31,7 @@ const INDICES = {
 // Fuente: relevamiento AMBA + indice Big Mac
 const PRECIOS = {
   limpieza:          { baja: 30000,   alta: 65000   },
-  servicio_domestico:{ baja: 30000,   alta: 65000   }, // precio trabajo (min 3hs)
+  servicio_domestico:{ baja: 7500,    alta: 12000   } // precio POR HORA ARS, // precio trabajo (min 3hs)
   plomeria:          { baja: 180000,  alta: 480000  },
   electricidad:      { baja: 180000,  alta: 480000  },
   albanileria:       { baja: 250000,  alta: 750000  },

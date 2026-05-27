@@ -1,7 +1,7 @@
 // RUBROS_SERVIRED — fuente única de verdad
 // Usado en cliente.html, trabajador.html, index.html
 const RUBROS_SERVIRED = [
-  {id:'servicio_domestico',    label:'Doméstico',        icon:'🧹', precio:35000},
+  {id:'servicio_domestico',    label:'Doméstico',        icon:'🧹', precio:7500},
   {id:'plomeria',              label:'Plomería',         icon:'🔧', precio:180000},
   {id:'electricidad',          label:'Electricidad',     icon:'⚡', precio:180000},
   {id:'pintura',               label:'Pintura',          icon:'🎨', precio:220000},

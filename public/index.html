@@ -239,7 +239,7 @@ select option{background:#1a2236;color:#e2e8f0;}
     <div class="err" id="cl-err">Email o contraseña incorrectos</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
-      <button class="btn-sm btn-sm-pri" onclick="login('CLIENTE','cl-email','cl-pass','cl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><span style="font-size:0.72rem;color:#64748b;">¿Olvidaste tu contraseña? Contactá a soporte.</span></div>
+      <button class="btn-sm btn-sm-pri" onclick="login('CLIENTE','cl-email','cl-pass','cl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><span style="font-size:0.72rem;color:#64748b;"><a href="#" onclick="abrirModal('recuperar-pass');return false;" style="color:#00E5FF;font-size:0.72rem;text-decoration:none;">🔑 Olvidé mi contraseña</a></span></div>
     </div>
   </div>
 </div>
@@ -247,12 +247,12 @@ select option{background:#1a2236;color:#e2e8f0;}
 <div class="modal-bg" id="modal-worker-login">
   <div class="modal">
     <div class="modal-title">🔧 Ingresar como Trabajador</div>
-    <div class="field"><label>Email</label><input type="email" id="wl-email" placeholder="tu@email.com"></div>
+    <div class="field"><label>Email o Teléfono</label><input type="text" id="wl-email" placeholder="tu@email.com o 1112345678"></div>
     <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="wl-pass" placeholder="••••••••" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('wl-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="err" id="wl-err">Email o contraseña incorrectos</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
-      <button class="btn-sm btn-sm-pri" onclick="login('TRABAJADOR','wl-email','wl-pass','wl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><span style="font-size:0.72rem;color:#64748b;">¿Olvidaste tu contraseña? Contactá a soporte.</span></div>
+      <button class="btn-sm btn-sm-pri" onclick="login('TRABAJADOR','wl-email','wl-pass','wl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><span style="font-size:0.72rem;color:#64748b;"><a href="#" onclick="abrirModal('recuperar-pass');return false;" style="color:#00E5FF;font-size:0.72rem;text-decoration:none;">🔑 Olvidé mi contraseña</a></span></div>
     </div>
   </div>
 </div>
@@ -260,12 +260,12 @@ select option{background:#1a2236;color:#e2e8f0;}
 <div class="modal-bg" id="modal-login-gen">
   <div class="modal">
     <div class="modal-title">🔑 Ya tengo cuenta</div>
-    <div class="field"><label>Email</label><input type="email" id="gl-email" placeholder="tu@email.com"></div>
+    <div class="field"><label>Email o Teléfono</label><input type="text" id="gl-email" placeholder="tu@email.com o 1112345678"></div>
     <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="gl-pass" placeholder="••••••••" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('gl-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="err" id="gl-err">Email o contraseña incorrectos</div>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
-      <button class="btn-sm btn-sm-pri" onclick="login(null,'gl-email','gl-pass','gl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><span style="font-size:0.72rem;color:#64748b;">¿Olvidaste tu contraseña? Contactá a soporte.</span></div>
+      <button class="btn-sm btn-sm-pri" onclick="login(null,'gl-email','gl-pass','gl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><span style="font-size:0.72rem;color:#64748b;"><a href="#" onclick="abrirModal('recuperar-pass');return false;" style="color:#00E5FF;font-size:0.72rem;text-decoration:none;">🔑 Olvidé mi contraseña</a></span></div>
     </div>
   </div>
 </div>
@@ -525,5 +525,21 @@ if(btnInstall) {
   });
 }
 </script>
+
+<!-- MODAL RECUPERAR CONTRASEÑA -->
+<div class="modal-bg" id="modal-recuperar-pass">
+  <div class="modal">
+    <div class="modal-title">🔐 Recuperar contraseña</div>
+    <p style="font-size:0.82rem;color:#64748b;margin-bottom:16px;">Ingresá tu email o teléfono registrado. Te mandamos un link para crear una nueva contraseña.</p>
+    <div class="field"><label>Email o Teléfono</label><input type="text" id="rec-identifier" placeholder="tu@email.com o 1112345678"></div>
+    <div class="err" id="rec-err">Error al enviar</div>
+    <div id="rec-ok" style="display:none;color:#10b981;font-size:0.85rem;margin-bottom:10px;">✅ Revisá tu email — te mandamos las instrucciones.</div>
+    <div class="modal-btns">
+      <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
+      <button class="btn-sm btn-sm-pri" onclick="pedirRecuperacion()">Enviar link →</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

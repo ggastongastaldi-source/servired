@@ -161,4 +161,32 @@ async function enviarInvitacionCliente({ nombre, email }) {
   console.log('[Email] Invitación cliente enviada a:', email);
 }
 
-module.exports = { enviarBienvenidaWorker, enviarBienvenidaCliente, enviarInvitacionWorker, enviarInvitacionCliente };
+
+async function enviarEmailRecuperacion({ nombre, email, link }) {
+  await transporter.sendMail({
+    from: `"SERVired" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: 'Recuperá tu contraseña de SERVired 🔐',
+    html: `
+<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;background:#0f172a;color:#e2e8f0;border-radius:16px;overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#00E5FF,#FF6D00);padding:28px;text-align:center;">
+    <h1 style="margin:0;color:#fff;font-size:1.8rem;">SERVired</h1>
+    <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);">Recuperación de contraseña</p>
+  </div>
+  <div style="padding:28px;">
+    <h2 style="color:#00E5FF;">Hola ${nombre} 👋</h2>
+    <p>Recibimos una solicitud para resetear la contraseña de tu cuenta.</p>
+    <p>Tocá el botón para crear una nueva. El link expira en <strong>1 hora</strong>.</p>
+    <div style="text-align:center;margin:28px 0;">
+      <a href="${link}" style="background:linear-gradient(135deg,#00E5FF,#0080ff);color:#000;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:1rem;">🔐 Resetear contraseña</a>
+    </div>
+    <p style="font-size:0.78rem;color:#64748b;">Si no pediste esto, ignorá este email. Tu contraseña no cambia sola.</p>
+    <p style="font-size:0.78rem;color:#64748b;">O copiá este link: ${link}</p>
+  </div>
+</div>`
+  });
+}
+
+module.exports = { enviarBienvenidaWorker, enviarBienvenidaCliente, enviarInvitacionWorker, enviarInvitacionCliente,
+  enviarEmailRecuperacion
+};

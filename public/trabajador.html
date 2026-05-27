@@ -793,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const _origSocket = window.socket;
   const hookSocket = () => {
     if(!window.socket) { setTimeout(hookSocket, 500); return; }
-    window.socket.on('nueva_oportunidad', () => SRAlert.trabajoNuevo());
+    // [FIXED] listener duplicado eliminado — onNuevoPedido ya maneja nueva_oportunidad
     window.socket.on('trabajo_asignado', () => SRAlert.trabajoNuevo());
     window.socket.on('nuevo_pedido_disponible', () => SRAlert.trabajoNuevo());
     window.socket.on('nuevo_servicio', () => SRAlert.trabajoNuevo());
