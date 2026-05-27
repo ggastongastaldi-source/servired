@@ -1,3 +1,4 @@
+const { initAssurance } = require('../../../services/TemporalAssuranceService');
 const { emitEvent } = require('../../../nexus/events/emitEvent');
 const Usuario = require('../models/Usuario');
 
@@ -158,6 +159,20 @@ module.exports = (io) => {
         // Marcar trabajador como ocupado
         if (trabajadorId) {
           await Usuario.findByIdAndUpdate(trabajadorId, { disponible: false }).catch(() => {});
+        }
+
+        // ── TEMPORAL ASSURANCE ─────────────────────────────────────
+        try {
+          await initAssurance(
+            pedido._id,
+            pedido.cliente,
+            trabajadorId,
+            pedido.tipoServicio,
+            pedido.serviceMode || 'URGENT',
+            pedido.scheduledFor || null
+          );
+        } catch (taErr) {
+          console.error('[TEMPORAL] Error initAssurance:', taErr.message);
         }
 
         console.log('[Socket] Pedido aceptado:', pedidoId, 'por worker:', trabajadorId);

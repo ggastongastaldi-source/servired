@@ -63,6 +63,9 @@ const PedidoSchema = new mongoose.Schema({
     coordinates: [Number]
   },
 
+  serviceMode:  { type: String, enum: ['URGENT','SCHEDULED','PROJECT','RECURRING'], default: 'URGENT' },
+  scheduledFor: { type: Date, default: null },
+
   fechaCreacion: { type: Date, default: Date.now }
 });
 
