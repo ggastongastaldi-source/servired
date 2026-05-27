@@ -1559,5 +1559,157 @@ socket.on('pacto_nocturno', function(data) {
 })();
 
 </script>
+
+<!-- ══════════════════════════════════════════════════════════
+     VENTANA CRÍTICA — Banner T-2h
+     ══════════════════════════════════════════════════════════ -->
+<div id="ventana-critica-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#0f172a;border:2px solid #f59e0b;border-radius:20px;max-width:380px;width:100%;padding:28px 24px;box-shadow:0 0 40px rgba(245,158,11,0.3);">
+
+    <!-- Header urgente -->
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:2.4rem;margin-bottom:6px;">⚠️</div>
+      <h2 style="color:#f59e0b;font-size:1.1rem;font-weight:800;margin:0 0 4px;letter-spacing:0.5px;">VENTANA CRÍTICA</h2>
+      <p style="color:#94a3b8;font-size:0.82rem;margin:0;" id="vc-mensaje">Tu turno entra en zona de riesgo</p>
+    </div>
+
+    <!-- Info del turno -->
+    <div style="background:#1e293b;border:1px solid #f59e0b33;border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="font-size:1.3rem;" id="vc-rubro-icon">🔧</span>
+        <div>
+          <div style="color:#f1f5f9;font-weight:600;font-size:0.92rem;" id="vc-rubro-nombre">Servicio</div>
+          <div style="color:#64748b;font-size:0.78rem;" id="vc-worker-nombre">Profesional asignado</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="color:#f59e0b;font-size:0.88rem;">🕐</span>
+        <span id="vc-fecha-hora" style="color:#f59e0b;font-weight:700;font-size:0.9rem;">En menos de 2 horas</span>
+      </div>
+    </div>
+
+    <!-- Countdown urgente -->
+    <div style="text-align:center;background:#f59e0b15;border-radius:10px;padding:12px;margin-bottom:18px;">
+      <div style="color:#f59e0b;font-size:0.75rem;font-weight:600;letter-spacing:1px;margin-bottom:4px;">TIEMPO RESTANTE</div>
+      <div style="color:#fbbf24;font-size:1.6rem;font-weight:800;font-family:monospace;" id="vc-countdown">--:--</div>
+      <div style="color:#64748b;font-size:0.72rem;margin-top:4px;">Cancelar ahora tiene consecuencias reputacionales</div>
+    </div>
+
+    <!-- Acciones -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button onclick="responderVentanaCritica('CONFIRMAR')" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;border:none;border-radius:12px;padding:14px;font-size:0.95rem;font-weight:800;cursor:pointer;width:100%;">
+        ✅ Confirmar asistencia
+      </button>
+      <button onclick="responderVentanaCritica('REPROGRAMAR')" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:12px;padding:12px;font-size:0.85rem;cursor:pointer;width:100%;">
+        ⏰ Necesito reprogramar
+      </button>
+    </div>
+
+    <!-- Aviso legal pequeño -->
+    <p style="color:#475569;font-size:0.7rem;text-align:center;margin:14px 0 0;">
+      Una cancelación en esta ventana afecta tu score de confianza
+    </p>
+  </div>
+</div>
+
+<script>
+
+// ══════════════════════════════════════════════════════════
+// VENTANA CRÍTICA — Lógica T-2h
+// ══════════════════════════════════════════════════════════
+var _vcPedidoId = null;
+var _vcCountdownInterval = null;
+
+function mostrarVentanaCritica(data) {
+  _vcPedidoId = data.pedidoId;
+
+  // Poblar UI
+  document.getElementById('vc-worker-nombre').textContent  = data.workerNombre || 'Tu profesional';
+  document.getElementById('vc-rubro-nombre').textContent   = data.rubro || 'Servicio';
+  document.getElementById('vc-mensaje').textContent        = data.mensaje || 'Tu turno entra en zona de riesgo';
+
+  if (data.scheduledFor) {
+    var d = new Date(data.scheduledFor);
+    document.getElementById('vc-fecha-hora').textContent =
+      'A las ' + d.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  // Iconos por rubro
+  var iconos = {
+    'electricista':'⚡','plomeria':'🔧','cerrajeria':'🔑','limpieza_hogar':'🧹',
+    'jardineria':'🌿','gasista':'🔥','pintura':'🎨','albanileria':'🏗️',
+    'servicio_domestico':'🏠','peluqueria_canina':'🐶','refrigeracion':'❄️'
+  };
+  var rubro = (data.rubro || '').toLowerCase().replace(/ /g,'_');
+  document.getElementById('vc-rubro-icon').textContent = iconos[rubro] || '🔧';
+
+  // Mostrar overlay
+  var overlay = document.getElementById('ventana-critica-overlay');
+  overlay.style.display = 'flex';
+
+  // Countdown hasta el turno
+  if (_vcCountdownInterval) clearInterval(_vcCountdownInterval);
+  _vcCountdownInterval = setInterval(function() {
+    var ahora    = new Date();
+    var objetivo = data.scheduledFor ? new Date(data.scheduledFor) : new Date(ahora.getTime() + 7200000);
+    var diff     = objetivo - ahora;
+
+    if (diff <= 0) {
+      clearInterval(_vcCountdownInterval);
+      document.getElementById('vc-countdown').textContent = '00:00';
+      return;
+    }
+    var h = Math.floor(diff / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('vc-countdown').textContent =
+      (h > 0 ? String(h).padStart(2,'0') + ':' : '') +
+      String(m).padStart(2,'0') + ':' +
+      String(s).padStart(2,'0');
+  }, 1000);
+
+  // Vibración mobile (si disponible)
+  try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e) {}
+}
+
+function cerrarVentanaCritica() {
+  var overlay = document.getElementById('ventana-critica-overlay');
+  if (overlay) overlay.style.display = 'none';
+  if (_vcCountdownInterval) clearInterval(_vcCountdownInterval);
+}
+
+function responderVentanaCritica(accion) {
+  if (!_vcPedidoId) return;
+
+  if (accion === 'CONFIRMAR') {
+    fetch('/api/pedidos/' + _vcPedidoId + '/confirmar-pacto', {
+      method:  'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + (localStorage.getItem('token') || '') }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function() {
+      cerrarVentanaCritica();
+      toast('✅ Asistencia confirmada. ¡El profesional ya fue notificado!');
+    })
+    .catch(function() { toast('Error al confirmar. Intentá de nuevo.'); });
+
+  } else if (accion === 'REPROGRAMAR') {
+    cerrarVentanaCritica();
+    toast('⏰ Contactá a tu profesional para coordinar.');
+  }
+}
+
+// Escuchar evento del backend
+socket.on('alerta_ventana_critica', function(data) {
+  mostrarVentanaCritica(data);
+});
+
+// Último aviso — tono más urgente, reutiliza el mismo banner
+socket.on('ultimo_aviso_pacto', function(data) {
+  data.mensaje = '🚨 ÚLTIMO AVISO: confirmá ahora o el turno se cancelará.';
+  mostrarVentanaCritica(data);
+});
+
+</script>
 </body>
 </html>
