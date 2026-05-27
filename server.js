@@ -248,6 +248,108 @@ cron.schedule('0 22 * * *', async () => {
   }
 });
 
+// ── CHECKPOINT T-2H — corre cada hora, detecta ventana crítica ──
+cron.schedule('0 * * * *', async () => {
+  try {
+    const ahora   = new Date();
+    const en2hs   = new Date(ahora.getTime() + 2 * 60 * 60 * 1000);
+    const en3hs   = new Date(ahora.getTime() + 3 * 60 * 60 * 1000);
+
+    // Buscar turnos que entran en ventana crítica en la próxima hora
+    const enVentana = await TemporalAssuranceState.find({
+      pactState:    { $in: ['NIGHT_PACT_CONFIRMED', 'AWAITING_NIGHT_PACT'] },
+      scheduledFor: { $gte: en2hs, $lt: en3hs }
+    }).populate('clienteId workerId pedidoId');
+
+    if (enVentana.length === 0) return;
+
+    console.log(`[T-2H] ${enVentana.length} turno(s) entrando en ventana crítica`);
+
+    for (const assurance of enVentana) {
+      // Mutar estado a AWAITING_TWO_HOUR_GATE
+      const cp = assurance.checkpoints.find(c => c.type === 'TWO_HOUR_GATE' && c.resolution === 'PENDING');
+      if (cp) cp.scheduledAt = ahora;
+      assurance.pactState = 'AWAITING_TWO_HOUR_GATE';
+      await assurance.save();
+
+      const payload = {
+        pedidoId:     assurance.pedidoId._id,
+        scheduledFor: assurance.scheduledFor,
+        workerNombre: assurance.workerId?.nombre || 'Tu profesional',
+        rubro:        assurance.pedidoId?.tipoServicio || '',
+        mensaje:      '⚠️ Tu turno es en menos de 2 horas. ¿Confirmás que todo sigue en pie?',
+        minutosRestantes: Math.round((new Date(assurance.scheduledFor) - ahora) / 60000)
+      };
+
+      // Notificar al cliente
+      if (assurance.clienteId?.socketId) {
+        io.to(assurance.clienteId.socketId).emit('alerta_ventana_critica', payload);
+      }
+      io.to('pedido_' + assurance.pedidoId._id).emit('alerta_ventana_critica', payload);
+
+      // Notificar al worker también
+      if (assurance.workerId) {
+        io.to('worker_' + assurance.workerId._id).emit('alerta_ventana_critica_worker', {
+          pedidoId:     assurance.pedidoId._id,
+          scheduledFor: assurance.scheduledFor,
+          clienteNombre: assurance.clienteId?.nombre || 'Tu cliente',
+          mensaje:      '🕐 Tu turno es en menos de 2 horas. Preparate para salir.'
+        });
+      }
+
+      console.log(`[T-2H] Alerta enviada | pedido: ${assurance.pedidoId._id} | en: ${payload.minutosRestantes}min`);
+    }
+  } catch (err) {
+    console.error('[T-2H] Error:', err.message);
+  }
+});
+
+// ── WORKER HOLD — si el cliente no responde en T-2h, poner worker en espera ──
+cron.schedule('30 * * * *', async () => {
+  try {
+    const ahora  = new Date();
+    const en1h   = new Date(ahora.getTime() + 60 * 60 * 1000);
+    const en2hs  = new Date(ahora.getTime() + 2 * 60 * 60 * 1000);
+
+    // Turnos que llevan 30min en AWAITING_TWO_HOUR_GATE sin respuesta
+    const sinRespuesta = await TemporalAssuranceState.find({
+      pactState:    'AWAITING_TWO_HOUR_GATE',
+      scheduledFor: { $gte: en1h, $lt: en2hs }
+    }).populate('workerId pedidoId clienteId');
+
+    for (const assurance of sinRespuesta) {
+      assurance.pactState = 'WORKER_HOLD';
+      await assurance.save();
+
+      // Notificar al worker
+      if (assurance.workerId) {
+        io.to('worker_' + assurance.workerId._id).emit('worker_hold', {
+          pedidoId: assurance.pedidoId._id,
+          mensaje:  '⏸️ El cliente no confirmó aún. Esperá confirmación antes de salir.',
+          scheduledFor: assurance.scheduledFor
+        });
+      }
+
+      // Último aviso al cliente
+      if (assurance.clienteId?.socketId) {
+        io.to(assurance.clienteId.socketId).emit('ultimo_aviso_pacto', {
+          pedidoId: assurance.pedidoId._id,
+          mensaje:  '🚨 Último aviso: el profesional está esperando tu confirmación para salir.',
+          scheduledFor: assurance.scheduledFor
+        });
+      }
+      io.to('pedido_' + assurance.pedidoId._id).emit('ultimo_aviso_pacto', {
+        pedidoId: assurance.pedidoId._id,
+        mensaje:  '🚨 Último aviso: confirmá ahora o el turno se cancelará automáticamente.'
+      });
+
+      console.log(`[WORKER_HOLD] Worker en espera | pedido: ${assurance.pedidoId._id}`);
+    }
+  } catch (err) {
+    console.error('[WORKER_HOLD] Error:', err.message);
+  }
+});
+
 // ===============================
 // KEEPALIVE / ANTI-SPINDOWN
 // ===============================
