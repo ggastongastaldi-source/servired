@@ -26,6 +26,9 @@ Para cada rubro determiná la unidad de cobro lógica:
 - "trabajo" para instalaciones o trabajos que se cotizan como proyecto completo (paneles solares, aire acondicionado, impermeabilización, alarmas, cámaras, domótica)
 
 Referencias orientativas mayo 2026:
+- Servicio doméstico / limpieza del hogar entre $7.000 y $12.000 por hora (referencia: ~1 Big Mac = $8.500)
+- Peluquería canina baño y corte perro chico entre $15.000 y $25.000 por trabajo
+- Jardinería mantenimiento entre $8.000 y $15.000 por hora
 - Un plomero en CABA cobra entre $18.000 y $35.000 por hora
 - Un electricista entre $16.000 y $30.000 por hora
 - Pintura interior entre $8.000 y $15.000 por m2
@@ -69,6 +72,19 @@ async function ejecutarCicloAladin() {
   if (!precios || Object.keys(precios).length === 0) {
     console.error('[Aladdín-Worker] ❌ Respuesta vacía.');
     return;
+  }
+
+  // ── PRECIOS FIJOS — Groq no puede pisar estos valores ──────
+  const PRECIOS_FIJOS = {
+    'servicio_domestico': { baja: 7000,  alta: 12000, unidad: 'hora' },
+    'limpieza_hogar':     { baja: 7000,  alta: 12000, unidad: 'hora' },
+    'jardineria':         { baja: 8000,  alta: 15000, unidad: 'hora' },
+    'peluqueria_canina':  { baja: 15000, alta: 25000, unidad: 'trabajo' },
+    'fletes_mudanzas':    { baja: 40000, alta: 90000, unidad: 'trabajo' },
+  };
+  // Inyectar fijos en el resultado de Groq
+  for (const [r, v] of Object.entries(PRECIOS_FIJOS)) {
+    precios[r] = v;
   }
 
   let actualizados = 0;
