@@ -139,7 +139,13 @@ async function iniciarFlujoBusqueda(pedidoId) {
           expiraEn: 300,
           tipo: 'BROADCAST_FALLBACK',
         };
-        if (io) io.to('worker_' + worker._id).emit('nueva_oportunidad', payload);
+        if (io) {
+          io.to('worker_' + worker._id).emit('nueva_oportunidad', payload);
+          // Fallback por rubro y zona (igual que cancelación)
+          io.to('rubro_' + pedido.tipoServicio).emit('nueva_oportunidad', payload);
+          io.to('zona_' + pedido.zona).emit('nueva_oportunidad', payload);
+          console.log('[EMIT] nueva_oportunidad → worker_'+worker._id+' + rubro_'+pedido.tipoServicio+' + zona_'+pedido.zona);
+        }
         notificados++;
         await Pedido.findByIdAndUpdate(pedidoId, {
           $addToSet: { workersNotificados: worker._id }
