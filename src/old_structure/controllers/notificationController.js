@@ -145,7 +145,11 @@ async function iniciarFlujoBusqueda(pedidoId) {
           io.to('rubro_' + pedido.tipoServicio).emit('nueva_oportunidad', payload);
           io.to('zona_' + pedido.zona).emit('nueva_oportunidad', payload);
           io.to('workers_disponibles').emit('nueva_oportunidad', payload);
-          console.log('[EMIT] nueva_oportunidad → worker_'+worker._id+' + rubro_'+pedido.tipoServicio+' + zona_'+pedido.zona);
+          const workerRooms = io.sockets.adapter.rooms;
+          const wRoom = 'worker_' + worker._id;
+          const roomSize = workerRooms.get(wRoom)?.size || 0;
+          const dispSize = workerRooms.get('workers_disponibles')?.size || 0;
+          console.log('[EMIT] nueva_oportunidad → worker_'+worker._id+' room_size:'+roomSize+' workers_disponibles_size:'+dispSize+' rubro:'+pedido.tipoServicio+' zona:'+pedido.zona);
         }
         notificados++;
         await Pedido.findByIdAndUpdate(pedidoId, {
