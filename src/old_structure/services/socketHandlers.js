@@ -63,6 +63,7 @@ module.exports = (io) => {
 
     // ── TRABAJADOR se conecta ───────────────────────────────────
     socket.on('worker_conectado', async ({ userId, rubro, zona, nombre }) => {
+      console.log('[DEBUG] worker_conectado userId:', userId, 'rubro:', rubro);
       // SECURITY: preferir userId del JWT verificado sobre el que manda el cliente
       const jwtPayload = socket.handshake.auth?.token
         ? (() => { try { return require('jsonwebtoken').verify(socket.handshake.auth.token, process.env.JWT_SECRET); } catch(e) { return null; } })()
