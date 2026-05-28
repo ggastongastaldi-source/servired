@@ -346,7 +346,8 @@ module.exports = (io) => {
         const Pedido = require('../models/Pedido');
         const { iniciarFlujoBusqueda } = require('../controllers/notificationController');
         const cliente = await Usuario.findById(clienteId).lean();
-        const zona = cliente?.zona || cliente?.zonaCobertura || 'GBA_OESTE';
+        const zona = cliente?.zona || cliente?.zonaCobertura || 'la_matanza';
+        console.log('[Socket] zona del cliente:', zona);
         const nuevoPedido = new Pedido({
           cliente: clienteId,
           tipoServicio: servicio,
