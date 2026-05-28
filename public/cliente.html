@@ -646,7 +646,7 @@ async function pedirSmartQuote(){
       const res=await fetch('/api/smart-quote',{
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-        body:JSON.stringify({rubro:item.r,complejidad:sqComplejidad,descripcion:document.getElementById('sq-descripcion')?.value||''})
+        body:JSON.stringify({rubro:item.r,complejidad:sqComplejidad,descripcion:document.getElementById('sq-descripcion')?.value||'',horas:parseInt(document.getElementById('sq-horas')?.value||1)})
       });
       const d=await res.json();
       if(d.ok){
@@ -1141,6 +1141,14 @@ function sqCerrarCamara(){
       </div>
       <div style="margin-bottom:16px;">
         <label style="font-size:0.8rem;color:#94a3b8;">Calidad de materiales</label>
+        <label style="display:block;font-size:0.75rem;color:#94a3b8;margin:10px 0 6px;">¿Cuántas horas necesitás?</label>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <button type="button" onclick="setSQHoras(this,1)" class="sq-h-btn" style="flex:1;padding:8px;background:rgba(0,229,255,0.15);border:1.5px solid #00E5FF;border-radius:8px;color:#00E5FF;font-weight:700;cursor:pointer;">1h</button>
+          <button type="button" onclick="setSQHoras(this,2)" class="sq-h-btn" style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-weight:700;cursor:pointer;">2h</button>
+          <button type="button" onclick="setSQHoras(this,3)" class="sq-h-btn" style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-weight:700;cursor:pointer;">3h</button>
+          <button type="button" onclick="setSQHoras(this,4)" class="sq-h-btn" style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-weight:700;cursor:pointer;">4h</button>
+        </div>
+        <input type="hidden" id="sq-horas" value="1">
         <select id="sq-complejidad" style="width:100%;padding:8px;background:#1a2236;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e2e8f0;font-size:0.9rem;margin-top:4px;">
           <option value="baja">Económico</option>
           <option value="alta">Premium</option>
@@ -1731,6 +1739,18 @@ function setHoras(btn, n) {
   document.getElementById('horas-sel').value = n;
   // Recalcular precio con nuevas horas
   if(rubroActual) sqElegir(rubroActual);
+}
+
+function setSQHoras(btn, n) {
+  document.querySelectorAll('.sq-h-btn').forEach(b => {
+    b.style.background = 'rgba(255,255,255,0.05)';
+    b.style.borderColor = 'rgba(255,255,255,0.1)';
+    b.style.color = '#fff';
+  });
+  btn.style.background = 'rgba(0,229,255,0.15)';
+  btn.style.borderColor = '#00E5FF';
+  btn.style.color = '#00E5FF';
+  document.getElementById('sq-horas').value = n;
 }
 </script>
 </body>
