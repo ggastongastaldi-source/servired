@@ -394,6 +394,8 @@ function pedirServicio(){
   document.getElementById('estado-bar').classList.add('visible');
   document.getElementById('estado-txt').textContent='Buscando trabajador disponible...';
   var btnCan=document.getElementById('btn-cancelar-pedido');if(btnCan)btnCan.style.display='block';
+  console.log('[DEBUG] emitiendo nuevo_pedido servicio:'+servicioSel+' precio:'+precioSel+' token:'+(TOKEN?'OK':'NULO'));
+  alert('Emitiendo pedido: '+servicioSel+' precio:'+precioSel);
   socket.emit('nuevo_pedido',{token:TOKEN,servicio:servicioSel,direccion:dir,precio:precioSel});
 }
 
