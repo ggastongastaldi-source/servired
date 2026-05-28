@@ -333,6 +333,7 @@ module.exports = (io) => {
 
     // ── CLIENTE crea pedido via socket ─────────────────────────
     socket.on('nuevo_pedido', async ({ token, servicio, direccion, precio }) => {
+      console.log('[DEBUG] nuevo_pedido recibido - token:', token ? token.substring(0,20)+'...' : 'NULO', 'servicio:', servicio);
       try {
         const jwt = require('jsonwebtoken');
         let decoded;
