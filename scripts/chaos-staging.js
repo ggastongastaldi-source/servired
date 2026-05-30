@@ -84,13 +84,23 @@ async function testStagingRoot() {
 }
 
 async function testStagingSmartQuote() {
-  // Llama al endpoint real de SmartQuote
-  const { status, ms } = await request(`${ENDPOINT}/api/smart-quote?rubro=limpieza_hogar`);
-  return {
-    test: 'staging_smartquote',
-    functional_pass: status === 200 || status === 401, // 401 = auth requerida = servidor vivo
-    sla_ms: ms,
-  };
+  const { http, https } = require; // no usado, usamos helper POST
+  return new Promise((resolve, reject) => {
+    const https2 = require('https');
+    const body   = JSON.stringify({ rubro: 'limpieza_hogar' });
+    const start  = Date.now();
+    const req    = https2.request({
+      hostname: 'servired-6e5r.onrender.com',
+      path: '/api/smart-quote',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+    }, res => {
+      res.resume();
+      resolve({ test: 'staging_smartquote', functional_pass: res.statusCode === 200 || res.statusCode === 401, sla_ms: Date.now() - start });
+    });
+    req.on('error', reject);
+    req.write(body); req.end();
+  });
 }
 
 // ── main ─────────────────────────────────────────────────────────────────────
