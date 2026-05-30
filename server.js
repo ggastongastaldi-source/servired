@@ -392,3 +392,7 @@ setInterval(() => {
 // SINAPSIS Event Gateway
 const eventsRouter = require('./routes/events');
 app.use('/api/events', eventsRouter);
+
+// SINAPSIS Projection Engine
+const { startProjectionEngine } = require('./sinapsis/projections/engine');
+startProjectionEngine();
