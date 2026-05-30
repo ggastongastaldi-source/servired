@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# cargar .env
+set -a; source .env; set +a
+
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 
 echo -e "\n🛡️  SINAPSIS Pre-Deploy Gate\n"
