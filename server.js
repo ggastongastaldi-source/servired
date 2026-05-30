@@ -388,3 +388,7 @@ setInterval(() => {
 }, 90 * 1000);
 
 // redeploy Thu May 28 01:27:20 -03 2026
+
+// SINAPSIS Event Gateway
+const eventsRouter = require('./routes/events');
+app.use('/api/events', eventsRouter);
