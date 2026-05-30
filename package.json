@@ -8,7 +8,8 @@
     "start": "node server.js",
     "test:chaos": "node scripts/chaos-runner.js",
     "test:chaos:staging": "node scripts/chaos-staging.js",
-    "test:chaos:outbox": "node scripts/chaos-outbox.js"
+    "test:chaos:outbox": "node scripts/chaos-outbox.js",
+    "deploy": "bash scripts/pre-deploy.sh"
   },
   "keywords": [],
   "author": "",
