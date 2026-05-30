@@ -1,84 +1,83 @@
-// ServiRed — Outbox Pattern v1.0
+// ServiRed — Outbox Pattern v2.0
 // DOMAIN EVENT → OUTBOX → DISPATCHER → PROVIDER
-// Nunca enviar mensajes directo desde lógica de dominio.
+// Sprint B: findOneAndUpdate atómico — elimina race condition
 
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 
-// Estados del Outbox según prompt maestro
 const STATUS = {
-  PENDING:      'PENDING',
-  DISPATCHING:  'DISPATCHING',
-  ACK_PENDING:  'ACK_PENDING',
-  SENT:         'SENT',
-  FAILED:       'FAILED',
-  DEAD_LETTER:  'DEAD_LETTER',
+  PENDING:     'PENDING',
+  DISPATCHING: 'DISPATCHING',
+  SENT:        'SENT',
+  FAILED:      'FAILED',
+  DEAD_LETTER: 'DEAD_LETTER',
 };
 
 const MAX_RETRIES = 5;
-const RETRY_DELAYS = [1000, 5000, 15000, 60000, 300000]; // backoff exponencial
+const RETRY_DELAYS = [1000, 5000, 15000, 60000, 300000];
 
-// dispatchId determinístico — nunca duplicar
 function makeDispatchId(workflowId, logicalStep, channel, template) {
   return crypto.createHash('sha256')
     .update(`${workflowId}:${logicalStep}:${channel}:${template}`)
     .digest('hex').slice(0, 32);
 }
 
-// Encolar mensaje en outbox — persiste ANTES de enviar
 async function enqueue({ workflowId, logicalStep, channel, template, payload, correlationId }) {
   const dispatchId = makeDispatchId(workflowId, logicalStep, channel, template);
   const col = mongoose.connection.collection('outbox');
 
-  // Idempotencia: si ya existe este dispatchId, no duplicar
-  const existing = await col.findOne({ dispatchId });
-  if (existing) {
-    console.log(`[Outbox] ⚡ Ya encolado: ${dispatchId} (${existing.status})`);
-    return { dispatchId, duplicate: true, status: existing.status };
+  try {
+    const entry = {
+      dispatchId,
+      workflowId,
+      logicalStep,
+      channel,
+      template,
+      payload,
+      correlationId: correlationId || crypto.randomUUID(),
+      status: STATUS.PENDING,
+      retries: 0,
+      createdAt: new Date(),
+      scheduledAt: new Date(),
+      sentAt: null,
+      error: null,
+    };
+    await col.insertOne(entry);
+    console.log(`[Outbox] 📥 Encolado: ${channel}/${template} → ${dispatchId}`);
+    return { dispatchId, duplicate: false, status: STATUS.PENDING };
+  } catch (e) {
+    if (e.code === 11000) {
+      // índice único rechazó el duplicado — idempotencia garantizada por Mongo
+      const existing = await col.findOne({ dispatchId });
+      console.log(`[Outbox] ⚡ Ya encolado: ${dispatchId} (${existing?.status})`);
+      return { dispatchId, duplicate: true, status: existing?.status };
+    }
+    throw e;
   }
-
-  const entry = {
-    dispatchId,
-    workflowId,
-    logicalStep,
-    channel,       // 'email' | 'socket' | 'mercadopago' | 'push'
-    template,
-    payload,
-    correlationId: correlationId || crypto.randomUUID(),
-    status: STATUS.PENDING,
-    retries: 0,
-    createdAt: new Date(),
-    scheduledAt: new Date(),
-    sentAt: null,
-    error: null,
-  };
-
-  await col.insertOne(entry);
-  console.log(`[Outbox] 📥 Encolado: ${channel}/${template} → ${dispatchId}`);
-  return { dispatchId, duplicate: false, status: STATUS.PENDING };
 }
 
-// Dispatcher — procesa PENDING del outbox
 async function dispatch(handlers = {}) {
   const col = mongoose.connection.collection('outbox');
   const now = new Date();
+  let processed = 0;
 
-  const pending = await col.find({
-    status: { $in: [STATUS.PENDING, STATUS.FAILED] },
-    scheduledAt: { $lte: now },
-    retries: { $lt: MAX_RETRIES },
-  }).limit(20).toArray();
-
-  if (!pending.length) return;
-
-  console.log(`[Outbox] 🚀 Procesando ${pending.length} mensajes pendientes`);
-
-  for (const entry of pending) {
-    // Marcar como DISPATCHING (lock optimista)
-    await col.updateOne(
-      { dispatchId: entry.dispatchId, status: { $in: [STATUS.PENDING, STATUS.FAILED] } },
-      { $set: { status: STATUS.DISPATCHING, dispatchingAt: new Date() } }
+  // Loop atómico: procesa uno por vez hasta que no haya más pendientes
+  while (true) {
+    // findOneAndUpdate atómico — lock garantizado por Mongo
+    const result = await col.findOneAndUpdate(
+      {
+        status: { $in: [STATUS.PENDING, STATUS.FAILED] },
+        scheduledAt: { $lte: now },
+        retries: { $lt: MAX_RETRIES },
+      },
+      { $set: { status: STATUS.DISPATCHING, dispatchingAt: new Date() } },
+      { returnDocument: 'before', sort: { scheduledAt: 1 } }
     );
+
+    const entry = result?.value ?? result;
+    if (!entry) break; // no hay más pendientes
+
+    processed++;
 
     try {
       const handler = handlers[entry.channel];
@@ -86,14 +85,13 @@ async function dispatch(handlers = {}) {
 
       await handler(entry.template, entry.payload);
 
-      // Éxito → ACK_PENDING → SENT
       await col.updateOne(
         { dispatchId: entry.dispatchId },
         { $set: { status: STATUS.SENT, sentAt: new Date(), error: null } }
       );
       console.log(`[Outbox] ✅ SENT: ${entry.channel}/${entry.template}`);
 
-    } catch(e) {
+    } catch (e) {
       const nextRetry = entry.retries + 1;
       const isDeadLetter = nextRetry >= MAX_RETRIES;
       const delay = RETRY_DELAYS[Math.min(nextRetry - 1, RETRY_DELAYS.length - 1)];
@@ -110,12 +108,13 @@ async function dispatch(handlers = {}) {
       console.error(`[Outbox] ❌ FAILED (${nextRetry}/${MAX_RETRIES}): ${entry.channel}/${entry.template} — ${e.message}`);
     }
   }
+
+  if (processed > 0) console.log(`[Outbox] 🚀 Procesados: ${processed} mensajes`);
 }
 
-// Recovery — reconcilia mensajes DISPATCHING viejos (huérfanos por crash)
 async function recover() {
   const col = mongoose.connection.collection('outbox');
-  const staleThreshold = new Date(Date.now() - 5 * 60 * 1000); // 5 min
+  const staleThreshold = new Date(Date.now() - 5 * 60 * 1000);
 
   const stale = await col.updateMany(
     { status: STATUS.DISPATCHING, dispatchingAt: { $lt: staleThreshold } },
@@ -127,7 +126,6 @@ async function recover() {
   }
 }
 
-// Stats
 async function stats() {
   const col = mongoose.connection.collection('outbox');
   const result = await col.aggregate([
