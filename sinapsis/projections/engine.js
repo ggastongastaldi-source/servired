@@ -1,17 +1,17 @@
 const mongoose = require('mongoose');
 
 const handlers = {
-  LeadDiscovered:  require('./handlers/LeadDiscovered'),
-  LeadEnriched:    require('./handlers/LeadEnriched'),
-  LeadScored:      require('./handlers/LeadScored'),
-  LeadConverted:   require('./handlers/LeadConverted'),
+  LeadDiscovered: require('./handlers/LeadDiscovered'),
+  LeadEnriched:   require('./handlers/LeadEnriched'),
+  LeadScored:     require('./handlers/LeadScored'),
+  LeadConverted:  require('./handlers/LeadConverted'),
 };
 
 async function startProjectionEngine() {
   const db = mongoose.connection.useDb('sinapsis');
   const col = db.collection('events');
 
-  const stream = col.watch(
+  const stream = await col.watch(
     [{ $match: { operationType: 'insert' } }],
     { fullDocument: 'updateLookup' }
   );
@@ -21,9 +21,7 @@ async function startProjectionEngine() {
   stream.on('change', async (change) => {
     const event = change.fullDocument;
     const handler = handlers[event.eventType];
-
-    if (!handler) return; // evento sin proyección definida, se ignora
-
+    if (!handler) return;
     try {
       await handler(event, mongoose);
       console.log(`[PROJECTION] ${event.eventType} | ${event.aggregateId} ✅`);
