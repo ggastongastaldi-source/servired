@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { evaluate } = require('../policies/engine');
+const { execute }  = require('../execution/engine');
 
 const handlers = {
   LeadDiscovered: require('./handlers/LeadDiscovered'),
@@ -36,12 +37,18 @@ async function startProjectionEngine() {
       }
     }
 
-    // 2. PDL — evalúa políticas y emite eventos de decisión
-    // Los eventos emitidos por PDL también disparan el Change Stream
+    // 2. PDL — emite eventos de decisión
     try {
       await evaluate(event);
     } catch (err) {
-      console.error(`[PDL] Error evaluando ${event.eventType}:`, err.message);
+      console.error(`[PDL] Error:`, err.message);
+    }
+
+    // 3. EL — traduce decisiones en comandos Outbox
+    try {
+      await execute(event);
+    } catch (err) {
+      console.error(`[EL] Error:`, err.message);
     }
   });
 
