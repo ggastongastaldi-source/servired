@@ -10,7 +10,9 @@
     "test:chaos:staging": "node scripts/chaos-staging.js",
     "test:chaos:outbox": "node scripts/chaos-outbox.js",
     "deploy": "bash scripts/pre-deploy.sh",
-    "sinapsis": "node src/sinapsis/index.js"
+    "sinapsis": "node src/sinapsis/index.js",
+    "sep:gateway": "node src/sep/gateway.js",
+    "sep:worker": "node src/sep/worker.js"
   },
   "keywords": [],
   "author": "",
