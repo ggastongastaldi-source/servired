@@ -261,6 +261,17 @@ router.get('/auction/last', authAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// GET /api/admin/shadow/report — RTG shadow analytics
+router.get('/shadow/report', authAdmin, (req, res) => {
+  try {
+    const shadow = require('../../../src/rtg/dist/shadow/index.js').shadowMonitor;
+    res.json({ ok: true, stats: shadow.stats(), report: shadow.report() });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin
