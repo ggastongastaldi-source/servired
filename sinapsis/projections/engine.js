@@ -1,10 +1,14 @@
 const mongoose = require('mongoose');
+const { evaluate } = require('../policies/engine');
 
 const handlers = {
   LeadDiscovered: require('./handlers/LeadDiscovered'),
   LeadEnriched:   require('./handlers/LeadEnriched'),
   LeadScored:     require('./handlers/LeadScored'),
   LeadConverted:  require('./handlers/LeadConverted'),
+  LeadQualified:  require('../policies/handlers/LeadQualified'),
+  LeadRejected:   require('../policies/handlers/LeadRejected'),
+  LeadEscalated:  require('../policies/handlers/LeadEscalated'),
 };
 
 async function startProjectionEngine() {
@@ -20,13 +24,24 @@ async function startProjectionEngine() {
 
   stream.on('change', async (change) => {
     const event = change.fullDocument;
+
+    // 1. Proyección
     const handler = handlers[event.eventType];
-    if (!handler) return;
+    if (handler) {
+      try {
+        await handler(event, mongoose);
+        console.log(`[PROJECTION] ${event.eventType} | ${event.aggregateId} ✅`);
+      } catch (err) {
+        console.error(`[PROJECTION] Error en ${event.eventType}:`, err.message);
+      }
+    }
+
+    // 2. PDL — evalúa políticas y emite eventos de decisión
+    // Los eventos emitidos por PDL también disparan el Change Stream
     try {
-      await handler(event, mongoose);
-      console.log(`[PROJECTION] ${event.eventType} | ${event.aggregateId} ✅`);
+      await evaluate(event);
     } catch (err) {
-      console.error(`[PROJECTION] Error en ${event.eventType}:`, err.message);
+      console.error(`[PDL] Error evaluando ${event.eventType}:`, err.message);
     }
   });
 
