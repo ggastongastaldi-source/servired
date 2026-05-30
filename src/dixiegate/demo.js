@@ -3,6 +3,7 @@
 // flujo: evento → grafo → J(t) → DixieGate → ledger → output
 
 const { Graph }         = require('./graph');
+const { RegimeDetector } = require('./regimeDetector');
 const { evaluate }      = require('./dixieRuntime');
 const ledger            = require('./ledgerRuntime');
 
@@ -64,7 +65,8 @@ function decisionColor(d) {
 
 // ── main loop ────────────────────────────────────────────────────────────────
 async function main() {
-  const graph = buildGraph();
+  const graph  = buildGraph();
+  const detector = new RegimeDetector();
 
   console.log(`\n${C.bold}${C.cyan}╔══════════════════════════════════════════════════╗`);
   console.log(`║      DIXIEGATE — Unified Decision Runtime        ║`);
@@ -90,6 +92,7 @@ async function main() {
 
     const J_after  = graph.energy();
     const dJ       = J_after - J_before;
+    const regime   = detector.observe(J_after);
 
     // ledger
     const entry = ledger.append({
@@ -117,6 +120,8 @@ async function main() {
     console.log(`   J(t)       : ${J_before.toFixed(4)} → ${J_after.toFixed(4)}  Δ=${dJ >= 0 ? C.red : C.green}${dJ.toFixed(4)}${C.reset}`);
     console.log(`   energy bar : ${dJ >= 0 ? C.red : C.green}${bar(J_after)}${C.reset} ${J_after.toFixed(2)}`);
     console.log(`   u_applied  : ${result.u.toFixed(4)}`);
+    const rColor = regime.phase_shift ? C.yellow : regime.confidence > 0.8 ? C.green : C.dim;
+    console.log(`   régimen    : ${rColor}${regime.regime}${C.reset}  conf=${regime.confidence}${regime.phase_shift ? C.yellow+' ⚡ PHASE SHIFT'+C.reset : ''}`);
     console.log(`   ledger ts  : ${C.dim}${entry.ts}${C.reset}\n`);
 
     t++;
@@ -137,7 +142,13 @@ async function main() {
   console.log(`   VETO/DENY          : ${C.red}${vetos}${C.reset}`);
   console.log(`   J final            : ${finalJ.toFixed(4)}`);
   console.log(`   sistema            : ${finalJ < 3 ? C.green + 'ESTABLE' : C.red + 'BAJO ESTRÉS'}${C.reset}`);
-  console.log(`   ledger             : .dixie_ledger.jsonl\n`);
+  console.log(`   ledger             : .dixie_ledger.jsonl`);
+  console.log(`   regímenes vistos   : ${detector.regimes.length}\n`);
+  console.log(`${C.bold}${C.cyan}── REGIME MAP ──────────────────────────────────────${C.reset}`);
+  detector.summary().forEach(r => {
+    console.log(`   [${r.id}] ${r.label.padEnd(22)} J_mu=${r.J_mu}  dJ_mu=${r.dJ_mu}  visits=${r.visits}`);
+  });
+  console.log('');
 }
 
 main().catch(console.error);
