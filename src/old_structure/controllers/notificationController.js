@@ -1,3 +1,8 @@
+// Shadow RTG Monitor — solo observa, no interfiere
+let _shadow = null;
+try { _shadow = require('../../../src/rtg/dist/shadow/index.js').shadowMonitor; } catch(_) {}
+function shadowObserve(event, payload) { try { if (_shadow) _shadow.observe(event, payload); } catch(_) {} }
+
 const Pedido = require('../models/Pedido');
 const Usuario = require('../models/Usuario');
 
@@ -145,6 +150,7 @@ async function iniciarFlujoBusqueda(pedidoId) {
           io.to('rubro_' + pedido.tipoServicio).emit('nueva_oportunidad', payload);
           io.to('zona_' + pedido.zona).emit('nueva_oportunidad', payload);
           io.to('workers_disponibles').emit('nueva_oportunidad', payload);
+        shadowObserve('nueva_oportunidad', payload);
           const workerRooms = io.sockets.adapter.rooms;
           const wRoom = 'worker_' + worker._id;
           const roomSize = workerRooms.get(wRoom)?.size || 0;
@@ -199,6 +205,7 @@ async function aceptarTrabajo(pedidoId, workerId) {
     if (io) {
       io.to('rubro_' + pedido.tipoServicio).emit('pedido_tomado', { pedidoId: pedido._id });
       io.to('zona_' + pedido.zona).emit('pedido_tomado', { pedidoId: pedido._id });
+      shadowObserve('trabajo_aceptado', { workerId: worker._id, pedidoId: pedido._id });
       io.to('pedido_' + pedido._id).emit('trabajo_aceptado', {
         pedidoId: pedido._id,
         mensaje: '¡Tu pedido fue aceptado!'
@@ -220,6 +227,7 @@ async function cancelarNotificacionesWorkers(pedidoId, io) {
     const socketIo = io || global.io;
     if (socketIo) {
       socketIo.to('rubro_' + pedido.tipoServicio).emit('pedido_cancelado', { pedidoId });
+    shadowObserve('pedido_cancelado', { pedidoId });
       socketIo.to('zona_' + pedido.zona).emit('pedido_cancelado', { pedidoId });
     }
 
