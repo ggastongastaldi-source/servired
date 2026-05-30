@@ -1,25 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { MongoClient } = require('mongodb');
-
-const client = new MongoClient(process.env.MONGO_URI);
-let col;
-
-async function getCollection() {
-  if (!col) {
-    await client.connect();
-    col = client.db('sinapsis').collection('events');
-  }
-  return col;
-}
+const mongoose = require('mongoose');
 
 router.post('/', async (req, res) => {
   try {
     const body = req.body;
 
     if (!body.eventId || !body.correlationId || !body.eventType) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios: eventId, correlationId, eventType' });
+      return res.status(400).json({ error: 'Faltan campos: eventId, correlationId, eventType' });
     }
+
+    const db = mongoose.connection.useDb('sinapsis');
+    const col = db.collection('events');
 
     const doc = {
       eventId:       body.eventId,
@@ -35,15 +27,13 @@ router.post('/', async (req, res) => {
       })
     };
 
-    const col = await getCollection();
     await col.insertOne(doc);
-
-    console.log(`[SINAPSIS] ${doc.eventType} | ${doc.aggregateId} | ${doc.correlationId}`);
+    console.log(`[SINAPSIS] ${doc.eventType} | ${doc.aggregateId}`);
     res.json({ ok: true, eventId: doc.eventId });
 
   } catch (err) {
     if (err.code === 11000) {
-      return res.status(409).json({ error: 'Evento duplicado', eventId: req.body.eventId });
+      return res.status(409).json({ error: 'Evento duplicado' });
     }
     console.error('[SINAPSIS] Error:', err.message);
     res.status(500).json({ error: err.message });

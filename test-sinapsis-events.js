@@ -1,7 +1,7 @@
 const https = require('https');
 const { randomUUID } = require('crypto');
 
-const WEBHOOK_URL = 'https://servired.app.n8n.cloud/webhook/a7892d1d-9e24-4e86-a1b3-66e51c3b705b';
+const WEBHOOK_URL = 'https://servired-6e5r.onrender.com/api/events';
 
 const correlationId = randomUUID();
 const aggregateId = 'lead-' + randomUUID().split('-')[0];
