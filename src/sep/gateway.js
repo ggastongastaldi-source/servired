@@ -33,9 +33,10 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ accepted: true, idempotency_key: event.idempotency_key }));
     }
 
-    // GET /state
-    if (req.method === 'GET' && req.url === '/state') {
-      const state = reconciliation.reconcile();
+    // GET /state — soporta ?entity_id=xxx
+    if (req.method === 'GET' && req.url.startsWith('/state')) {
+      const eid = new URL(req.url, 'http://x').searchParams.get('entity_id') || null;
+      const state = await reconciliation.reconcile(eid);
       res.writeHead(200);
       return res.end(JSON.stringify(state));
     }
