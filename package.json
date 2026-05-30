@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "test:chaos": "node scripts/chaos-runner.js"
+    "test:chaos": "node scripts/chaos-runner.js",
+    "test:chaos:staging": "node scripts/chaos-staging.js"
   },
   "keywords": [],
   "author": "",
