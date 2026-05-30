@@ -7,3 +7,5 @@
 {"ts":1780129705957,"env":"staging","test":"staging_health","functional_pass":true,"sla_ms":207,"reason":"ok"}
 {"ts":1780129705964,"env":"staging","test":"staging_root","functional_pass":true,"sla_ms":226,"reason":"ok"}
 {"ts":1780129705965,"env":"staging","test":"staging_smartquote","functional_pass":true,"sla_ms":228,"reason":"ok"}
+{"ts":1780129869302,"env":"outbox","test":"crash_mid_flush","functional_pass":true,"sla_ms":309,"detail":"huérfano rescatado correctamente","reason":"ok"}
+{"ts":1780129869304,"env":"outbox","test":"worker_death_before_ack","functional_pass":true,"sla_ms":400,"detail":"FAILED correctamente, sin huérfano DISPATCHING","reason":"ok"}
