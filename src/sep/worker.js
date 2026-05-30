@@ -1,8 +1,6 @@
 // worker.js — consumer distribuido SEP-v1
 // Dixie worker + Runtime worker en el mismo proceso (separar por env si escala)
-const idempotency = require('./idempotency');
-const ledgerPg    = require('./ledgerPg');
-const streams     = require('./streams');
+const { streams, ledger: ledgerPg, idempotency } = require('./drivers');
 const dixie       = require('../sinapsis/dixie');
 const runtime     = require('../sinapsis/runtime');
 const eye         = require('../sinapsis/eye');

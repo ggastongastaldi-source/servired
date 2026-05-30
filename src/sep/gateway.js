@@ -1,7 +1,6 @@
 // gateway.js — API entry point SEP-v1 (reemplaza eventBridge para distributed mode)
 const http        = require('http');
-const streams     = require('./streams');
-const ledgerPg    = require('./ledgerPg');
+const { streams, ledger: ledgerPg } = require('./drivers');
 const reconciliation = require('../sinapsis/reconciliation');
 const crypto      = require('crypto');
 
