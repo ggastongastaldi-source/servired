@@ -1,49 +1,55 @@
-// ServiRed — Outbox Dispatcher Central v1.0
-// Conecta el Outbox con los providers reales (email, socket, MP)
-
 const { dispatch, recover } = require('./outbox');
-const { execute } = require('./circuitBreaker');
+const { execute: circuitBreaker } = require('./circuitBreaker');
+const { sendEmail } = require('../../sinapsis/adapters/email/resendAdapter');
 
 let _io = null;
 let _intervalId = null;
 
 function init(io) {
   _io = io;
-
-  // Recovery al arrancar — libera huérfanos
   recover().catch(e => console.error('[Dispatcher] Recovery error:', e.message));
 
-  // Procesar outbox cada 10 segundos
   _intervalId = setInterval(() => {
     _processOutbox().catch(e => console.error('[Dispatcher] Error:', e.message));
   }, 10000);
 
-  // Primer dispatch a los 5 segundos
   setTimeout(() => _processOutbox().catch(() => {}), 5000);
-
   console.log('[Outbox Dispatcher] ✅ Iniciado — intervalo 10s');
 }
 
 async function _processOutbox() {
   const handlers = {
     email: async (template, payload) => {
-      await execute('email', async () => {
-        const emailService = require('../../src/old_structure/services/emailService');
-        if (template === 'bienvenida_worker') {
-          await emailService.enviarBienvenidaWorker(payload);
-        } else if (template === 'bienvenida_cliente') {
-          await emailService.enviarBienvenidaCliente(payload);
-        } else if (template === 'invitacion_worker') {
-          await emailService.enviarInvitacionWorker(payload);
-        } else if (template === 'invitacion_cliente') {
-          await emailService.enviarInvitacionCliente(payload);
+      await circuitBreaker('email', async () => {
+        if (template === 'lead_qualified_outreach') {
+          await sendEmail({
+            to:            payload.to ?? process.env.SINAPSIS_TEST_EMAIL,
+            subject:       `Lead calificado — score ${payload.score}`,
+            body:          `Lead ${payload.aggregateId} calificado.\nScore: ${payload.score}\nMotivo: ${payload.reason}`,
+            correlationId: payload.correlationId,
+            aggregateId:   payload.aggregateId
+          });
+        } else if (template === 'lead_rejected_notify') {
+          await sendEmail({
+            to:            payload.to ?? process.env.SINAPSIS_TEST_EMAIL,
+            subject:       `Lead rechazado — score ${payload.score}`,
+            body:          `Lead ${payload.aggregateId} rechazado.\nScore: ${payload.score}\nMotivo: ${payload.reason}`,
+            correlationId: payload.correlationId,
+            aggregateId:   payload.aggregateId
+          });
+        } else {
+          // templates legacy
+          const emailService = require('../../src/old_structure/services/emailService');
+          if (template === 'bienvenida_worker')   await emailService.enviarBienvenidaWorker(payload);
+          if (template === 'bienvenida_cliente')  await emailService.enviarBienvenidaCliente(payload);
+          if (template === 'invitacion_worker')   await emailService.enviarInvitacionWorker(payload);
+          if (template === 'invitacion_cliente')  await emailService.enviarInvitacionCliente(payload);
         }
       });
     },
     socket: async (template, payload) => {
       if (!_io) throw new Error('Socket.IO no disponible');
-      const { room, event, data } = payload;
-      _io.to(room).emit(event, data);
+      _io.to(payload.room).emit(payload.event, payload.data);
     },
   };
 
