@@ -66,3 +66,11 @@
 {"ts":1780156751477,"env":"staging","test":"staging_health","functional_pass":true,"sla_ms":257,"reason":"ok"}
 {"ts":1780156751479,"env":"staging","test":"staging_root","functional_pass":true,"sla_ms":283,"reason":"ok"}
 {"ts":1780156751479,"env":"staging","test":"staging_smartquote","functional_pass":true,"sla_ms":775,"reason":"ok"}
+{"ts":1780157821465,"test":"core","functional_pass":true,"sla_ms":0,"trend_pass":true,"reason":"ok"}
+{"ts":1780157821466,"test":"recovery","functional_pass":true,"sla_ms":0,"trend_pass":true,"reason":"ok"}
+{"ts":1780157821467,"test":"idempotency","functional_pass":true,"sla_ms":0,"trend_pass":true,"reason":"ok"}
+{"ts":1780157825071,"env":"outbox","test":"crash_mid_flush","functional_pass":true,"sla_ms":331,"detail":"huérfano rescatado correctamente","reason":"ok"}
+{"ts":1780157825073,"env":"outbox","test":"worker_death_before_ack","functional_pass":true,"sla_ms":401,"detail":"FAILED correctamente, sin huérfano DISPATCHING","reason":"ok"}
+{"ts":1780157827699,"env":"staging","test":"staging_health","functional_pass":true,"sla_ms":217,"reason":"ok"}
+{"ts":1780157827701,"env":"staging","test":"staging_root","functional_pass":true,"sla_ms":256,"reason":"ok"}
+{"ts":1780157827701,"env":"staging","test":"staging_smartquote","functional_pass":true,"sla_ms":629,"reason":"ok"}

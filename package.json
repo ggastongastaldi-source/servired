@@ -13,7 +13,9 @@
     "sinapsis": "node src/sinapsis/index.js",
     "sep:gateway": "node src/sep/gateway.js",
     "sep:worker": "node src/sep/worker.js",
-    "dixie:demo": "node src/dixiegate/demo.js"
+    "dixie:demo": "node src/dixiegate/demo.js",
+    "rtg:build": "cd src/rtg && npx tsc",
+    "rtg:start": "cd src/rtg && node dist/index.js"
   },
   "keywords": [],
   "author": "",
