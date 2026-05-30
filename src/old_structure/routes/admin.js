@@ -272,6 +272,20 @@ router.get('/shadow/report', authAdmin, (req, res) => {
   }
 });
 
+
+// GET /api/admin/shadow/diag — diagnóstico del shadow monitor
+router.get('/shadow/diag', authAdmin, (req, res) => {
+  try {
+    const path = require('path');
+    const sp = path.join(__dirname, '../../../src/rtg/dist/shadow/index.js');
+    const exists = require('fs').existsSync(sp);
+    const shadow = exists ? require(sp).shadowMonitor : null;
+    res.json({ ok: true, path: sp, exists, events: shadow?.stats()?.events ?? -1 });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
 
 // Replay Runner — solo admin

@@ -1,7 +1,17 @@
 // Shadow RTG Monitor — solo observa, no interfiere
 let _shadow = null;
-try { _shadow = require('../../../src/rtg/dist/shadow/index.js').shadowMonitor; } catch(_) {}
-function shadowObserve(event, payload) { try { if (_shadow) _shadow.observe(event, payload); } catch(_) {} }
+let _shadowError = null;
+try {
+  const _sp = require('path').join(__dirname, '../../../src/rtg/dist/shadow/index.js');
+  _shadow = require(_sp).shadowMonitor;
+  console.log('[Shadow] ✅ RTG shadow monitor cargado');
+} catch(e) {
+  _shadowError = e.message;
+  console.warn('[Shadow] ⚠️  no disponible:', e.message);
+}
+function shadowObserve(event, payload) {
+  try { if (_shadow) _shadow.observe(event, payload); } catch(_) {}
+}
 
 const Pedido = require('../models/Pedido');
 const Usuario = require('../models/Usuario');
