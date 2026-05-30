@@ -2,6 +2,17 @@ module.exports = function(ioInstance) {
 const io = ioInstance;
 const express = require('express');
 const router = express.Router();
+// Shadow RTG Monitor
+let _shadowPedidos = null;
+try {
+  const _sp = require('path').join(__dirname, '../../../src/rtg/dist/shadow/index.js');
+  _shadowPedidos = require(_sp).shadowMonitor;
+} catch(_) {}
+function shadowObs(event, payload) {
+  try { if (_shadowPedidos) _shadowPedidos.observe(event, payload); } catch(_) {}
+}
+
+
 
 const getIO = () => io;
 const Pedido = require('../models/Pedido');
@@ -83,6 +94,7 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
       };
       io.to('rubro_' + tipoServicio).emit('nueva_oportunidad', payload);
       io.to('zona_' + zona).emit('nueva_oportunidad', payload);
+      shadowObs('nueva_oportunidad', { tipoServicio, zona, pedidoId: nuevoPedido._id });
       console.log('[Socket] nueva_oportunidad emitida:', tipoServicio, zona);
     }
     console.log(`[PEDIDOS] Creado: ${nuevoPedido._id} - ${tipoServicio} en ${zona}`);
