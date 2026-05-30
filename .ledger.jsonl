@@ -1,0 +1,3 @@
+{"event":{"type":"match_job","actor":"system","domain":"RUNTIME","payload":{},"risk":0.3},"decision":"ALLOW","result":{"status":"OK","state_hash":"f5c59e26f70b4bab"},"timestamp":1780143047138}
+{"event":{"type":"force_assign","actor":"admin","domain":"CONTROL","payload":{},"risk":0.75},"decision":"ESCALATE","result":{"status":"SKIPPED","reason":"ESCALATE"},"timestamp":1780143047141}
+{"event":{"type":"override","actor":"unknown","domain":"RUNTIME","payload":{},"risk":0.97},"decision":"DENY","result":{"status":"SKIPPED","reason":"DENY"},"timestamp":1780143047141}

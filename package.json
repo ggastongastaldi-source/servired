@@ -9,7 +9,8 @@
     "test:chaos": "node scripts/chaos-runner.js",
     "test:chaos:staging": "node scripts/chaos-staging.js",
     "test:chaos:outbox": "node scripts/chaos-outbox.js",
-    "deploy": "bash scripts/pre-deploy.sh"
+    "deploy": "bash scripts/pre-deploy.sh",
+    "sinapsis": "node src/sinapsis/index.js"
   },
   "keywords": [],
   "author": "",
