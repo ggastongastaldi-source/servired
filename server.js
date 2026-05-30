@@ -396,3 +396,7 @@ app.use('/api/events', eventsRouter);
 // SINAPSIS Projection Engine
 const { startProjectionEngine } = require('./sinapsis/projections/engine');
 startProjectionEngine();
+
+// SINAPSIS Evidence Store
+const evidenceRouter = require('./routes/evidence');
+app.use('/api/evidence', evidenceRouter);
