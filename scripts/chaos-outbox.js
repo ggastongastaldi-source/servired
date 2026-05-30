@@ -12,7 +12,17 @@ const fs       = require('fs');
 const path     = require('path');
 
 const HISTORY_FILE    = path.join(__dirname, '..', '.chaos_history.jsonl');
-const MONGO_URI       = process.env.MONGO_URI || process.env.MONGODB_URI;
+// auto-load .env (soporta & en valores)
+if (!process.env.MONGO_URI) {
+  const _fs = require('fs'), _path = require('path');
+  const _ep = _path.join(__dirname, '..', '.env');
+  if (_fs.existsSync(_ep)) {
+    _fs.readFileSync(_ep, 'utf8').split('\n').filter(l => l && l[0] !== '#').forEach(l => {
+      const i = l.indexOf('='); if (i > 0) process.env[l.slice(0,i)] = l.slice(i+1);
+    });
+  }
+}
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 const SLA_HARD_CAP_MS = 4500;
 
 function log(obj) {
