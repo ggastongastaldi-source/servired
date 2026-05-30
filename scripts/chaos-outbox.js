@@ -12,7 +12,7 @@ const fs       = require('fs');
 const path     = require('path');
 
 const HISTORY_FILE    = path.join(__dirname, '..', '.chaos_history.jsonl');
-const MONGO_URI       = process.env.MONGODB_URI || process.env.MONGO_URI;
+const MONGO_URI       = process.env.MONGO_URI || process.env.MONGODB_URI;
 const SLA_HARD_CAP_MS = 4500;
 
 function log(obj) {
