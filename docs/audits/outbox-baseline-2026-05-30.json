@@ -1,0 +1,12 @@
+{
+  "fecha": "2026-05-30T05:41:58.510Z",
+  "total": 0,
+  "porEstado": [],
+  "indices": [
+    "_id_",
+    "idx_dispatch_queue",
+    "idx_dispatch_recovery",
+    "uq_dispatch_id"
+  ],
+  "duplicados": []
+}
