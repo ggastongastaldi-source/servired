@@ -175,6 +175,63 @@ select option{background:#1a2236;color:#e2e8f0;}
 .tc-ok h3{font-size:17px;color:#39ff14;}
 .tc-ok p{font-size:12px;color:#64748b;}
 
+
+/* ── LÍNEA DE TIEMPO SERVIRED ─────────────────────────────── */
+.sr-timeline { padding: 12px 0; }
+.sr-tl-item {
+  display: flex; gap: 12px; padding: 8px 0;
+  animation: tlFadeIn 0.4s ease both;
+}
+@keyframes tlFadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.sr-tl-dot {
+  width: 32px; min-width: 32px; height: 32px;
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 1rem;
+  border: 2px solid rgba(0,229,255,0.3);
+  background: #0a1628;
+}
+.sr-tl-dot.EMITIDO        { border-color:#00e5ff; }
+.sr-tl-dot.BUSCANDO       { border-color:#f59e0b; }
+.sr-tl-dot.ACEPTADO       { border-color:#10b981; }
+.sr-tl-dot.EN_CAMINO      { border-color:#3b82f6; }
+.sr-tl-dot.EN_PROCESO     { border-color:#8b5cf6; }
+.sr-tl-dot.REALIZADO      { border-color:#10b981; }
+.sr-tl-dot.PAGADO         { border-color:#10b981; background:rgba(16,185,129,0.15); }
+.sr-tl-dot.CANCELADO      { border-color:#ef4444; }
+.sr-tl-dot.CONFIRMACION_24H,.sr-tl-dot.CONFIRMACION_2H { border-color:#f59e0b; }
+.sr-tl-dot.MENSAJE_CLIENTE,.sr-tl-dot.MENSAJE_WORKER   { border-color:#64748b; }
+.sr-tl-line {
+  flex:1; min-width:0;
+}
+.sr-tl-line .sr-tl-msg {
+  font-size: 0.88rem; color: #e2e8f0; line-height: 1.4;
+}
+.sr-tl-line .sr-tl-meta {
+  font-size: 0.72rem; color: #64748b; margin-top: 2px;
+}
+.sr-tl-line .sr-tl-regime {
+  display:inline-block; font-size:0.65rem; padding:1px 6px;
+  border-radius:4px; background:rgba(0,229,255,0.08);
+  color:#00e5ff; margin-left:6px; letter-spacing:1px;
+}
+.sr-tl-connector {
+  width:2px; background:rgba(0,229,255,0.12);
+  margin: 0 15px; min-height: 12px;
+}
+/* Chat inline */
+.sr-chat-input {
+  display:flex; gap:8px; margin-top:8px;
+}
+.sr-chat-input input {
+  flex:1; background:#0d1f35; border:1px solid rgba(0,229,255,0.2);
+  border-radius:8px; padding:8px 12px; color:#e2e8f0; font-size:0.85rem;
+}
+.sr-chat-input button {
+  background:#00e5ff; color:#0a0f1e; border:none;
+  border-radius:8px; padding:8px 14px; font-weight:700;
+  font-size:0.85rem; cursor:pointer;
+}
+
 </style>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#00E5FF">
@@ -870,6 +927,146 @@ function urlBase64ToUint8Array(base64String) {
 })();
 </script>
 
+<script>
+// ── SERVIRED TIMELINE MODULE ──────────────────────────────────
+const SRTimeline = {
+  pedidoId: null,
+  container: null,
+  role: null, // 'cliente' | 'worker'
+
+  ICONS: {
+    EMITIDO:           '📋',
+    BUSCANDO:          '🔍',
+    ACEPTADO:          '🤝',
+    EN_CAMINO:         '🚗',
+    EN_PROCESO:        '🔧',
+    REALIZADO:         '✅',
+    PAGADO:            '💳',
+    CANCELADO:         '❌',
+    CONFIRMACION_24H:  '🔔',
+    CONFIRMACION_2H:   '⏰',
+    MENSAJE_CLIENTE:   '💬',
+    MENSAJE_WORKER:    '💬',
+    SISTEMA:           'ℹ️',
+  },
+
+  init(containerId, pedidoId, role) {
+    this.container = document.getElementById(containerId);
+    this.pedidoId  = pedidoId;
+    this.role      = role;
+    if (!this.container) return;
+    this.cargar();
+    this._bindSocket();
+    this._renderChat();
+  },
+
+  async cargar() {
+    try {
+      const tok = localStorage.getItem('token') || localStorage.getItem('servired_token') || '';
+      const r = await fetch('/api/pedidos/' + this.pedidoId + '/timeline', {
+        headers: { 'Authorization': 'Bearer ' + tok }
+      });
+      const data = await r.json();
+      if (data.ok && data.timeline) {
+        this.container.innerHTML = '<div class="sr-timeline" id="sr-tl-list"></div>';
+        data.timeline.forEach(ev => this._renderItem(ev));
+      }
+    } catch(e) { console.error('[Timeline] Error cargando:', e); }
+  },
+
+  _renderItem(ev) {
+    const list = this.container.querySelector('#sr-tl-list');
+    if (!list) return;
+    const icon   = this.ICONS[ev.tipo] || 'ℹ️';
+    const hora   = new Date(ev.ts).toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+    const regime = ev.rtgRegime ? `<span class="sr-tl-regime">${ev.rtgRegime}</span>` : '';
+    // Conector entre items
+    if (list.children.length > 0) {
+      const conn = document.createElement('div');
+      conn.className = 'sr-tl-connector';
+      list.appendChild(conn);
+    }
+    const item = document.createElement('div');
+    item.className = 'sr-tl-item';
+    item.innerHTML = `
+      <div class="sr-tl-dot ${ev.tipo}">${icon}</div>
+      <div class="sr-tl-line">
+        <div class="sr-tl-msg">${ev.mensaje || ev.tipo}</div>
+        <div class="sr-tl-meta">${hora}${regime}</div>
+      </div>`;
+    list.appendChild(item);
+    // Scroll al último
+    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Sonido suave en nuevos eventos
+    this._pingSound();
+  },
+
+  _bindSocket() {
+    const self = this;
+    function waitSock() {
+      if (typeof socket === 'undefined') return setTimeout(waitSock, 400);
+      socket.on('timeline_event', function(data) {
+        const pid = data.pedidoId || data.pedidoId;
+        if (String(pid) !== String(self.pedidoId)) return;
+        self._renderItem(data);
+      });
+    }
+    waitSock();
+  },
+
+  _pingSound() {
+    try {
+      const a = new (window.AudioContext || window.webkitAudioContext)();
+      const o = a.createOscillator();
+      const g = a.createGain();
+      o.connect(g); g.connect(a.destination);
+      o.type = 'sine'; o.frequency.value = 880;
+      g.gain.setValueAtTime(0.08, a.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.3);
+      o.start(); o.stop(a.currentTime + 0.3);
+    } catch(_) {}
+  },
+
+  _renderChat() {
+    if (!this.container) return;
+    const chat = document.createElement('div');
+    chat.className = 'sr-chat-input';
+    chat.innerHTML = `
+      <input id="sr-chat-msg" type="text" placeholder="Mensaje al ${this.role === 'cliente' ? 'profesional' : 'cliente'}..." maxlength="200">
+      <button onclick="SRTimeline.enviarMensaje()">Enviar</button>`;
+    this.container.appendChild(chat);
+  },
+
+  enviarMensaje() {
+    const input = document.getElementById('sr-chat-msg');
+    const msg   = input?.value?.trim();
+    if (!msg || !this.pedidoId) return;
+    if (typeof socket !== 'undefined') {
+      socket.emit('timeline_mensaje', {
+        pedidoId: this.pedidoId,
+        mensaje:  msg,
+        actor:    this.role,
+      });
+    }
+    input.value = '';
+  },
+};
+</script>
+
+<div id="sr-timeline-container" style="margin-top:12px;background:#0a1628;border:1px solid rgba(0,229,255,0.12);border-radius:12px;padding:12px;">
+  <div style="color:#00e5ff;font-size:0.72rem;letter-spacing:2px;margin-bottom:8px">// LÍNEA DE TIEMPO</div>
+  <div id="sr-tl-list"><div style="color:#64748b;font-size:0.8rem;text-align:center;padding:12px">Cargando historial...</div></div>
+</div>
+<script>
+// Auto-init timeline cuando hay pedido activo
+(function initTL() {
+  if (typeof pedidoActivo !== 'undefined' && pedidoActivo) {
+    SRTimeline.init('sr-timeline-container', pedidoActivo, 'worker');
+  } else {
+    setTimeout(initTL, 800);
+  }
+})();
+</script>
 </body>
 </html>
 

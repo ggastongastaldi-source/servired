@@ -342,6 +342,19 @@ module.exports = (io) => {
     });
 
     // ── GPS: trabajador envía ubicación ────────────────────────
+    
+    // ── Chat inline en pedido ─────────────────────────────────
+    socket.on('timeline_mensaje', async ({ pedidoId, mensaje, actor }) => {
+      if (!pedidoId || !mensaje) return;
+      const { registrar } = require('./timelineService');
+      const tipo = actor === 'cliente' ? 'MENSAJE_CLIENTE' : 'MENSAJE_WORKER';
+      const icono = actor === 'cliente' ? '💬 Cliente' : '💬 Profesional';
+      await registrar(io, pedidoId, tipo, actor,
+        icono + ': ' + String(mensaje).slice(0, 200),
+        { pedidoId }
+      ).catch(()=>{});
+    });
+
     socket.on('gps_update', async ({ pedidoId, lat, lng, trabajadorId }) => {
       if (!pedidoId || !lat || !lng) return;
 
