@@ -756,11 +756,11 @@ function sqElegir(key){
   }).then(r=>r.json()).then(d=>{
     if(d.ok){
       precioActual = d.precioCliente || d.total_estimado || d.estimado;
-      comisionActual = d.comision;
+      comisionActual = Math.round((d.precio || precioActual) * 0.20);
       pagoWorkerActual = d.pago_worker;
       document.getElementById('precio-display').textContent = '$ '+precioActual.toLocaleString('es-AR');
       if(d.descripcion_ia) document.getElementById('sq-desc-ia').textContent = d.descripcion_ia;
-      document.getElementById('sq-desglose').textContent = 'Zona: '+d.zona+' · Comisión SERVired: $'+d.comision.toLocaleString('es-AR');
+      document.getElementById('sq-desglose').textContent = 'Zona: '+d.zona+' · Comisión SERVired: $'+comisionActual.toLocaleString('es-AR');
     }
   }).catch(()=>{
     precioActual = srv.precio;
