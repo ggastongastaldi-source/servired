@@ -828,6 +828,9 @@ async function pedirSmartQuote(){
 
 function cerrarSesion(){localStorage.removeItem('token');window.location='/';}
 
+socket.on('trabajo_aceptado_join_fix', function(d){
+  if(d.pedidoId){ socket.emit('join_room',{room:'pedido_'+d.pedidoId}); }
+});
 socket.on('trabajo_aceptado',data=>{
   pedidoActivo=data.pedidoId;
   if(pedidoActivo && !SRTimeline.pedidoId) SRTimeline.init('sr-timeline-container', pedidoActivo, 'cliente');
@@ -907,7 +910,7 @@ function mostrarModalCalificacion(pedidoId) {
       const r = await fetch('/api/rating/calificar', {
         method: 'POST',
         headers: {'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('token')},
-        body: JSON.stringify({pedidoId, estrellas: estrellasSel, rol: 'worker'})
+        body: JSON.stringify({pedidoId, estrellas: estrellasSel, rol: 'cliente'})
       });
       const d = await r.json();
       if (d.ok) {
@@ -920,7 +923,8 @@ function mostrarModalCalificacion(pedidoId) {
         setTimeout(() => { if(modal.parentNode) modal.remove(); }, 2500);
       }
     } catch(e) {
-      modal.querySelector('#rating-msg').textContent = 'Error de conexion';
+      modal.querySelector('#rating-msg').textContent = 'Error: ' + (err?.message||'conexión');
+      modal.querySelector('#rating-msg').style.color = '#ef4444';
       setTimeout(() => { if(modal.parentNode) modal.remove(); }, 2500);
     }
   });
@@ -951,6 +955,11 @@ socket.on('estado_pedido',data=>{
   }
 });
 socket.on('pedido_creado',data=>{
+  if(data.pedidoId||data.pedido?._id){
+    const pid = data.pedidoId || data.pedido._id;
+    socket.emit('join_room',{room:'pedido_'+pid});
+    console.log('[SR] joined room pedido_'+pid);
+  }
   pedidoActivo=data.pedidoId;
   socket.emit('registrar_pedido',{pedidoId:data.pedidoId});
   socket.emit('cliente_conectado',{token:TOKEN,userId:USER_ID,pedidoId:data.pedidoId});
@@ -959,40 +968,7 @@ socket.on('pedido_creado',data=>{
 });
 socket.on('pedido_completado',()=>{toast('✅ Servicio completado. ¡Gracias!');resetUI();cargarHistorial();irPant('historial',null);});
 
-socket.on("link_pago", function(data) {
-  // Actualizar btn original si existe
-  var btn = document.getElementById("btn-pagar-mp");
-  if (btn) {
-    btn.style.display = "block";
-    btn.onclick = function() { window.open(data.url, "_blank"); };
-    btn.textContent = "💳 PAGAR CON MERCADO PAGO - ARS $" + (data.monto||0).toLocaleString("es-AR");
-  }
-  // Estado bar
-  try{document.getElementById("estado-bar").classList.add("visible");}catch(e){}
-  try{document.getElementById("estado-txt").textContent = "💳 El trabajo está listo. Realizá el pago.";}catch(e){}
-  // Modal MP dedicado — se abre SIEMPRE encima de todo
-  var mpModal = document.getElementById('mp-pago-modal');
-  if(!mpModal){
-    mpModal = document.createElement('div');
-    mpModal.id = 'mp-pago-modal';
-    document.body.appendChild(mpModal);
-  }
-  mpModal.innerHTML = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">'
-    + '<div style="background:#111827;border:2px solid #009ee3;border-radius:20px;padding:28px 22px;max-width:360px;width:100%;text-align:center;">'
-    + '<div style="font-size:2.5rem;margin-bottom:8px;">💳</div>'
-    + '<div style="font-size:1.2rem;font-weight:700;color:#00E5FF;margin-bottom:6px;">¡Servicio completado!</div>'
-    + '<div style="font-size:0.9rem;color:#94a3b8;margin-bottom:18px;">Realizá el pago para confirmar el trabajo</div>'
-    + '<div style="background:#1a2236;border-radius:10px;padding:14px;margin-bottom:20px;">'
-    + '<div style="font-size:0.8rem;color:#64748b;margin-bottom:4px;">TOTAL A PAGAR</div>'
-    + '<div style="font-size:2rem;font-weight:700;color:#10b981;">ARS $' + (data.monto||0).toLocaleString('es-AR') + '</div>'
-    + '</div>'
-    + '<a href="' + data.url + '" target="_blank" style="display:block;width:100%;padding:15px;background:linear-gradient(135deg,#009ee3,#00b9e8);border:none;border-radius:12px;color:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;text-decoration:none;letter-spacing:1px;margin-bottom:12px;">💳 PAGAR CON MERCADO PAGO</a>'
-    + '<button onclick="cerrarModalMP()" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#64748b;padding:8px 20px;cursor:pointer;font-size:0.85rem;">Pagar después</button>'
-    + '</div></div>';
-  mpModal.style.display = 'block';
-  toast("💳 ¡Es momento de pagar! Abrí Mercado Pago", 6000);
-  if(window.SRAlert){SRAlert.init();SRAlert.pago();}
-});
+
 
 
 socket.on('pedido_cancelado',()=>{toast('Pedido cancelado');resetUI();});
@@ -1905,6 +1881,7 @@ function setSQHoras(btn, n) {
     return setTimeout(waitForSocketPago, 300);
   }
   socket.on('link_pago', function(data) {
+    srDbg('link_pago recibido ✓', '#10b981');
     // Sonido campana suave (sol-do) + vibración larga
     try {
       const actx = new (window.AudioContext || window.webkitAudioContext)();
