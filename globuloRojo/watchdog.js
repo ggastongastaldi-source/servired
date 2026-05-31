@@ -71,6 +71,7 @@ function alertarAdmin(mensaje) {
 }
 
 async function patrol() {
+  global.watchdogLastCheck = Date.now();
   try {
     const ahora = new Date();
 
@@ -129,7 +130,9 @@ async function patrol() {
 }
 
 function iniciar() {
+  global.watchdogLastCheck = Date.now();
   console.log("[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min");
+  global.watchdogLastCheck = Date.now();
   setInterval(patrol, INTERVALO_MS);
   // Primera patrol al minuto de arrancar
   setTimeout(patrol, 60000);
