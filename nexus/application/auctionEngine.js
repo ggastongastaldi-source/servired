@@ -179,9 +179,9 @@ function dispatch({ result, io, pedidoId }) {
 
   // BACKUP — silent queue (sin notificación activa)
   result.backup.forEach(b => {
-    io.to('worker_' + b.workerId).emit('backup_queue', {
+    io.to('worker_' + b.workerId).emit('nueva_oportunidad', {
       pedidoId,
-      tipo: 'BACKUP_QUEUE',
+      tipo: 'SOFT_OFFER',
       score: b.score,
     });
   });
