@@ -951,6 +951,8 @@ const SRTimeline = {
   },
 
   init(containerId, pedidoId, role) {
+    const c = document.getElementById(containerId);
+    if(c) c.style.display = 'block';
     this.container = document.getElementById(containerId);
     this.pedidoId  = pedidoId;
     this.role      = role;
@@ -1057,16 +1059,7 @@ const SRTimeline = {
   <div style="color:#00e5ff;font-size:0.72rem;letter-spacing:2px;margin-bottom:8px">// LÍNEA DE TIEMPO</div>
   <div id="sr-tl-list"><div style="color:#64748b;font-size:0.8rem;text-align:center;padding:12px">Cargando historial...</div></div>
 </div>
-<script>
-// Auto-init timeline cuando hay pedido activo
-(function initTL() {
-  if (typeof pedidoActivo !== 'undefined' && pedidoActivo) {
-    SRTimeline.init('sr-timeline-container', pedidoActivo, 'worker');
-  } else {
-    setTimeout(initTL, 800);
-  }
-})();
-</script>
+
 </body>
 </html>
 
