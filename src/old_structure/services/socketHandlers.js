@@ -126,9 +126,10 @@ module.exports = (io) => {
       if (safeUserId) socket.join('worker_' + safeUserId);
       // Guardar socketId en DB para poder localizarlo
       if (userId) {
-        await Usuario.findByIdAndUpdate(userId, {
+        await Usuario.findByIdAndUpdate(safeUserId || userId, {
           socketId: socket.id,
           disponible: true,
+          isOnline: true,
           socketStatus: 'online'
         }).catch(() => {});
       }
