@@ -488,7 +488,7 @@ module.exports = (io) => {
     socket.on('disconnect', async () => {
       const workerOffline = await Usuario.findOneAndUpdate(
         { socketId: socket.id },
-        { socketStatus: 'offline', socketId: null, disponible: false }
+        { socketStatus: 'offline', socketId: null, isOnline: false, disponible: false }
       ).catch(() => {});
       if (workerOffline && workerOffline.rol === 'TRABAJADOR') {
         io.to('admins').emit('worker_offline', { nombre: workerOffline.nombre });
