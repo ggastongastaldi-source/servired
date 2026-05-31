@@ -115,6 +115,10 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
         total_estimado,
         pago_worker
       };
+      timelineRegistrar(io, nuevoPedido._id, 'EMITIDO', 'cliente',
+        '📋 Pedido emitido — buscando profesional disponible',
+        { tipoServicio, zona, clienteId: String(req.user.id) }
+      ).catch(()=>{});
       io.to('rubro_' + tipoServicio).emit('nueva_oportunidad', payload);
       io.to('zona_' + zona).emit('nueva_oportunidad', payload);
       shadowObs('nueva_oportunidad', { tipoServicio, zona, pedidoId: nuevoPedido._id });

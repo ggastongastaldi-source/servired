@@ -9,6 +9,7 @@ function emitWorkerGPS(io, targetRoom, pedidoId, payload) {
   io.to('pedido_' + pedidoId).emit('gps_worker', payload);
 }
 
+const { registrar: timelineRegistrar } = require('./timelineService');
 const { registrarTransaccion } = require('../controllers/finanzasController');
 const Pedido = require('../models/Pedido');
 
@@ -243,6 +244,23 @@ module.exports = (io) => {
           emitEvent({ entityType: 'job', type: 'JOB_PAID', aggregateId: pedido._id,
             payload: { precio: pedido.precio, rubro: pedido.tipoServicio } });
         }
+        
+        // ── Registrar en línea de tiempo ─────────────────────────
+        const mensajesTimeline = {
+          'EN_PROCESO': '🔧 El profesional comenzó el trabajo',
+          'REALIZADA':  '✅ Trabajo completado — pendiente de pago',
+          'PAGADA':     '💳 Pago confirmado — servicio finalizado',
+        };
+        const rtgResult = require('../../../rtgBridge').observe('estado_pedido', { estado, pedidoId });
+        timelineRegistrar(io, pedidoId, 
+          estado === 'EN_PROCESO' ? 'EN_PROCESO' : estado === 'REALIZADA' ? 'REALIZADO' : 'PAGADO',
+          'worker',
+          mensajesTimeline[estado] || estado,
+          { workerId: String(pedido.workerAcepto||''), clienteId: String(pedido.cliente||'') },
+          rtgResult.regime
+        ).catch(()=>{});
+        // ─────────────────────────────────────────────────────────
+
         const payload = { pedidoId, estado };
         io.to('pedido_' + pedidoId).emit('estado_pedido', payload);
         io.to('admins').emit('estado_pedido_admin', payload);

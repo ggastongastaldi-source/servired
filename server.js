@@ -4,6 +4,7 @@ const express = require('express');
 const rutaMensajes = require('./src/old_structure/routes/mensajes');
 const http = require('http');
 const { Server } = require('socket.io');
+const rtgBridge = require('./rtgBridge');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
@@ -12,6 +13,7 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 global.io = io;
 require('./src/old_structure/services/socketHandlers')(io);
+rtgBridge.init();
 require('./globuloRojo/watchdog').iniciar();
 require('./src/old_structure/services/mensajeriaSocket')(io);;
 
