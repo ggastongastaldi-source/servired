@@ -15,7 +15,9 @@
     "sep:worker": "node src/sep/worker.js",
     "dixie:demo": "node src/dixiegate/demo.js",
     "rtg:build": "cd src/rtg && npx tsc",
-    "rtg:start": "cd src/rtg && node dist/index.js"
+    "rtg:start": "cd src/rtg && node dist/index.js",
+    "test:e2e": "node scripts/e2e-test.js",
+    "seed:test": "node scripts/seed-test-users.js"
   },
   "keywords": [],
   "author": "",
