@@ -571,7 +571,7 @@ function toggleStatus(){
   const btn=document.getElementById('status-btn'),dot=document.getElementById('sdot'),lbl=document.getElementById('slbl');
   if(online){btn.className='status-pill online';dot.className='sdot online';lbl.textContent='EN LÍNEA';}
   else{btn.className='status-pill offline';dot.className='sdot offline';lbl.textContent='FUERA DE LÍNEA';}
-  if(socket)socket.emit('cambiar_estado_trabajador',{online,token:TOKEN});
+  if(socket)socket.emit('cambiar_estado',{online,token:TOKEN});
   document.getElementById('estado-msg').textContent=online?'Estás en línea. Esperando pedidos...':'Estás fuera de línea.';
 }
 
@@ -597,7 +597,7 @@ function responder(aceptar){
   clearInterval(cdrInterval);
   document.getElementById('incoming').classList.remove('show');
   if(aceptar&&pedidoData){
-    socket.emit('aceptar_pedido',{pedidoId:pedidoData.pedidoId,token:TOKEN});
+    socket.emit('aceptar_trabajo',{pedidoId:pedidoData.pedidoId,token:TOKEN});
     pedidoActualId=pedidoData.pedidoId;estadoActual='ACEPTADA';
     document.getElementById('c-nombre').textContent=pedidoData.clienteNombre||'Cliente';
     document.getElementById('c-ini').textContent=(pedidoData.clienteNombre||'C')[0];
