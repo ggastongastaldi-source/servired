@@ -3,6 +3,29 @@ const { rankearTrabajadores } = require('./briones');
 const groqService             = require('../src/old_structure/services/groqService');
 
 const MAPA = {
+
+// ── Push offline nueva_oportunidad ───────────────────────────
+async function _pushNuevaOportunidad(workerId, pedido) {
+  try {
+    const webpush = require('web-push');
+    const Usuario = require('./src/old_structure/models/Usuario');
+    const worker = await Usuario.findById(workerId).lean();
+    if (!worker?.pushSubscription) return;
+    webpush.setVapidDetails(
+      'mailto:admin@servired.online',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    await webpush.sendNotification(worker.pushSubscription, JSON.stringify({
+      tipo:  'nueva_oportunidad',
+      title: '🔔 ServiRed — Nuevo trabajo',
+      body:  'Pedido de ' + (pedido?.tipoServicio||'servicio') + ' cerca tuyo. ¡Aceptalo ahora!',
+      tag:   'nop_' + String(workerId),
+      url:   '/trabajador.html',
+    }));
+  } catch(e) { /* worker sin push suscripción */ }
+}
+
   'plomero':'plomeria','electricista':'electricidad','gasista':'gasista',
   'pintor':'pintura','carpintero':'carpinteria','cerrajero':'cerrajeria',
   'albanil':'albanileria','albañil':'albanileria','techista':'techista',

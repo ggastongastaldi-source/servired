@@ -1,6 +1,29 @@
 // Shadow RTG Monitor — solo observa, no interfiere
 let _shadow = null;
 let _shadowError = null;
+
+// ── Push offline nueva_oportunidad ───────────────────────────
+async function _pushNuevaOportunidad(workerId, pedido) {
+  try {
+    const webpush = require('web-push');
+    const Usuario = require('./src/old_structure/models/Usuario');
+    const worker = await Usuario.findById(workerId).lean();
+    if (!worker?.pushSubscription) return;
+    webpush.setVapidDetails(
+      'mailto:admin@servired.online',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    await webpush.sendNotification(worker.pushSubscription, JSON.stringify({
+      tipo:  'nueva_oportunidad',
+      title: '🔔 ServiRed — Nuevo trabajo',
+      body:  'Pedido de ' + (pedido?.tipoServicio||'servicio') + ' cerca tuyo. ¡Aceptalo ahora!',
+      tag:   'nop_' + String(workerId),
+      url:   '/trabajador.html',
+    }));
+  } catch(e) { /* worker sin push suscripción */ }
+}
+
 try {
   const _sp = require('path').join(__dirname, '../../../src/rtg/dist/shadow/index.js');
   _shadow = require(_sp).shadowMonitor;
@@ -155,6 +178,7 @@ async function iniciarFlujoBusqueda(pedidoId) {
           tipo: 'BROADCAST_FALLBACK',
         };
         if (io) {
+          _pushNuevaOportunidad(worker._id, payload).catch(()=>{});
           io.to('worker_' + worker._id).emit('nueva_oportunidad', payload);
           // Fallback por rubro y zona (igual que cancelación)
           io.to('rubro_' + pedido.tipoServicio).emit('nueva_oportunidad', payload);

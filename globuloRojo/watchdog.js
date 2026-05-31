@@ -7,6 +7,29 @@ const UMBRAL_HUERFANO  = 4 * 60 * 1000;  // pedido huerfano tras 4 min
 const MUERTE_DIGNA_MS  = 20 * 60 * 1000; // cancelacion automatica a 20 min
 const MAX_RETRY        = 3;
 
+
+// ── Push offline nueva_oportunidad ───────────────────────────
+async function _pushNuevaOportunidad(workerId, pedido) {
+  try {
+    const webpush = require('web-push');
+    const Usuario = require('./src/old_structure/models/Usuario');
+    const worker = await Usuario.findById(workerId).lean();
+    if (!worker?.pushSubscription) return;
+    webpush.setVapidDetails(
+      'mailto:admin@servired.online',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    await webpush.sendNotification(worker.pushSubscription, JSON.stringify({
+      tipo:  'nueva_oportunidad',
+      title: '🔔 ServiRed — Nuevo trabajo',
+      body:  'Pedido de ' + (pedido?.tipoServicio||'servicio') + ' cerca tuyo. ¡Aceptalo ahora!',
+      tag:   'nop_' + String(workerId),
+      url:   '/trabajador.html',
+    }));
+  } catch(e) { /* worker sin push suscripción */ }
+}
+
 async function buscarCandidatos(pedido) {
   const rubroNorm = normalizar(pedido.tipoServicio);
   return await Usuario.find({
@@ -34,7 +57,8 @@ async function emitirAlerta(pedido, workers, urgente) {
   };
   // Emision dual garantizada
   workers.forEach(w => {
-    io.to("worker_" + w._id).emit("nueva_oportunidad", payload);
+    _pushNuevaOportunidad(w._id, payload).catch(()=>{});
+          io.to("worker_" + w._id).emit("nueva_oportunidad", payload);
   });
   io.to("rubro_" + pedido.tipoServicio).emit("nueva_oportunidad", payload);
   io.to("zona_"  + pedido.zona).emit("nueva_oportunidad", payload);
