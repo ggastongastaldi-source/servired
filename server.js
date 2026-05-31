@@ -15,6 +15,7 @@ global.io = io;
 require('./src/old_structure/services/socketHandlers')(io);
 rtgBridge.init();
 require('./globuloRojo/watchdog').iniciar();
+require('./scheduledConfirmations').iniciar(io);
 require('./src/old_structure/services/mensajeriaSocket')(io);;
 
 app.use(cors());

@@ -64,7 +64,11 @@ const PedidoSchema = new mongoose.Schema({
   },
 
   serviceMode:  { type: String, enum: ['URGENT','SCHEDULED','PROJECT','RECURRING'], default: 'URGENT' },
-  scheduledFor: { type: Date, default: null },
+  scheduledFor:    { type: Date,    default: null },
+  confirmacion24h: { type: Boolean, default: false },
+  confirmacion2h:  { type: Boolean, default: false },
+  esProgramado:    { type: Boolean, default: false },
+  notas:           { type: String,  default: '' },
 
   fechaCreacion: { type: Date, default: Date.now }
 });

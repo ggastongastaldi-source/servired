@@ -2006,6 +2006,39 @@ const SRTimeline = {
   <div id="sr-tl-list"><div style="color:#64748b;font-size:0.8rem;text-align:center;padding:12px">Cargando historial...</div></div>
 </div>
 
+
+<div id="sr-debug" style="display:none;position:fixed;bottom:90px;right:8px;width:220px;
+  max-height:180px;overflow-y:auto;background:rgba(10,15,30,0.95);border:1px solid #00e5ff33;
+  border-radius:10px;padding:8px;font-size:0.65rem;font-family:monospace;color:#64748b;z-index:9998;">
+  <div style="color:#00e5ff;margin-bottom:4px;font-size:0.7rem">// DEBUG <span id="sr-dbg-toggle" onclick="document.getElementById('sr-debug').style.display='none'" style="cursor:pointer;float:right">✕</span></div>
+  <div id="sr-dbg-log"></div>
+</div>
+<button onclick="document.getElementById('sr-debug').style.display='block'"
+  style="position:fixed;bottom:90px;right:8px;background:#0a1628;border:1px solid #00e5ff44;
+  border-radius:8px;padding:4px 8px;color:#00e5ff;font-size:0.65rem;z-index:9997;cursor:pointer">DBG</button>
+<script>
+function srDbg(msg, color) {
+  const log = document.getElementById('sr-dbg-log');
+  if (!log) return;
+  const d = document.createElement('div');
+  d.style.color = color || '#94a3b8';
+  d.style.borderBottom = '1px solid #ffffff08';
+  d.style.padding = '2px 0';
+  const t = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  d.textContent = t + ' ' + msg;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+// Interceptar eventos socket clave
+(function waitDbg() {
+  if (typeof socket === 'undefined') return setTimeout(waitDbg, 500);
+  ['link_pago','timeline_event','alerta_turno','estado_pedido','nueva_oportunidad','worker_gps','gps_worker'].forEach(ev => {
+    socket.on(ev, d => srDbg('← ' + ev + ' ' + JSON.stringify(d).slice(0,40), '#00e5ff'));
+  });
+  srDbg('socket conectado ✓', '#10b981');
+})();
+</script>
+
 </body>
 </html>
 <!-- v1779943097 -->
