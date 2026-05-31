@@ -100,7 +100,16 @@ module.exports = (io) => {
     });
 
     // ── TRABAJADOR se conecta ───────────────────────────────────
-    socket.on('worker_conectado', async ({ userId, rubro, zona, nombre }) => {
+    socket.on('worker_conectado', async ({ userId: _uid, rubro, zona, nombre, token }) => {
+      // Normalizar userId — puede venir como id o userId según versión del JWT
+      let userId = _uid;
+      if (!userId && token) {
+        try {
+          const jwt = require('jsonwebtoken');
+          const p = jwt.verify(token, process.env.JWT_SECRET);
+          userId = String(p.userId || p.id || p._id || '');
+        } catch(_) {}
+      }
       console.log('[DEBUG] worker_conectado userId:', userId, 'rubro:', rubro);
       // SECURITY: preferir userId del JWT verificado sobre el que manda el cliente
       const jwtPayload = socket.handshake.auth?.token
