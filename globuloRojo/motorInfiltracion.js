@@ -2,8 +2,6 @@ const { haversine }           = require('./haversine');
 const { rankearTrabajadores } = require('./briones');
 const groqService             = require('../src/old_structure/services/groqService');
 
-const MAPA = {
-
 // ── Push offline nueva_oportunidad ───────────────────────────
 async function _pushNuevaOportunidad(workerId, pedido) {
   try {
@@ -26,6 +24,7 @@ async function _pushNuevaOportunidad(workerId, pedido) {
   } catch(e) { /* worker sin push suscripción */ }
 }
 
+const MAPA = {
   'plomero':'plomeria','electricista':'electricidad','gasista':'gasista',
   'pintor':'pintura','carpintero':'carpinteria','cerrajero':'cerrajeria',
   'albanil':'albanileria','albañil':'albanileria','techista':'techista',
