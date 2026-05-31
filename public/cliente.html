@@ -1763,6 +1763,22 @@ function setSQHoras(btn, n) {
     return setTimeout(waitForSocketPago, 300);
   }
   socket.on('link_pago', function(data) {
+    // Sonido campana suave (sol-do) + vibración larga
+    try {
+      const actx = new (window.AudioContext || window.webkitAudioContext)();
+      [[392, 0, 0.15], [523, 0.2, 0.4], [659, 0.5, 0.5]].forEach(([freq, start, dur]) => {
+        const o = actx.createOscillator();
+        const g = actx.createGain();
+        o.connect(g); g.connect(actx.destination);
+        o.type = 'sine'; o.frequency.value = freq;
+        g.gain.setValueAtTime(0, actx.currentTime + start);
+        g.gain.linearRampToValueAtTime(0.25, actx.currentTime + start + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + start + dur);
+        o.start(actx.currentTime + start);
+        o.stop(actx.currentTime + start + dur + 0.1);
+      });
+    } catch(e) {}
+    if ('vibrate' in navigator) navigator.vibrate([300, 100, 300, 100, 600]);
     console.log('[ServiRed] Link pago recibido:', data.url);
     // Crear o actualizar banner de pago
     let banner = document.getElementById('sr-pago-banner');

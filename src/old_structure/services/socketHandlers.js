@@ -13,6 +13,43 @@ const { registrarTransaccion } = require('../controllers/finanzasController');
 const Pedido = require('../models/Pedido');
 
 const { LRUCache } = require('lru-cache');
+
+// ── PUSH NOTIFICATION HELPER ─────────────────────────────────
+async function enviarPushCliente(clienteId, payload) {
+  try {
+    const webpush = require('web-push');
+    const Usuario = require('../models/Usuario');
+    const cli = await Usuario.findById(clienteId).lean();
+    if (!cli?.pushSubscription) return;
+    webpush.setVapidDetails(
+      'mailto:admin@servired.online',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    await webpush.sendNotification(cli.pushSubscription, JSON.stringify(payload));
+    console.log('[Push] ✅ Enviado a cliente:', clienteId);
+  } catch(e) {
+    console.error('[Push] Error:', e.message);
+  }
+}
+
+async function enviarPushTrabajador(workerId, payload) {
+  try {
+    const webpush = require('web-push');
+    const Usuario = require('../models/Usuario');
+    const worker = await Usuario.findById(workerId).lean();
+    if (!worker?.pushSubscription) return;
+    webpush.setVapidDetails(
+      'mailto:admin@servired.online',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    await webpush.sendNotification(worker.pushSubscription, JSON.stringify(payload));
+    console.log('[Push] ✅ Enviado a worker:', workerId);
+  } catch(e) {
+    console.error('[Push] Error:', e.message);
+  }
+}
 const clienteSockets = new LRUCache({
   max: 5000,
   ttl: 1000 * 60 * 30,
@@ -246,6 +283,16 @@ module.exports = (io) => {
                 });
               }
               console.log('[Socket] Link MP enviado al cliente:', result.init_point.slice(0,60));
+              // Push offline al cliente
+              if (pedido.cliente) {
+                await enviarPushCliente(pedido.cliente, {
+                  tipo:  'link_pago',
+                  title: '💳 ServiRed — Servicio completado',
+                  body:  'Tu servicio fue completado. Tocá para pagar.',
+                  tag:   'link_pago_' + pedidoId,
+                  url:   result.init_point,
+                });
+              }
             }
           } catch(mpErr) {
             console.error('[Socket] Error MP:', mpErr.message);

@@ -26,19 +26,51 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// Push notifications (listo para activar)
+
 self.addEventListener('push', e => {
-  const data = e.data?.json() || { title: 'ServiRed', body: 'Nueva notificación' };
-  e.waitUntil(self.registration.showNotification(data.title, {
-    body: data.body,
-    icon: '/assets/icons/icon-192.png',
-    badge: '/assets/icons/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: { url: data.url || '/' }
-  }));
+  let data = { title: 'ServiRed', body: 'Tenés una novedad', tag: 'servired', tipo: 'general' };
+  try { data = { ...data, ...e.data.json() }; } catch(_) {}
+
+  const iconMap = {
+    'nueva_oportunidad': '/icons/icon-192.png',
+    'link_pago':         '/icons/icon-192.png',
+    'pedido_confirmado': '/icons/icon-192.png',
+  };
+
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    iconMap[data.tipo] || '/icons/icon-192.png',
+      badge:   '/icons/icon-192.png',
+      tag:     data.tag || data.tipo || 'servired',
+      vibrate: data.tipo === 'link_pago' ? [200,100,200,100,400] : [100,50,100],
+      data:    data,
+      actions: data.tipo === 'link_pago' ? [
+        { action: 'pagar', title: '💳 Pagar ahora' },
+        { action: 'cerrar', title: 'Después' }
+      ] : data.tipo === 'nueva_oportunidad' ? [
+        { action: 'ver', title: '👀 Ver trabajo' },
+        { action: 'silenciar', title: 'Silenciar' }
+      ] : [],
+      requireInteraction: data.tipo === 'link_pago',
+    })
+  );
 });
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.openWindow(e.notification.data.url));
+  const data = e.notification.data || {};
+  let url = '/';
+  if (e.action === 'pagar' && data.url) url = data.url;
+  else if (data.tipo === 'link_pago' && data.url) url = data.url;
+  else if (data.tipo === 'nueva_oportunidad') url = '/trabajador.html';
+  else if (data.tipo === 'pedido_confirmado') url = '/cliente.html';
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) {
+        if (c.url.includes(url.split('?')[0])) { c.focus(); return; }
+      }
+      return clients.openWindow(url);
+    })
+  );
 });
