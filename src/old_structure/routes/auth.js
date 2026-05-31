@@ -115,4 +115,40 @@ router.post('/reset-password', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// POST /api/auth/refresh — renueva token sin re-login
+router.post('/refresh', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.json({ ok: false, error: 'Token requerido' });
+    const jwt = require('jsonwebtoken');
+    // Verificar con el secret actual
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET);
+    } catch(e) {
+      // Token expirado o inválido — buscar usuario por id si viene en el body
+      const { userId, email } = req.body;
+      if (!userId && !email) return res.json({ ok: false, error: 'Token inválido' });
+      const Usuario = require('../models/Usuario');
+      const u = userId 
+        ? await Usuario.findById(userId).lean()
+        : await Usuario.findOne({ email }).lean();
+      if (!u) return res.json({ ok: false, error: 'Usuario no encontrado' });
+      payload = { userId: u._id, rol: u.rol, nombre: u.nombre, 
+                  especialidades: u.especialidades, zona: u.zona };
+    }
+    // Emitir nuevo token con 30 días
+    const newToken = require('jsonwebtoken').sign(
+      { userId: payload.userId, rol: payload.rol, nombre: payload.nombre,
+        especialidades: payload.especialidades, zona: payload.zona },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+    res.json({ ok: true, token: newToken });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;

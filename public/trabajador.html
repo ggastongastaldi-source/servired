@@ -1093,6 +1093,30 @@ function srDbg(msg, color) {
 })();
 </script>
 
+
+<script id="sr-auto-refresh-token">
+// ── Auto-refresh token cuando expira ─────────────────────────
+(async function srAutoRefresh() {
+  const token = localStorage.getItem('token') || localStorage.getItem('servired_token');
+  if (!token) return;
+  try {
+    const r = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    });
+    const data = await r.json();
+    if (data.ok && data.token) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('servired_token', data.token);
+      console.log('[SR] Token renovado automáticamente');
+    }
+  } catch(e) { console.log('[SR] Auto-refresh no disponible'); }
+  // Renovar cada 6 horas
+  setInterval(srAutoRefresh, 6 * 60 * 60 * 1000);
+})();
+</script>
+
 </body>
 </html>
 
