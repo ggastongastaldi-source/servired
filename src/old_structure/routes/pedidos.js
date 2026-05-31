@@ -47,6 +47,25 @@ const {
 } = require('../controllers/notificationController');
 
 // CREAR PEDIDO - Cliente solicita trabajo
+
+// Normalizar rubro al nombre canónico
+function normalizarRubro(r) {
+  if (!r) return r;
+  const mapa = {
+    'domestica': 'servicio_domestico',
+    'doméstica': 'servicio_domestico', 
+    'limpieza': 'limpieza_hogar',
+    'plomero': 'plomeria',
+    'electricista': 'electricidad',
+    'gasista': 'gasista',
+    'pintor': 'pintura',
+    'albanil': 'albanileria',
+    'albañil': 'albanileria',
+    'cerrajero': 'cerrajeria',
+  };
+  return mapa[r.toLowerCase()] || r;
+}
+
 router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
   try {
     const { 
@@ -80,6 +99,7 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     } catch(e) { console.error('[Pedidos] Aladdin error:', e.message); }
 
     const { esProgramado, notas } = req.body;
+    tipoServicio = normalizarRubro(tipoServicio);
     const nuevoPedido = new Pedido({
       cliente: req.user.userId,
       tipoServicio,
