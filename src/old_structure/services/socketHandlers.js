@@ -149,6 +149,7 @@ module.exports = (io) => {
           {
             estado: 'ACEPTADA',
             trabajador: trabajadorId,
+            workerAcepto: trabajadorId,
             fechaAceptacion: new Date()
           },
           { returnDocument: "after" }
@@ -282,7 +283,7 @@ module.exports = (io) => {
             const result = await crearPreferencia({
               pedidoId: pedido._id,
               servicio: pedido.tipoServicio || 'Servicio SERVired',
-              precio: Math.round(pedido.precio || pedido.total_estimado || 100000),
+              precio: Math.round(pedido.precio || pedido.total_estimado || 1),
               clienteEmail: (await Usuario.findById(pedido.cliente).lean())?.email || '',
               workerId: pedido.workerAcepto
             });
@@ -301,6 +302,7 @@ module.exports = (io) => {
                 });
               }
               console.log('[Socket] Link MP enviado al cliente:', result.init_point.slice(0,60));
+              console.log('[Socket] Pedido precio:', pedido.precio, 'total_estimado:', pedido.total_estimado, 'worker:', pedido.workerAcepto);
               // Push offline al cliente
               if (pedido.cliente) {
                 await enviarPushCliente(pedido.cliente, {
