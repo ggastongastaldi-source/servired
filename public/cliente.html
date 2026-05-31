@@ -1755,6 +1755,50 @@ function setSQHoras(btn, n) {
   document.getElementById('sq-horas').value = n;
 }
 </script>
+
+<script id="link_pago_patch">
+// ── PATCH: Recibir link de pago y mostrar al cliente ───────
+(function waitForSocketPago() {
+  if (typeof socket === 'undefined') {
+    return setTimeout(waitForSocketPago, 300);
+  }
+  socket.on('link_pago', function(data) {
+    console.log('[ServiRed] Link pago recibido:', data.url);
+    // Crear o actualizar banner de pago
+    let banner = document.getElementById('sr-pago-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'sr-pago-banner';
+      banner.style.cssText = [
+        'position:fixed','bottom:90px','left:50%',
+        'transform:translateX(-50%)','z-index:9999',
+        'background:#0a2540','border:2px solid #00e5ff',
+        'border-radius:14px','padding:16px 20px',
+        'text-align:center','box-shadow:0 0 24px rgba(0,229,255,0.4)',
+        'min-width:280px','max-width:90vw'
+      ].join(';');
+      document.body.appendChild(banner);
+    }
+    const monto = data.monto ? '$' + Number(data.monto).toLocaleString('es-AR') : '';
+    banner.innerHTML = [
+      '<div style="color:#00e5ff;font-size:0.8rem;letter-spacing:2px;margin-bottom:6px">// PAGO PENDIENTE</div>',
+      '<div style="color:#fff;font-size:1.1rem;font-weight:700;margin-bottom:12px">',
+        'Servicio completado ' + monto,
+      '</div>',
+      '<a href="' + data.url + '" target="_blank" style="',
+        'display:block;background:#00e5ff;color:#0a0f1e;',
+        'font-weight:700;padding:12px;border-radius:10px;',
+        'text-decoration:none;font-size:1rem;letter-spacing:1px',
+      '">💳 PAGAR AHORA →</a>',
+      '<div style="color:#64748b;font-size:0.75rem;margin-top:8px">Procesado por Mercado Pago</div>'
+    ].join('');
+    // Vibrar si disponible
+    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+  });
+  console.log('[ServiRed] Listener link_pago activo');
+})();
+</script>
+
 </body>
 </html>
 <!-- v1779943097 -->

@@ -844,6 +844,32 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 </script>
+
+<script id="nueva_oportunidad_audio_patch">
+// ── PATCH: Sonido VIP al recibir nueva oportunidad ─────────
+(function waitForSocket() {
+  if (typeof socket === 'undefined') {
+    return setTimeout(waitForSocket, 300);
+  }
+  socket.on('nueva_oportunidad', function(data) {
+    // Desbloquear contexto de audio si no está listo
+    if (typeof SRAlert !== 'undefined') {
+      SRAlert.init();
+      // Tono VIP: tres pulsos ascendentes
+      SRAlert.tono([440, 550, 660], [0.15, 0.15, 0.3], 'sine', 0.5);
+      SRAlert.vibrar([100, 50, 100, 50, 200]);
+    }
+    // Toast visual
+    const t = document.createElement('div');
+    t.className = 'toast show';
+    t.innerHTML = '🔔 <b>Nuevo pedido cercano!</b>';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  });
+  console.log('[SRAlert] Listener nueva_oportunidad activo');
+})();
+</script>
+
 </body>
 </html>
 

@@ -223,7 +223,7 @@ module.exports = (io) => {
         // Si pasa a REALIZADA, generar link de pago y enviarlo al cliente
         if (estado === 'REALIZADA' && pedido.cliente) {
           try {
-            const { crearPreferencia } = require('../services/pagoService');
+            const { crearPreferencia } = require('../services/mercadoPagoService');
             const result = await crearPreferencia({
               pedidoId: pedido._id,
               servicio: pedido.tipoServicio || 'Servicio SERVired',

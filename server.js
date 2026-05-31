@@ -62,7 +62,7 @@ app.post('/api/gps/update', (req, res) => {
         return res.status(400).json({ error: 'Datos incompletos' });
     }
     if (global.io) {
-        global.io.emit('worker_gps_broadcast', { trabajadorId: workerId, lat, lng });
+        global.io.to('pedido_' + workerId).emit('gps_worker', { trabajadorId: workerId, lat, lng });
     }
     gpsCache[workerId] = { workerId, lat, lng, ts: Date.now() };
     res.json({ status: 'ok', workerId });
