@@ -115,7 +115,11 @@ module.exports = (io) => {
       const jwtPayload = socket.handshake.auth?.token
         ? (() => { try { return require('jsonwebtoken').verify(socket.handshake.auth.token, process.env.JWT_SECRET); } catch(e) { return null; } })()
         : null;
-      const safeUserId = (jwtPayload?.id || jwtPayload?.userId || userId);
+      const safeUserId = String(
+        jwtPayload?.userId || jwtPayload?.id || jwtPayload?.sub || 
+        userId || ''
+      ).replace('new ObjectId(', '').replace(')', '').trim();
+      console.log('[DEBUG] worker_conectado safeUserId:', safeUserId, 'jwt keys:', Object.keys(jwtPayload||{}));
       socket.join('zona_' + zona);
       socket.join('rubro_' + rubro);
       // Unirse a TODAS las especialidades del JWT
