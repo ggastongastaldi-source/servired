@@ -203,6 +203,58 @@ select option{background:#1a2236;color:#e2e8f0;}
   font-size:0.85rem; cursor:pointer;
 }
 
+
+/* ── SELECTOR TURNO PROGRAMADO ───────────────────────────── */
+.sr-turno-card {
+  background: #0a1628;
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 10px 0;
+}
+.sr-turno-card .sr-turno-title {
+  color: #00e5ff; font-size: 0.75rem;
+  letter-spacing: 2px; margin-bottom: 10px;
+}
+.sr-turno-toggle {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.sr-turno-toggle button {
+  flex: 1; padding: 8px;
+  border-radius: 8px; border: 1px solid rgba(0,229,255,0.2);
+  background: transparent; color: #94a3b8;
+  font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+}
+.sr-turno-toggle button.active {
+  background: rgba(0,229,255,0.12);
+  border-color: #00e5ff; color: #00e5ff;
+}
+.sr-turno-fecha-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-top: 8px;
+}
+.sr-turno-fecha-row input, .sr-turno-fecha-row select {
+  background: #0d1f35;
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 8px; padding: 8px 10px;
+  color: #e2e8f0; font-size: 0.85rem; width: 100%;
+}
+.sr-turno-notas {
+  width: 100%; margin-top: 8px;
+  background: #0d1f35;
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 8px; padding: 8px 10px;
+  color: #e2e8f0; font-size: 0.82rem;
+  resize: none;
+}
+.sr-turno-preview {
+  margin-top: 8px; padding: 8px;
+  background: rgba(0,229,255,0.05);
+  border-radius: 8px; color: #00e5ff;
+  font-size: 0.8rem; text-align: center;
+  display: none;
+}
+
 </style>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#00E5FF">
@@ -260,7 +312,39 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</sc
       </button>
       <div id="pago-status" style="display:none;text-align:center;padding:10px;border-radius:8px;margin-top:8px;font-size:0.85rem;"></div>
     </div>
-    <button class="btn-pedir" id="btn-pedir" onclick="pedirServicio()">⚡ PEDIR AHORA</button>
+    
+<!-- ── SELECTOR TURNO PROGRAMADO ─────────────────────────── -->
+<div class="sr-turno-card" id="sr-turno-selector">
+  <div class="sr-turno-title">// CUÁNDO LO NECESITÁS</div>
+  <div class="sr-turno-toggle">
+    <button id="sr-btn-ahora" class="active" onclick="srTurnoMode('ahora')">⚡ Ahora</button>
+    <button id="sr-btn-programado" onclick="srTurnoMode('programado')">📅 Programar turno</button>
+  </div>
+  <div id="sr-turno-programado-fields" style="display:none">
+    <div class="sr-turno-fecha-row">
+      <input type="date" id="sr-turno-fecha" onchange="srTurnoPreview()"
+        min="" placeholder="Fecha">
+      <select id="sr-turno-hora" onchange="srTurnoPreview()">
+        <option value="">Horario</option>
+        <option value="08:00">08:00 — Mañana</option>
+        <option value="09:00">09:00</option>
+        <option value="10:00">10:00</option>
+        <option value="11:00">11:00</option>
+        <option value="12:00">12:00 — Mediodía</option>
+        <option value="14:00">14:00 — Tarde</option>
+        <option value="15:00">15:00</option>
+        <option value="16:00">16:00</option>
+        <option value="17:00">17:00</option>
+        <option value="18:00">18:00 — Tarde-noche</option>
+      </select>
+    </div>
+    <textarea id="sr-turno-notas" class="sr-turno-notas" rows="2"
+      placeholder="Notas para el profesional (opcional)..."></textarea>
+    <div class="sr-turno-preview" id="sr-turno-preview"></div>
+  </div>
+</div>
+
+<button class="btn-pedir" id="btn-pedir" onclick="pedirServicio()">⚡ PEDIR AHORA</button>
     <button id="btn-cancelar-pedido" onclick="cancelarPedido()" style="display:none;width:100%;padding:12px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:10px;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;margin-top:8px;">✕ Cancelar búsqueda</button>
     <div class="worker-card" id="worker-card">
       <div class="worker-header">
@@ -2037,6 +2121,55 @@ function srDbg(msg, color) {
   });
   srDbg('socket conectado ✓', '#10b981');
 })();
+</script>
+
+
+<script id="sr-turno-js">
+// ── SELECTOR TURNO ───────────────────────────────────────────
+let srTurnoActivo = 'ahora';
+
+function srTurnoMode(modo) {
+  srTurnoActivo = modo;
+  document.getElementById('sr-btn-ahora').classList.toggle('active', modo === 'ahora');
+  document.getElementById('sr-btn-programado').classList.toggle('active', modo === 'programado');
+  document.getElementById('sr-turno-programado-fields').style.display =
+    modo === 'programado' ? 'block' : 'none';
+  // Fecha mínima = mañana
+  const min = new Date(); min.setDate(min.getDate() + 1);
+  document.getElementById('sr-turno-fecha').min = min.toISOString().split('T')[0];
+}
+
+function srTurnoPreview() {
+  const fecha = document.getElementById('sr-turno-fecha').value;
+  const hora  = document.getElementById('sr-turno-hora').value;
+  const prev  = document.getElementById('sr-turno-preview');
+  if (fecha && hora) {
+    const d = new Date(fecha + 'T' + hora + ':00');
+    const fmt = d.toLocaleDateString('es-AR', {
+      weekday:'long', day:'numeric', month:'long'
+    });
+    prev.style.display = 'block';
+    prev.textContent = '📅 ' + fmt + ' a las ' + hora + 'hs';
+  } else {
+    prev.style.display = 'none';
+  }
+}
+
+function srTurnoGetData() {
+  if (srTurnoActivo === 'ahora') return { esProgramado: false, scheduledFor: null, notas: '' };
+  const fecha = document.getElementById('sr-turno-fecha').value;
+  const hora  = document.getElementById('sr-turno-hora').value;
+  const notas = document.getElementById('sr-turno-notas').value.trim();
+  if (!fecha || !hora) {
+    alert('Seleccioná fecha y horario para el turno programado.');
+    return null;
+  }
+  return {
+    esProgramado: true,
+    scheduledFor: new Date(fecha + 'T' + hora + ':00').toISOString(),
+    notas,
+  };
+}
 </script>
 
 </body>

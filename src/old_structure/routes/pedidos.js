@@ -79,6 +79,7 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
       }
     } catch(e) { console.error('[Pedidos] Aladdin error:', e.message); }
 
+    const { esProgramado, notas } = req.body;
     const nuevoPedido = new Pedido({
       cliente: req.user.userId,
       tipoServicio,
