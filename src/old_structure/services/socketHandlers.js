@@ -257,6 +257,7 @@ module.exports = (io) => {
           emitEvent({ entityType: 'job', type: 'JOB_STARTED', aggregateId: pedido._id,
             payload: { workerId: String(pedido.workerAcepto||''), rubro: pedido.tipoServicio } });
         } else if (estado === 'PAGADA') {
+          await Pedido.findByIdAndUpdate(pedidoId, { estadoPago: 'PAID', estadoLiquidacion: 'LIQUIDATED', pagoConfirmadoAt: new Date() }).catch(()=>{});
           emitEvent({ entityType: 'job', type: 'JOB_PAID', aggregateId: pedido._id,
             payload: { precio: pedido.precio, rubro: pedido.tipoServicio } });
         }
@@ -303,7 +304,7 @@ module.exports = (io) => {
               workerId: pedido.workerAcepto
             });
             if (result?.init_point) {
-              await Pedido.findByIdAndUpdate(pedidoId, { linkPago: result.init_point }).catch(()=>{});
+              await Pedido.findByIdAndUpdate(pedidoId, { linkPago: result.init_point, estadoPago: 'PROCESSING' }).catch(()=>{});
               io.to('pedido_' + pedidoId).emit('link_pago', {
                 url: result.init_point,
                 preference_id: result.preference_id,
