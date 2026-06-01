@@ -6,7 +6,7 @@
 
 ## IMPORTANTES  
 - [ ] Botón "Trabajo terminado" visible también desde cliente
-- [ ] Estado pedido activo persistente si se cierra la app
+- [x] Estado pedido activo persistente si se cierra la app
 - [ ] Avatar trabajador en mapa del cliente (puntito naranja)
 - [ ] Sonidos y vibración en cliente (no solo en trabajador)
 
