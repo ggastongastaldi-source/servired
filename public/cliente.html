@@ -2194,6 +2194,39 @@ window.addEventListener('DOMContentLoaded', function() {
   } catch(e) {}
 });
 </script>
+
+<script id="db_recovery">
+window.addEventListener('DOMContentLoaded', async function() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const r = await fetch('/api/pedidos/mi-pedido-activo', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const d = await r.json();
+    if (!d.ok || !d.pedido) return;
+    const p = d.pedido;
+    // Restaurar pedidoActivo en memoria
+    if (typeof pedidoActivo !== 'undefined') pedidoActivo = String(p.pedidoId);
+    localStorage.setItem('srv_pedido_activo', String(p.pedidoId));
+    // Si tiene link de pago pendiente, mostrar banner
+    if (p.linkPago && (p.estado === 'REALIZADA' || p.estado === 'EN_PROCESO')) {
+      localStorage.setItem('srv_link_pago', JSON.stringify({url: p.linkPago, monto: p.precio}));
+      const monto = p.precio ? '$' + Number(p.precio).toLocaleString('es-AR') : '';
+      let b = document.getElementById('sr-pago-banner');
+      if (!b) {
+        b = document.createElement('div');
+        b.id = 'sr-pago-banner';
+        b.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:9999;background:#0a2540;border:2px solid #00e5ff;border-radius:14px;padding:16px 20px;text-align:center;box-shadow:0 0 24px rgba(0,229,255,0.4);min-width:280px;max-width:90vw';
+        document.body.appendChild(b);
+      }
+      b.innerHTML = '<div style="color:#00e5ff;font-size:0.8rem;letter-spacing:2px;margin-bottom:6px">// PAGO PENDIENTE</div><div style="color:#fff;font-size:1.1rem;font-weight:700;margin-bottom:12px">Servicio completado ' + monto + '</div><a href="' + p.linkPago + '" target="_blank" style="display:block;background:#00e5ff;color:#0a0f1e;font-weight:700;padding:12px;border-radius:10px;text-decoration:none;font-size:1rem;">💳 PAGAR AHORA →</a><div style="color:#64748b;font-size:0.75rem;margin-top:8px">Procesado por Mercado Pago</div>';
+      console.log('[DB Recovery] Banner MP restaurado desde DB');
+    }
+    console.log('[DB Recovery] Pedido activo:', p.pedidoId, 'estado:', p.estado);
+  } catch(e) { console.warn('[DB Recovery] Error:', e.message); }
+});
+</script>
 </body>
 </html>
 <!-- v1779943097 -->
