@@ -9,6 +9,7 @@ function emitWorkerGPS(io, targetRoom, pedidoId, payload) {
   io.to('pedido_' + pedidoId).emit('gps_worker', payload);
 }
 
+const { registrarEventoEspejo } = require('../../../services/pagoMirrorService');
 const { registrar: timelineRegistrar } = require('./timelineService');
 const { registrarTransaccion } = require('../controllers/finanzasController');
 const Pedido = require('../models/Pedido');
@@ -258,6 +259,7 @@ module.exports = (io) => {
             payload: { workerId: String(pedido.workerAcepto||''), rubro: pedido.tipoServicio } });
         } else if (estado === 'PAGADA') {
           await Pedido.findByIdAndUpdate(pedidoId, { estadoPago: 'PAID', estadoLiquidacion: 'LIQUIDATED', pagoConfirmadoAt: new Date() }).catch(()=>{});
+          registrarEventoEspejo(pedidoId, { tipo:'PAGO_CONFIRMADO', fromState:'PROCESSING', toState:'PAID', monto: pedido.precio, eventoTimestamp: new Date() }).catch(()=>{});
           emitEvent({ entityType: 'job', type: 'JOB_PAID', aggregateId: pedido._id,
             payload: { precio: pedido.precio, rubro: pedido.tipoServicio } });
         }
@@ -305,6 +307,7 @@ module.exports = (io) => {
             });
             if (result?.init_point) {
               await Pedido.findByIdAndUpdate(pedidoId, { linkPago: result.init_point, estadoPago: 'PROCESSING' }).catch(()=>{});
+              registrarEventoEspejo(pedidoId, { tipo:'LINK_GENERADO', fromState:'PENDING', toState:'PROCESSING', monto: pedido.precio, eventoTimestamp: new Date() }).catch(()=>{});
               io.to('pedido_' + pedidoId).emit('link_pago', {
                 url: result.init_point,
                 preference_id: result.preference_id,

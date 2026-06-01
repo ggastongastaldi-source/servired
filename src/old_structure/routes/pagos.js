@@ -1,3 +1,4 @@
+const { registrarEventoEspejo } = require('../services/pagoMirrorService');
 const express  = require('express');
 const router   = express.Router();
 const { v4: uuidv4 } = require('uuid');
@@ -88,7 +89,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     // Actualizar pedido
     if (mapped === 'APPROVED') {
       const Pedido = require('../models/Pedido');
-      await Pedido.findByIdAndUpdate(externalReference, {
+      registrarEventoEspejo(externalReference, { tipo:'WEBHOOK_'+mapped, fromState:'PROCESSING', toState: mapped==='APPROVED'?'PAID':'FAILED', eventoTimestamp: new Date() }).catch(()=>{});
+    await Pedido.findByIdAndUpdate(externalReference, {
         estado: 'PAGADA',
         pagoId: String(data.id),
         pagoMonto: mpData.transaction_amount,
