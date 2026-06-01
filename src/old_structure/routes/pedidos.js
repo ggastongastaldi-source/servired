@@ -289,7 +289,10 @@ router.get('/mi-pedido-activo', verificarToken, async (req, res) => {
     const Pedido = require('../models/Pedido');
     const pedido = await Pedido.findOne({
       cliente: clienteId,
-      estado: { $in: ['PENDIENTE','SEARCHING','ACEPTADA','EN_PROCESO','REALIZADA'] }
+      $or: [
+        { estado: { $in: ['PENDIENTE','SEARCHING','ACEPTADA','EN_PROCESO','REALIZADA'] } },
+        { estadoPago: { $in: ['PENDING','PROCESSING'] } }
+      ]
     }).sort({ fechaCreacion: -1 }).lean();
     if (!pedido) return res.json({ ok: true, pedido: null });
     res.json({ ok: true, pedido: {
@@ -298,7 +301,9 @@ router.get('/mi-pedido-activo', verificarToken, async (req, res) => {
       tipoServicio: pedido.tipoServicio,
       precio: pedido.precio,
       workerAcepto: pedido.workerAcepto,
-      linkPago: pedido.linkPago || null
+      linkPago: pedido.linkPago || null,
+      estadoPago: pedido.estadoPago || 'PENDING',
+      estadoLiquidacion: pedido.estadoLiquidacion || 'UNRESOLVED'
     }});
   } catch(e) {
     res.status(500).json({ ok: false, error: e.message });
