@@ -498,6 +498,7 @@ try{
   socket=io({auth:{token:TOKEN},transports:['websocket','polling']});
   socket.on('connect',()=>{
     document.getElementById('estado-txt').textContent='✅ Conectado al servidor';
+    const _pa=localStorage.getItem('srv_pedido_activo');if(_pa){pedidoActivo=_pa;socket.emit('join_room',{room:'pedido_'+_pa});socket.emit('registrar_pedido',{pedidoId:_pa});console.log('[Recovery] pedido activo:',_pa);}
     setTimeout(()=>{if(document.getElementById('estado-txt').textContent==='✅ Conectado al servidor')document.getElementById('estado-bar').classList.remove('visible');},2000);
   });
   socket.on('connect_error',(e)=>{
