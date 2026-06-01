@@ -155,7 +155,8 @@ module.exports = (io) => {
     });
 
     // ── TRABAJADOR acepta trabajo ───────────────────────────────
-    socket.on('aceptar_trabajo', async ({ pedidoId, trabajadorId, trabajadorNombre }) => {
+    socket.on('aceptar_trabajo', async ({ pedidoId, trabajadorId, trabajadorNombre, token }) => {
+      if (!trabajadorId && token) { try { const jwt=require('jsonwebtoken'); const p=jwt.verify(token,process.env.JWT_SECRET); trabajadorId=String(p.userId||p.id||p._id||''); trabajadorNombre=trabajadorNombre||p.nombre||'Profesional'; } catch(e){} }
       try {
         // Buscar pedido activo
         const pedido = await Pedido.findOneAndUpdate(
