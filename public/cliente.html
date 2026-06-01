@@ -547,6 +547,7 @@ function cancelarPedido(){
 }
 
 function resetUI(){
+  localStorage.removeItem('srv_pedido_activo');pedidoActivo=null;
   const btn=document.getElementById('btn-pedir');
   btn.disabled=false;btn.textContent='⚡ PEDIR AHORA';
   var btnCan=document.getElementById('btn-cancelar-pedido');if(btnCan)btnCan.style.display='none';
