@@ -30,6 +30,12 @@ const PedidoSchema = new mongoose.Schema({
     default: 'PENDIENTE'
   },
 
+  // SFS — Financial State (append-only, default-safe)
+  linkPago:          { type: String, default: null },
+  estadoPago:        { type: String, enum: ['PENDING','PROCESSING','PAID','FAILED','REFUNDED'], default: 'PENDING' },
+  estadoLiquidacion: { type: String, enum: ['UNRESOLVED','LIQUIDATED','DISPUTED'], default: 'UNRESOLVED' },
+  pagoConfirmadoAt:  { type: Date, default: null },
+
   // Snapshot determinístico
   snapshot: {
     jobStatus:     { type: String, default: 'PENDIENTE' },
