@@ -552,7 +552,6 @@ function resetUI(){
   document.getElementById('estado-bar').classList.remove('visible');
   document.getElementById('worker-card').classList.remove('visible');
   if(markerTrab){mapa.removeLayer(markerTrab);markerTrab=null;}
-  pedidoActivo=null;
 }
 
 function abrirSmartQuote(){
@@ -832,7 +831,7 @@ socket.on('trabajo_aceptado_join_fix', function(d){
   if(d.pedidoId){ socket.emit('join_room',{room:'pedido_'+d.pedidoId}); }
 });
 socket.on('trabajo_aceptado',data=>{
-  pedidoActivo=data.pedidoId;
+  pedidoActivo=data.pedidoId;localStorage.setItem('srv_pedido_activo',pedidoActivo);
   if(pedidoActivo && !SRTimeline.pedidoId) SRTimeline.init('sr-timeline-container', pedidoActivo, 'cliente');
   const nombre=data.trabajadorNombre||data.trabajador?.nombre||'Profesional';
   document.getElementById('estado-txt').textContent='✅ '+nombre+' está en camino';
