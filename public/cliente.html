@@ -498,7 +498,6 @@ try{
   socket=io({auth:{token:TOKEN},transports:['websocket','polling']});
   socket.on('connect',()=>{
     document.getElementById('estado-txt').textContent='✅ Conectado al servidor';
-    const _lp=localStorage.getItem('srv_link_pago');if(_lp){try{const _lpd=JSON.parse(_lp);const _monto=_lpd.monto?'$'+Number(_lpd.monto).toLocaleString('es-AR'):'';let _b=document.getElementById('sr-pago-banner');if(!_b){_b=document.createElement('div');_b.id='sr-pago-banner';_b.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:9999;background:#0a2540;border:2px solid #00e5ff;border-radius:14px;padding:16px 20px;text-align:center;box-shadow:0 0 24px rgba(0,229,255,0.4);min-width:280px;max-width:90vw';document.body.appendChild(_b);}_b.innerHTML='<div style="color:#00e5ff;font-size:0.8rem;letter-spacing:2px;margin-bottom:6px">// PAGO PENDIENTE</div><div style="color:#fff;font-size:1.1rem;font-weight:700;margin-bottom:12px">Servicio completado '+_monto+'</div><a href="'+_lpd.url+'" target="_blank" style="display:block;background:#00e5ff;color:#0a0f1e;font-weight:700;padding:12px;border-radius:10px;text-decoration:none;font-size:1rem;">💳 PAGAR AHORA →</a><div style="color:#64748b;font-size:0.75rem;margin-top:8px">Procesado por Mercado Pago</div>';}catch(e){}}
     const _pa=localStorage.getItem('srv_pedido_activo');if(_pa){pedidoActivo=_pa;socket.emit('join_room',{room:'pedido_'+_pa});socket.emit('registrar_pedido',{pedidoId:_pa});console.log('[Recovery] pedido activo:',_pa);}
     setTimeout(()=>{if(document.getElementById('estado-txt').textContent==='✅ Conectado al servidor')document.getElementById('estado-bar').classList.remove('visible');},2000);
   });
@@ -2176,6 +2175,25 @@ function srTurnoGetData() {
 })();
 </script>
 
+
+<script id="link_pago_recovery">
+window.addEventListener('DOMContentLoaded', function() {
+  try {
+    const _lp = localStorage.getItem('srv_link_pago');
+    if (!_lp) return;
+    const _lpd = JSON.parse(_lp);
+    const _monto = _lpd.monto ? '$' + Number(_lpd.monto).toLocaleString('es-AR') : '';
+    let _b = document.getElementById('sr-pago-banner');
+    if (!_b) {
+      _b = document.createElement('div');
+      _b.id = 'sr-pago-banner';
+      _b.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:9999;background:#0a2540;border:2px solid #00e5ff;border-radius:14px;padding:16px 20px;text-align:center;box-shadow:0 0 24px rgba(0,229,255,0.4);min-width:280px;max-width:90vw';
+      document.body.appendChild(_b);
+    }
+    _b.innerHTML = '<div style="color:#00e5ff;font-size:0.8rem;letter-spacing:2px;margin-bottom:6px">// PAGO PENDIENTE</div><div style="color:#fff;font-size:1.1rem;font-weight:700;margin-bottom:12px">Servicio completado ' + _monto + '</div><a href="' + _lpd.url + '" target="_blank" style="display:block;background:#00e5ff;color:#0a0f1e;font-weight:700;padding:12px;border-radius:10px;text-decoration:none;font-size:1rem;">💳 PAGAR AHORA →</a><div style="color:#64748b;font-size:0.75rem;margin-top:8px">Procesado por Mercado Pago</div>';
+  } catch(e) {}
+});
+</script>
 </body>
 </html>
 <!-- v1779943097 -->
