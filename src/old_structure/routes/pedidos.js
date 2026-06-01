@@ -281,6 +281,30 @@ router.post('/:pedidoId/aceptar-aumento', verificarToken, verificarRol('CLIENTE'
 });
 
 
+
+// ── RECOVERY: pedido activo del cliente ─────────────────────
+router.get('/mi-pedido-activo', verificarToken, async (req, res) => {
+  try {
+    const clienteId = req.user.userId || req.user.id;
+    const Pedido = require('../models/Pedido');
+    const pedido = await Pedido.findOne({
+      cliente: clienteId,
+      estado: { $in: ['PENDIENTE','SEARCHING','ACEPTADA','EN_PROCESO','REALIZADA'] }
+    }).sort({ fechaCreacion: -1 }).lean();
+    if (!pedido) return res.json({ ok: true, pedido: null });
+    res.json({ ok: true, pedido: {
+      pedidoId: pedido._id,
+      estado: pedido.estado,
+      tipoServicio: pedido.tipoServicio,
+      precio: pedido.precio,
+      workerAcepto: pedido.workerAcepto,
+      linkPago: pedido.linkPago || null
+    }});
+  } catch(e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 return router;
 };
 // FIX: Definición de setIO agregada

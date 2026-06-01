@@ -303,6 +303,7 @@ module.exports = (io) => {
               workerId: pedido.workerAcepto
             });
             if (result?.init_point) {
+              await Pedido.findByIdAndUpdate(pedidoId, { linkPago: result.init_point }).catch(()=>{});
               io.to('pedido_' + pedidoId).emit('link_pago', {
                 url: result.init_point,
                 preference_id: result.preference_id,
