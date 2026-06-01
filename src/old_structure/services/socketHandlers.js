@@ -9,7 +9,7 @@ function emitWorkerGPS(io, targetRoom, pedidoId, payload) {
   io.to('pedido_' + pedidoId).emit('gps_worker', payload);
 }
 
-const { registrarEventoEspejo } = require('../../../services/pagoMirrorService');
+const { registrarEventoEspejo } = require('./pagoMirrorService');
 const { registrar: timelineRegistrar } = require('./timelineService');
 const { registrarTransaccion } = require('../controllers/finanzasController');
 const Pedido = require('../models/Pedido');
