@@ -243,9 +243,13 @@ module.exports = (io) => {
       try {
         const estadosValidos = ['EN_PROCESO', 'REALIZADA', 'PAGADA'];
         if (!estadosValidos.includes(estado)) return;
+        // Extraer workerId del token para garantizar workerAcepto
+        let _wId = null;
+        if (token) { try { const _j=require('jsonwebtoken').verify(token,process.env.JWT_SECRET); _wId=String(_j.userId||_j.id||''); } catch(e){} }
         const pedido = await Pedido.findByIdAndUpdate(pedidoId,
           { estado, ...(estado === 'EN_PROCESO' ? { fechaInicio: new Date() } : {}),
-            ...(estado === 'REALIZADA' ? { fechaFin: new Date() } : {}) },
+            ...(estado === 'REALIZADA' ? { fechaFin: new Date() } : {}),
+            ...(_wId && {workerAcepto: _wId}) },
           { returnDocument: "after" }
         );
         if (!pedido) return;
