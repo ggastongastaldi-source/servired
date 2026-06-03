@@ -3,7 +3,7 @@ const express  = require('express');
 const router   = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { crearPreferencia, verificarPago, getPaymentDetails } = require('../services/mercadoPagoService');
-const { capturePayment, releaseWorkerFunds } = require('../services/financeEngine');
+const { capturePayment, releaseWorkerFunds, withdrawWorkerFunds } = require('../services/financeEngine');
 const FinancialTransaction = require('../models/FinancialTransaction');
 const mongoose = require('mongoose');
 const { verificarToken } = require('../middleware/auth');
@@ -213,6 +213,123 @@ router.get('/estado/:pedidoId', verificarToken, async (req, res) => {
     const pedido = await Pedido.findById(req.params.pedidoId);
     if (!pedido) return res.json({ ok: false, error: 'Pedido no encontrado' });
     res.json({ ok: true, estado: pedido.estado, monto: pedido.pagoMonto, comision: pedido.pagoComision, pago_worker: pedido.pagoWorker });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+
+// POST /api/pagos/retiro — solicitud de retiro del trabajador
+router.post('/retiro', verificarToken, async (req, res) => {
+  try {
+    const worker_id = req.user.id;
+    const { amount } = req.body;
+    if (!amount || amount <= 0) return res.json({ ok: false, error: 'Monto invalido' });
+
+    const worker = await Usuario.findById(worker_id);
+    if (!worker || !worker.roles.includes('TRABAJADOR')) {
+      return res.json({ ok: false, error: 'Solo trabajadores pueden retirar fondos' });
+    }
+
+    const result = await withdrawWorkerFunds({ worker_id, amount });
+
+    if (!result.success) {
+      return res.json({ ok: false, reason: result.reason, available: result.available, requested: result.requested });
+    }
+
+    console.log(`[pagos/retiro] ✅ worker:${worker_id} | monto:${amount} | txn:${result.transaction_id}`);
+    res.json({ ok: true, transaction_id: result.transaction_id, amount, wallet_available: worker.wallet_available - amount });
+
+  } catch(e) {
+    console.error('[pagos/retiro] Error:', e.message);
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+// GET /api/pagos/wallet — saldo del trabajador autenticado
+router.get('/wallet', verificarToken, async (req, res) => {
+  try {
+    const worker = await Usuario.findById(req.user.id).select('wallet_pending wallet_available roles nombre');
+    if (!worker) return res.json({ ok: false, error: 'Usuario no encontrado' });
+    res.json({ ok: true, wallet_pending: worker.wallet_pending || 0, wallet_available: worker.wallet_available || 0 });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+
+// POST /api/pagos/retiro — solicitud de retiro del trabajador
+router.post('/retiro', verificarToken, async (req, res) => {
+  try {
+    const worker_id = req.user.id;
+    const { amount } = req.body;
+    if (!amount || amount <= 0) return res.json({ ok: false, error: 'Monto invalido' });
+
+    const worker = await Usuario.findById(worker_id);
+    if (!worker || !worker.roles.includes('TRABAJADOR')) {
+      return res.json({ ok: false, error: 'Solo trabajadores pueden retirar fondos' });
+    }
+
+    const result = await withdrawWorkerFunds({ worker_id, amount });
+
+    if (!result.success) {
+      return res.json({ ok: false, reason: result.reason, available: result.available, requested: result.requested });
+    }
+
+    console.log(`[pagos/retiro] ✅ worker:${worker_id} | monto:${amount} | txn:${result.transaction_id}`);
+    res.json({ ok: true, transaction_id: result.transaction_id, amount, wallet_available: worker.wallet_available - amount });
+
+  } catch(e) {
+    console.error('[pagos/retiro] Error:', e.message);
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+// GET /api/pagos/wallet — saldo del trabajador autenticado
+router.get('/wallet', verificarToken, async (req, res) => {
+  try {
+    const worker = await Usuario.findById(req.user.id).select('wallet_pending wallet_available roles nombre');
+    if (!worker) return res.json({ ok: false, error: 'Usuario no encontrado' });
+    res.json({ ok: true, wallet_pending: worker.wallet_pending || 0, wallet_available: worker.wallet_available || 0 });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+
+// POST /api/pagos/retiro — solicitud de retiro del trabajador
+router.post('/retiro', verificarToken, async (req, res) => {
+  try {
+    const worker_id = req.user.id;
+    const { amount } = req.body;
+    if (!amount || amount <= 0) return res.json({ ok: false, error: 'Monto invalido' });
+
+    const worker = await Usuario.findById(worker_id);
+    if (!worker || !worker.roles.includes('TRABAJADOR')) {
+      return res.json({ ok: false, error: 'Solo trabajadores pueden retirar fondos' });
+    }
+
+    const result = await withdrawWorkerFunds({ worker_id, amount });
+
+    if (!result.success) {
+      return res.json({ ok: false, reason: result.reason, available: result.available, requested: result.requested });
+    }
+
+    console.log(`[pagos/retiro] ✅ worker:${worker_id} | monto:${amount} | txn:${result.transaction_id}`);
+    res.json({ ok: true, transaction_id: result.transaction_id, amount, wallet_available: worker.wallet_available - amount });
+
+  } catch(e) {
+    console.error('[pagos/retiro] Error:', e.message);
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+// GET /api/pagos/wallet — saldo del trabajador autenticado
+router.get('/wallet', verificarToken, async (req, res) => {
+  try {
+    const worker = await Usuario.findById(req.user.id).select('wallet_pending wallet_available roles nombre');
+    if (!worker) return res.json({ ok: false, error: 'Usuario no encontrado' });
+    res.json({ ok: true, wallet_pending: worker.wallet_pending || 0, wallet_available: worker.wallet_available || 0 });
   } catch(e) {
     res.json({ ok: false, error: e.message });
   }

@@ -41,6 +41,10 @@ const usuarioSchema = new mongoose.Schema({
   alertaRevision:   { type: Boolean, default: false },
   verificado:   { type: Boolean, default: false },
   fcmToken:     { type: String, default: null },
+
+  // ── WALLET ───────────────────────────────────────────────
+  wallet_pending:   { type: Number, default: 0 }, // fondos capturados, pendientes de liberacion
+  wallet_available: { type: Number, default: 0 }, // fondos disponibles para retiro
 }, { timestamps: true });
 
 // 2dsphere index manejado manualmente en DB

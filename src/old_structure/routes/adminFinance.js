@@ -23,7 +23,8 @@ router.get('/balances', verificarToken, soloAdmin, async (req, res) => {
     ]);
     const balances = {
       ESCROW_PLATFORM:  0,
-      WORKER_PENDING:   0,
+        WORKER_PENDING:   0,
+        WORKER_AVAILABLE: 0,
       SERVIRED_REVENUE: 0,
     };
     for (const row of agg) balances[row._id] = row.balance;
