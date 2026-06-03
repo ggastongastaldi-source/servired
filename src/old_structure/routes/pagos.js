@@ -107,15 +107,24 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       }
 
       // Escrow: fondos HELD hasta liberación manual/automática
-      await Pedido.findByIdAndUpdate(externalReference, {
-        estado:         'REALIZADA',
-        payment_status: 'HELD',
-        pagoId:         String(data.id),
-        pagoMonto:      mpData.transaction_amount,
-        pagoComision:   updated.platformFee,
-        pagoWorker:     updated.workerPayoutAmount,
-      });
-      console.log('[pagos] 💰 Fondos en escrow (HELD) — order:', externalReference);
+      // Idempotente: solo actualiza si aún no está HELD
+      const pedidoActualizado = await Pedido.findOneAndUpdate(
+        { _id: externalReference, payment_status: { $ne: 'HELD' } },
+        {
+          estado:         'REALIZADA',
+          payment_status: 'HELD',
+          pagoId:         String(data.id),
+          pagoMonto:      mpData.transaction_amount,
+          pagoComision:   updated.platformFee,
+          pagoWorker:     updated.workerPayoutAmount,
+        },
+        { new: true }
+      );
+      if (pedidoActualizado) {
+        console.log('[pagos] 💰 Fondos en escrow (HELD) — order:', externalReference);
+      } else {
+        console.log('[pagos] ℹ️ Pedido ya en HELD, webhook duplicado ignorado — order:', externalReference);
+      }
     }
 
     // Solo side effect permitido: Outbox
