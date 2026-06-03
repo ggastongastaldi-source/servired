@@ -94,38 +94,29 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       const Pedido = require('../models/Pedido');
       registrarEventoEspejo(externalReference, { tipo:'WEBHOOK_'+mapped, fromState:'PROCESSING', toState:'PAID', eventoTimestamp: new Date() }).catch(()=>{});
 
-      // ── Transacción ACID unificada: capture + release inmediato ──────────
-      const existingFT = await FinancialTransaction.findOne({
-        provider: 'mercadopago',
-        provider_transaction_id: String(data.id),
-      });
-      if (existingFT) {
-        console.log('[pagos] ℹ️ Webhook duplicado ignorado — payment:', data.id);
-        return;
-      }
-
+      // ── Transacción ACID unificada: sesión única compartida ───────────────
       const session = await mongoose.startSession();
       session.startTransaction();
       try {
-        // 1. Capture — registra CAPTURED + asientos ledger
+        // 1. Capture — E11000 = duplicado, rollback limpio
         const captured = await capturePayment({
           provider:                'mercadopago',
           provider_transaction_id: String(data.id),
           order_id:                externalReference,
           amount:                  mpData.transaction_amount,
-        });
+        }, session);
 
         if (captured.reason === 'DUPLICATE_REQUEST_IGNORED') {
           await session.abortTransaction();
           session.endSession();
-          console.log('[pagos] ℹ️ capturePayment duplicado — order:', externalReference);
+          console.log('[pagos] ℹ️ Webhook duplicado ignorado — payment:', data.id);
           return;
         }
 
-        // 2. Release inmediato — registra RELEASED + WORKER_AVAILABLE
-        await releaseWorkerFunds({ transaction_id: captured.transaction_id });
+        // 2. Release inmediato usando la misma sesión — lee FT recién creado
+        await releaseWorkerFunds({ transaction_id: captured.transaction_id }, session);
 
-        // 3. Actualizar pedido — estado final
+        // 3. Actualizar pedido — misma sesión
         await Pedido.findOneAndUpdate(
           { _id: externalReference, payment_status: { $nin: ['RELEASED'] } },
           {
@@ -142,7 +133,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
         await session.commitTransaction();
         session.endSession();
-        console.log('[pagos] ✅ Pago capturado y liberado — order:', externalReference, '| txn:', captured.transaction_id);
+        console.log('[pagos] ✅ Pago ACID completo — order:', externalReference, '| txn:', captured.transaction_id);
 
       } catch(acidErr) {
         await session.abortTransaction();
