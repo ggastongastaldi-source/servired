@@ -38,7 +38,7 @@ router.get('/balances', verificarToken, soloAdmin, async (req, res) => {
 });
 
 // POST /api/admin/finance/release/:orderId — liberación manual
-router.post('/release/:orderId', verificarToken, async (req, res) => {
+router.post('/release/:orderId', verificarToken, soloAdmin, async (req, res) => {
   try {
     const { orderId } = req.params;
     const Pedido = require('../models/Pedido');
@@ -69,7 +69,7 @@ router.post('/release/:orderId', verificarToken, async (req, res) => {
 });
 
 // GET /api/admin/finance/order/:orderId
-router.get('/order/:orderId', verificarToken, async (req, res) => {
+router.get('/order/:orderId', verificarToken, soloAdmin, async (req, res) => {
   try {
     const { orderId } = req.params;
     const Pedido = require('../models/Pedido');

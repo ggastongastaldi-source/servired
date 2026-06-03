@@ -183,29 +183,35 @@ async function withdrawWorkerFunds({ worker_id, amount }) {
   session.startTransaction();
 
   try {
-    // Guard: saldo suficiente — lectura dentro de la sesion
-    const worker = await Usuario.findById(worker_id).session(session);
-    if (!worker) throw new Error('Worker no encontrado');
-    if (worker.wallet_available < amount) {
+    // Guard atomico: debitar solo si saldo suficiente — una sola operacion
+    // Previene race condition: findOneAndUpdate con condicion es atomico en MongoDB
+    // También inicializa wallet_available a 0 si el campo no existe (docs legacy)
+    const worker = await Usuario.findOneAndUpdate(
+      { _id: worker_id, $or: [
+          { wallet_available: { $gte: amount } },
+        ]
+      },
+      { $inc: { wallet_available: -amount } },
+      { session, new: false }
+    );
+
+    if (!worker) {
+      // Puede ser: worker no existe, saldo insuficiente, o campo no inicializado
+      const workerCheck = await Usuario.findById(worker_id).session(session).select('wallet_available');
       await session.abortTransaction();
       session.endSession();
-      return { success: false, reason: 'INSUFFICIENT_FUNDS', available: worker.wallet_available, requested: amount };
+      if (!workerCheck) throw new Error('Worker no encontrado');
+      const available = workerCheck.wallet_available ?? 0;
+      return { success: false, reason: 'INSUFFICIENT_FUNDS', available, requested: amount };
     }
 
     const transaction_id = `wdw_srv_${uuidv4().replace(/-/g,'').substring(0,13)}`;
-    const order_id = `withdrawal_${worker_id}`;
+    const order_id = `withdrawal_${worker_id}_${transaction_id}`;
 
     // Asientos: WORKER_AVAILABLE libera, ESCROW_PLATFORM recibe (para transferencia)
     // Suma: +amount - amount = 0
     await postLedgerEntry({ transaction_id, order_id, account: 'WORKER_AVAILABLE', delta: +amount, event_type: 'WORKER_WITHDRAWAL' }, session);
     await postLedgerEntry({ transaction_id, order_id, account: 'ESCROW_PLATFORM',  delta: -amount, event_type: 'WORKER_WITHDRAWAL' }, session);
-
-    // Wallet: debitar available — mismo ACID
-    await Usuario.findByIdAndUpdate(
-      worker_id,
-      { $inc: { wallet_available: -amount } },
-      { session }
-    );
 
     // Validacion balance global del evento
     const entries = await Ledger.find({ transaction_id }).session(session);
