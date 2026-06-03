@@ -15,9 +15,8 @@ global.io = io;
 require('./src/old_structure/services/socketHandlers')(io);
 rtgBridge.init();
 require('./globuloRojo/watchdog').iniciar();
-require('./src/old_structure/services/financeWatchdog').iniciar();
 require('./scheduledConfirmations').iniciar(io);
-require('./src/old_structure/services/mensajeriaSocket')(io);;
+require('./src/old_structure/services/mensajeriaSocket')(io);
 
 app.use(cors());
 
@@ -28,7 +27,12 @@ app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
   next();
 });
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+// Context Propagation — correlationId en cada request (debe estar antes de rutas)
+const { httpContextMiddleware } = require('./nexus/infrastructure/contextMiddleware');
+const requestContext = require('./middleware/requestContext');
+app.use(requestContext);
+app.use(httpContextMiddleware);
 app.get('/version', (req,res) => res.json({v:'f923f4d', built: new Date().toISOString()}));
 
 // Rutas
@@ -46,12 +50,6 @@ app.use('/api/admin/finance', require('./src/old_structure/routes/adminFinance')
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
   app.post('/api/admin/broadcast', require('./src/old_structure/commands/emergencyBroadcast').emergencyBroadcast);
 app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
-// Context Propagation — correlationId en cada request
-const { httpContextMiddleware } = require('./nexus/infrastructure/contextMiddleware');
-const requestContext = require('./middleware/requestContext');
-app.use(requestContext);
-app.use(httpContextMiddleware);
-
 app.use('/api/smart-quote', require('./src/old_structure/routes/smartQuote'));
 app.use('/api/finanzas', require('./src/old_structure/routes/finanzas'));
 
@@ -142,6 +140,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
     .then(() => {
       console.log('✅ MongoDB conectado');
     assertSystemUsers().catch(e => console.error('[assertSystemUsers]', e.message));
+    require('./src/old_structure/services/financeWatchdog').iniciar();
       const { initNexus } = require('./nexus/initNexus');
       initNexus(io)
         .then(r => console.log('[Server] Nexus:', r?.status || 'OK'))
@@ -360,7 +359,6 @@ cron.schedule('30 * * * *', async () => {
 // ===============================
 
 // Aladín Vision
-app.use(require('express').json({ limit: '10mb' }));
 const presupuestoCtrl = require('./controllers/presupuestoController');
 app.post('/api/presupuesto/analizar', presupuestoCtrl.analizarPresupuesto);
 app.get('/api/presupuesto/historial/:clienteId', presupuestoCtrl.obtenerHistorial);

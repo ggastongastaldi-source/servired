@@ -29,4 +29,11 @@ const verificarRol = (rolRequerido) => {
     };
 };
 
-module.exports = { verificarToken, verificarRol };
+const soloAdmin = (req, res, next) => {
+    if (!req.user) return res.status(401).json({ ok: false, error: 'No autenticado' });
+    const rol = req.user.rol || (req.user.roles && req.user.roles[0]);
+    if (rol !== 'ADMIN') return res.status(403).json({ ok: false, error: 'Acceso restringido a administradores' });
+    next();
+};
+
+module.exports = { verificarToken, verificarRol, soloAdmin };
