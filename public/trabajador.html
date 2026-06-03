@@ -64,6 +64,18 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .nav-btn .nl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;}
 .pantalla{display:none;padding-bottom:70px;}
 .pantalla.active{display:block;}
+.wallet-amount{font-size:2.2rem;font-weight:700;font-family:'Share Tech Mono',monospace;margin:8px 0 4px;}
+.wallet-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);}
+.wallet-pending{color:var(--warn);}
+.wallet-available{color:var(--success);}
+.wallet-divider{height:1px;background:rgba(255,255,255,0.06);margin:14px 0;}
+.retiro-input{width:100%;padding:13px 16px;background:var(--surface2);border:1px solid rgba(0,229,255,0.2);border-radius:12px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:1.1rem;margin:10px 0;box-sizing:border-box;}
+.retiro-input:focus{outline:none;border-color:var(--cyan);}
+.btn-retiro{width:100%;padding:13px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(0,128,255,0.15));border:1px solid var(--cyan);border-radius:12px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:1px;}
+.btn-retiro:disabled{opacity:0.4;cursor:not-allowed;}
+.wallet-msg{font-size:0.85rem;text-align:center;padding:8px;border-radius:8px;margin-top:8px;display:none;}
+.wallet-msg.ok{background:rgba(0,200,83,0.1);color:var(--success);display:block;}
+.wallet-msg.err{background:rgba(239,68,68,0.1);color:var(--danger);display:block;}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--cyan);border-radius:10px;padding:12px 20px;font-size:0.9rem;z-index:300;transition:transform 0.3s;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .hist-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:10px;margin-bottom:8px;}
@@ -359,10 +371,48 @@ document.addEventListener("DOMContentLoaded", function() {
     <button onclick="cerrarSesion()" style="width:100%;padding:13px;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:12px;color:var(--danger);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">🚪 Cerrar sesión</button>
   </div>
 </div>
+<div class="pantalla" id="pant-wallet">
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">// Mi billetera</div>
+      <div style="display:flex;gap:12px;margin-bottom:4px;">
+        <div style="flex:1;background:var(--surface2);border-radius:12px;padding:16px;text-align:center;">
+          <div class="wallet-label">Pendiente</div>
+          <div class="wallet-amount wallet-pending" id="w-pending">$ —</div>
+          <div style="font-size:0.72rem;color:var(--muted)">en proceso</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:12px;padding:16px;text-align:center;">
+          <div class="wallet-label">Disponible</div>
+          <div class="wallet-amount wallet-available" id="w-available">$ —</div>
+          <div style="font-size:0.72rem;color:var(--muted)">para retirar</div>
+        </div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:6px;">
+        💡 Los fondos pendientes se liberan al completar el trabajo
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">// Solicitar retiro</div>
+      <div style="color:var(--muted);font-size:0.82rem;margin-bottom:10px;">Ingresá el monto que querés retirar. Se acreditará en tu CBU/CVU registrado.</div>
+      <input class="retiro-input" type="number" id="retiro-monto" placeholder="$ 0.00" min="1" />
+      <button class="btn-retiro" id="btn-retiro" onclick="solicitarRetiro()">💸 SOLICITAR RETIRO</button>
+      <div class="wallet-msg" id="wallet-msg"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">// Info</div>
+      <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;">
+        <div style="margin-bottom:6px;">📌 <strong style="color:#fff">Pendiente:</strong> fondos capturados, aún no liberados.</div>
+        <div style="margin-bottom:6px;">✅ <strong style="color:#fff">Disponible:</strong> fondos listos para retirar.</div>
+        <div>🔒 Cada retiro queda registrado en el ledger de ServiRed.</div>
+      </div>
+    </div>
+  </div>
+</div>
 <nav class="nav-bottom">
   <button class="nav-btn active" onclick="irPant('mapa',this)"><span class="ni">🗺️</span><span class="nl">Mapa</span></button>
   <button class="nav-btn" onclick="irPant('historial',this);cargarHist()"><span class="ni">📋</span><span class="nl">Trabajos</span></button>
   <button class="nav-btn" onclick="irPant('perfil',this)"><span class="ni">👤</span><span class="nl">Perfil</span></button>
+  <button class="nav-btn" onclick="irPant('wallet',this);cargarWallet()"><span class="ni">💰</span><span class="nl">Wallet</span></button>
 </nav>
 <div class="incoming" id="incoming">
   <div class="inc-header">
@@ -1112,6 +1162,72 @@ function srDbg(msg, color) {
       console.log('[SR] Token renovado automáticamente');
     }
   } catch(e) { console.log('[SR] Auto-refresh no disponible'); }
+// ── WALLET ────────────────────────────────────────────────────────────────────
+async function cargarWallet() {
+  const tok = localStorage.getItem('token');
+  if (!tok) return;
+  try {
+    const r = await fetch('/api/pagos/wallet', {
+      headers: { 'Authorization': 'Bearer ' + tok }
+    });
+    const d = await r.json();
+    if (d.ok) {
+      document.getElementById('w-pending').textContent   = '$ ' + (d.wallet_pending   || 0).toLocaleString('es-AR');
+      document.getElementById('w-available').textContent = '$ ' + (d.wallet_available || 0).toLocaleString('es-AR');
+    }
+  } catch(e) {
+    console.error('[wallet] Error cargando saldo:', e.message);
+  }
+}
+
+async function solicitarRetiro() {
+  const tok    = localStorage.getItem('token');
+  const monto  = parseFloat(document.getElementById('retiro-monto').value);
+  const msgEl  = document.getElementById('wallet-msg');
+  const btnEl  = document.getElementById('btn-retiro');
+
+  msgEl.className = 'wallet-msg';
+  msgEl.textContent = '';
+
+  if (!monto || monto <= 0) {
+    msgEl.className = 'wallet-msg err';
+    msgEl.textContent = '⚠️ Ingresá un monto válido.';
+    return;
+  }
+
+  btnEl.disabled = true;
+  btnEl.textContent = 'Procesando...';
+
+  try {
+    const r = await fetch('/api/pagos/retiro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body: JSON.stringify({ amount: monto })
+    });
+    const d = await r.json();
+
+    if (d.ok) {
+      msgEl.className = 'wallet-msg ok';
+      msgEl.textContent = '✅ Retiro solicitado. Txn: ' + d.transaction_id;
+      document.getElementById('retiro-monto').value = '';
+      await cargarWallet();
+    } else {
+      const reason = d.reason === 'INSUFFICIENT_FUNDS'
+        ? `Saldo insuficiente. Disponible: $ ${(d.available||0).toLocaleString('es-AR')}`
+        : (d.error || 'Error al procesar el retiro.');
+      msgEl.className = 'wallet-msg err';
+      msgEl.textContent = '⚠️ ' + reason;
+    }
+  } catch(e) {
+    msgEl.className = 'wallet-msg err';
+    msgEl.textContent = '⚠️ Error de conexión. Intentá de nuevo.';
+    console.error('[retiro] Error:', e.message);
+  } finally {
+    btnEl.disabled = false;
+    btnEl.textContent = '💸 SOLICITAR RETIRO';
+  }
+}
+
   // Renovar cada 6 horas
   setInterval(srAutoRefresh, 6 * 60 * 60 * 1000);
 })();
