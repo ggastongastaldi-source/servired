@@ -40,7 +40,8 @@ app.use('/api/leads', require('./src/old_structure/routes/leads'));
 app.use('/api/admin', require('./src/old_structure/routes/admin'));
 app.use('/api/matching', require('./src/old_structure/routes/matching'));
 app.use('/api/rating', require('./src/old_structure/routes/rating'));
-app.use('/api/pagos', require('./src/old_structure/routes/pagos'));
+app.use('/api/pagos', require('./src/old_structure/routes/pagos')
+app.use('/api/admin/finance', require('./src/old_structure/routes/adminFinance')););
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
   app.post('/api/admin/broadcast', require('./src/old_structure/commands/emergencyBroadcast').emergencyBroadcast);
 app.use('/api/servicios', require('./src/old_structure/routes/servicios'));

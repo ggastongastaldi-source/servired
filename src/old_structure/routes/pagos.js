@@ -3,7 +3,8 @@ const express  = require('express');
 const router   = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { crearPreferencia, verificarPago, getPaymentDetails } = require('../services/mercadoPagoService');
-const { capturePayment } = require('../services/financeEngine');
+const { capturePayment, releaseWorkerFunds } = require('../services/financeEngine');
+const FinancialTransaction = require('../models/FinancialTransaction');
 const { verificarToken } = require('../middleware/auth');
 const Usuario  = require('../models/Usuario');
 const Payment  = require('../models/Payment');
@@ -112,6 +113,19 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         pagoComision: updated.platformFee,
         pagoWorker:   updated.workerPayoutAmount,
       });
+
+      // Liberar fondos al worker
+      try {
+        const ft = await FinancialTransaction.findOne({ order_id: externalReference, status: 'CAPTURED' });
+        if (ft) {
+          await releaseWorkerFunds({ transaction_id: ft.transaction_id });
+          console.log('[pagos] ✅ Fondos liberados al worker — order:', externalReference);
+        } else {
+          console.warn('[pagos] ⚠️ releaseWorkerFunds: no se encontró FT CAPTURED para order:', externalReference);
+        }
+      } catch(releaseErr) {
+        console.error('[pagos] ⚠️ releaseWorkerFunds error (no bloquea):', releaseErr.message);
+      }
     }
 
     // Solo side effect permitido: Outbox
