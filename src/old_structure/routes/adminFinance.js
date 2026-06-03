@@ -34,6 +34,37 @@ router.get('/balances', verificarToken, soloAdmin, async (req, res) => {
   }
 });
 
+// POST /api/admin/finance/release/:orderId — liberación manual
+router.post('/release/:orderId', verificarToken, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const Pedido = require('../models/Pedido');
+    const FinancialTransaction = require('../models/FinancialTransaction');
+    const { releaseWorkerFunds } = require('../services/financeEngine');
+
+    const pedido = await Pedido.findById(orderId);
+    if (!pedido) return res.json({ ok: false, error: 'Pedido no encontrado' });
+    if (pedido.payment_status !== 'HELD')
+      return res.json({ ok: false, error: `payment_status actual: ${pedido.payment_status} — solo HELD puede liberarse` });
+
+    const ft = await FinancialTransaction.findOne({ order_id: orderId, status: 'CAPTURED' });
+    if (!ft) return res.json({ ok: false, error: 'FinancialTransaction CAPTURED no encontrada' });
+
+    await releaseWorkerFunds({ transaction_id: ft.transaction_id });
+    await Pedido.findByIdAndUpdate(orderId, {
+      payment_status: 'RELEASED',
+      estado:         'CERRADA',
+      liberadoAt:     new Date(),
+    });
+
+    console.log(`[adminFinance] ✅ Liberación manual — order: ${orderId}`);
+    res.json({ ok: true, transaction_id: ft.transaction_id, orderId });
+  } catch(e) {
+    console.error('[adminFinance] release error:', e.message);
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 // GET /api/admin/finance/order/:orderId
 router.get('/order/:orderId', verificarToken, async (req, res) => {
   try {
