@@ -152,10 +152,6 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 
-// Escrow release job
-const { startEscrowReleaseJob } = require('./src/old_structure/services/escrowReleaseJob');
-startEscrowReleaseJob();
-
 server.listen(PORT, HOST, () => {
     console.log('🚀 ServiRed activo en puerto', PORT);
     console.log('📡 Socket.IO escuchando');

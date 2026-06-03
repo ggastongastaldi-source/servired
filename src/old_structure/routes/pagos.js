@@ -3,8 +3,9 @@ const express  = require('express');
 const router   = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { crearPreferencia, verificarPago, getPaymentDetails } = require('../services/mercadoPagoService');
-const { capturePayment } = require('../services/financeEngine');
+const { capturePayment, releaseWorkerFunds } = require('../services/financeEngine');
 const FinancialTransaction = require('../models/FinancialTransaction');
+const mongoose = require('mongoose');
 const { verificarToken } = require('../middleware/auth');
 const Usuario  = require('../models/Usuario');
 const Payment  = require('../models/Payment');
@@ -93,37 +94,61 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       const Pedido = require('../models/Pedido');
       registrarEventoEspejo(externalReference, { tipo:'WEBHOOK_'+mapped, fromState:'PROCESSING', toState:'PAID', eventoTimestamp: new Date() }).catch(()=>{});
 
-      // Registrar en ledger financiero
+      // ── Transacción ACID unificada: capture + release inmediato ──────────
+      const existingFT = await FinancialTransaction.findOne({
+        provider: 'mercadopago',
+        provider_transaction_id: String(data.id),
+      });
+      if (existingFT) {
+        console.log('[pagos] ℹ️ Webhook duplicado ignorado — payment:', data.id);
+        return;
+      }
+
+      const session = await mongoose.startSession();
+      session.startTransaction();
       try {
-        await capturePayment({
+        // 1. Capture — registra CAPTURED + asientos ledger
+        const captured = await capturePayment({
           provider:                'mercadopago',
           provider_transaction_id: String(data.id),
           order_id:                externalReference,
           amount:                  mpData.transaction_amount,
         });
-        console.log('[pagos] ✅ Ledger registrado para payment', data.id);
-      } catch(ledgerErr) {
-        console.error('[pagos] ⚠️ Ledger error (no bloquea pago):', ledgerErr.message);
-      }
 
-      // Escrow: fondos HELD hasta liberación manual/automática
-      // Idempotente: solo actualiza si aún no está HELD
-      const pedidoActualizado = await Pedido.findOneAndUpdate(
-        { _id: externalReference, payment_status: { $ne: 'HELD' } },
-        {
-          estado:         'REALIZADA',
-          payment_status: 'HELD',
-          pagoId:         String(data.id),
-          pagoMonto:      mpData.transaction_amount,
-          pagoComision:   updated.platformFee,
-          pagoWorker:     updated.workerPayoutAmount,
-        },
-        { new: true }
-      );
-      if (pedidoActualizado) {
-        console.log('[pagos] 💰 Fondos en escrow (HELD) — order:', externalReference);
-      } else {
-        console.log('[pagos] ℹ️ Pedido ya en HELD, webhook duplicado ignorado — order:', externalReference);
+        if (captured.reason === 'DUPLICATE_REQUEST_IGNORED') {
+          await session.abortTransaction();
+          session.endSession();
+          console.log('[pagos] ℹ️ capturePayment duplicado — order:', externalReference);
+          return;
+        }
+
+        // 2. Release inmediato — registra RELEASED + WORKER_AVAILABLE
+        await releaseWorkerFunds({ transaction_id: captured.transaction_id });
+
+        // 3. Actualizar pedido — estado final
+        await Pedido.findOneAndUpdate(
+          { _id: externalReference, payment_status: { $nin: ['RELEASED'] } },
+          {
+            estado:         'CERRADA',
+            payment_status: 'RELEASED',
+            pagoId:         String(data.id),
+            pagoMonto:      mpData.transaction_amount,
+            pagoComision:   captured.platformFee,
+            pagoWorker:     captured.workerPayout,
+            liberadoAt:     new Date(),
+          },
+          { session }
+        );
+
+        await session.commitTransaction();
+        session.endSession();
+        console.log('[pagos] ✅ Pago capturado y liberado — order:', externalReference, '| txn:', captured.transaction_id);
+
+      } catch(acidErr) {
+        await session.abortTransaction();
+        session.endSession();
+        console.error('[pagos] ❌ Error ACID — rollback completo — order:', externalReference, ':', acidErr.message);
+        throw acidErr; // permite reintento del webhook
       }
     }
 

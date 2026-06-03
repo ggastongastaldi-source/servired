@@ -68,7 +68,9 @@ async function releaseWorkerFunds({ transaction_id }) {
       return { success: true, reason: 'DUPLICATE_REQUEST_IGNORED' };
     }
 
-    await postLedgerEntry({ transaction_id, order_id: ft.order_id, account: 'WORKER_PENDING', delta: +ft.workerPayout, event_type: 'WORKER_FUNDS_RELEASED' }, session);
+    // Compensar WORKER_PENDING y acreditar WORKER_AVAILABLE
+    await postLedgerEntry({ transaction_id, order_id: ft.order_id, account: 'WORKER_PENDING',   delta: +ft.workerPayout, event_type: 'WORKER_FUNDS_RELEASED' }, session);
+    await postLedgerEntry({ transaction_id, order_id: ft.order_id, account: 'WORKER_AVAILABLE', delta: +ft.workerPayout, event_type: 'WORKER_FUNDS_RELEASED' }, session);
     await FinancialTransaction.findOneAndUpdate({ transaction_id }, { status: 'RELEASED', updated_at: new Date() }, { session });
 
     await session.commitTransaction();

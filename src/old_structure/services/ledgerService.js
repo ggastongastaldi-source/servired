@@ -4,7 +4,7 @@ const ledgerSchema = new mongoose.Schema({
   transaction_id:          { type: String, required: true, index: true },
   provider_transaction_id: { type: String },
   order_id:                { type: String, required: true },
-  account:                 { type: String, required: true, enum: ['ESCROW_PLATFORM','WORKER_PENDING','SERVIRED_REVENUE'] },
+  account:                 { type: String, required: true, enum: ['ESCROW_PLATFORM','WORKER_PENDING','WORKER_AVAILABLE','SERVIRED_REVENUE'] },
   delta:                   { type: Number, required: true },
   event_type:              { type: String, required: true },
   created_at:              { type: Date, default: Date.now },
