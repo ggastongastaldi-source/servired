@@ -238,8 +238,10 @@ router.post('/retiro', verificarToken, async (req, res) => {
       return res.json({ ok: false, reason: result.reason, available: result.available, requested: result.requested });
     }
 
+    // Leer saldo real post-transaccion — no usar valor stale pre-retiro
+    const workerPost = await Usuario.findById(worker_id).select('wallet_available');
     console.log(`[pagos/retiro]  ✅ worker:${worker_id} | monto:${amount} | txn:${result.transaction_id}`);
-    res.json({ ok: true, transaction_id: result.transaction_id, amount, wallet_available: worker.wallet_available - amount });
+    res.json({ ok: true, transaction_id: result.transaction_id, amount, wallet_available: workerPost?.wallet_available ?? 0 });
 
   } catch(e) {
     console.error('[pagos/retiro] Error:', e.message);

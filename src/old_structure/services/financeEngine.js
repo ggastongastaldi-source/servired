@@ -232,6 +232,8 @@ async function withdrawWorkerFunds({ worker_id, amount }) {
 // ─── runForensicAudit ─────────────────────────────────────────────────────────
 async function runForensicAudit() {
   const issues = [];
+
+  // ── BLOQUE 1: auditar FinancialTransactions (pagos normales) ─────────────
   const transactions = await FinancialTransaction.find({});
 
   for (const ft of transactions) {
@@ -258,8 +260,64 @@ async function runForensicAudit() {
       if (!workerAvailable) {
         issues.push({ transaction_id: ft.transaction_id, issue: 'MISSING_WORKER_AVAILABLE_ENTRY' });
       }
-      // Balance global ya garantiza integridad total
     }
+  }
+
+  // ── BLOQUE 2: auditar retiros (wdw_*) — invisibles para FinancialTransaction
+  // Obtener todos los transaction_id unicos del Ledger con prefijo wdw_
+  const withdrawalIds = await Ledger.distinct('transaction_id', {
+    transaction_id: { $regex: /^wdw_srv_/ }
+  });
+
+  for (const txnId of withdrawalIds) {
+    const entries = await Ledger.find({ transaction_id: txnId });
+
+    if (entries.length === 0) {
+      issues.push({ transaction_id: txnId, issue: 'NO_LEDGER_ENTRIES' });
+      continue;
+    }
+
+    const balance = entries.reduce((sum, e) => sum + e.delta, 0);
+    if (balance !== 0) {
+      issues.push({ transaction_id: txnId, issue: 'LEDGER_IMBALANCE', balance });
+    }
+
+    // Retiro debe tener exactamente dos asientos: WORKER_AVAILABLE y ESCROW_PLATFORM
+    const hasWorkerAvailable = entries.some(e => e.account === 'WORKER_AVAILABLE' && e.event_type === 'WORKER_WITHDRAWAL');
+    const hasEscrow          = entries.some(e => e.account === 'ESCROW_PLATFORM'  && e.event_type === 'WORKER_WITHDRAWAL');
+    if (!hasWorkerAvailable || !hasEscrow) {
+      issues.push({ transaction_id: txnId, issue: 'INCOMPLETE_WITHDRAWAL_ENTRIES' });
+    }
+  }
+
+  // ── BLOQUE 3: reconciliacion Wallet vs Ledger ────────────────────────────
+  // Invariante: Σ(wallet_available workers) debe ser consistente con
+  // el neto de WORKER_AVAILABLE en el Ledger (con signo invertido por convencion)
+  const ledgerAgg = await Ledger.aggregate([
+    { $match: { account: 'WORKER_AVAILABLE' } },
+    { $group: { _id: null, total: { $sum: '$delta' } } }
+  ]);
+  const walletAgg = await Usuario.aggregate([
+    { $match: { roles: 'TRABAJADOR' } },
+    { $group: { _id: null, total: { $sum: '$wallet_available' } } }
+  ]);
+
+  const ledgerAvailable = ledgerAgg[0]?.total ?? 0;
+  const walletAvailable = walletAgg[0]?.total ?? 0;
+
+  // El Ledger usa convencion negativa para WORKER_AVAILABLE (debito al sistema)
+  // wallet_available debe ser igual al absoluto del neto del Ledger
+  const ledgerAbsolute = Math.abs(ledgerAvailable);
+  const diff = Math.abs(ledgerAbsolute - walletAvailable);
+
+  // Tolerancia de 1 ARS por redondeo de punto flotante
+  if (diff > 1) {
+    issues.push({
+      transaction_id: 'GLOBAL',
+      issue: 'WALLET_LEDGER_RECONCILIATION_MISMATCH',
+      balance: diff,
+      detail: { ledger_available: ledgerAbsolute, wallet_available: walletAvailable }
+    });
   }
 
   return issues;
