@@ -26,14 +26,14 @@ const PedidoSchema = new mongoose.Schema({
   // FSM
   estado: {
     type: String,
-    enum: ['PENDIENTE','SEARCHING','EXPANDING_RADIUS','ACEPTADA','EN_PROCESO','REALIZADA','PAGADA','CANCELADA'],
+    enum: ['PENDIENTE','SEARCHING','EXPANDING_RADIUS','ACEPTADA','EN_PROCESO','REALIZADA','CERRADA','CANCELADA'],
     default: 'PENDIENTE'
   },
 
   // SFS — Financial State (append-only, default-safe)
   linkPago:          { type: String, default: null },
-  estadoPago:        { type: String, enum: ['PENDING','PROCESSING','PAID','FAILED','REFUNDED'], default: 'PENDING' },
-  estadoLiquidacion: { type: String, enum: ['UNRESOLVED','LIQUIDATED','DISPUTED'], default: 'UNRESOLVED' },
+  payment_status:    { type: String, enum: ['PENDING','PAID','HELD','RELEASED','REFUNDED','DISPUTED'], default: 'PENDING' },
+  estadoLiquidacion: { type: String, enum: ['UNRESOLVED','LIQUIDATED','DISPUTED'], default: 'UNRESOLVED' }, // deprecated: usar payment_status
   pagoConfirmadoAt:  { type: Date, default: null },
 
   // Snapshot determinístico

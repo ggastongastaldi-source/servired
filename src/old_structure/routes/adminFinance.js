@@ -34,4 +34,32 @@ router.get('/balances', verificarToken, soloAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/finance/order/:orderId
+router.get('/order/:orderId', verificarToken, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const Pedido = require('../models/Pedido');
+    const FinancialTransaction = require('../models/FinancialTransaction');
+    const { Ledger } = require('../services/ledgerService');
+
+    const [pedido, financialTransaction, ledgerEntries] = await Promise.all([
+      Pedido.findById(orderId).lean(),
+      FinancialTransaction.findOne({ order_id: orderId }).lean(),
+      Ledger.find({ order_id: orderId }).sort({ created_at: 1 }).lean(),
+    ]);
+
+    if (!pedido) return res.json({ ok: false, error: 'Pedido no encontrado' });
+
+    res.json({
+      ok: true,
+      pedido,
+      financialTransaction: financialTransaction || null,
+      ledger: ledgerEntries,
+    });
+  } catch(e) {
+    console.error('[adminFinance] order detail error:', e.message);
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
