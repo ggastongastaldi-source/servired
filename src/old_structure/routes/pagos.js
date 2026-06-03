@@ -3,6 +3,7 @@ const express  = require('express');
 const router   = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { crearPreferencia, verificarPago, getPaymentDetails } = require('../services/mercadoPagoService');
+const { capturePayment } = require('../services/financeEngine');
 const { verificarToken } = require('../middleware/auth');
 const Usuario  = require('../models/Usuario');
 const Payment  = require('../models/Payment');
@@ -89,11 +90,25 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     // Actualizar pedido
     if (mapped === 'APPROVED') {
       const Pedido = require('../models/Pedido');
-      registrarEventoEspejo(externalReference, { tipo:'WEBHOOK_'+mapped, fromState:'PROCESSING', toState: mapped==='APPROVED'?'PAID':'FAILED', eventoTimestamp: new Date() }).catch(()=>{});
-    await Pedido.findByIdAndUpdate(externalReference, {
-        estado: 'PAGADA',
-        pagoId: String(data.id),
-        pagoMonto: mpData.transaction_amount,
+      registrarEventoEspejo(externalReference, { tipo:'WEBHOOK_'+mapped, fromState:'PROCESSING', toState:'PAID', eventoTimestamp: new Date() }).catch(()=>{});
+
+      // Registrar en ledger financiero
+      try {
+        await capturePayment({
+          provider:                'mercadopago',
+          provider_transaction_id: String(data.id),
+          order_id:                externalReference,
+          amount:                  mpData.transaction_amount,
+        });
+        console.log('[pagos] ✅ Ledger registrado para payment', data.id);
+      } catch(ledgerErr) {
+        console.error('[pagos] ⚠️ Ledger error (no bloquea pago):', ledgerErr.message);
+      }
+
+      await Pedido.findByIdAndUpdate(externalReference, {
+        estado:       'PAGADA',
+        pagoId:       String(data.id),
+        pagoMonto:    mpData.transaction_amount,
         pagoComision: updated.platformFee,
         pagoWorker:   updated.workerPayoutAmount,
       });
