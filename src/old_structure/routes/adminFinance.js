@@ -1,7 +1,9 @@
 const express  = require('express');
 const router   = express.Router();
 const { verificarToken, soloAdmin } = require('../middleware/auth');
-const { runForensicAudit } = require('../services/financeEngine');
+const { runForensicAudit, getGlobalBalances } = require('../services/financeEngine');
+const FinancialIncident     = require('../models/FinancialIncident');
+const FinanceWatchdogStatus = require('../models/FinanceWatchdogStatus');
 const { Ledger } = require('../services/ledgerService');
 
 // GET /api/admin/finance/audit
@@ -91,6 +93,57 @@ router.get('/order/:orderId', verificarToken, async (req, res) => {
   } catch(e) {
     console.error('[adminFinance] order detail error:', e.message);
     res.json({ ok: false, error: e.message });
+  }
+});
+
+
+// GET /api/admin/finance/dashboard
+router.get('/dashboard', verificarToken, soloAdmin, async (req, res) => {
+  try {
+    const [watchdog, openIncidents, balances] = await Promise.all([
+      FinanceWatchdogStatus.findOne({ service: 'FinanceWatchdog' }).lean(),
+      FinancialIncident.find({ status: 'OPEN' }).lean(),
+      getGlobalBalances(),
+    ]);
+
+    // Conteos de incidentes
+    const open_count     = openIncidents.length;
+    const critical_count = openIncidents.filter(i => i.severity === 'CRITICAL').length;
+    const warning_count  = openIncidents.filter(i => i.severity === 'WARNING').length;
+
+    // Ultimos 5 incidentes OPEN ordenados por last_detected_at desc
+    const recent = await FinancialIncident.find({ status: 'OPEN' })
+      .select('incident_id transaction_id issue severity status last_detected_at occurrences')
+      .sort({ last_detected_at: -1 })
+      .limit(5)
+      .lean();
+
+    res.json({
+      ok: true,
+      watchdog: watchdog ? {
+        status:           watchdog.status,
+        last_run_at:      watchdog.last_run_at,
+        last_success_at:  watchdog.last_success_at,
+        last_issue_count: watchdog.last_issue_count,
+        last_error:       watchdog.last_error,
+      } : null,
+      incidents: {
+        open_count,
+        critical_count,
+        warning_count,
+        recent,
+      },
+      balances: {
+        ESCROW_PLATFORM:  balances.ESCROW_PLATFORM,
+        WORKER_PENDING:   balances.WORKER_PENDING,
+        WORKER_AVAILABLE: balances.WORKER_AVAILABLE,
+        PLATFORM_REVENUE: balances.PLATFORM_REVENUE,
+      },
+    });
+
+  } catch(err) {
+    console.error('[adminFinance] dashboard error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 

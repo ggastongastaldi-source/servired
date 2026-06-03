@@ -259,4 +259,30 @@ async function runForensicAudit() {
   return issues;
 }
 
-module.exports = { capturePayment, releaseWorkerFunds, refundPayment, withdrawWorkerFunds, runForensicAudit };
+
+// ─── getGlobalBalances ────────────────────────────────────────────────────────
+// Fuente de verdad: coleccion ledger (aggregate $sum delta por cuenta).
+// Transaccion.js y Payment.js son auxiliares — no son fuente contable.
+async function getGlobalBalances() {
+  const agg = await Ledger.aggregate([
+    { $group: { _id: '$account', balance: { $sum: '$delta' } } }
+  ]);
+
+  const result = {
+    ESCROW_PLATFORM:  0,
+    WORKER_PENDING:   0,
+    WORKER_AVAILABLE: 0,
+    PLATFORM_REVENUE: 0,
+  };
+
+  for (const row of agg) {
+    if (row._id === 'ESCROW_PLATFORM')  result.ESCROW_PLATFORM  = row.balance;
+    if (row._id === 'WORKER_PENDING')   result.WORKER_PENDING   = row.balance;
+    if (row._id === 'WORKER_AVAILABLE') result.WORKER_AVAILABLE = row.balance;
+    if (row._id === 'SERVIRED_REVENUE') result.PLATFORM_REVENUE = row.balance;
+  }
+
+  return result;
+}
+
+module.exports = { capturePayment, releaseWorkerFunds, refundPayment, withdrawWorkerFunds, runForensicAudit, getGlobalBalances };
