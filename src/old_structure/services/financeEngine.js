@@ -7,7 +7,7 @@ const Usuario                     = require('../models/Usuario');
 const Pedido                      = require('../models/Pedido');
 
 // ─── capturePayment ───────────────────────────────────────────────────────────
-async function capturePayment({ provider, provider_transaction_id, order_id, amount }, externalSession) {
+async function capturePayment({ provider, provider_transaction_id, order_id, amount }, externalSession, _attempt = 0) {
   const ownSession = !externalSession;
   const session = externalSession || await mongoose.startSession();
   if (ownSession) session.startTransaction();
@@ -53,15 +53,10 @@ async function capturePayment({ provider, provider_transaction_id, order_id, amo
     if (err.code === 11000) return { success: true, reason: 'DUPLICATE_REQUEST_IGNORED' };
     if (ownSession && err.errorLabels && err.errorLabels.includes('TransientTransactionError')) {
       const MAX_RETRIES = 3;
-      const attempt = (capturePayment.__retryCount || 0) + 1;
-      if (attempt <= MAX_RETRIES) {
-        capturePayment.__retryCount = attempt;
+      if (_attempt < MAX_RETRIES) {
         await new Promise(r => setTimeout(r, 50 + Math.random() * 100));
-        const result = await capturePayment({ provider, provider_transaction_id, order_id, amount });
-        capturePayment.__retryCount = 0;
-        return result;
+        return capturePayment({ provider, provider_transaction_id, order_id, amount }, undefined, _attempt + 1);
       }
-      capturePayment.__retryCount = 0;
     }
     throw err;
   }
