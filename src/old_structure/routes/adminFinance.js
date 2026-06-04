@@ -147,4 +147,65 @@ router.get('/dashboard', verificarToken, soloAdmin, async (req, res) => {
   }
 });
 
+
+// GET /api/admin/finance/shadow — metricas de shadow comparison
+router.get('/shadow', verificarToken, soloAdmin, async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const ShadowComparison = mongoose.models.ShadowComparison ||
+      mongoose.model('ShadowComparison',
+        new mongoose.Schema({
+          pedidoId: String, ts: Date,
+          gr_workerCount: Number, de_candidates: Number,
+          de_topScore: Number, de_topETA: Number,
+          match: Boolean, matchRate: Number,
+          etaDeltaMinutes: Number, de_expanded: Boolean,
+        }, { timestamps: false }),
+        'shadow_comparisons'
+      );
+
+    const total = await ShadowComparison.countDocuments();
+    if (total === 0) {
+      return res.json({ ok: true, total: 0, message: 'Sin datos shadow aun' });
+    }
+
+    const agg = await ShadowComparison.aggregate([
+      { $group: {
+        _id:              null,
+        total:            { $sum: 1 },
+        matchCount:       { $sum: { $cond: ['$match', 1, 0] } },
+        avgMatchRate:     { $avg: '$matchRate' },
+        avgDeScore:       { $avg: '$de_topScore' },
+        avgDeETA:         { $avg: '$de_topETA' },
+        avgEtaDelta:      { $avg: '$etaDeltaMinutes' },
+        avgGrWorkers:     { $avg: '$gr_workerCount' },
+        avgDeCandidates:  { $avg: '$de_candidates' },
+        expandedCount:    { $sum: { $cond: ['$de_expanded', 1, 0] } },
+      }}
+    ]);
+
+    const recent = await ShadowComparison.find({})
+      .sort({ ts: -1 }).limit(10)
+      .select('pedidoId ts gr_workerCount de_candidates de_topScore match matchRate etaDeltaMinutes')
+      .lean();
+
+    const stats = agg[0] || {};
+    res.json({
+      ok: true,
+      total,
+      matchRate:       Math.round((stats.avgMatchRate || 0) * 100) + '%',
+      avgDeScore:      Math.round((stats.avgDeScore || 0) * 1000) / 1000,
+      avgDeETA:        Math.round(stats.avgDeETA || 0) + 'min',
+      etaImprovement:  Math.round(stats.avgEtaDelta || 0) + 'min',
+      avgGrWorkers:    Math.round(stats.avgGrWorkers || 0),
+      avgDeCandidates: Math.round(stats.avgDeCandidates || 0),
+      expandedRate:    Math.round(((stats.expandedCount || 0) / total) * 100) + '%',
+      recent,
+    });
+  } catch(err) {
+    console.error('[adminFinance] shadow error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

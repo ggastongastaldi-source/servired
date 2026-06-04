@@ -1,4 +1,5 @@
 const Pedido  = require('../src/old_structure/models/Pedido');
+const { runShadow } = require('../src/dispatch/shadow');
 const Usuario = require('../src/old_structure/models/Usuario');
 const { normalizar } = require('../src/old_structure/utils/normalizer');
 
@@ -41,6 +42,8 @@ async function buscarCandidatos(pedido) {
 }
 
 async function emitirAlerta(pedido, workers, urgente) {
+  // SHADOW MODE — DispatchEngine corre en paralelo, nunca bloquea GR
+  runShadow(pedido, workers).catch(() => {});
   const io = global.io;
   if (!io) return;
   const payload = {
