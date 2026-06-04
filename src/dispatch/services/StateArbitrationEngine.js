@@ -15,17 +15,43 @@ function getClient() {
 
 function offerKey(offerId) { return 'state:offer:' + offerId; }
 function lockKey(offerId)  { return 'lock:offer:'  + offerId; }
+function effectKey(eventId, effectType) { return 'effect:out:' + eventId + ':' + effectType; }
+
+// Exactly Once Edge Semantics — SET NX EX 86400
+async function safeEffect(eventId, effectType, fn) {
+  const r = getClient();
+  const key = effectKey(eventId, effectType);
+  try {
+    const acquired = await r.set(key, '1', 'EX', 86400, 'NX');
+    if (acquired !== 'OK') {
+      console.log('[SAE] safeEffect — already executed', { eventId, effectType });
+      return { executed: false, reason: 'ALREADY_EXECUTED' };
+    }
+    await fn();
+    return { executed: true };
+  } catch(err) {
+    // Si fn() falla, borrar la key para permitir retry
+    try { await r.del(key); } catch(e) {}
+    console.error('[SAE] safeEffect ERROR', { eventId, effectType, err: err.message });
+    throw err;
+  }
+}
 
 async function initializeOfferState(offerId, pedidoId) {
   try {
     const r = getClient();
     await r.hset(offerKey(offerId),
-      'status',    'OPEN',
-      'pedidoId',  pedidoId.toString(),
-      'createdAt', Date.now().toString()
+      'status',              'OPEN',
+      'pedidoId',            pedidoId.toString(),
+      'createdAt',           Date.now().toString(),
+      'lastStreamId',        '0-0',
+      'observabilityCursor', '0-0'
     );
-    await logEvent('OFFER_CREATED', { offerId, pedidoId: pedidoId.toString() });
-    console.log('[SAE] initializeOfferState OK', { offerId, pedidoId });
+    const streamId = await logEvent('OFFER_CREATED', { offerId, pedidoId: pedidoId.toString() });
+    if (streamId) {
+      await r.hset(offerKey(offerId), 'lastStreamId', streamId);
+    }
+    console.log('[SAE] initializeOfferState OK', { offerId, pedidoId, streamId });
   } catch(err) {
     console.error('[SAE] initializeOfferState ERROR', { offerId, pedidoId, err: err.message });
     throw err;
@@ -56,8 +82,14 @@ async function markOfferAccepted(offerId, workerId, idempotencyKey) {
       'acceptedAt', Date.now().toString()
     );
 
-    await logEvent('OFFER_ACCEPTED', { offerId, workerId: workerId.toString(), idempotencyKey });
-    console.log('[SAE] markOfferAccepted OK', { offerId, workerId });
+    const streamId = await logEvent('OFFER_ACCEPTED', {
+      offerId, workerId: workerId.toString(), idempotencyKey
+    });
+    if (streamId) {
+      await r.hset(offerKey(offerId), 'lastStreamId', streamId);
+    }
+
+    console.log('[SAE] markOfferAccepted OK', { offerId, workerId, streamId });
     return { success: true };
 
   } catch(err) {
@@ -77,8 +109,11 @@ async function markOfferExpired(offerId) {
       return { success: false, reason: 'ALREADY_TERMINAL', current };
     }
     await r.hset(offerKey(offerId), 'status', 'EXPIRED', 'expiredAt', Date.now().toString());
-    await logEvent('OFFER_EXPIRED', { offerId });
-    console.log('[SAE] markOfferExpired OK', { offerId });
+    const streamId = await logEvent('OFFER_EXPIRED', { offerId });
+    if (streamId) {
+      await r.hset(offerKey(offerId), 'lastStreamId', streamId);
+    }
+    console.log('[SAE] markOfferExpired OK', { offerId, streamId });
     return { success: true };
   } catch(err) {
     console.error('[SAE] markOfferExpired ERROR', { offerId, err: err.message });
@@ -96,4 +131,4 @@ async function getOfferState(offerId) {
   }
 }
 
-module.exports = { initializeOfferState, markOfferAccepted, markOfferExpired, getOfferState };
+module.exports = { initializeOfferState, markOfferAccepted, markOfferExpired, getOfferState, safeEffect };
