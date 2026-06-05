@@ -11,7 +11,6 @@ const WorkerMobilityProfileSchema = new mongoose.Schema({
   updatedAt:         { type: Date,   default: Date.now },
 }, { timestamps: false });
 
-WorkerMobilityProfileSchema.index({ workerId: 1 }, { unique: true });
 
 module.exports = mongoose.models.WorkerMobilityProfile ||
   mongoose.model('WorkerMobilityProfile', WorkerMobilityProfileSchema, 'worker_mobility_profiles');

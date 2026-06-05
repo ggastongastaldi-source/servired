@@ -52,7 +52,6 @@ const TemporalAssuranceStateSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-TemporalAssuranceStateSchema.index({ pedidoId: 1 });
 TemporalAssuranceStateSchema.index({ workerId: 1, pactState: 1 });
 TemporalAssuranceStateSchema.index({ scheduledFor: 1, pactState: 1 }); // Para crons nocturnos
 
