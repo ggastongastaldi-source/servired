@@ -1,16 +1,5 @@
-const Redis = require('ioredis');
-
-let _client;
-function getClient() {
-  if (!_client) {
-    _client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-      maxRetriesPerRequest: null,
-      enableOfflineQueue:   false,
-      lazyConnect:          true,
-    });
-  }
-  return _client;
-}
+const { getSharedClient } = require('../config');
+function getClient() { return getSharedClient(); }
 
 async function trackDeliveryLatency(offerId, latencyMs) {
   try {

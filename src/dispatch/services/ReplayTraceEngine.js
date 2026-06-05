@@ -1,17 +1,6 @@
-const Redis = require('ioredis');
+const { getSharedClient } = require('../config');
 const { readOfferEvents, streamKey } = require('../events/DispatchEventLog');
-
-let _client;
-function getClient() {
-  if (!_client) {
-    _client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-      maxRetriesPerRequest: null,
-      enableOfflineQueue:   false,
-      lazyConnect:          true,
-    });
-  }
-  return _client;
-}
+function getClient() { return getSharedClient(); }
 
 // NUNCA usar KEYS — usar SCAN con cursor
 async function scanOfferStreams(match, count) {

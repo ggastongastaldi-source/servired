@@ -1,17 +1,7 @@
-const Redis = require('ioredis');
+const { getSharedClient } = require('../config');
 const { logEvent } = require('../events/DispatchEventLog');
 
-let _client;
-function getClient() {
-  if (!_client) {
-    _client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-      maxRetriesPerRequest: null,
-      enableOfflineQueue:   false,
-      lazyConnect:          true,
-    });
-  }
-  return _client;
-}
+function getClient() { return getSharedClient(); }
 
 function offerKey(offerId) { return 'state:offer:' + offerId; }
 function lockKey(offerId)  { return 'lock:offer:'  + offerId; }
