@@ -39,8 +39,8 @@ router.post('/trabajadores/:id/verificar', authAdmin, async (req, res) => {
       { $set: { estado: 'VERIFICADO', verificado: true } }
     );
     // Notificar por socket
-    if (global._io) {
-      global._io.to('admins').emit('trabajador_verificado', { id: req.params.id });
+    if (global.io) {
+      global.io.to('admins').emit('trabajador_verificado', { id: req.params.id });
     }
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -56,7 +56,7 @@ router.get('/stats', authAdmin, async (req, res) => {
       db.collection('usuarios').countDocuments({ rol: 'CLIENTE' }),
     ]);
     // Workers online via Socket.IO rooms
-    const io = global._io;
+    const io = global.io;
     const online = io
       ? [...(io.sockets.adapter.rooms||new Map())].filter(([k])=>k.startsWith('worker_')).length
       : 0;
@@ -71,7 +71,7 @@ router.delete('/trabajadores/:id', authAdmin, async (req, res) => {
     await mongoose.connection.db.collection('usuarios').deleteOne(
       { _id: new mongoose.Types.ObjectId(req.params.id) }
     );
-    if (global._io) global._io.to('admins').emit('trabajador_eliminado', { id: req.params.id });
+    if (global.io) global.io.to('admins').emit('trabajador_eliminado', { id: req.params.id });
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
