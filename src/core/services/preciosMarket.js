@@ -102,12 +102,24 @@ async function actualizarPreciosEnSmartQuote(precios) {
   for (const [rubro, vals] of Object.entries(precios)) {
     if (!vals.baja || !vals.alta) continue;
     try {
+      const nuevaBaja = Math.round(vals.baja);
+      const nuevaAlta = Math.round(vals.alta);
       await PrecioMercado.findOneAndUpdate(
         { rubro },
-        { baja: Math.round(vals.baja), alta: Math.round(vals.alta), fuente: 'tavily', actualizadoEn: new Date() },
+        { baja: nuevaBaja, alta: nuevaAlta, fuente: 'tavily', actualizadoEn: new Date() },
         { upsert: true, returnDocument: "after" }
       );
       actualizados++;
+      if (global.io) {
+        global.io.to(`rubro_${rubro}`).emit('precio_actualizado', {
+          rubro,
+          baja: nuevaBaja,
+          alta: nuevaAlta,
+          fuente: 'PrecioMercado',
+          timestamp: Date.now()
+        });
+        console.log(`[preciosMarket] 📡 emit precio_actualizado → rubro_${rubro}`);
+      }
     } catch(e) { console.error('[preciosMarket] Error guardando', rubro, e.message); }
   }
   console.log(`[preciosMarket] ✅ ${actualizados} rubros actualizados en MongoDB`);
