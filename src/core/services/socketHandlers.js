@@ -500,7 +500,8 @@ module.exports = (io) => {
     });
 
     // ── DESCONEXIÓN ────────────────────────────────────────────
-    socket.on('disconnect', async () => {
+    socket.on('disconnect', async (reason) => {
+      console.warn('[Socket:disconnect] id=' + socket.id + ' reason=' + reason + ' ts=' + new Date().toISOString());
       const workerOffline = await Usuario.findOneAndUpdate(
         { socketId: socket.id },
         { socketStatus: 'offline', socketId: null, isOnline: false, disponible: false }

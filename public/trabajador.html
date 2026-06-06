@@ -523,7 +523,8 @@ function initApp(){
     reconnectionAttempts:Infinity,
     reconnectionDelay:2000,
     reconnectionDelayMax:10000,
-    auth:{ token: TOKEN }
+    auth:{ token: TOKEN },
+    transports: ['websocket', 'polling']
   });
   socket.on('reconnect',()=>{
     console.log('Socket reconectado');
