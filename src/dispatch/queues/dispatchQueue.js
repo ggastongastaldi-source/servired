@@ -32,10 +32,10 @@ function startDispatchWorker(io) {
           console.log('[DispatchWorker] recon — no ACK, FCM fallback', { offerId, workerId });
           await logEvent('FALLBACK_TRIGGERED', { offerId, workerId, pedidoId });
           try {
-            const Usuario = require('../../src/old_structure/models/Usuario');
+            const Usuario = require('../../src/core/models/Usuario');
             const w = await Usuario.findById(workerId).select('fcmToken').lean();
             if (w && w.fcmToken) {
-              const { sendPushNotification } = require('../../src/old_structure/services/pushService');
+              const { sendPushNotification } = require('../../src/core/services/pushService');
               await sendPushNotification(w.fcmToken, {
                 title: 'Nuevo trabajo disponible',
                 body:  'Hay un pedido esperando tu respuesta',

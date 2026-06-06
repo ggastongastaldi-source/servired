@@ -2,7 +2,7 @@
 // Groq como auditor de NEXUS — production-grade
 // Fixes: parser defensivo, fallback UNKNOWN, sanitización, deduplicación
 
-const groqService = require('../../src/old_structure/services/groqService');
+const groqService = require('../../src/core/services/groqService');
 const { emitEvent } = require('../events/emitEvent');
 
 // ── AUDIT THROTTLE — evita tormenta de autopsias ─────────────

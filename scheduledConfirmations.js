@@ -1,9 +1,9 @@
 // scheduledConfirmations.js — cron para pedidos programados
 'use strict';
 const schedule = require('node-schedule');
-const Pedido   = require('./src/old_structure/models/Pedido');
-const Usuario  = require('./src/old_structure/models/Usuario');
-const { registrar: timelineRegistrar } = require('./src/old_structure/services/timelineService');
+const Pedido   = require('./src/core/models/Pedido');
+const Usuario  = require('./src/core/models/Usuario');
+const { registrar: timelineRegistrar } = require('./src/core/services/timelineService');
 
 async function chequearTurnos(io) {
   const ahora   = new Date();

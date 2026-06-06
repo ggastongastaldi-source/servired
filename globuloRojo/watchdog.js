@@ -1,7 +1,7 @@
-const Pedido  = require('../src/old_structure/models/Pedido');
+const Pedido  = require('../src/core/models/Pedido');
 const { runShadow } = require('../src/dispatch/shadow');
-const Usuario = require('../src/old_structure/models/Usuario');
-const { normalizar } = require('../src/old_structure/utils/normalizer');
+const Usuario = require('../src/core/models/Usuario');
+const { normalizar } = require('../src/core/utils/normalizer');
 
 const INTERVALO_MS     = 3 * 60 * 1000;  // patrol cada 3 min
 const UMBRAL_HUERFANO  = 4 * 60 * 1000;  // pedido huerfano tras 4 min
@@ -13,7 +13,7 @@ const MAX_RETRY        = 3;
 async function _pushNuevaOportunidad(workerId, pedido) {
   try {
     const webpush = require('web-push');
-    const Usuario = require('./src/old_structure/models/Usuario');
+    const Usuario = require('./src/core/models/Usuario');
     const worker = await Usuario.findById(workerId).lean();
     if (!worker?.pushSubscription) return;
     webpush.setVapidDetails(

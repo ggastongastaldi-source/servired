@@ -13,7 +13,7 @@ async function run() {
   await mongoose.connect(process.env.MONGO_URI, { family: 4 });
   console.log('✅ MongoDB conectado');
 
-  const Pedido = mongoose.model('Pedido', require('./src/old_structure/models/Pedido').schema);
+  const Pedido = mongoose.model('Pedido', require('./src/core/models/Pedido').schema);
 
   // Crear pedido de prueba
   const job = await Pedido.create({

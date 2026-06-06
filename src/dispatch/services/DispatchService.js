@@ -20,7 +20,7 @@ async function dispatchPedido(io, pedido) {
     const { strategy, load } = await evaluateDispatchStrategy(zonaId);
     console.log('[DispatchService] strategy', { pedidoId, strategy, load });
 
-    const Usuario = require('../../src/old_structure/models/Usuario');
+    const Usuario = require('../../src/core/models/Usuario');
     const workers = await Usuario.find({
       disponible:     true,
       isOnline:       true,
@@ -70,7 +70,7 @@ async function dispatchPedido(io, pedido) {
       for (const w of workers) {
         if (w.fcmToken) {
           try {
-            const { sendPushNotification } = require('../../src/old_structure/services/pushService');
+            const { sendPushNotification } = require('../../src/core/services/pushService');
             await sendPushNotification(w.fcmToken, {
               title: 'Nuevo trabajo disponible',
               body:  'Hay un pedido esperando tu respuesta',

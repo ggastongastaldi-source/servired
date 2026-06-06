@@ -46,7 +46,7 @@ function registerAcceptOffer(io, socket) {
 
       if (pedidoId) {
         try {
-          const Pedido = require('../../src/old_structure/models/Pedido');
+          const Pedido = require('../../src/core/models/Pedido');
           const pedido = await Pedido.findById(pedidoId).select('zona').lean();
           if (pedido) await decrementZoneLoad(pedido.zona || 'default');
         } catch(e) {

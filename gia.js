@@ -33,7 +33,7 @@ async function main() {
 
   if (!archivo) {
     console.log('Uso: node gia.js <archivo> [descripcion_error]');
-    console.log('Ejemplo: node gia.js src/old_structure/services/socketHandlers.js "syntax error line 237"');
+    console.log('Ejemplo: node gia.js src/core/services/socketHandlers.js "syntax error line 237"');
     process.exit(0);
   }
 

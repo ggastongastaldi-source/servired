@@ -39,7 +39,7 @@ async function _processOutbox() {
           });
         } else {
           // templates legacy
-          const emailService = require('../../src/old_structure/services/emailService');
+          const emailService = require('../../src/core/services/emailService');
           if (template === 'bienvenida_worker')   await emailService.enviarBienvenidaWorker(payload);
           if (template === 'bienvenida_cliente')  await emailService.enviarBienvenidaCliente(payload);
           if (template === 'invitacion_worker')   await emailService.enviarInvitacionWorker(payload);

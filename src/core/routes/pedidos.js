@@ -3,7 +3,7 @@
 async function _pushNuevaOportunidad(workerId, pedido) {
   try {
     const webpush = require('web-push');
-    const Usuario = require('./src/old_structure/models/Usuario');
+    const Usuario = require('./src/core/models/Usuario');
     const worker = await Usuario.findById(workerId).lean();
     if (!worker?.pushSubscription) return;
     webpush.setVapidDetails(

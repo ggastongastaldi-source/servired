@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const { getMongoUri } = require('../config/database');
 
-const { capturePayment } = require('../src/old_structure/services/financeEngine');
+const { capturePayment } = require('../src/core/services/financeEngine');
 
 async function run() {
   await mongoose.connect(getMongoUri());

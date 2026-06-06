@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 
-const rutaMensajes = require('./src/old_structure/routes/mensajes');
+const rutaMensajes = require('./src/core/routes/mensajes');
 const http = require('http');
 const { Server } = require('socket.io');
 const rtgBridge = require('./rtgBridge');
@@ -12,11 +12,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 global.io = io;
-require('./src/old_structure/services/socketHandlers')(io);
+require('./src/core/services/socketHandlers')(io);
 rtgBridge.init();
 require('./globuloRojo/watchdog').iniciar();
 require('./scheduledConfirmations').iniciar(io);
-require('./src/old_structure/services/mensajeriaSocket')(io);
+require('./src/core/services/mensajeriaSocket')(io);
 
 app.use(cors());
 
@@ -37,21 +37,21 @@ app.get('/version', (req,res) => res.json({v:'f923f4d', built: new Date().toISOS
 
 // Rutas
 app.use('/api/mensajes', rutaMensajes);
-app.use('/api/auth', require('./src/old_structure/routes/auth'));
-const pedidosRoute = require('./src/old_structure/routes/pedidos')(io);
-app.use('/api/upload', require('./src/old_structure/routes/upload'));
+app.use('/api/auth', require('./src/core/routes/auth'));
+const pedidosRoute = require('./src/core/routes/pedidos')(io);
+app.use('/api/upload', require('./src/core/routes/upload'));
 app.use('/api/pedidos', pedidosRoute);
-app.use('/api/leads', require('./src/old_structure/routes/leads'));
-app.use('/api/admin', require('./src/old_structure/routes/admin'));
-app.use('/api/matching', require('./src/old_structure/routes/matching'));
-app.use('/api/rating', require('./src/old_structure/routes/rating'));
-app.use('/api/pagos', require('./src/old_structure/routes/pagos'));
-app.use('/api/admin/finance', require('./src/old_structure/routes/adminFinance'));
+app.use('/api/leads', require('./src/core/routes/leads'));
+app.use('/api/admin', require('./src/core/routes/admin'));
+app.use('/api/matching', require('./src/core/routes/matching'));
+app.use('/api/rating', require('./src/core/routes/rating'));
+app.use('/api/pagos', require('./src/core/routes/pagos'));
+app.use('/api/admin/finance', require('./src/core/routes/adminFinance'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
-  app.post('/api/admin/broadcast', require('./src/old_structure/commands/emergencyBroadcast').emergencyBroadcast);
-app.use('/api/servicios', require('./src/old_structure/routes/servicios'));
-app.use('/api/smart-quote', require('./src/old_structure/routes/smartQuote'));
-app.use('/api/finanzas', require('./src/old_structure/routes/finanzas'));
+  app.post('/api/admin/broadcast', require('./src/core/commands/emergencyBroadcast').emergencyBroadcast);
+app.use('/api/servicios', require('./src/core/routes/servicios'));
+app.use('/api/smart-quote', require('./src/core/routes/smartQuote'));
+app.use('/api/finanzas', require('./src/core/routes/finanzas'));
 
 
 
@@ -140,7 +140,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
     .then(() => {
       console.log('✅ MongoDB conectado');
     assertSystemUsers().catch(e => console.error('[assertSystemUsers]', e.message));
-    require('./src/old_structure/services/financeWatchdog').iniciar();
+    require('./src/core/services/financeWatchdog').iniciar();
     require('./src/dispatch').initDispatchEngine(io).catch(e => console.error('[DispatchEngine] init error:', e.message));
       const { initNexus } = require('./nexus/initNexus');
       initNexus(io)
@@ -171,7 +171,7 @@ module.exports = { app, server, io };
 
 // ── ALADDÍN PRICE BRAIN — latido cada 12h ──────────────────
 const cron = require('node-cron');
-const { ejecutarCicloAladin } = require('./src/old_structure/services/priceWorker');
+const { ejecutarCicloAladin } = require('./src/core/services/priceWorker');
 cron.schedule('0 8,20 * * *', () => {
   ejecutarCicloAladin().catch(err => console.error('[Aladdín-Cron] Error:', err.message));
 });

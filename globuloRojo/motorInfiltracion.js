@@ -1,12 +1,12 @@
 const { haversine }           = require('./haversine');
 const { rankearTrabajadores } = require('./briones');
-const groqService             = require('../src/old_structure/services/groqService');
+const groqService             = require('../src/core/services/groqService');
 
 // ── Push offline nueva_oportunidad ───────────────────────────
 async function _pushNuevaOportunidad(workerId, pedido) {
   try {
     const webpush = require('web-push');
-    const Usuario = require('./src/old_structure/models/Usuario');
+    const Usuario = require('./src/core/models/Usuario');
     const worker = await Usuario.findById(workerId).lean();
     if (!worker?.pushSubscription) return;
     webpush.setVapidDetails(
@@ -77,7 +77,7 @@ async function buscarTrabajadores({ descripcion, especialidad, lat, lon, radioKm
 
   let candidatos = [];
   try {
-    const Usuario = require('../src/old_structure/models/Usuario');
+    const Usuario = require('../src/core/models/Usuario');
     const query = {
       rol: 'TRABAJADOR',
       estado: { $in: ['ACTIVO', 'VERIFICADO'] },
