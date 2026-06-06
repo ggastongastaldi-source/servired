@@ -7,3 +7,5 @@ potenciales_socios.json
 .chaos_history.jsonl
 .dixie_ledger.jsonl
 login.json
+src/rtg/node_modules/
+src/old_structure/
