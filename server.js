@@ -54,7 +54,6 @@ app.use('/api/pagos', require('./src/core/routes/pagos'));
 app.use('/api/admin/finance', require('./src/core/routes/adminFinance'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
   app.post('/api/admin/broadcast', require('./src/core/commands/emergencyBroadcast').emergencyBroadcast);
-app.use('/api/servicios', require('./src/core/routes/servicios'));
 app.use('/api/smart-quote', require('./src/core/routes/smartQuote'));
 app.use('/api/finanzas', require('./src/core/routes/finanzas'));
 
@@ -101,34 +100,14 @@ app.get('/health', (req, res) => {
 });
 
 // Rutas API
-app.post('/api/servicios', async (req, res) => {
-    try {
-        const { prestador, rubro, descripcion, cliente, presupuesto } = req.body;
-        const servicio = {
-            id: Date.now(),
-            prestador,
-            rubro,
-            descripcion,
-            cliente,
-            presupuesto: presupuesto || 0,
-            moneda: 'ARS',
-            estado: 'pendiente',
-            fecha: new Date()
-        };
-        io.emit('nuevo_servicio', servicio);
-        res.status(201).json(servicio);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+
 
 app.use('/api/health', require('./routes/health'));
 
-app.get('/api/servicios', (req, res) => {
+app.get('/api/workers/stats', (req, res) => {
     res.json({
         sistema: 'ServiRed',
         moneda: 'ARS',
-        mensaje: 'Lista de servicios',
         trabajadoresActivos: [...(io.sockets.adapter.rooms || new Map())].filter(([k]) => k.startsWith("worker_")).length
     });
 });
