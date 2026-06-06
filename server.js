@@ -141,7 +141,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
       console.log('✅ MongoDB conectado');
     assertSystemUsers().catch(e => console.error('[assertSystemUsers]', e.message));
     require('./src/old_structure/services/financeWatchdog').iniciar();
-    require('./src/dispatch').initDispatchEngine(io);
+    require('./src/dispatch').initDispatchEngine(io).catch(e => console.error('[DispatchEngine] init error:', e.message));
       const { initNexus } = require('./nexus/initNexus');
       initNexus(io)
         .then(r => console.log('[Server] Nexus:', r?.status || 'OK'))
