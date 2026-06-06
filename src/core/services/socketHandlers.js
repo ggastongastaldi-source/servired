@@ -9,6 +9,7 @@ function emitWorkerGPS(io, targetRoom, pedidoId, payload) {
   io.to('pedido_' + pedidoId).emit('gps_worker', payload);
 }
 
+const { observe } = require('./dixieObserver');
 const { registrarEventoEspejo } = require('./pagoMirrorService');
 const { registrar: timelineRegistrar } = require('./timelineService');
 const { registrarTransaccion } = require('../controllers/finanzasController');
@@ -157,6 +158,7 @@ module.exports = (io) => {
 
     // ── TRABAJADOR acepta trabajo ───────────────────────────────
     socket.on('aceptar_trabajo', async ({ pedidoId, trabajadorId, trabajadorNombre, token }) => {
+      observe('aceptar_trabajo', { pedidoId, trabajadorId }, socket);
       if (!trabajadorId && token) { try { const jwt=require('jsonwebtoken'); const p=jwt.verify(token,process.env.JWT_SECRET); trabajadorId=String(p.userId||p.id||p._id||''); trabajadorNombre=trabajadorNombre||p.nombre||'Profesional'; } catch(e){} }
       try {
         // Buscar pedido activo
@@ -240,6 +242,7 @@ module.exports = (io) => {
 
     // ── TRABAJADOR avanza estado del pedido ───────────────────────
     socket.on('cambiar_estado_pedido', async ({ pedidoId, estado, token }) => {
+      observe('cambiar_estado_pedido', { pedidoId, estado }, socket);
       try {
         const estadosValidos = ['EN_PROCESO', 'REALIZADA', 'PAGADA'];
         if (!estadosValidos.includes(estado)) return;
@@ -404,6 +407,7 @@ module.exports = (io) => {
 
     // ── TRABAJADOR termina el trabajo ──────────────────────────
     socket.on('trabajo_completado', async ({ pedidoId, trabajadorId }) => {
+      observe('trabajo_completado', { pedidoId, trabajadorId }, socket);
       try {
         await Pedido.findByIdAndUpdate(pedidoId, {
           estado: 'REALIZADA',
@@ -438,6 +442,7 @@ module.exports = (io) => {
 
     // ── CLIENTE crea pedido via socket ─────────────────────────
     socket.on('nuevo_pedido', async ({ token, servicio, direccion, precio }) => {
+      observe('nuevo_pedido', { servicio, precio }, socket);
       console.log('[DEBUG] nuevo_pedido recibido - token:', token ? token.substring(0,20)+'...' : 'NULO', 'servicio:', servicio);
       try {
         const jwt = require('jsonwebtoken');
@@ -488,6 +493,7 @@ module.exports = (io) => {
 
     // ── CLIENTE cancela pedido via socket ──────────────────────
     socket.on('cancelar_pedido', async ({ pedidoId, token }) => {
+      observe('cancelar_pedido', { pedidoId }, socket);
       try {
         const { cancelarNotificacionesWorkers } = require('../controllers/notificationController');
         const Pedido = require('../models/Pedido');
