@@ -9,7 +9,7 @@ module.exports = {
   },
   worker: {
     email:    'debora.rouiller.1@gmail.com',
-    password: 'debora2024',
+    password: 'debora123',
     rol:      'TRABAJADOR',
   },
   admin: {

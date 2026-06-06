@@ -45,6 +45,7 @@ const {
   notificarCliente,
   cancelarNotificacionesWorkers 
 } = require('../controllers/notificationController');
+const { registrar: timelineRegistrar } = require('../services/timelineService');
 
 // CREAR PEDIDO - Cliente solicita trabajo
 
