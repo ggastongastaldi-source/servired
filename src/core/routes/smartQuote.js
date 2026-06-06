@@ -168,7 +168,22 @@ router.post('/', async (req, res) => {
     if (cached) return res.json({ ...cached, cached: true });
 
     const nivel = (complejidad === 'alta' || complejidad === 'complejo') ? 'alta' : 'baja';
-    const precioBase = PRECIOS[rubro]?.[nivel] || 80000;
+    let precioBase;
+    let fuentePrecio = 'static-fallback';
+    try {
+      const vivo = await PrecioMercado.findOne({ rubro: rubro.toLowerCase() }).lean();
+      if (vivo) {
+        precioBase = nivel === 'alta' ? vivo.alta : vivo.baja;
+        fuentePrecio = 'mongo-live';
+      } else {
+        precioBase = PRECIOS[rubro]?.[nivel] || 80000;
+        console.log(`[smartQuote] ⚠️ ${rubro} sin precio en DB, usando static.`);
+      }
+    } catch (err) {
+      console.error('[smartQuote] ❌ Error DB:', err.message);
+      precioBase = PRECIOS[rubro]?.[nivel] || 80000;
+      fuentePrecio = 'emergency-hardcoded';
+    }
 
     const zKey = Object.keys(MULT_ZONA).find(k => (zona||'').toLowerCase().includes(k));
     const multZona = zKey ? MULT_ZONA[zKey] : 1.0;
@@ -198,6 +213,7 @@ router.post('/', async (req, res) => {
 
     const respuesta = {
       ok: true, modo: 'aladin',
+      fuente_precio: fuentePrecio,
       rubro, zona: zona||'CABA',
       complejidad: nivel,
       estimado: precioTotal,
