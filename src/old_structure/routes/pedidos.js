@@ -99,10 +99,10 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     } catch(e) { console.error('[Pedidos] Aladdin error:', e.message); }
 
     const { esProgramado, notas } = req.body;
-    tipoServicio = normalizarRubro(tipoServicio);
+    const tipoServicioNorm = normalizarRubro(tipoServicio);
     const nuevoPedido = new Pedido({
       cliente: req.user.userId,
-      tipoServicio,
+      tipoServicio: tipoServicioNorm,
       zona,
       descripcion: descripcion || '',
       direccion: direccion || '',
@@ -129,7 +129,7 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     if (io) {
       const payload = {
         pedidoId: pedidoGuardado._id,
-        tipoServicio,
+        tipoServicio: tipoServicioNorm,
         zona,
         descripcion: descripcion || '',
         direccion: direccion || '',
