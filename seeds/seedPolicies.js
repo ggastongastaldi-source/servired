@@ -154,7 +154,7 @@ async function main() {
   }
 
   // ── Insert real
-  await mongoose.connect(process.env.MONGODB_URI);
+  await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || process.env.DATABASE_URL);
   console.log('\n✓ MongoDB conectado\n── Insertando...');
 
   for (const rule of RULES) {

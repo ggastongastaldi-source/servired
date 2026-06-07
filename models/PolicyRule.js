@@ -76,7 +76,7 @@ PolicyRuleSchema.index({ ruleId: 1, version: 1 }, { unique: true });
 PolicyRuleSchema.index({ status: 1, priority: 1 });
 
 // Pre-save: calcular hash de contenido para auditoría
-PolicyRuleSchema.pre('save', function(next) {
+PolicyRuleSchema.pre('save', async function() {
   const crypto = require('crypto');
   const content = JSON.stringify({
     ruleId:     this.ruleId,
@@ -86,7 +86,7 @@ PolicyRuleSchema.pre('save', function(next) {
     scope:      this.scope,
   });
   this.hash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
-  next();
+  
 });
 
 module.exports = mongoose.model('PolicyRule', PolicyRuleSchema);
