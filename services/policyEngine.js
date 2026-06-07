@@ -66,7 +66,12 @@ function _matchesScope(rule, ctx) {
   }
   if (s.hours) {
     const h = ctx.hora ?? new Date().getHours();
-    if (h < s.hours.from || h > s.hours.to) return false;
+    // wrap-aware: 22→6 cruza medianoche
+    if (s.hours.wrap) {
+      if (!(h >= s.hours.from || h <= s.hours.to)) return false;
+    } else {
+      if (h < s.hours.from || h > s.hours.to) return false;
+    }
   }
   return true;
 }
