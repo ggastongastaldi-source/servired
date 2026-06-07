@@ -53,6 +53,8 @@ app.use('/api/rating', require('./src/core/routes/rating'));
 app.use('/api/pagos', require('./src/core/routes/pagos'));
 app.use('/api/admin/finance', require('./src/core/routes/adminFinance'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
+app.use('/api/b19/policy', policyRoutes);
+const policyRoutes = require('./routes/policyRoutes');
   app.post('/api/admin/broadcast', require('./src/core/commands/emergencyBroadcast').emergencyBroadcast);
 app.use('/api/smart-quote', require('./src/core/routes/smartQuote'));
 app.use('/api/finanzas', require('./src/core/routes/finanzas'));
