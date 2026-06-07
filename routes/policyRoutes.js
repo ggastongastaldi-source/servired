@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const router  = express.Router();
-const { soloAdmin } = require('../middleware/auth');
+const { soloAdmin } = require('../src/core/middleware/auth');
 const pe = require('../services/policyEngine');
 
 // GET /api/b19/policy — listar reglas (con filtros opcionales)

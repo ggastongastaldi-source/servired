@@ -6,7 +6,7 @@
 
 const express = require('express');
 const router  = express.Router();
-const { soloAdmin } = require('../middleware/auth');
+const { soloAdmin } = require('../src/core/middleware/auth');
 const sim = require('../services/policySimulationEngine');
 
 // POST /api/b19/simulation/test — simular evento único con hipótesis
