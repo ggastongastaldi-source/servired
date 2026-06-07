@@ -6,7 +6,7 @@
 
 const express = require('express');
 const router  = express.Router();
-const { soloAdmin } = require('../middleware/auth');
+const { soloAdmin } = require('../src/core/middleware/auth');
 const gateway = require('../services/controlPlaneGateway');
 const policyEngine = require('../services/policyEngine');
 
