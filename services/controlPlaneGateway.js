@@ -16,6 +16,7 @@
  */
 
 'use strict';
+const { buildContext: _buildCtx, evaluateRules } = require('./policyEvaluator');
 
 const EventEmitter = require('events');
 const policyEngine = require('./policyEngine');
@@ -57,95 +58,8 @@ class ControlPlaneGateway extends EventEmitter {
   // OBSERVE — buildContext
   // Construye el contexto de decisión a partir de los inputs del evento.
   // ──────────────────────────────────────────────────────────────────────────
-  async buildContext(event) {
-    const {
-      rubro, zona, pedidoId, clienteId, workerId,
-      precio_base, hora, cancellation_rate, workers_activos,
-      factor_demanda, factor_zona, factor_tiempo, factor_saturacion,
-      ...extra
-    } = event;
-
-    return {
-      // Identidad
-      pedidoId:   pedidoId   || null,
-      clienteId:  clienteId  || null,
-      workerId:   workerId   || null,
-
-      // Mercado
-      rubro:      rubro      || 'generico',
-      zona:       zona       || 'desconocida',
-      hora:       hora       ?? new Date().getHours(),
-      precio_base: precio_base ?? 0,
-
-      // Factores Aladín
-      factor_demanda:    factor_demanda    ?? 1.0,
-      factor_zona:       factor_zona       ?? 1.0,
-      factor_tiempo:     factor_tiempo     ?? 1.0,
-      factor_saturacion: factor_saturacion ?? 1.0,
-
-      // Señales de estabilidad
-      workers_activos:   workers_activos   ?? 0,
-      cancellation_rate: cancellation_rate ?? 0,
-
-      // Timestamp para auditoría
-      _ts: Date.now(),
-      ...extra,
-    };
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // DECIDE — evaluate
-  // Corre policy engine + calcula precio final determinista.
-  // Nunca lanza excepciones: devuelve { ok, ... } siempre.
-  // ──────────────────────────────────────────────────────────────────────────
-  async evaluate(ctx) {
-    try {
-      const { activeActions, shadowActions, appliedRules } =
-        await policyEngine.evaluateContext(ctx);
-
-      // Detectar freeze_dispatch en acciones activas
-      const freezeAction = activeActions.find(a => a.type === 'freeze_dispatch');
-      if (freezeAction) {
-        _metrics.freezeEvents++;
-        this.emit('freeze_dispatch', { ctx, reason: freezeAction.params?.reason });
-        return {
-          ok: true,
-          frozen: true,
-          reason: freezeAction.params?.reason || 'policy_freeze',
-          appliedRules,
-          shadowActions,
-        };
-      }
-
-      // Calcular precio si hay precio_base
-      let pricing = null;
-      if (ctx.precio_base > 0) {
-        pricing = await policyEngine.applyPricing(ctx, ctx.precio_base);
-        _metrics.policyHits += appliedRules.filter(r => r.status === 'active').length;
-
-        // Ring buffer
-        _metrics.pricingBreakdowns.push({ ...pricing, _ts: ctx._ts });
-        if (_metrics.pricingBreakdowns.length > MAX_BREAKDOWN_HISTORY) {
-          _metrics.pricingBreakdowns.shift();
-        }
-      }
-
-      _metrics.totalDecisions++;
-      _metrics.lastDecision = ctx._ts;
-
-      return {
-        ok:           true,
-        frozen:       false,
-        pricing,
-        activeActions,
-        shadowActions,
-        appliedRules,
-      };
-
-    } catch (err) {
-      this.emit('gateway_error', { phase: 'evaluate', err: err.message, ctx });
-      return { ok: false, frozen: false, error: err.message };
-    }
+  buildContext(event) {
+    return _buildCtx(event);
   }
 
   // ──────────────────────────────────────────────────────────────────────────

@@ -11,6 +11,7 @@
  */
 
 'use strict';
+const { buildContext, evaluateRules } = require('./policyEvaluator');
 
 const PolicyRule = require('../models/PolicyRule');
 const gateway    = require('./controlPlaneGateway');
@@ -19,7 +20,9 @@ const gateway    = require('./controlPlaneGateway');
 let _simCache = { rules: [], ts: 0 };
 const SIM_CACHE_TTL = 30 * 1000;
 
+const { requireDB } = require('../config/database');
 async function _fetchActiveRules() {
+  await requireDB();
   const now = Date.now();
   if (now - _simCache.ts < SIM_CACHE_TTL) return _simCache.rules;
   const rules = await PolicyRule

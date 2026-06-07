@@ -18,7 +18,9 @@ const { PolicyRuleCreateSchema, PolicyActivateSchema } = require('../config/poli
 let _cache = { rules: [], ts: 0 };
 const CACHE_TTL = 60 * 1000;
 
+const { requireDB } = require('../config/database');
 async function _loadRules() {
+  await requireDB();
   const now = Date.now();
   if (now - _cache.ts < CACHE_TTL) return _cache.rules;
 
