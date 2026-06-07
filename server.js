@@ -399,7 +399,7 @@ const evidenceRouter = require('./routes/evidence');
 app.use('/api/evidence', evidenceRouter);
 
 // B19 Control Plane — solo admin
-const { soloAdmin } = require('./middleware/auth');
+const { soloAdmin } = require('./src/core/middleware/auth');
 app.get('/b19', soloAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'b19.html'));
 });
