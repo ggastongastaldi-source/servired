@@ -62,7 +62,6 @@ app.use('/api/b19/policy', policyRoutes);
 app.use('/api/b19/gateway', gatewayRoutes);
 app.use('/api/b19/simulation', simulationRoutes);
 const policyRoutes = require('./routes/policyRoutes');
-const simulationRoutes = require('./routes/simulationRoutes');
 require('./services/gatewayListeners');
   app.post('/api/admin/broadcast', require('./src/core/commands/emergencyBroadcast').emergencyBroadcast);
 app.use('/api/smart-quote', require('./src/core/routes/smartQuote'));
