@@ -41,6 +41,8 @@ app.use(httpContextMiddleware);
 app.get('/version', (req,res) => res.json({v:'f923f4d', built: new Date().toISOString()}));
 
 // Rutas
+const seoRouter = require('./src/core/routes/seo');
+app.use('/servicio', seoRouter);
 app.use('/api/mensajes', rutaMensajes);
 app.use('/api/auth', require('./src/core/routes/auth'));
 const pedidosRoute = require('./src/core/routes/pedidos')(io);
