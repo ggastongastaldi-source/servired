@@ -8,3 +8,87 @@
 <pre>Cannot GET /b19.html</pre>
 </body>
 </html>
+<script>
+// ── POLICY DRIFT RADAR — panel dinámico
+(function() {
+  // Crear panel al final del main
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.style.marginTop = '0';
+  panel.innerHTML = `
+    <div class="panel-title">
+      policy drift radar · real vs contrafactual · eventos canónicos
+      <span class="panel-badge badge-warn" id="drift-badge">CALCULANDO</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
+      <div style="text-align:center">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:4px">PRECIO REAL AVG</div>
+        <div style="font-family:var(--mono);font-size:22px;color:var(--accent)" id="drift-actual-avg">$--</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:4px">PRECIO SIM AVG</div>
+        <div style="font-family:var(--mono);font-size:22px;color:var(--accent2)" id="drift-sim-avg">$--</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:4px">DELTA %</div>
+        <div style="font-family:var(--mono);font-size:22px;" id="drift-delta">--%</div>
+      </div>
+    </div>
+    <div id="drift-rows" style="display:flex;flex-direction:column;gap:4px"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:10px;text-align:right" id="drift-ts">última actualización: --</div>
+  `;
+  main.appendChild(panel);
+
+  // Mock drift data (swap con fetch real a /api/b19/simulation/drift cuando auth esté lista)
+  function renderDrift() {
+    const RUBROS = ['electricidad','plomería','limpieza_hogar','gasista','pintura','electricidad★'];
+    const rows   = RUBROS.map(r => {
+      const actual = Math.round(Math.random()*6000+3000);
+      const delta  = (Math.random()-.4)*0.3;
+      const sim    = Math.round(actual*(1+delta));
+      const pct    = (delta*100).toFixed(1);
+      return { rubro: r, actual, sim, pct: +pct };
+    });
+
+    const actualAvg = Math.round(rows.reduce((s,r)=>s+r.actual,0)/rows.length);
+    const simAvg    = Math.round(rows.reduce((s,r)=>s+r.sim,0)/rows.length);
+    const totalDelta = (((simAvg-actualAvg)/actualAvg)*100).toFixed(1);
+
+    document.getElementById('drift-actual-avg').textContent = '$'+actualAvg.toLocaleString('es-AR');
+    document.getElementById('drift-sim-avg').textContent    = '$'+simAvg.toLocaleString('es-AR');
+
+    const deltaEl = document.getElementById('drift-delta');
+    deltaEl.textContent = (totalDelta>0?'+':'')+totalDelta+'%';
+    deltaEl.style.color = +totalDelta > 0 ? 'var(--ok)' : +totalDelta < 0 ? 'var(--danger)' : 'var(--muted)';
+
+    const badge = document.getElementById('drift-badge');
+    const absDelta = Math.abs(+totalDelta);
+    if (absDelta < 5)       { badge.textContent='ESTABLE';  badge.className='panel-badge badge-ok'; }
+    else if (absDelta < 15) { badge.textContent='DRIFT';    badge.className='panel-badge badge-warn'; }
+    else                    { badge.textContent='DIVERGENCIA'; badge.className='panel-badge badge-danger'; }
+
+    document.getElementById('drift-rows').innerHTML = rows.map(r => `
+      <div style="display:grid;grid-template-columns:120px 1fr 80px 80px 60px;gap:8px;align-items:center;
+                  padding:5px 8px;border:1px solid var(--border);font-family:var(--mono);font-size:10px">
+        <span style="color:var(--muted)">${r.rubro}</span>
+        <div style="background:var(--border);height:4px;position:relative">
+          <div style="position:absolute;left:0;top:0;height:100%;width:${Math.min(100,(r.actual/15000*100)).toFixed(0)}%;background:var(--accent);opacity:.6"></div>
+          <div style="position:absolute;left:0;top:0;height:100%;width:${Math.min(100,(r.sim/15000*100)).toFixed(0)}%;background:var(--accent2);opacity:.6"></div>
+        </div>
+        <span style="color:var(--accent);text-align:right">$${r.actual.toLocaleString('es-AR')}</span>
+        <span style="color:var(--accent2);text-align:right">$${r.sim.toLocaleString('es-AR')}</span>
+        <span style="text-align:right;color:${r.pct>0?'var(--ok)':r.pct<0?'var(--danger)':'var(--muted)'}">${r.pct>0?'+':''}${r.pct}%</span>
+      </div>
+    `).join('');
+
+    document.getElementById('drift-ts').textContent =
+      'última actualización: '+new Date().toLocaleTimeString('es-AR',{hour12:false});
+  }
+
+  renderDrift();
+  setInterval(renderDrift, 15000);
+})();
+</script>
