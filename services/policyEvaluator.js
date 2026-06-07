@@ -1,47 +1,48 @@
 /**
- * B19 Policy Evaluator — v3 — Deterministic Execution Kernel
+ * B19 Policy Evaluator — v3.1 — Contrato effectType en trace
  *
- * Modelo formal: KERNEL = (E, S₀, δ, π_f, π_s)
+ * CAMBIO v3.1:
+ *   Cada entry del trace declara effectType explícito:
+ *     'financial' | 'state' | 'control' | 'side_effect' | 'none'
  *
- * FINANCIAL PROJECTION (breakdown): π_f(trace) — solo efectos financieros committed
- * STATE PROJECTION     (contextOut): π_s(ctx₀, trace) — derivada del trace, no de mutación
- * EXECUTION LOG        (trace): registro completo con TraceStatus enum
- * INTERRUPT OPERATOR   (freeze): corte causal con causalBlocker
+ *   Esto cierra el problema 2.1: π_f y π_s ya no infieren por op name
+ *   sino que filtran por contrato declarado en el entry.
  *
- * Invariantes:
- *   - PURO: no muta ctx₀
- *   - DETERMINISTA: mismo input → mismo output
- *   - CAUSAL: Fase A resuelve reglas con ctx progresivo
- *             Fase B ejecuta pipeline con δ
- *   - IDEMPOTENTE: aritmética en centavos (× SCALE) sin acumulación flotante
- *   - API compatible con v1/v2
+ *   A1 — Trace Completeness: todo efecto observable está en trace
+ *   A2 — Projection Determinism: π_f y π_s son funciones puras del trace
+ *   A3 — Context Non-authority: ctx₀ es solo input inicial, nunca fuente de verdad
  */
 
 'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TRACE STATUS ENUM
+// ENUMS
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TraceStatus = Object.freeze({
-  EVALUATED:      'EVALUATED',      // regla evaluada, condiciones no matchearon
-  EXECUTED:       'EXECUTED',       // acción ejecutó y produjo efecto real
-  NOOP:           'NOOP',           // acción ejecutó, condición no se activó
-  SKIPPED_FREEZE: 'SKIPPED_FREEZE', // bloqueada por freeze anterior
-  TERMINAL:       'TERMINAL',       // la acción es el freeze
-  UNKNOWN_ACTION: 'UNKNOWN_ACTION', // tipo no reconocido
+  EXECUTED:       'EXECUTED',
+  NOOP:           'NOOP',
+  SKIPPED_FREEZE: 'SKIPPED_FREEZE',
+  TERMINAL:       'TERMINAL',
+  UNKNOWN_ACTION: 'UNKNOWN_ACTION',
+});
+
+// Contrato formal — cierra problema 2.1
+const EffectType = Object.freeze({
+  FINANCIAL:   'financial',    // modifica priceCents → aparece en breakdown
+  STATE:       'state',        // modifica contextOut → aparece en π_s
+  CONTROL:     'control',      // modifica flujo de ejecución (freeze)
+  SIDE_EFFECT: 'side_effect',  // emit_event — externo al kernel
+  NONE:        'none',         // noop o unknown
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ARITMÉTICA EN CENTAVOS (idempotencia financiera — IC-3)
-// Elimina acumulación incremental de error flotante.
+// ARITMÉTICA EN CENTAVOS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SCALE = 100; // 1 ARS = 100 centavos internos
-
-function toCents(ars)   { return Math.round(ars  * SCALE); }
-function toARS(cents)   { return Math.round(cents / SCALE * 100) / 100; }
-function roundARS(ars)  { return toARS(toCents(ars)); }
+const SCALE = 100;
+function toCents(ars)  { return Math.round(ars * SCALE); }
+function toARS(cents)  { return Math.round(cents / SCALE * 100) / 100; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MATCHING
@@ -82,15 +83,13 @@ function matchesScope(rule, ctx) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FUNCIÓN DE TRANSICIÓN δ(S, action) → S'
-// Estado S = { priceCents, frozen, freezeSource, trace, breakdown }
-// PURA: no muta S, devuelve S' nuevo
+// Cada entry de trace declara effectType — contrato formal, no heurística
 // ─────────────────────────────────────────────────────────────────────────────
 
 function _transition(S, action) {
   const ruleId = action._rule || null;
   const op     = action.type  || 'unknown';
 
-  // ── Operador de corte causal: acciones post-freeze solo generan SKIPPED
   if (S.frozen) {
     return {
       ...S,
@@ -98,6 +97,7 @@ function _transition(S, action) {
         ruleId,
         op,
         status:        TraceStatus.SKIPPED_FREEZE,
+        effectType:    EffectType.NONE,
         causalBlocker: S.freezeSource,
       }],
     };
@@ -106,73 +106,75 @@ function _transition(S, action) {
   switch (action.type) {
 
     case 'multiply_price': {
-      const factor       = action.params?.factor ?? 1;
-      const prevCents    = S.priceCents;
-      // Composición en centavos: round(cents × factor) sin acumulación
-      const nextCents    = Math.round(prevCents * factor);
-      const changed      = nextCents !== prevCents;
+      const factor    = action.params?.factor ?? 1;
+      const prev      = S.priceCents;
+      const next      = Math.round(prev * factor);
+      const changed   = next !== prev;
       const entry = {
         ruleId, op,
-        status:     changed ? TraceStatus.EXECUTED : TraceStatus.NOOP,
+        status:      changed ? TraceStatus.EXECUTED : TraceStatus.NOOP,
+        effectType:  changed ? EffectType.FINANCIAL  : EffectType.NONE,
         factor,
-        priceBefore: toARS(prevCents),
-        priceAfter:  toARS(nextCents),
+        priceBefore: toARS(prev),
+        priceAfter:  toARS(next),
       };
       return {
         ...S,
-        priceCents: nextCents,
+        priceCents: next,
         trace:      [...S.trace, entry],
         breakdown:  changed
           ? [...S.breakdown, { op: 'multiply', factor, rule: ruleId,
-                               priceBefore: toARS(prevCents), priceAfter: toARS(nextCents) }]
+                               priceBefore: toARS(prev), priceAfter: toARS(next) }]
           : S.breakdown,
       };
     }
 
     case 'cap_price': {
-      const maxARS    = action.params?.max;
-      const maxCents  = maxARS !== undefined ? toCents(maxARS) : null;
-      const prevCents = S.priceCents;
-      const apply     = maxCents !== null && prevCents > maxCents;
-      const nextCents = apply ? maxCents : prevCents;
+      const maxARS   = action.params?.max;
+      const maxCents = maxARS !== undefined ? toCents(maxARS) : null;
+      const prev     = S.priceCents;
+      const apply    = maxCents !== null && prev > maxCents;
+      const next     = apply ? maxCents : prev;
       const entry = {
         ruleId, op,
         status:      apply ? TraceStatus.EXECUTED : TraceStatus.NOOP,
+        effectType:  apply ? EffectType.FINANCIAL  : EffectType.NONE,
         max:         maxARS,
-        priceBefore: toARS(prevCents),
-        priceAfter:  toARS(nextCents),
+        priceBefore: toARS(prev),
+        priceAfter:  toARS(next),
       };
       return {
         ...S,
-        priceCents: nextCents,
+        priceCents: next,
         trace:      [...S.trace, entry],
         breakdown:  apply
           ? [...S.breakdown, { op: 'cap', max: maxARS, rule: ruleId,
-                               priceBefore: toARS(prevCents), priceAfter: toARS(nextCents) }]
+                               priceBefore: toARS(prev), priceAfter: toARS(next) }]
           : S.breakdown,
       };
     }
 
     case 'floor_price': {
-      const minARS    = action.params?.min;
-      const minCents  = minARS !== undefined ? toCents(minARS) : null;
-      const prevCents = S.priceCents;
-      const apply     = minCents !== null && prevCents < minCents;
-      const nextCents = apply ? minCents : prevCents;
+      const minARS   = action.params?.min;
+      const minCents = minARS !== undefined ? toCents(minARS) : null;
+      const prev     = S.priceCents;
+      const apply    = minCents !== null && prev < minCents;
+      const next     = apply ? minCents : prev;
       const entry = {
         ruleId, op,
         status:      apply ? TraceStatus.EXECUTED : TraceStatus.NOOP,
+        effectType:  apply ? EffectType.FINANCIAL  : EffectType.NONE,
         min:         minARS,
-        priceBefore: toARS(prevCents),
-        priceAfter:  toARS(nextCents),
+        priceBefore: toARS(prev),
+        priceAfter:  toARS(next),
       };
       return {
         ...S,
-        priceCents: nextCents,
+        priceCents: next,
         trace:      [...S.trace, entry],
         breakdown:  apply
           ? [...S.breakdown, { op: 'floor', min: minARS, rule: ruleId,
-                               priceBefore: toARS(prevCents), priceAfter: toARS(nextCents) }]
+                               priceBefore: toARS(prev), priceAfter: toARS(next) }]
           : S.breakdown,
       };
     }
@@ -181,33 +183,32 @@ function _transition(S, action) {
       const reason = action.params?.reason || 'policy_freeze';
       return {
         ...S,
-        frozen:      true,
+        frozen:       true,
         freezeSource: ruleId,
         trace: [...S.trace, {
           ruleId, op,
           status:        TraceStatus.TERMINAL,
+          effectType:    EffectType.CONTROL,
           reason,
           priceAtFreeze: toARS(S.priceCents),
         }],
-        // freeze NO modifica priceCents ni breakdown
       };
     }
 
     case 'adjust_factor': {
       const field = action.params?.field;
       const value = action.params?.value;
-      const valid = field !== undefined && field !== null;
-      // adjust_factor afecta contextOut (derivado del trace en π_s), no price
+      const valid = field != null;
       return {
         ...S,
         trace: [...S.trace, {
           ruleId, op,
-          status: valid ? TraceStatus.EXECUTED : TraceStatus.NOOP,
+          status:     valid ? TraceStatus.EXECUTED : TraceStatus.NOOP,
+          effectType: valid ? EffectType.STATE      : EffectType.NONE,
           field,
           value,
-          reason: !valid ? 'no_field_specified' : undefined,
+          reason:     !valid ? 'no_field_specified' : undefined,
         }],
-        // priceCents y breakdown sin cambio
       };
     }
 
@@ -216,8 +217,9 @@ function _transition(S, action) {
         ...S,
         trace: [...S.trace, {
           ruleId, op,
-          status:    TraceStatus.EXECUTED,
-          eventType: action.params?.type,
+          status:     TraceStatus.EXECUTED,
+          effectType: EffectType.SIDE_EFFECT,
+          eventType:  action.params?.type,
         }],
       };
     }
@@ -225,46 +227,47 @@ function _transition(S, action) {
     default: {
       return {
         ...S,
-        trace: [...S.trace, { ruleId, op, status: TraceStatus.UNKNOWN_ACTION }],
+        trace: [...S.trace, {
+          ruleId, op,
+          status:     TraceStatus.UNKNOWN_ACTION,
+          effectType: EffectType.NONE,
+        }],
       };
     }
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STATE PROJECTION π_s(ctx₀, trace) → contextOut  (IC-1)
-// Derivada del trace — no depende de _ctx mutable interno.
+// PROYECCIONES — basadas en effectType, no en op name (A2 cerrado)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// π_s: state projection — filtra por contrato, no por heurística de op
 function _projectState(ctx0, trace) {
-  return trace.reduce((acc, entry) => {
-    if (entry.op === 'adjust_factor' && entry.status === TraceStatus.EXECUTED) {
-      return { ...acc, [entry.field]: entry.value };
-    }
-    return acc;
-  }, { ...ctx0 });
+  return trace
+    .filter(e => e.effectType === EffectType.STATE && e.status === TraceStatus.EXECUTED)
+    .reduce((acc, e) => ({ ...acc, [e.field]: e.value }), { ...ctx0 });
 }
 
+// π_f: financial projection — ya garantizada por breakdown en δ
+// Se expone directamente desde S.breakdown
+
 // ─────────────────────────────────────────────────────────────────────────────
-// APPLY ACTIONS — orquesta δ sobre pipeline de acciones
+// APPLY ACTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
 function applyActions(actions, basePrice, ctx) {
-  // Estado inicial S₀
   let S = {
-    priceCents:  toCents(basePrice),
-    frozen:      false,
+    priceCents:   toCents(basePrice),
+    frozen:       false,
     freezeSource: null,
-    trace:       [],
-    breakdown:   [],
+    trace:        [],
+    breakdown:    [],
   };
 
-  // Fase B: ejecutar pipeline con δ
   for (const action of actions) {
     S = _transition(S, action);
   }
 
-  // π_s: proyección de estado derivada del trace (no de mutación interna)
   const contextOut = _projectState(ctx, S.trace);
 
   return {
@@ -273,27 +276,21 @@ function applyActions(actions, basePrice, ctx) {
       ? (S.trace.find(e => e.status === TraceStatus.TERMINAL)?.reason || 'policy_freeze')
       : null,
     finalPrice: toARS(S.priceCents),
-    breakdown:  S.breakdown,   // π_f: financial projection
-    trace:      S.trace,       // execution log
-    contextOut,                // π_s: state projection
+    breakdown:  S.breakdown,
+    trace:      S.trace,
+    contextOut,
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// EVALUATE RULES — Fase A + Fase B con ctx progresivo  (IC-2)
-//
-// Fase A: resolución de reglas con ctx progresivo
-//   cada regla ve el ctx producido por las reglas anteriores (adjust_factor)
-// Fase B: delegada a applyActions con pipeline completo
+// EVALUATE RULES — Fase A (ctx progresivo) + Fase B (pipeline)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function evaluateRules(rules, ctx, basePrice) {
   const appliedRules  = [];
   const activeActions = [];
   const shadowActions = [];
-
-  // Fase A — ctx progresivo para resolución causal
-  let ctxProgressive = { ...ctx };
+  let ctxProgressive  = { ...ctx };
 
   for (const rule of rules) {
     if (!matchesScope(rule, ctxProgressive))      continue;
@@ -303,9 +300,6 @@ function evaluateRules(rules, ctx, basePrice) {
 
     if (rule.status === 'active') {
       rule.actions.forEach(a => activeActions.push({ ...a, _rule: rule.ruleId }));
-
-      // Actualizar ctxProgressive con adjust_factor inmediato
-      // para que la siguiente regla en Fase A vea el estado actualizado
       rule.actions.forEach(a => {
         if (a.type === 'adjust_factor' && a.params?.field) {
           ctxProgressive = { ...ctxProgressive, [a.params.field]: a.params.value };
@@ -316,7 +310,6 @@ function evaluateRules(rules, ctx, basePrice) {
     }
   }
 
-  // Fase B — ejecutar pipeline completo sobre ctx₀ original
   const { frozen, reason, finalPrice, breakdown, trace, contextOut } =
     applyActions(activeActions, basePrice, ctx);
 
@@ -328,7 +321,7 @@ function evaluateRules(rules, ctx, basePrice) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BUILD CONTEXT — única fuente de verdad
+// BUILD CONTEXT
 // ─────────────────────────────────────────────────────────────────────────────
 
 function buildContext(event) {
@@ -366,4 +359,5 @@ module.exports = {
   matchesConditions,
   applyActions,
   TraceStatus,
+  EffectType,
 };
