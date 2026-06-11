@@ -401,6 +401,7 @@ startProjectionEngine();
 // SINAPSIS Evidence Store
 const evidenceRouter = require('./routes/evidence');
 app.use('/api/evidence', evidenceRouter);
+app.use('/api/referidos', require('./src/routes/referidos'));
 
 // B19 Control Plane — solo admin
 const { soloAdmin } = require('./src/core/middleware/auth');
