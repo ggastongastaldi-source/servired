@@ -18,9 +18,7 @@
       + '<div style="color:#fff;font-weight:700;font-size:15px">' + c.nombre + '</div>'
       + '<div style="color:#ff6b35;font-size:12px;margin-top:2px">📍 ' + c.zona + '</div>';
 
-    const target = document.querySelector('.btn-roles')
-      || document.querySelector('[data-pantalla="roles"]')
-      || document.getElementById('pantalla-inicio');
+    const target = document.querySelector('.btn-cyan');
     if (target) target.insertAdjacentElement('beforebegin', el);
   }
 })();
