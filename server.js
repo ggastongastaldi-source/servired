@@ -45,6 +45,8 @@ const seoRouter = require('./src/core/routes/seo');
 app.use('/servicio', seoRouter);
 const casosRouter = require('./src/core/routes/casos');
 app.use('/casos', casosRouter);
+const sitemapsRouter = require('./src/core/routes/sitemaps');
+app.use('/', sitemapsRouter);
 app.use('/api/mensajes', rutaMensajes);
 app.use('/api/auth', require('./src/core/routes/auth'));
 const pedidosRoute = require('./src/core/routes/pedidos')(io);
