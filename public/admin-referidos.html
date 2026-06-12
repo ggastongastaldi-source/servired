@@ -88,7 +88,7 @@
 <button class="refresh" onclick="cargar()">🔄 Actualizar</button>
 
 <script>
-const TOKEN = localStorage.getItem('token');
+function getToken(){ return localStorage.getItem('servired_token') || localStorage.getItem('token'); }
 
 function pct(n, total){
   if(!total) return 0;
@@ -141,6 +141,7 @@ async function cargar(){
   const totalsEl = document.getElementById('totals');
   content.innerHTML = '<div class="loading">Cargando…</div>';
 
+  const TOKEN = getToken();
   if(!TOKEN){
     content.innerHTML = '<div class="error">No hay sesión. <a href="/">Iniciá sesión como Admin</a> primero.</div>';
     totalsEl.innerHTML = '';
