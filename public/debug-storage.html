@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debug Storage</title>
+<style>body{background:#0a0e17;color:#0f0;font-family:monospace;font-size:13px;padding:16px;word-break:break-all;}
+.k{color:#00E5FF;font-weight:bold;margin-top:12px;}
+.v{color:#fff;}
+</style></head><body>
+<h2 style="color:#FF6B35">localStorage dump</h2>
+<div id="out"></div>
+<script>
+const out = document.getElementById('out');
+if(localStorage.length === 0){
+  out.innerHTML = '<p style="color:#FF6B35">localStorage está VACÍO</p>';
+} else {
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    let v = localStorage.getItem(k);
+    if(v && v.length > 200) v = v.slice(0,200) + '... (truncado, len=' + v.length + ')';
+    out.innerHTML += '<div class="k">'+k+'</div><div class="v">'+v+'</div>';
+  }
+}
+</script>
+</body></html>
