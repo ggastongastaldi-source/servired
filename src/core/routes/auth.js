@@ -4,10 +4,24 @@ const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 const SECRET = process.env.JWT_SECRET;
 const { enviarBienvenidaWorker, enviarBienvenidaCliente } = require('../services/emailService');
+const Referido = require('../../models/Referido');
+
+async function registrarOrigenAtribucion(userId, rol, origin_ref) {
+  if (!origin_ref) return;
+  try {
+    const campo = rol === 'TRABAJADOR' ? 'worker_origin_ref' : 'client_origin_ref';
+    await Usuario.findByIdAndUpdate(userId, { [campo]: origin_ref });
+    const inc = { 'stats.registros': 1 };
+    if (rol === 'TRABAJADOR') inc['stats.workers'] = 1; else inc['stats.clientes'] = 1;
+    await Referido.findOneAndUpdate({ ref_code: origin_ref.toUpperCase() }, { $inc: inc });
+  } catch (e) {
+    console.error('[Atribucion] error:', e.message);
+  }
+}
 
 router.post('/registro', async (req, res) => {
   try {
-    const { nombre, email, password, rol, especialidades, telefono } = req.body;
+    const { nombre, email, password, rol, especialidades, telefono, origin_ref } = req.body;
     if (!nombre || !email || !password) return res.status(400).json({ ok: false, error: 'Faltan campos' });
     const existe = await Usuario.findOne({ email });
     const nuevoRol = rol || 'CLIENTE';
@@ -29,6 +43,7 @@ router.post('/registro', async (req, res) => {
         } : {})
       };
       await Usuario.findByIdAndUpdate(existe._id, updateData);
+      registrarOrigenAtribucion(existe._id, nuevoRol, origin_ref).catch(()=>{});
       const uActualizado = await Usuario.findById(existe._id);
       const token = jwt.sign({ id: uActualizado._id, userId: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, rubro: uActualizado.rubro, especialidades: uActualizado.especialidades, zona: uActualizado.zona }, SECRET, { expiresIn: '7d' });
       return res.json({ ok: true, token, usuario: { id: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, estado: uActualizado.estado }, mensaje: 'Rol agregado a tu cuenta existente' });
@@ -37,6 +52,7 @@ router.post('/registro', async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const estado = nuevoRol === 'TRABAJADOR' ? 'PENDIENTE_VERIFICACION' : 'ACTIVO';
     const u = await Usuario.create({ nombre, email, password: hash, rol: nuevoRol, roles: [nuevoRol], especialidades: especialidades || [], telefono: telefono || '', estado, ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] } });
+    registrarOrigenAtribucion(u._id, nuevoRol, origin_ref).catch(()=>{});
     const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
     // Email de bienvenida (async, no bloquea el registro)
     try {

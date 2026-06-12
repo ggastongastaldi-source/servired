@@ -45,6 +45,8 @@ const usuarioSchema = new mongoose.Schema({
   // ── WALLET ───────────────────────────────────────────────
   wallet_pending:   { type: Number, default: 0 }, // fondos capturados, pendientes de liberacion
   wallet_available: { type: Number, default: 0 }, // fondos disponibles para retiro
+  client_origin_ref: { type: String, default: null },
+  worker_origin_ref: { type: String, default: null },
 }, { timestamps: true });
 
 // 2dsphere index manejado manualmente en DB

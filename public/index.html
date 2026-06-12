@@ -396,7 +396,7 @@ async function registrar(rol){
   if(!nombre||!email||!pass){errEl.textContent='Completá todos los campos';errEl.classList.add('show');return;}
   if(pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';errEl.classList.add('show');return;}
   try{
-    const r=await fetch('/api/auth/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,email,password:pass,rol})});
+    const r=await fetch('/api/auth/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,email,password:pass,rol,origin_ref:sessionStorage.getItem('origin_ref')||null})});
     const data=await r.json();
     if(!r.ok){errEl.textContent=data.mensaje||data.error||'Error al registrar';errEl.classList.add('show');return;}
     const token=data.token||data.data?.token;
@@ -438,7 +438,7 @@ async function registrarTrabajador(){
   if(!esp.length){err.textContent='Seleccioná al menos un rubro';err.style.display='block';return;}
   try{
     const r=await fetch('/api/auth/registro',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({nombre,email,password:pass,rol:'TRABAJADOR',dni,telefono:tel,cbu,alias,especialidades:esp})});
+      body:JSON.stringify({nombre,email,password:pass,rol:'TRABAJADOR',dni,telefono:tel,cbu,alias,especialidades:esp,origin_ref:sessionStorage.getItem('origin_ref')||null})});
     const d=await r.json();
     if(!r.ok){err.textContent=d.error||'Error al registrar';err.style.display='block';return;}
     localStorage.setItem('token',d.token);
