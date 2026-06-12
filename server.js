@@ -58,6 +58,7 @@ app.use('/api/matching', require('./src/core/routes/matching'));
 app.use('/api/rating', require('./src/core/routes/rating'));
 app.use('/api/pagos', require('./src/core/routes/pagos'));
 app.use('/api/admin/finance', require('./src/core/routes/adminFinance'));
+app.use('/api/admin/referidos', require('./src/core/routes/referidosAdmin'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
 const gatewayRoutes = require('./routes/gatewayRoutes');
 const simulationRoutes = require('./routes/simulationRoutes');
