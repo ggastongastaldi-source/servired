@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://servired.online/schemas/event.schema.json",
+  "title": "ServiRed OS - Canonical Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "timestamp",
+    "correlation_id",
+    "causation",
+    "actor",
+    "context",
+    "payload",
+    "metadata"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "qr_scanned",
+        "landing_viewed",
+        "shell_opened",
+        "register_started",
+        "register_completed",
+        "case_created",
+        "case_abandoned",
+        "job_requested",
+        "job_completed",
+        "job_unfulfilled",
+        "wallet_opened",
+        "lead_attributed"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$"
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "causation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "event_type"],
+      "properties": {
+        "event_id": { "type": ["string", "null"] },
+        "event_type": { "type": ["string", "null"] }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["user_id", "role"],
+      "properties": {
+        "user_id": { "type": ["string", "null"] },
+        "role": { "type": "string", "minLength": 1 }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenant_id", "session_id", "zone", "source"],
+      "properties": {
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "session_id": { "type": ["string", "null"] },
+        "zone": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] }
+      }
+    },
+    "payload": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "environment"],
+      "properties": {
+        "version": { "type": "integer", "minimum": 1 },
+        "environment": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
