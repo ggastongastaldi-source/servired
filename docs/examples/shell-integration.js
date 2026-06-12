@@ -54,7 +54,6 @@ const actor = { user_id: 'usr_123', role: 'CLIENTE' };
 const context = {
   tenant_id: 'servired',
   session_id: 'sess_abc123',
-  zona: undefined, // ejemplo: no usar claves fuera del contrato
   zone: 'la_matanza',
   source: 'shell'
 };
