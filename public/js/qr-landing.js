@@ -3,7 +3,7 @@
   const ref = params.get('ref');
   if (!ref) return;
 
-  sessionStorage.setItem('origin_ref', ref);
+  SessionContext.setOriginRef(ref);
 
   fetch('/api/referidos/resolver?ref=' + encodeURIComponent(ref))
     .then(r => r.json())
