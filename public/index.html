@@ -144,6 +144,20 @@ select option{background:#1a2236;color:#e2e8f0;}
 .modal{background:#111827 !important;}
 .modal-bg{backdrop-filter:blur(4px);}
 
+
+/* SHELL TOPBAR - Fase 1 */
+body{padding-top:64px;}
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(10,14,26,0.85);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.06);z-index:50;}
+.topbar-btn{background:transparent;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;line-height:1;padding:6px;}
+.topbar-status{display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite;}
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:90;}
+.drawer-overlay.show{display:block;}
+.drawer{position:fixed;top:0;left:0;height:100vh;width:78%;max-width:300px;background:var(--surface);z-index:91;transform:translateX(-100%);transition:transform 0.25s ease;padding:20px 16px;box-sizing:border-box;}
+.drawer.show{transform:translateX(0);}
+.drawer-title{font-size:1.1rem;font-weight:700;color:var(--cyan);margin-bottom:18px;padding-top:8px;}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:13px 8px;border-radius:10px;color:var(--text);font-size:1rem;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;font-family:'Rajdhani',sans-serif;}
+.drawer-item:hover{background:var(--surface2);}
 </style>
 
   <!-- PWA -->
@@ -169,6 +183,47 @@ select option{background:#1a2236;color:#e2e8f0;}
   <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then(()=>console.log('[SW] ServiRed activo'));</script>
 </head>
 <body>
+
+<div class="topbar">
+  <button class="topbar-btn" onclick="toggleDrawer()" aria-label="Menu">☰</button>
+  <div class="topbar-status"><span class="status-dot"></span> Sistema activo</div>
+  <button class="topbar-btn" onclick="toggleNotif()" aria-label="Notificaciones">🔔</button>
+</div>
+
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-title">☰ SERVIRED</div>
+  <button class="drawer-item" onclick="closeDrawer();abrirModalConDestino('cliente')">🔍 Busco un Servicio</button>
+  <button class="drawer-item" onclick="closeDrawer();abrirModalConDestino('trabajador')">🔧 Ofrezco mis Servicios</button>
+  <button class="drawer-item" onclick="closeDrawer();abrirModal('registro-cliente')">📝 Registrarme como Cliente</button>
+  <button class="drawer-item" onclick="closeDrawer();abrirModal('registro-trabajador')">🔧 Registrarme como Trabajador</button>
+  <button class="drawer-item" onclick="closeDrawer();abrirModal('login-gen')">🔑 Ya tengo cuenta</button>
+  <button class="drawer-item" onclick="closeDrawer();abrirModal('admin-login')">⚙️ Admin</button>
+</div>
+
+<div class="modal-bg" id="modal-notif">
+  <div class="modal">
+    <div class="modal-title">🔔 Notificaciones</div>
+    <p style="color:var(--muted);font-size:0.92rem;">No tenes notificaciones nuevas.</p>
+    <div class="modal-btns">
+      <button class="btn-sm btn-sm-pri" onclick="toggleNotif()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleDrawer(){
+  document.getElementById('drawer').classList.toggle('show');
+  document.getElementById('drawer-overlay').classList.toggle('show');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('show');
+  document.getElementById('drawer-overlay').classList.remove('show');
+}
+function toggleNotif(){
+  document.getElementById('modal-notif').classList.toggle('show');
+}
+</script>
 
 <div class="logo-wrap">
   <div class="logo-ring-container">
