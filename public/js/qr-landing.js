@@ -7,7 +7,16 @@
 
   fetch('/api/referidos/resolver?ref=' + encodeURIComponent(ref))
     .then(r => r.json())
-    .then(data => { if (data.comercio) _render(data.comercio); })
+    .then(data => {
+      if (data.comercio) _render(data.comercio);
+      if (data.correlation_id && data.last_event) {
+        SessionContext.recordEvent({
+          event_id: data.last_event.event_id,
+          event_type: data.last_event.event_type,
+          correlation_id: data.correlation_id
+        });
+      }
+    })
     .catch(() => {});
 
   function _render(c) {

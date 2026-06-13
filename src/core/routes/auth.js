@@ -5,6 +5,8 @@ const Usuario = require('../models/Usuario');
 const SECRET = process.env.JWT_SECRET;
 const { enviarBienvenidaWorker, enviarBienvenidaCliente } = require('../services/emailService');
 const Referido = require('../../models/Referido');
+const { router: eventRouter } = require('../../../shared/events/router-instance');
+const { emitRegisterCompleted, emitLeadAttributed } = require('../../../shared/events/referral-events');
 
 async function registrarOrigenAtribucion(userId, rol, origin_ref) {
   if (!origin_ref) return;
@@ -19,9 +21,41 @@ async function registrarOrigenAtribucion(userId, rol, origin_ref) {
   }
 }
 
+async function emitBusEventsForRegistro(params) {
+  try {
+    const actor = { user_id: String(params.userId), role: params.rol };
+    const context = { source: 'auth' };
+
+    const registerEvt = emitRegisterCompleted({
+      correlationId: params.correlationId,
+      causation: params.causation,
+      actor: actor,
+      context: context,
+      payload: { email: params.email, rol: params.rol }
+    });
+    const persistedRegister = await eventRouter.publish(registerEvt);
+
+    if (params.origin_ref) {
+      const leadEvt = emitLeadAttributed({
+        correlationId: persistedRegister.event.correlation_id,
+        causation: {
+          event_id: persistedRegister.event.event_id,
+          event_type: persistedRegister.event.event_type
+        },
+        actor: actor,
+        context: context,
+        payload: { origin_ref: params.origin_ref, rol: params.rol }
+      });
+      await eventRouter.publish(leadEvt);
+    }
+  } catch (e) {
+    console.error('[EventBus] registro error:', e.message);
+  }
+}
+
 router.post('/registro', async (req, res) => {
   try {
-    const { nombre, email, password, rol, especialidades, telefono, origin_ref } = req.body;
+    const { nombre, email, password, rol, especialidades, telefono, origin_ref, correlationId, causation } = req.body;
     if (!nombre || !email || !password) return res.status(400).json({ ok: false, error: 'Faltan campos' });
     const existe = await Usuario.findOne({ email });
     const nuevoRol = rol || 'CLIENTE';
@@ -44,6 +78,7 @@ router.post('/registro', async (req, res) => {
       };
       await Usuario.findByIdAndUpdate(existe._id, updateData);
       registrarOrigenAtribucion(existe._id, nuevoRol, origin_ref).catch(()=>{});
+      emitBusEventsForRegistro({ userId: existe._id, rol: nuevoRol, email, origin_ref, correlationId, causation }).catch(()=>{});
       const uActualizado = await Usuario.findById(existe._id);
       const token = jwt.sign({ id: uActualizado._id, userId: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, rubro: uActualizado.rubro, especialidades: uActualizado.especialidades, zona: uActualizado.zona }, SECRET, { expiresIn: '7d' });
       return res.json({ ok: true, token, usuario: { id: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, estado: uActualizado.estado }, mensaje: 'Rol agregado a tu cuenta existente' });
@@ -53,6 +88,7 @@ router.post('/registro', async (req, res) => {
     const estado = nuevoRol === 'TRABAJADOR' ? 'PENDIENTE_VERIFICACION' : 'ACTIVO';
     const u = await Usuario.create({ nombre, email, password: hash, rol: nuevoRol, roles: [nuevoRol], especialidades: especialidades || [], telefono: telefono || '', estado, ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] } });
     registrarOrigenAtribucion(u._id, nuevoRol, origin_ref).catch(()=>{});
+    emitBusEventsForRegistro({ userId: u._id, rol: nuevoRol, email, origin_ref, correlationId, causation }).catch(()=>{});
     const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
     // Email de bienvenida (async, no bloquea el registro)
     try {
