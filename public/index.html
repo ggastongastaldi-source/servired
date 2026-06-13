@@ -193,12 +193,15 @@ body{padding-top:64px;}
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-title">☰ SERVIRED</div>
-  <button class="drawer-item" onclick="closeDrawer();abrirModalConDestino('cliente')">🔍 Busco un Servicio</button>
-  <button class="drawer-item" onclick="closeDrawer();abrirModalConDestino('trabajador')">🔧 Ofrezco mis Servicios</button>
-  <button class="drawer-item" onclick="closeDrawer();abrirModal('registro-cliente')">📝 Registrarme como Cliente</button>
-  <button class="drawer-item" onclick="closeDrawer();abrirModal('registro-trabajador')">🔧 Registrarme como Trabajador</button>
+  <p style="color:var(--muted);font-size:0.82rem;margin-bottom:14px;line-height:1.4;">Conectando vecinos, profesionales y comercios reales</p>
+  <button class="drawer-item" onclick="closeDrawer();abrirModalConDestino('cliente')">🔍 Necesito un servicio</button>
+  <button class="drawer-item" onclick="closeDrawer();abrirModalConDestino('trabajador')">🔧 Soy profesional, quiero clientes</button>
+  <a class="drawer-item" style="text-decoration:none;" href="https://wa.me/5491168360746?text=Hola%2C%20quiero%20sumar%20mi%20comercio%20a%20ServiRed" target="_blank">🏪 Tengo un comercio, quiero sumarme</a>
+  <div style="border-top:1px solid rgba(255,255,255,0.08);margin:10px 0;"></div>
+  <button class="drawer-item" onclick="closeDrawer();abrirModal('como-funciona')">📖 Cómo funciona ServiRed</button>
+  <a class="drawer-item" style="text-decoration:none;" href="https://wa.me/5491168360746?text=Hola%2C%20necesito%20ayuda%20con%20ServiRed" target="_blank">💬 Ayuda / Soporte</a>
+  <div style="border-top:1px solid rgba(255,255,255,0.08);margin:10px 0;"></div>
   <button class="drawer-item" onclick="closeDrawer();abrirModal('login-gen')">🔑 Ya tengo cuenta</button>
-  <button class="drawer-item" onclick="closeDrawer();abrirModal('admin-login')">⚙️ Admin</button>
 </div>
 
 <div class="modal-bg" id="modal-notif">
@@ -207,6 +210,20 @@ body{padding-top:64px;}
     <p style="color:var(--muted);font-size:0.92rem;">No tenes notificaciones nuevas.</p>
     <div class="modal-btns">
       <button class="btn-sm btn-sm-pri" onclick="toggleNotif()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-como-funciona">
+  <div class="modal">
+    <div class="modal-title">📖 Cómo funciona ServiRed</div>
+    <p style="color:var(--text);font-size:0.95rem;line-height:1.5;margin-bottom:10px;font-weight:700;">La red que conecta vecinos, profesionales y comercios reales.</p>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.5;margin-bottom:10px;">Si necesitás un plomero, electricista, albañil o cualquier servicio para tu hogar, ServiRed te ayuda a encontrarlo.</p>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.5;margin-bottom:10px;">Si sos profesional, ServiRed te ayuda a conseguir clientes.</p>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.5;margin-bottom:10px;">Si tenés un comercio, ServiRed te permite formar parte de una red local en crecimiento.</p>
+    <p style="color:var(--green);font-size:0.85rem;line-height:1.5;">Todo dentro de una plataforma diseñada para fortalecer la economía de cercanía. Bienvenido a ServiRed.</p>
+    <div class="modal-btns">
+      <button class="btn-sm btn-sm-pri" onclick="cerrarModals()">Cerrar</button>
     </div>
   </div>
 </div>
