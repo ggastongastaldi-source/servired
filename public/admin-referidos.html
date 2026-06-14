@@ -106,6 +106,16 @@
 </div>
 
 <div id="totals" class="totals"></div>
+
+<div class="card" id="admin-login-card" style="max-width:680px;margin:0 auto 20px;display:none;">
+  <div class="card-head"><h2>🔑 Login Admin</h2></div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <input id="al-email" placeholder="Email admin" class="nc-input" autocomplete="username">
+    <input id="al-pass" type="password" placeholder="Contraseña" class="nc-input" autocomplete="current-password">
+    <button class="refresh" style="margin:0;" onclick="loginAdmin()">Entrar</button>
+  </div>
+  <div id="al-msg" style="font-size:12px;margin-top:8px;color:var(--muted);"></div>
+</div>
 <div id="content" class="cards"><div class="loading">Cargando…</div></div>
 <button class="refresh" onclick="cargar()">🔄 Actualizar</button>
 
@@ -177,14 +187,14 @@ async function cargar(){
   try{
     const r = await fetch('/api/admin/referidos', { headers: { 'Authorization': 'Bearer ' + TOKEN } });
     if(r.status === 401 || r.status === 403){
-      var debugRol = '(no se pudo decodificar)';
-      try{ debugRol = JSON.stringify(JSON.parse(atob(TOKEN.split('.')[1]))); }catch(e){ debugRol = 'error: '+e.message; }
-      content.innerHTML = '<div class="error">Sesión sin permisos de Admin. <a href="/">Volver e iniciar sesión</a>.<br><br><small style="word-break:break-all;">DEBUG token payload: '+debugRol+'</small></div>';
+      content.innerHTML = '<div class="error">Sesión sin permisos de Admin. Inicia sesión abajo.</div>';
       totalsEl.innerHTML = '';
+      document.getElementById('admin-login-card').style.display = 'block';
       return;
     }
     const data = await r.json();
     const list = data.data || [];
+    document.getElementById('admin-login-card').style.display = 'none';
 
     if(!list.length){
       content.innerHTML = '<div class="empty">Todavía no hay comercios referentes registrados.</div>';
@@ -240,6 +250,30 @@ async function crearComercio(){
     msg.textContent = '✅ Creado: ' + data.data.ref_code;
     document.getElementById('nc-nombre').value = '';
     document.getElementById('nc-zona').value = '';
+    cargar();
+  }catch(e){
+    msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+async function loginAdmin(){
+  var email = document.getElementById('al-email').value.trim();
+  var pass = document.getElementById('al-pass').value;
+  var msg = document.getElementById('al-msg');
+  if(!email || !pass){ msg.textContent = 'Completa email y contraseña.'; return; }
+  msg.textContent = 'Entrando...';
+  try{
+    var r = await fetch('/api/auth/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email: email, password: pass })
+    });
+    var data = await r.json();
+    if(!data.ok){ msg.textContent = 'Error: ' + (data.error || 'credenciales invalidas'); return; }
+    var payload = JSON.parse(atob(data.token.split('.')[1]));
+    if(payload.rol !== 'ADMIN'){ msg.textContent = 'Login OK pero rol="' + payload.rol + '" (se necesita ADMIN).'; return; }
+    localStorage.setItem('token', data.token);
+    msg.textContent = 'OK, cargando...';
     cargar();
   }catch(e){
     msg.textContent = 'Error: ' + e.message;
