@@ -179,8 +179,9 @@ async function cargar(){
 
   const TOKEN = getToken();
   if(!TOKEN){
-    content.innerHTML = '<div class="error">No hay sesión. <a href="/">Iniciá sesión como Admin</a> primero.</div>';
+    content.innerHTML = '<div class="error">No hay sesión. Inicia sesión abajo.</div>';
     totalsEl.innerHTML = '';
+    document.getElementById('admin-login-card').style.display = 'block';
     return;
   }
 
