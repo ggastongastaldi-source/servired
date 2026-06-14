@@ -230,8 +230,28 @@ body{padding-top:64px;}
 
 <script>
 function toggleDrawer(){
-  document.getElementById('drawer').classList.toggle('show');
-  document.getElementById('drawer-overlay').classList.toggle('show');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('drawer-overlay');
+  drawer.classList.toggle('show');
+  overlay.classList.toggle('show');
+  if (drawer.classList.contains('show')) {
+    fetch('/api/shell/opened', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(SessionContext.getCausalContext())
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.correlation_id && data.last_event) {
+        SessionContext.recordEvent({
+          event_id: data.last_event.event_id,
+          event_type: data.last_event.event_type,
+          correlation_id: data.correlation_id
+        });
+      }
+    })
+    .catch(()=>{});
+  }
 }
 function closeDrawer(){
   document.getElementById('drawer').classList.remove('show');
