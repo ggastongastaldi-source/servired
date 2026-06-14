@@ -177,7 +177,9 @@ async function cargar(){
   try{
     const r = await fetch('/api/admin/referidos', { headers: { 'Authorization': 'Bearer ' + TOKEN } });
     if(r.status === 401 || r.status === 403){
-      content.innerHTML = '<div class="error">Sesión sin permisos de Admin. <a href="/">Volver e iniciar sesión</a>.</div>';
+      var debugRol = '(no se pudo decodificar)';
+      try{ debugRol = JSON.stringify(JSON.parse(atob(TOKEN.split('.')[1]))); }catch(e){ debugRol = 'error: '+e.message; }
+      content.innerHTML = '<div class="error">Sesión sin permisos de Admin. <a href="/">Volver e iniciar sesión</a>.<br><br><small style="word-break:break-all;">DEBUG token payload: '+debugRol+'</small></div>';
       totalsEl.innerHTML = '';
       return;
     }
