@@ -23,4 +23,24 @@ router.get('/', authAdmin, async (req, res) => {
   }
 });
 
+
+// POST /api/admin/referidos - crear comercio aliado
+// ref_code se deriva de _id (deterministico, inmutable, sin input de usuario,
+// sin persistencia redundante: es el mismo campo ya existente en el schema).
+router.post('/', authAdmin, async (req, res) => {
+  try {
+    const { nombre, zona, tipo } = req.body || {};
+    if (!nombre || !zona) {
+      return res.status(400).json({ ok: false, error: 'nombre y zona son requeridos' });
+    }
+
+    const doc = new Referido({ nombre, zona, tipo: tipo || 'otro' });
+    doc.ref_code = doc._id.toString().toUpperCase();
+    await doc.save();
+
+    res.json({ ok: true, data: doc });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
 module.exports = router;

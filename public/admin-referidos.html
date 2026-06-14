@@ -74,13 +74,35 @@
     border:1px solid var(--cyan); color:var(--cyan); font-weight:700;
     padding:10px 24px; border-radius:10px; font-size:13px; cursor:pointer;
   }
+  .nc-input{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+    background:#0d1420; color:var(--text); font-size:13px; font-family:inherit;
+  }
+  .qr-box{ background:#fff; border-radius:8px; padding:6px; display:inline-block; line-height:0; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
 <div class="header">
   <h1>📊 PANEL DE REFERIDOS</h1>
   <p>ServiRed — Atribución territorial por comercio</p>
+</div>
+
+<div class="card" style="max-width:680px;margin:0 auto 20px;">
+  <div class="card-head"><h2>➕ Nuevo comercio</h2></div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <input id="nc-nombre" placeholder="Nombre del comercio" class="nc-input">
+    <input id="nc-zona" placeholder="Zona / Localidad" class="nc-input">
+    <select id="nc-tipo" class="nc-input">
+      <option value="ferreteria">Ferretería</option>
+      <option value="corralon">Corralón</option>
+      <option value="pintureria">Pintureria</option>
+      <option value="otro" selected>Otro</option>
+    </select>
+    <button class="refresh" style="margin:0;" onclick="crearComercio()">Crear y generar QR</button>
+  </div>
+  <div id="nc-msg" style="font-size:12px;margin-top:8px;color:var(--muted);"></div>
 </div>
 
 <div id="totals" class="totals"></div>
@@ -109,6 +131,10 @@ function card(r){
         <div class="zona">📍 ${r.zona}</div>
       </div>
       <span class="badge">${r.ref_code}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div class="qr-box" id="qr-${r._id}"></div>
+      <div style="font-size:11px;color:var(--muted);word-break:break-all;">servired.online/r/${r.ref_code}</div>
     </div>
     <div class="funnel">
       <div class="funnel-row">
@@ -179,8 +205,42 @@ async function cargar(){
     `;
 
     content.innerHTML = list.map(card).join('');
+
+    list.forEach(function(r){
+      var el = document.getElementById('qr-'+r._id);
+      if(el) new QRCode(el, { text: 'https://www.servired.online/r/'+r.ref_code, width:88, height:88, colorDark:'#0a0e17', colorLight:'#ffffff' });
+    });
   }catch(e){
     content.innerHTML = '<div class="error">Error al cargar: ' + e.message + '</div>';
+  }
+}
+
+async function crearComercio(){
+  var TOKEN = getToken();
+  var nombre = document.getElementById('nc-nombre').value.trim();
+  var zona = document.getElementById('nc-zona').value.trim();
+  var tipo = document.getElementById('nc-tipo').value;
+  var msg = document.getElementById('nc-msg');
+
+  if(!nombre || !zona){ msg.textContent = 'Nombre y zona son obligatorios.'; return; }
+  if(!TOKEN){ msg.textContent = 'No hay sesion.'; return; }
+
+  msg.textContent = 'Creando...';
+  try{
+    var r = await fetch('/api/admin/referidos', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + TOKEN },
+      body: JSON.stringify({ nombre: nombre, zona: zona, tipo: tipo })
+    });
+    var data = await r.json();
+    if(!data.ok){ msg.textContent = 'Error: ' + (data.error||'desconocido'); return; }
+
+    msg.textContent = '✅ Creado: ' + data.data.ref_code;
+    document.getElementById('nc-nombre').value = '';
+    document.getElementById('nc-zona').value = '';
+    cargar();
+  }catch(e){
+    msg.textContent = 'Error: ' + e.message;
   }
 }
 
