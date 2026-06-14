@@ -321,7 +321,6 @@ function toggleNotif(){
   <button class="btn btn-outline" onclick="abrirModal('registro-cliente')">📝 Registrarme como Cliente</button>
   <button class="btn btn-green" onclick="abrirModal('registro-trabajador')">🔧 Registrarme como Trabajador</button>
   <button class="btn btn-outline" onclick="abrirModal('login-gen')">🔑 Ya tengo cuenta</button>
-  <button class="btn-admin" onclick="abrirModal('admin-login')">⚙️ Admin</button>
 </div>
 
 <div class="modal-bg" id="modal-cliente-login">
@@ -454,6 +453,7 @@ function abrirModalConDestino(destino){
 function abrirModal(id){cerrarModals();document.getElementById('modal-'+id).classList.add('show');}
 function cerrarModals(){document.querySelectorAll('.modal-bg').forEach(m=>m.classList.remove('show'));}
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)cerrarModals();}));
+if(new URLSearchParams(location.search).get('admin')==='1') abrirModal('admin-login');
 
 async function login(rolEsperado,emailId,passId,errId){
   const email=document.getElementById(emailId).value.trim();
