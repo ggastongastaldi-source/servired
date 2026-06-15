@@ -1,4 +1,4 @@
-const { EventRouter } = require('./EventRouter');
+const { EventRouter } = require('./eventRouter');
 const { createSinapsisBusAdapter } = require('./persistenceAdapters/sinapsisBusAdapter');
 const { WILDCARD } = require('./event-types');
 
