@@ -1,11 +1,11 @@
 const { EventRouter } = require('./eventRouter');
 const { createSinapsisBusAdapter } = require('./persistenceAdapters/sinapsisBusAdapter');
-const { WILDCARD } = require('./event-types');
+
 
 const adapter = createSinapsisBusAdapter();
 const router  = new EventRouter({ persistenceAdapter: adapter });
 
-router.subscribe(WILDCARD, function (persisted) {
+router.subscribe('*', function (persisted) {
   if (!persisted) return; // evento duplicado idempotente → skip
   const e = persisted.event;
   console.log(JSON.stringify({
