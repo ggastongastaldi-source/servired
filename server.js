@@ -119,15 +119,6 @@ app.get('/health', (req, res) => {
 
 
 app.use('/api/health', require('./routes/health'));
-app.get('/api/sinapsis/crash-recovery', soloAdmin, async (req, res) => {
-  try {
-    const report = await runCrashRecovery();
-    res.json(report);
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
 
 app.get('/api/workers/stats', (req, res) => {
     res.json({
@@ -418,7 +409,18 @@ app.use('/api/referidos', require('./src/routes/referidos'));
 app.use('/api/shell', require('./src/routes/shellEvents'));
 
 // B19 Control Plane — solo admin
+
 const { soloAdmin } = require('./src/core/middleware/auth');
+
+app.get('/api/sinapsis/crash-recovery', soloAdmin, async (req, res) => {
+  try {
+    const report = await runCrashRecovery();
+    res.json(report);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 app.get('/b19', soloAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'b19.html'));
 });
