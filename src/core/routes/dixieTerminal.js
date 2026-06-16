@@ -5,12 +5,12 @@
 
 const express = require('express');
 const router  = express.Router();
-const { soloAdmin }    = require('../middleware/auth');
+const { verificarToken, soloAdmin } = require('../middleware/auth');
 const { scan }         = require('../../sinapsis/dixieTerminal/dixieScanner');
 const { PolicyFinding } = require('../../sinapsis/dixieTerminal/PolicyFinding');
 
 // POST /scan — trigger manual
-router.post('/scan', soloAdmin, async (req, res) => {
+router.post('/scan', verificarToken, soloAdmin, async (req, res) => {
   try {
     const result = await scan();
     res.json({ ok: true, ...result });
@@ -21,7 +21,7 @@ router.post('/scan', soloAdmin, async (req, res) => {
 
 // GET /findings — lista paginada con filtros opcionales
 // Query params: status (OPEN|ACKNOWLEDGED), rule, limit (default 50)
-router.get('/findings', soloAdmin, async (req, res) => {
+router.get('/findings', verificarToken, soloAdmin, async (req, res) => {
   try {
     const { status, rule, limit = 50 } = req.query;
     const filter = {};
@@ -41,7 +41,7 @@ router.get('/findings', soloAdmin, async (req, res) => {
 });
 
 // GET /report — resumen ejecutivo con agregaciones
-router.get('/report', soloAdmin, async (req, res) => {
+router.get('/report', verificarToken, soloAdmin, async (req, res) => {
   try {
     const [open, total, bySeverity, byRule, latest] = await Promise.all([
       PolicyFinding.countDocuments({ status: 'OPEN' }),
