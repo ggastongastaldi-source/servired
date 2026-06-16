@@ -58,6 +58,7 @@ app.use('/api/matching', require('./src/core/routes/matching'));
 app.use('/api/rating', require('./src/core/routes/rating'));
 app.use('/api/pagos', require('./src/core/routes/pagos'));
 app.use('/api/admin/finance', require('./src/core/routes/adminFinance'));
+app.use('/api/sinapsis/dixie', require('./src/core/routes/dixieTerminal'));
 app.use('/api/admin/referidos', require('./src/core/routes/referidosAdmin'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
 const gatewayRoutes = require('./routes/gatewayRoutes');
@@ -141,6 +142,13 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
       console.log('✅ MongoDB conectado');
     assertSystemUsers().catch(e => console.error('[assertSystemUsers]', e.message));
     require('./src/core/services/financeWatchdog').iniciar();
+    // Dixie Terminal — scan inicial y cron cada 30 minutos
+    const { scan: dixieScan } = require('./src/sinapsis/dixieTerminal/dixieScanner');
+    dixieScan().catch(e => console.error('[DixieTerminal] scan inicial:', e.message));
+    cron.schedule('*/30 * * * *', () => {
+      dixieScan().catch(e => console.error('[DixieTerminal] cron scan:', e.message));
+    });
+
     require('./src/dispatch').initDispatchEngine(io).catch(e => console.error('[DispatchEngine] init error:', e.message));
       const { initNexus } = require('./nexus/initNexus');
       initNexus(io)
