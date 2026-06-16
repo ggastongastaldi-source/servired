@@ -119,6 +119,15 @@ app.get('/health', (req, res) => {
 
 
 app.use('/api/health', require('./routes/health'));
+app.get('/api/sinapsis/crash-recovery', soloAdmin, async (req, res) => {
+  try {
+    const report = await runCrashRecovery();
+    res.json(report);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 
 app.get('/api/workers/stats', (req, res) => {
     res.json({
@@ -368,6 +377,7 @@ app.get('/api/presupuesto/historial/:clienteId', presupuestoCtrl.obtenerHistoria
 app.get('/api/sinapsis/health', async (req, res) => {
   try {
     const { getHealth } = require('./src/sinapsis/logManagerV2');
+    const { runCrashRecovery } = require('./src/sinapsis/crashRecovery');
     const health = await getHealth();
     res.json({ ok: true, sinapsis: 'v1.0', ...health,
       status: health.integrityOk ? 'VERIFIED' : 'CORRUPTED' });
