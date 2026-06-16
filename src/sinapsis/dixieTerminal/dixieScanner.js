@@ -7,6 +7,8 @@ const { replay: govReplay } = require('../logManagerV2');
 const { PolicyFinding } = require('./PolicyFinding');
 const { evaluate }       = require('./policyEngine');
 const { execute }        = require('./actionExecutor');
+const { evaluateCircuitBreaker } = require('./circuitBreaker');
+const { SystemState, getState } = require('./SystemState');
 
 // ── Catálogo de reglas ──────────────────────────────────────────
 const RULES = {
@@ -137,6 +139,10 @@ async function scan() {
 
   const openCount = await PolicyFinding.countDocuments({ status: 'OPEN' });
 
+  // ── Sprint 3C-B: Circuit Breaker automático ────────────────────────
+  // Reusa openFindings ya cargado arriba — sin query adicional.
+  const breakerDecision = await evaluateCircuitBreaker(openFindings, getState, SystemState);
+
   const status = created.length === 0 ? 'CLEAN' : 'FINDINGS_DETECTED';
 
   console.log(JSON.stringify({
@@ -152,6 +158,7 @@ async function scan() {
     openFindings:  openCount,
     decisions:     decisions.length,
     actionsApplied: appliedCount,
+    circuitBreaker: breakerDecision,
     bus: {
       total:       busResult.total,
       integrityOk: busResult.integrityOk,
