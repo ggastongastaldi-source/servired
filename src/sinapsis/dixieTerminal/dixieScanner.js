@@ -5,6 +5,8 @@
 const { busReplay }    = require('../../../shared/events/persistenceAdapters/sinapsisBusAdapter');
 const { replay: govReplay } = require('../logManagerV2');
 const { PolicyFinding } = require('./PolicyFinding');
+const { evaluate }       = require('./policyEngine');
+const { execute }        = require('./actionExecutor');
 
 // ── Catálogo de reglas ──────────────────────────────────────────
 const RULES = {
@@ -123,6 +125,16 @@ async function scan() {
     created.push(id);
   }
 
+  // ── Policy Engine + Action Executor ────────────────────────────────
+  const openFindings = await PolicyFinding.find({ status: 'OPEN' }).lean();
+  const metrics = {
+    busTotal: busResult.total || 0,
+    govTotal: govResult.total || 0
+  };
+  const decisions    = evaluate(openFindings, metrics);
+  const execResults  = await execute(decisions);
+  const appliedCount = execResults.filter(r => r.applied).length;
+
   const openCount = await PolicyFinding.countDocuments({ status: 'OPEN' });
 
   const status = created.length === 0 ? 'CLEAN' : 'FINDINGS_DETECTED';
@@ -136,8 +148,10 @@ async function scan() {
   return {
     scannedAt,
     status,
-    newFindings: created.length,
-    openFindings: openCount,
+    newFindings:   created.length,
+    openFindings:  openCount,
+    decisions:     decisions.length,
+    actionsApplied: appliedCount,
     bus: {
       total:       busResult.total,
       integrityOk: busResult.integrityOk,

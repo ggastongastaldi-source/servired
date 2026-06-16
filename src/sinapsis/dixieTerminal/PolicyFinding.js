@@ -11,8 +11,15 @@ const PolicyFindingSchema = new mongoose.Schema({
   detail:         { type: mongoose.Schema.Types.Mixed },
   status:         { type: String, enum: ['OPEN','ACKNOWLEDGED'], default: 'OPEN' },
   detectedAt:     { type: Date, default: Date.now },
-  acknowledgedAt: { type: Date }
-}, { collection: 'dixie_findings' });
+  acknowledgedAt: { type: Date },
+  resolvedAt:     { type: Date },
+  resolution: {
+    action:     { type: String },
+    reason:     { type: String },
+    executedAt: { type: Date },
+    evidence:   { type: mongoose.Schema.Types.Mixed }
+  }
+}, { collection: 'dixie_findings', suppressReservedKeysWarning: true });
 
 PolicyFindingSchema.index({ findingId: 1 }, { unique: true });
 PolicyFindingSchema.index({ status: 1, detectedAt: -1 });
