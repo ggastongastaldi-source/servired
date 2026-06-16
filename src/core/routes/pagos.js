@@ -79,7 +79,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           rejectedAt:    mapped === 'REJECTED'  ? new Date() : undefined,
         }
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!updated) {

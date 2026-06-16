@@ -27,7 +27,7 @@ async function runWatchdog() {
     await FinanceWatchdogStatus.findOneAndUpdate(
       { service: 'FinanceWatchdog' },
       { last_run_at: new Date() },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     // 2. Ejecutar auditoría forense

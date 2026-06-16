@@ -23,7 +23,7 @@ async function nextSequence() {
 }
 
 const SinapsisLogV2Schema = new mongoose.Schema({
-  eventId:      { type: String, required: true, unique: true },
+  eventId:      { type: String, required: true },
   sequence:     { type: Number, required: true },
   type:         { type: String, required: true },
   domain:       { type: String, required: true },

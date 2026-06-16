@@ -12,7 +12,7 @@ router.get('/resolver', async (req, res) => {
     const doc = await Referido.findOneAndUpdate(
       { ref_code: ref.toUpperCase(), activo: true },
       { $inc: { 'stats.scans': 1 } },
-      { new: true }
+      { returnDocument: 'after' }
     );
     if (!doc) return res.json({ comercio: null });
 
