@@ -11,3 +11,6 @@ src/rtg/node_modules/
 .bash_history*
 *.tmp
 sprint3-cleanup.log
+fix_*.py
+check_*.js
+test_*.js
