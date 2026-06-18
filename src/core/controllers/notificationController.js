@@ -165,9 +165,18 @@ async function iniciarFlujoBusqueda(pedidoId) {
     }
     } else {
       // Fallback al broadcast original si la subasta falla
+      const { emitEvent: _emitFallback } = require('../../../nexus/events/emitEvent');
+      _emitFallback({
+        entityType: 'auction',
+        type: 'AUCTION_FALLBACK',
+        aggregateId: String(pedido._id),
+        correlationId: String(pedido._id),
+        payload: { reason: 'auction_engine_null', workersCount: workers.length, rubro: pedido.tipoServicio, zona: pedido.zona },
+      });
       for (const worker of workers) {
         const payload = {
           pedidoId: pedido._id,
+          correlationId: String(pedido._id),
           tipoServicio: pedido.tipoServicio,
           zona: pedido.zona,
           precio: pedido.total_estimado,
