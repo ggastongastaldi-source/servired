@@ -388,7 +388,7 @@ function toggleNotif(){
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);font-weight:400;">Listar Empresa y Servicios</div>
     </div>
   </button>
-  <button class="btn" onclick="abrirModalConDestino('cliente')"
+  <button class="btn" onclick="abrirModal('portal-cliente')"
     style="background:linear-gradient(135deg,#7a3a0d,#5c2a08);border:1.5px solid rgba(255,109,0,0.4);color:#fff;justify-content:flex-start;padding:16px 20px;gap:16px;border-radius:16px;">
     <span style="font-size:1.8rem;flex-shrink:0;">🔍</span>
     <div style="text-align:left;">
@@ -397,7 +397,7 @@ function toggleNotif(){
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);font-weight:400;">Encontrar Profesionales</div>
     </div>
   </button>
-  <button class="btn" onclick="abrirModalConDestino('trabajador')"
+  <button class="btn" onclick="abrirModal('portal-trabajador')"
     style="background:linear-gradient(135deg,#0d4a1a,#083512);border:1.5px solid rgba(57,255,20,0.3);color:#fff;justify-content:flex-start;padding:16px 20px;gap:16px;border-radius:16px;">
     <span style="font-size:1.8rem;flex-shrink:0;">🔧</span>
     <div style="text-align:left;">
@@ -721,5 +721,40 @@ if(btnInstall) {
 
 <script src="/js/session-context.js"></script>
 <script src="/js/qr-landing.js"></script>
+
+<div class="modal-bg" id="modal-portal-cliente">
+  <div class="modal" style="max-width:400px;padding:24px 20px;">
+    <div class="modal-title" style="font-size:1.05rem;margin-bottom:16px;">🔍 Área del Cliente</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px;">
+      <button class="btn btn-orange" style="border-radius:12px;" onclick="cerrarModals();abrirModal('cliente-login')">
+        Ingresar a mi cuenta
+      </button>
+      <button class="btn btn-outline" style="border-radius:12px;" onclick="cerrarModals();abrirModal('registro-cliente')">
+        Registrarme como Cliente
+      </button>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button onclick="cerrarModals()" style="background:none;border:none;color:var(--muted);font-size:0.82rem;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-portal-trabajador">
+  <div class="modal" style="max-width:400px;padding:24px 20px;">
+    <div class="modal-title" style="font-size:1.05rem;margin-bottom:16px;">🔧 Portal del Trabajador</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px;">
+      <button class="btn btn-green" style="border-radius:12px;" onclick="cerrarModals();abrirModal('worker-login')">
+        Ingresar a mi cuenta
+      </button>
+      <button class="btn btn-outline" style="border-radius:12px;" onclick="cerrarModals();abrirModal('registro-trabajador')">
+        Registrarme como Trabajador
+      </button>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button onclick="cerrarModals()" style="background:none;border:none;color:var(--muted);font-size:0.82rem;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
