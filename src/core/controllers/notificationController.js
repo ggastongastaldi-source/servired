@@ -286,7 +286,7 @@ async function buscarYSubastarWorkers(pedido, io) {
     const workers = await Usuario.find({
       rol: 'TRABAJADOR',
       disponible: true,
-      estado: 'VERIFICADO',
+      verificado: true,
       especialidades: { $elemMatch: { $regex: pedido.tipoServicio, $options: 'i' } },
     }).limit(20).lean();
 
