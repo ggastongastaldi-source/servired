@@ -140,6 +140,7 @@ async function subastar({ pedido, workers }) {
     entityType: 'auction',
     type: 'AUCTION_COMPLETED',
     aggregateId: String(pedido._id),
+    correlationId: String(pedido._id),
     payload: {
       winner:    result.winner    ? { id: result.winner.workerId, score: result.winner.score }    : null,
       secondary: result.secondary ? { id: result.secondary.workerId, score: result.secondary.score } : null,
@@ -159,6 +160,7 @@ function dispatch({ result, io, pedidoId }) {
     // HARD INTERRUPT — sonido + vibración fuerte
     io.to('worker_' + result.winner.workerId).emit('nueva_oportunidad', {
       pedidoId,
+      correlationId: pedidoId,
       tipo: 'HARD_DISPATCH',
       score: result.winner.score,
       vibracion: [300, 100, 300, 100, 300],
@@ -170,6 +172,7 @@ function dispatch({ result, io, pedidoId }) {
     // SOFT ALERT
     io.to('worker_' + result.secondary.workerId).emit('nueva_oportunidad', {
       pedidoId,
+      correlationId: pedidoId,
       tipo: 'SOFT_OFFER',
       score: result.secondary.score,
       vibracion: [100],
@@ -181,6 +184,7 @@ function dispatch({ result, io, pedidoId }) {
   result.backup.forEach(b => {
     io.to('worker_' + b.workerId).emit('nueva_oportunidad', {
       pedidoId,
+      correlationId: pedidoId,
       tipo: 'SOFT_OFFER',
       score: b.score,
     });

@@ -299,7 +299,7 @@ async function buscarYSubastarWorkers(pedido, io) {
     auctionDispatch({ result, io, pedidoId: String(pedido._id) });
     return result;
   } catch(e) {
-    console.error('[AuctionEngine] Error:', e.message);
+    console.error('[AuctionEngine] Error:', e.message, '| correlationId:', String(pedido._id));
     return null;
   }
 }
