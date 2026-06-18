@@ -145,15 +145,37 @@ module.exports = (io) => {
     });
 
     // Trabajador cambia estado disponible/ocupado
-    socket.on('cambiar_estado', async ({ userId, estado }) => {
-      if (userId) {
-        await Usuario.findByIdAndUpdate(userId, {
-          disponible: estado === 'disponible',
-          socketStatus: estado
-        }).catch(() => {});
+    socket.on('cambiar_estado', async ({ userId, estado, online, token }) => {
+      // Fuente de verdad: JWT > userId explicito (mismo patron que worker_conectado)
+      let safeUserId = userId;
+      if (token) {
+        try {
+          const jwt = require('jsonwebtoken');
+          const p = jwt.verify(token, process.env.JWT_SECRET);
+          safeUserId = String(p.userId || p.id || p._id || safeUserId || '');
+        } catch (e) {
+          console.warn('[Socket] cambiar_estado: token invalido', e.message);
+        }
       }
-      socket.emit('estado_actualizado', { estado });
-      console.log('[Socket] Estado cambiado:', estado, userId);
+
+      // Compatibilidad: frontend nuevo manda boolean 'online', legado manda string 'estado'
+      const disponible = typeof online === 'boolean'
+        ? online
+        : estado === 'disponible';
+
+      console.log('[DISPONIBILIDAD] userId:', safeUserId, '| online:', online, '| estado:', estado, '| disponible:', disponible);
+
+      if (safeUserId) {
+        await Usuario.findByIdAndUpdate(safeUserId, {
+          disponible,
+          socketStatus: disponible ? 'disponible' : 'no_disponible'
+        }).catch((e) => console.error('[Socket] cambiar_estado update error:', e.message));
+      } else {
+        console.warn('[Socket] cambiar_estado: sin userId ni token valido, no se persiste');
+      }
+
+      socket.emit('estado_actualizado', { estado: disponible ? 'disponible' : 'no_disponible', disponible });
+      console.log('[Socket] Estado cambiado:', disponible, safeUserId);
     });
 
     // ── TRABAJADOR acepta trabajo ───────────────────────────────
