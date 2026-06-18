@@ -388,7 +388,7 @@ function toggleNotif(){
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);font-weight:400;">Listar Empresa y Servicios</div>
     </div>
   </button>
-  <button class="btn" onclick="abrirModal('portal-cliente')"
+  <button class="btn" onclick="abrirModal('cliente-login')"
     style="background:linear-gradient(135deg,#7a3a0d,#5c2a08);border:1.5px solid rgba(255,109,0,0.4);color:#fff;justify-content:flex-start;padding:16px 20px;gap:16px;border-radius:16px;">
     <span style="font-size:1.8rem;flex-shrink:0;">🔍</span>
     <div style="text-align:left;">
@@ -397,7 +397,7 @@ function toggleNotif(){
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);font-weight:400;">Encontrar Profesionales</div>
     </div>
   </button>
-  <button class="btn" onclick="abrirModal('portal-trabajador')"
+  <button class="btn" onclick="abrirModal('worker-login')"
     style="background:linear-gradient(135deg,#0d4a1a,#083512);border:1.5px solid rgba(57,255,20,0.3);color:#fff;justify-content:flex-start;padding:16px 20px;gap:16px;border-radius:16px;">
     <span style="font-size:1.8rem;flex-shrink:0;">🔧</span>
     <div style="text-align:left;">
@@ -417,6 +417,7 @@ function toggleNotif(){
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
       <button class="btn-sm btn-sm-pri" onclick="login('CLIENTE','cl-email','cl-pass','cl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><span style="font-size:0.72rem;color:#64748b;"><a href="#" onclick="abrirModal('recuperar-pass');return false;" style="color:#00E5FF;font-size:0.72rem;text-decoration:none;">🔑 Olvidé mi contraseña</a></span></div>
+      <div style="text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);"><span style="color:#64748b;font-size:0.82rem;">¿No tenés cuenta? </span><a href="#" onclick="cerrarModals();abrirModal('registro-cliente');return false;" style="color:#FF6D00;font-size:0.82rem;font-weight:700;text-decoration:none;">Registrarme como Cliente →</a></div>
     </div>
   </div>
 </div>
@@ -430,6 +431,7 @@ function toggleNotif(){
     <div class="modal-btns">
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
       <button class="btn-sm btn-sm-pri" onclick="login('TRABAJADOR','wl-email','wl-pass','wl-err')">Ingresar →</button><div style="text-align:center;margin-top:8px;"><span style="font-size:0.72rem;color:#64748b;"><a href="#" onclick="abrirModal('recuperar-pass');return false;" style="color:#00E5FF;font-size:0.72rem;text-decoration:none;">🔑 Olvidé mi contraseña</a></span></div>
+      <div style="text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);"><span style="color:#64748b;font-size:0.82rem;">¿No tenés cuenta? </span><a href="#" onclick="cerrarModals();abrirModal('registro-trabajador');return false;" style="color:#39ff14;font-size:0.82rem;font-weight:700;text-decoration:none;">Registrarme como Trabajador →</a></div>
     </div>
   </div>
 </div>
