@@ -69,7 +69,7 @@ router.get('/', async (req, res) => {
 
   // ── 5. Watchdog freshness ────────────────────────────────
   try {
-    const lastCheck = global._watchdogLastCheck;
+    const lastCheck = global.watchdogLastCheck;
     const ageMs = lastCheck ? Date.now() - lastCheck : null;
     const uptimeMs = process.uptime() * 1000;
     const stale = ageMs === null ? uptimeMs > 5 * 60 * 1000 : ageMs > 5 * 60 * 1000;
