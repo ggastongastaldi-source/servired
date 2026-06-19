@@ -42,6 +42,7 @@
     "node-schedule": "^2.1.1",
     "nodemailer": "^8.0.8",
     "pg": "^8.21.0",
+    "qrcode": "^1.5.4",
     "resend": "^6.12.4",
     "semver": "^7.6.3",
     "socket.io": "^4.8.3",
