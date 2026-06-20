@@ -1,8 +1,8 @@
 # RFC-SYNC-001B — Idempotencia y Reconciliacion Offline-First
 
 status: DRAFT
-version: 1.0
-date: 2026-06-19
+version: 1.1
+date: 2026-06-20
 depends_on: docs/specs/rfc-ux-002-sync-engine.md
 supersedes: RFC-AUTH-001 (cancelado - identidad ya resuelta, ver abajo)
 
@@ -13,9 +13,6 @@ supersedes: RFC-AUTH-001 (cancelado - identidad ya resuelta, ver abajo)
 actorId = req.user.userId (Usuario._id, validado por JWT existente -
 middleware/auth.js). NUNCA actorId = body.userId.
 
-No se requiere Google OAuth ni nuevo sistema de autenticacion. El JWT
-existente ya entrega un actorId estable, independiente del dispositivo.
-
 ## Nota de seguridad detectada (fuera de alcance, auditar despues)
 
 POST /push-subscribe acepta userId desde req.body en vez de extraerlo del
@@ -25,15 +22,8 @@ endpoints economicos.
 ## Ajuste de diseno: clientSequence
 
 clientSequence es monotono por (actorId, deviceId), NO por actorId solo.
-Un mismo actor en 2 dispositivos genera 2 secuencias independientes.
-
-El orden causal real entre dispositivos distintos del mismo actor lo da
-createdAt + idempotencia por commandId. Conflictos reales entre
-dispositivos (ej. doble reserva del mismo material) los resuelve la
-logica de negocio en Dixie Gate, no este RFC.
-
-deviceId: generado client-side una vez, persistido en IndexedDB junto a
-la cola (no existe todavia en localCommandQueue.js - pendiente).
+El orden causal real entre dispositivos distintos lo da createdAt +
+idempotencia por commandId. Conflictos reales los resuelve Dixie Gate.
 
 ## Idempotency Registry - contrato
 
@@ -48,10 +38,30 @@ Campos:
   - status: processed o rejected
   - eventId: ObjectId o null
   - processedAt: Date
+  - expireAt: Date (processedAt + 30 dias)
 
-Regla: antes de procesar cualquier comando, el servidor busca commandId
-en este registro. Si existe, devuelve el resultado ya guardado sin
-reejecutar ningun efecto.
+## TTL del registro (v1.1, agregado - no existia en v1.0)
+
+expireAt = processedAt + 30 dias. Indice TTL sobre expireAt con
+expireAfterSeconds=0. Justificacion: un dispositivo offline por semanas
+debe poder reconciliar sin perder proteccion de idempotencia; 30 dias
+cubre ese caso sin crecer la coleccion indefinidamente.
+
+## ACK vs status persistido (v1.1, distincion explicita)
+
+Son dos conceptos distintos, no confundir:
+
+IdempotencyRecord.status (persistido en Mongo): solo processed o
+rejected. Es el resultado real de procesar el comando, una sola vez.
+
+ACK.status (campo de la respuesta HTTP, nunca persistido):
+processed o already_processed o un error explicito. already_processed
+es un valor CALCULADO al momento de responder, cuando se encuentra un
+registro existente con status=processed - el registro en Mongo sigue
+diciendo processed, nunca se escribe already_processed a disco.
+
+Regla: si aparece codigo que intente escribir
+IdempotencyRecord.status = already_processed, es un bug.
 
 ## Contrato de respuesta (ACK)
 
@@ -60,18 +70,9 @@ reejecutar ningun efecto.
   409 out of order:    ok=false, error=out_of_order, expectedSequence
   401 token invalido:  ok=false, error=invalid_token
 
-## Problemas que resuelve este RFC
+## Fuera de alcance de v1.1
 
-1. commandId global (ya existe - localCommandQueue.js, RFC-UX-002)
-2. idempotency_registry - nuevo, lado servidor
-3. deduplicacion
-4. reconciliacion offline-first
-5. clientSequence por actor y dispositivo
-6. ACK de sincronizacion
-7. recuperacion tras caida (servidor)
-
-## Fuera de alcance de v1.0
-
-- Orden causal estricto cross-device (ver ajuste arriba)
+- Orden causal estricto cross-device
 - Reconciliacion semantica de negocio (logica de Dixie Gate)
 - Auditoria del patron body.userId en /push-subscribe
+- UX de registro con Google (decision de producto, no de arquitectura)
