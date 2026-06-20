@@ -1,4 +1,6 @@
 require('dotenv').config();
+const { assertSingleWriter } = require('./src/sinapsis/singleWriterGuard');
+assertSingleWriter();
 const express = require('express');
 
 const rutaMensajes = require('./src/core/routes/mensajes');
