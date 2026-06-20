@@ -1,19 +1,8 @@
 'use strict';
 /**
  * localCommandQueue.js — Local Event Store + Command Queue (IndexedDB)
- * ServiRed UX Constitution v1.2 — Fundación offline-first (roadmap item 1).
- *
- * Principio constitucional: la UI escribe comandos localmente de forma
- * optimista (append-only) ANTES de saber si hay red. El Sync Engine
- * (proxima pieza, item 2) es responsable de reenviarlos al backend.
- *
- * La UI nunca marca un comando como "evento confirmado" — eso lo decide
- * el backend (Dixie Gate). Esta cola solo conoce: pending | syncing | synced | failed.
- *
- * FUERA DE ALCANCE de este modulo (a proposito):
- * - Deteccion de conectividad y envio real al backend (Sync Engine, item 2)
- * - Poda de comandos ya sincronizados (decision del Sync Engine)
- * - Wireup con botones de Worker Home (item 3)
+ * ServiRed UX Constitution v1.2 — roadmap item 1.
+ * v1.1: agrega lastAttemptAt + recoverInterruptedCommands (RFC-UX-002, invariante 6).
  */
 
 (function (global) {
@@ -27,7 +16,6 @@
     if (dbPromise) return dbPromise;
     dbPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
-
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
         if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -36,7 +24,6 @@
           store.createIndex('createdAt', 'createdAt', { unique: false });
         }
       };
-
       request.onsuccess = (event) => resolve(event.target.result);
       request.onerror = (event) => reject(event.target.error);
     });
@@ -57,16 +44,13 @@
       status: 'pending',
       attempts: 0,
       createdAt: new Date().toISOString(),
+      lastAttemptAt: null,
       lastError: null
     };
-
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
       tx.objectStore(STORE_NAME).add(command);
-      tx.oncomplete = () => {
-        notifyQueueChange();
-        resolve(command); // optimista: la UI ya puede mostrar "Reservando..."
-      };
+      tx.oncomplete = () => { notifyQueueChange(); resolve(command); };
       tx.onerror = () => reject(tx.error);
     });
   }
@@ -102,12 +86,12 @@
         command.status = status;
         command.lastError = error || null;
         if (status === 'failed') command.attempts += 1;
+        if (status === 'syncing' || status === 'failed') {
+          command.lastAttemptAt = new Date().toISOString();
+        }
         store.put(command);
       };
-      tx.oncomplete = () => {
-        notifyQueueChange();
-        resolve(true);
-      };
+      tx.oncomplete = () => { notifyQueueChange(); resolve(true); };
       tx.onerror = () => reject(tx.error);
     });
   }
@@ -121,15 +105,20 @@
     return pending.length;
   }
 
-  // Suscripcion para UI: "(N pendientes)" en tiempo real
-  const listeners = new Set();
-
-  function subscribeQueueSize(callback) {
-    listeners.add(callback);
-    getQueueSize().then(callback); // valor inicial
-    return () => listeners.delete(callback);
+  async function recoverInterruptedCommands() {
+    const stuck = await getCommandsByStatus('syncing');
+    for (const command of stuck) {
+      await updateCommandStatus(command.commandId, 'failed', 'interrupted_by_crash_recovery');
+    }
+    return stuck.length;
   }
 
+  const listeners = new Set();
+  function subscribeQueueSize(callback) {
+    listeners.add(callback);
+    getQueueSize().then(callback);
+    return () => listeners.delete(callback);
+  }
   function notifyQueueChange() {
     getQueueSize().then((size) => listeners.forEach((cb) => cb(size)));
   }
@@ -141,6 +130,7 @@
     markFailed,
     markSyncing,
     getQueueSize,
-    subscribeQueueSize
+    subscribeQueueSize,
+    recoverInterruptedCommands
   };
 })(window);
