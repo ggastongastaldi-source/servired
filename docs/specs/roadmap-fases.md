@@ -113,3 +113,18 @@ Foto -> Clasificacion (Claude Vision) -> Enriquecimiento territorial -> Matching
 
 Esto es lo que diferencia a ServiRed de un marketplace generico.
 No se empieza Fase 6 sin esto resuelto primero.
+
+---
+
+## Addendum (sesion 2, 2026-06-20) - Hallazgo critico pre-Captura
+
+Antes de Capture Contract v1: localCommandQueue.js no genera ni
+persiste deviceId ni clientSequence, pero routes/sync.js los exige.
+El pipeline de Fase 4 esta construido pero NO es funcional de punta a
+punta todavia. Orden correcto para la proxima sesion:
+
+1. Agregar deviceId + clientSequence a localCommandQueue.js
+2. Probar el pipeline completo con un comando real
+3. Recien despues, Capture Contract v1 - reusando nombres existentes
+   (attempts, no retryCount; commandId como unica clave de idempotencia,
+   no agregar idempotencyKey en paralelo)
