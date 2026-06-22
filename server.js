@@ -57,6 +57,7 @@ app.use('/api/pedidos', pedidosRoute);
 app.use('/api/leads', require('./src/core/routes/leads'));
 app.use('/api/admin', require('./src/core/routes/admin'));
 app.use('/api/matching', require('./src/core/routes/matching'));
+app.use('/api/asistente', require('./src/core/routes/asistente'));
 app.use('/api/rating', require('./src/core/routes/rating'));
 app.use('/api/pagos', require('./src/core/routes/pagos'));
 app.use('/api/admin/finance', require('./src/core/routes/adminFinance'));
