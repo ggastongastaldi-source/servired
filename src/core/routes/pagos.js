@@ -65,6 +65,36 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       return;
     }
 
+
+    // ── BOOST handler (idempotente) — va ANTES del Payment lookup ──────────
+    const metadata = mpData.metadata || {};
+    if (metadata.type === 'boost' && metadata.commerceId) {
+      const Commerce = require('../models/Commerce');
+      const paymentId = String(data.id);
+      if (mpData.status !== 'approved') {
+        console.log('[BOOST] Pago no aprobado, ignorado — status:', mpData.status);
+        return;
+      }
+      const commerce = await Commerce.findById(metadata.commerceId);
+      if (!commerce) {
+        console.warn('[BOOST] Comercio no encontrado:', metadata.commerceId);
+        return;
+      }
+      if (commerce.boost_payment_id === paymentId) {
+        console.log('[BOOST] Webhook duplicado ignorado — paymentId:', paymentId);
+        return;
+      }
+      const boostExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      await Commerce.findByIdAndUpdate(metadata.commerceId, {
+        is_boosted: true,
+        boost_expires_at: boostExpiry,
+        boost_payment_id: paymentId
+      });
+      console.log('[BOOST] ✅ Comercio', metadata.commerceId, 'boosted hasta', boostExpiry);
+      return;
+    }
+    // ── FIN BOOST handler ───────────────────────────────────────────────────
+
     // Idempotencia atómica
     const updated = await Payment.findOneAndUpdate(
       { externalReference, status: 'PENDING' },
