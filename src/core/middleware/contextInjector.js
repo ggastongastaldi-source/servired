@@ -1,4 +1,5 @@
 'use strict';
+const { randomUUID } = require('crypto');
 
 /**
  * contextInjector.js — pipeline determinístico de contexto para el asistente.
@@ -75,7 +76,7 @@ module.exports = function contextInjector(req, res, next) {
   const correlationId =
     body.correlationId ||
     req.headers['x-correlation-id'] ||
-    `ctx-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    randomUUID();
   try {
     const bus = getBus();
     if (bus) {
@@ -84,7 +85,7 @@ module.exports = function contextInjector(req, res, next) {
         correlation_id: correlationId,
         payload: {
           ctx,
-          trace: trace.slice(0, 20), // techo de seguridad
+          trace: process.env.CONTEXT_DEBUG === 'true' ? trace : trace.slice(0, 20),
           trace_count: trace.length,
           context_length: req.assistantContext.length,
           resolvers_active: parts.length,
