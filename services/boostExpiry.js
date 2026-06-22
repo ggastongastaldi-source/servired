@@ -1,4 +1,4 @@
-const Commerce = require('../models/Commerce');
+const Commerce = require('../src/core/models/Commerce');
 
 async function expireBoosts() {
   try {

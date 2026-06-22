@@ -1,4 +1,4 @@
-const Commerce = require('../models/Commerce');
+const Commerce = require('../src/core/models/Commerce');
 
 /**
  * Devuelve comercios activos, boosted primero, luego por fecha de creación desc.

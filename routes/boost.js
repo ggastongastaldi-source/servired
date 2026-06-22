@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { MercadoPagoConfig, Preference } = require('mercadopago');
-const Commerce = require('../models/Commerce');
+const Commerce = require('../src/core/models/Commerce');
 const authMiddleware = require('../middleware/auth');
 
 const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
