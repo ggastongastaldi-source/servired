@@ -72,7 +72,10 @@ module.exports = function contextInjector(req, res, next) {
   req.assistantContext = parts.length ? '\n\n' + parts.join(' ') : '';
 
   // Emitir evento SINAPSIS — no bloquear si falla
-  const correlationId = body.correlationId || null;
+  const correlationId =
+    body.correlationId ||
+    req.headers['x-correlation-id'] ||
+    `ctx-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   try {
     const bus = getBus();
     if (bus) {
@@ -81,11 +84,14 @@ module.exports = function contextInjector(req, res, next) {
         correlation_id: correlationId,
         payload: {
           ctx,
-          trace,
-          contextLength: req.assistantContext.length,
-          resolversActive: parts.length,
+          trace: trace.slice(0, 20), // techo de seguridad
+          trace_count: trace.length,
+          context_length: req.assistantContext.length,
+          resolvers_active: parts.length,
         },
-      }).catch(() => {}); // fire-and-forget — nunca bloquea el request
+      }).catch((err) => {
+        console.warn('[contextInjector] SINAPSIS publish failed:', err?.message || err);
+      }); // fire-and-forget — nunca bloquea el request
     }
   } catch {
     // SINAPSIS caído no rompe el chat
