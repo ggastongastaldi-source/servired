@@ -79,4 +79,19 @@ router.get('/', async (req, res) => {
   }
 });
 
+
+// GET /api/commerce/feed — boosted primero, luego orgánico
+router.get('/feed', async (req, res) => {
+  try {
+    const { getCommerceFeed } = require('../../services/commerceFeed');
+    const { locality } = req.query;
+    const filter = locality ? { localidad: locality } : {};
+    const comercios = await getCommerceFeed(filter, 20);
+    res.json({ ok: true, comercios });
+  } catch(e) {
+    console.error('[commerce/feed] Error:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;

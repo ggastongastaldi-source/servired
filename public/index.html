@@ -59,6 +59,33 @@
   "paymentAccepted": "Mercado Pago",
   "inLanguage": "es-AR"
 }
+
+// ── Commerce Feed ──────────────────────────────────────
+async function loadCommerceFeed() {
+  try {
+    const r = await fetch('/api/commerce/feed');
+    const d = await r.json();
+    const list = document.getElementById('commerce-feed-list');
+    if (!d.ok || !d.comercios || d.comercios.length === 0) {
+      list.innerHTML = '<div style="color:#64748b;font-size:0.82rem;text-align:center;padding:18px 0;">Sin comercios registrados aún.</div>';
+      return;
+    }
+    list.innerHTML = d.comercios.map(c => `
+      <div class="commerce-card${c.is_boosted ? ' boosted' : ''}">
+        <div class="commerce-card-icon">🏪</div>
+        <div class="commerce-card-body">
+          <div class="commerce-card-name">${c.nombre || c.name || 'Comercio'}</div>
+          <div class="commerce-card-sub">${c.rubro || ''} · ${c.localidad || ''}</div>
+          ${c.is_boosted ? '<div class="boost-badge">⭐ Destacado</div>' : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    console.warn('[feed] Error cargando comercios:', e.message);
+  }
+}
+document.addEventListener('DOMContentLoaded', loadCommerceFeed);
+
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -158,6 +185,18 @@ body{padding-top:64px;}
 .drawer-title{font-size:1.1rem;font-weight:700;color:var(--cyan);margin-bottom:18px;padding-top:8px;}
 .drawer-item{display:flex;align-items:center;gap:12px;padding:13px 8px;border-radius:10px;color:var(--text);font-size:1rem;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;font-family:'Rajdhani',sans-serif;}
 .drawer-item:hover{background:var(--surface2);}
+
+/* ── Boost badge & commerce feed ─────────────────────── */
+.commerce-feed{width:100%;max-width:420px;margin:18px auto 0;}
+.commerce-feed-title{color:#64748b;font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;padding:0 2px;}
+.commerce-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;position:relative;transition:border-color 0.2s;}
+.commerce-card.boosted{border-color:rgba(255,215,0,0.45);background:rgba(255,215,0,0.04);}
+.commerce-card-icon{font-size:1.8rem;flex-shrink:0;line-height:1;}
+.commerce-card-body{flex:1;min-width:0;}
+.commerce-card-name{font-size:0.97rem;font-weight:700;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.commerce-card-sub{font-size:0.78rem;color:#64748b;margin-top:2px;}
+.boost-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.5);color:#FFD700;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.5px;margin-top:4px;}
+
 </style>
 
   <!-- PWA -->
@@ -469,6 +508,13 @@ function toggleNotif(){
     <span style="color:#64748b;font-size:0.75rem;">✓ Sin adelanto</span>
     <span style="color:#64748b;font-size:0.75rem;">✓ Pago seguro</span>
     <span style="color:#64748b;font-size:0.75rem;">✓ Técnicos verificados</span>
+  </div>
+</div>
+
+<div class="commerce-feed" id="seccion-comercios">
+  <div class="commerce-feed-title">🏪 Comercios en tu zona</div>
+  <div id="commerce-feed-list">
+    <div style="color:#64748b;font-size:0.82rem;text-align:center;padding:18px 0;">Cargando comercios...</div>
   </div>
 </div>
 
