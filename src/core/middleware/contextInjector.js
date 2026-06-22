@@ -5,23 +5,40 @@
  *
  * Cada resolver recibe (req, ctx) y devuelve string | null.
  * El resultado se inyecta en req.assistantContext (string único).
+ * Emite ASSISTANT_CONTEXT_BUILD al bus SINAPSIS para trazabilidad completa.
  *
  * ctx shape:
  *   { appMode: string|null, userRole: string|null, lastEvent: object|null }
  */
 
+// Importación lazy para no acoplar al boot si SINAPSIS no arrancó aún
+let _bus = null;
+function getBus() {
+  if (_bus) return _bus;
+  try {
+    _bus = require('../sinapsis/sinapsisBusAdapter');
+  } catch {
+    _bus = null;
+  }
+  return _bus;
+}
+
 const resolvers = [
-  // 1. Modo de app
-  (req, ctx) => ctx.appMode ? `Modo activo: ${ctx.appMode}.` : null,
-
-  // 2. Rol autenticado
-  (req, ctx) => ctx.userRole ? `Rol autenticado: ${ctx.userRole}.` : null,
-
-  // 3. Último evento de sesión
-  (req, ctx) => {
-    const ev = ctx.lastEvent;
-    if (!ev || typeof ev.event_type !== 'string') return null;
-    return `Última acción registrada: ${ev.event_type}.`;
+  {
+    name: 'appMode',
+    fn: (req, ctx) => ctx.appMode ? `Modo activo: ${ctx.appMode}.` : null,
+  },
+  {
+    name: 'userRole',
+    fn: (req, ctx) => ctx.userRole ? `Rol autenticado: ${ctx.userRole}.` : null,
+  },
+  {
+    name: 'lastEvent',
+    fn: (req, ctx) => {
+      const ev = ctx.lastEvent;
+      if (!ev || typeof ev.event_type !== 'string') return null;
+      return `Última acción registrada: ${ev.event_type}.`;
+    },
   },
 ];
 
@@ -36,10 +53,43 @@ module.exports = function contextInjector(req, res, next) {
                : null,
   };
 
-  const parts = resolvers
-    .map(fn => { try { return fn(req, ctx); } catch { return null; } })
-    .filter(Boolean);
+  // Ejecutar pipeline — capturar resultado y errores por resolver
+  const trace = [];
+  const parts = [];
+
+  for (const { name, fn } of resolvers) {
+    let value = null;
+    let error = null;
+    try {
+      value = fn(req, ctx);
+    } catch (err) {
+      error = err.message || String(err);
+    }
+    trace.push({ name, value, error });
+    if (value) parts.push(value);
+  }
 
   req.assistantContext = parts.length ? '\n\n' + parts.join(' ') : '';
+
+  // Emitir evento SINAPSIS — no bloquear si falla
+  const correlationId = body.correlationId || null;
+  try {
+    const bus = getBus();
+    if (bus) {
+      bus.publish({
+        event_type:     'ASSISTANT_CONTEXT_BUILD',
+        correlation_id: correlationId,
+        payload: {
+          ctx,
+          trace,
+          contextLength: req.assistantContext.length,
+          resolversActive: parts.length,
+        },
+      }).catch(() => {}); // fire-and-forget — nunca bloquea el request
+    }
+  } catch {
+    // SINAPSIS caído no rompe el chat
+  }
+
   next();
 };
