@@ -374,7 +374,8 @@ function toggleNotif(){
 </div>
 
 <div class="btns">
-  <button class="btn" onclick="abrirModal('cliente-login')"
+  <button class="btn" onclick="handleCTAPrimaria()"
+    id="cta-primary"
     style="background:linear-gradient(135deg,#cc5500,#ff6d00);border:none;color:#fff;justify-content:flex-start;padding:18px 20px;gap:12px;border-radius:16px;font-size:1.15rem;box-shadow:0 4px 20px rgba(255,109,0,0.45);">
     <span style="font-size:1.6rem;flex-shrink:0;">🔍</span>
     <div style="text-align:left;">
@@ -798,13 +799,67 @@ async function registrarComercio() {
 </script>
 
 
-<button id="fab-asistente" onclick="abrirModal('soporte')"
+<button id="fab-asistente" onclick="handleFAB()"
   style="position:fixed;bottom:24px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#0a3d62,#1a6fa8);border:2px solid rgba(0,229,255,0.5);color:#fff;font-size:1.4rem;cursor:pointer;z-index:80;box-shadow:0 4px 16px rgba(0,229,255,0.3);display:flex;align-items:center;justify-content:center;transition:transform 0.2s;"
   aria-label="Asistente ServiRed"
   onmouseenter="this.style.transform='scale(1.1)'"
   onmouseleave="this.style.transform='scale(1)'">🤖</button>
 <div id="fab-tooltip" style="position:fixed;bottom:86px;right:16px;background:#111827;border:1px solid rgba(0,229,255,0.3);border-radius:10px;padding:8px 12px;font-size:0.75rem;color:#00E5FF;z-index:80;pointer-events:none;opacity:0;transition:opacity 0.3s;max-width:140px;text-align:center;line-height:1.4;">¿Cómo puedo ayudarte?</div>
 <script>setTimeout(()=>{const tt=document.getElementById("fab-tooltip");if(tt){tt.style.opacity="1";setTimeout(()=>{tt.style.opacity="0";},3000);}},2500);<\/script>
+
+
+<script>
+// ── App Mode Logic ────────────────────────────────────────────────────────
+// Corre después de que SessionContext (y AppMode) ya están cargados.
+
+function handleCTAPrimaria() {
+  const mode = AppMode.get();
+  if (mode === AppMode.MODES.TECNICO) {
+    abrirModal('worker-login');
+  } else if (mode === AppMode.MODES.COMERCIO) {
+    abrirModal('onboarding-comercio');
+  } else {
+    // default: cliente (modo nulo o explícito)
+    abrirModal('cliente-login');
+  }
+}
+
+function handleFAB() {
+  const mode = AppMode.get();
+  if (mode === AppMode.MODES.TECNICO) {
+    // técnico: FAB abre su dashboard directo si tiene sesión
+    const token = localStorage.getItem('token');
+    if (token) { window.location.href = '/trabajador.html'; return; }
+  }
+  abrirModal('soporte');
+}
+
+// Adaptar label del CTA primario según modo guardado
+(function adaptCTA() {
+  const mode = AppMode.get();
+  const cta = document.getElementById('cta-primary');
+  if (!cta || !mode) return;
+  const labels = {
+    tecnico:  { icon: '🔧', title: 'Ir a mi panel de trabajo',   sub: 'Ver pedidos y disponibilidad' },
+    comercio: { icon: '🏪', title: 'Ir a mi panel comercial',     sub: 'Ver trabajadores y métricas' },
+  };
+  const l = labels[mode];
+  if (l) {
+    cta.querySelector('span').textContent = l.icon;
+    const divs = cta.querySelectorAll('div > div');
+    if (divs[0]) divs[0].textContent = l.title;
+    if (divs[1]) divs[1].textContent = l.sub;
+  }
+})();
+
+// Registrar modo cuando el usuario elige un portal secundario
+document.addEventListener('DOMContentLoaded', () => {
+  const wBtn = document.querySelector('[onclick="abrirModal('worker-login')"]');
+  const cBtn = document.querySelector('[onclick="abrirModal('onboarding-comercio')"]');
+  if (wBtn) wBtn.addEventListener('click', () => AppMode.set(AppMode.MODES.TECNICO));
+  if (cBtn) cBtn.addEventListener('click', () => AppMode.set(AppMode.MODES.COMERCIO));
+});
+</script>
 
 </body>
 </html>

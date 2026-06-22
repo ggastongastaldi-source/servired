@@ -116,6 +116,36 @@
 
   global.SessionContext = SessionContext;
 
+
+  // ─── AppMode Layer ───────────────────────────────────────────────────────
+  // Persiste el modo activo del usuario (cliente/tecnico/comercio) en
+  // localStorage para que el home y el FAB se adapten entre sesiones.
+  // No reemplaza correlation_id ni los eventos del bus. Son capas distintas.
+
+  const AppMode = {
+    KEY: 'servired_app_mode',
+    MODES: Object.freeze({ CLIENTE: 'cliente', TECNICO: 'tecnico', COMERCIO: 'comercio' }),
+
+    get() {
+      try { return localStorage.getItem(this.KEY) || null; } catch(e) { return null; }
+    },
+
+    set(mode) {
+      try {
+        if (Object.values(this.MODES).includes(mode)) {
+          localStorage.setItem(this.KEY, mode);
+          document.dispatchEvent(new CustomEvent('appModeChanged', { detail: { mode } }));
+        }
+      } catch(e) {}
+    },
+
+    clear() {
+      try { localStorage.removeItem(this.KEY); } catch(e) {}
+    }
+  };
+
+  global.AppMode = AppMode;
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = SessionContext;
   }
