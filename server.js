@@ -146,6 +146,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
     .then(() => {
       console.log('✅ MongoDB conectado');
     assertSystemUsers().catch(e => console.error('[assertSystemUsers]', e.message));
+require('./services/boostExpiry').startBoostExpiryCron();
     require('./src/core/services/financeWatchdog').iniciar();
     // Dixie Terminal — scan inicial y cron cada 30 minutos
     const { scan: dixieScan } = require('./src/sinapsis/dixieTerminal/dixieScanner');
@@ -420,6 +421,7 @@ const evidenceRouter = require('./routes/evidence');
 app.use('/api/evidence', evidenceRouter);
 app.use('/api/referidos', require('./src/routes/referidos'));
 app.use('/api/shell', require('./src/routes/shellEvents'));
+app.use('/api/boost', require('./routes/boost'));
 
 // B19 Control Plane — solo admin
 
