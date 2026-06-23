@@ -86,6 +86,8 @@ async function loadCommerceFeed() {
     `).join('');
   } catch(e) {
     console.warn('[feed] Error cargando comercios:', e.message);
+    const list = document.getElementById('commerce-feed-list');
+    if (list) list.innerHTML = '<div style="color:#ef4444;font-size:0.75rem;padding:8px;">Error: ' + e.message + '</div>';
   }
 }
 // loadCommerceFeed se llama al final del body
