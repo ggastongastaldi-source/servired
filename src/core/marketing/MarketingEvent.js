@@ -65,7 +65,7 @@ const marketingEventSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: 'marketing_events',
+    collection: 'events',
   }
 );
 
