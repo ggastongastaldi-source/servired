@@ -100,7 +100,22 @@ app.get('/api/gps/positions', (req, res) => {
   res.json({ positions });
 });
 
-app.use(express.static('public'));
+// Cache-busting: HTML nunca se cachea, assets estáticos sí (1 semana)
+app.use(express.static('public', {
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      // HTML: siempre revalidar
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else if (path.match(/\.(js|css|png|jpg|ico|svg|woff2?)$/)) {
+      // Assets: 7 días (cambiarán de nombre cuando cambien)
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+    }
+  }
+}));
 app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 // /r/:ref_code - URL publica de QR de referidos (redirige al flujo existente ?ref=)
 app.get('/r/:ref_code', (req, res) => res.redirect('/?ref=' + req.params.ref_code.toUpperCase()));
