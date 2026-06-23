@@ -70,10 +70,12 @@ async function loadCommerceFeed() {
     const r = await fetch('/api/commerce/feed');
     const d = await r.json();
     const list = document.getElementById('commerce-feed-list');
+    if (!list) { console.error('[feed] commerce-feed-list no existe en DOM'); return; }
     if (!d.ok || !d.comercios || d.comercios.length === 0) {
-      list.innerHTML = '<div style="color:#64748b;font-size:0.82rem;text-align:center;padding:18px 0;">Sin comercios registrados aún.</div>';
+      list.innerHTML = '<div style="color:#f59e0b;font-size:0.75rem;padding:8px;">Sin comercios: ok=' + d.ok + ' cant=' + (d.comercios?.length||0) + '</div>';
       return;
     }
+    list.innerHTML = '<div style="color:#10b981;font-size:0.75rem;padding:4px;">Cargando ' + d.comercios.length + ' comercios...</div>';
     list.innerHTML = d.comercios.map(c => `
       <div class="commerce-card${c.is_boosted ? ' boosted' : ''}">
         <div class="commerce-card-icon">🏪</div>
