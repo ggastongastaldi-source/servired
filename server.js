@@ -423,6 +423,7 @@ app.use('/api/referidos', require('./src/routes/referidos'));
 app.use('/api/shell', require('./src/routes/shellEvents'));
 app.use('/api/boost', require('./routes/boost'));
 app.use('/api/track', require('./routes/track'));
+app.use('/api/analytics', require('./src/core/routes/analytics'));
 
 // B19 Control Plane — solo admin
 
