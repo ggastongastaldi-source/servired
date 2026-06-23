@@ -1,4 +1,4 @@
-const CACHE = 'servired-v1';
+const CACHE = 'servired-v568e34';
 const ASSETS = ['/', '/index.html', '/cliente.html', '/trabajador.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
@@ -17,6 +17,11 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('/api/')) return;
   if (e.request.url.includes('tile.openstreetmap') || e.request.url.includes('unpkg.com') || e.request.url.includes('cdnjs')) return;
+  // HTML siempre desde red, nunca desde cache
+  if (e.request.url.endsWith('/') || e.request.url.includes('index.html')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
       const clone = resp.clone();
