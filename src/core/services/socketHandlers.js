@@ -281,8 +281,8 @@ module.exports = (io) => {
         // Nexus — post findByIdAndUpdate (commit boundary correcto)
         if (estado === 'REALIZADA') {
           emitEvent({ entityType: 'job', type: 'JOB_COMPLETED', aggregateId: pedido._id,
-            payload: { workerId: String(pedido.workerAcepto||''), rubro: pedido.tipoServicio,
-                       zona: pedido.zona||'desconocida', precio: pedido.precio } });
+            payload: { workerId: String(pedido.workerAcepto||''), clientId: String(pedido.cliente||''),
+                       rubro: pedido.tipoServicio, zona: pedido.zona||'AMBA', precio: pedido.precio } });
         } else if (estado === 'EN_PROCESO') {
           emitEvent({ entityType: 'job', type: 'JOB_STARTED', aggregateId: pedido._id,
             payload: { workerId: String(pedido.workerAcepto||''), rubro: pedido.tipoServicio } });
@@ -290,7 +290,8 @@ module.exports = (io) => {
           await Pedido.findByIdAndUpdate(pedidoId, { estadoPago: 'PAID', estadoLiquidacion: 'LIQUIDATED', pagoConfirmadoAt: new Date() }).catch(()=>{});
           registrarEventoEspejo(pedidoId, { tipo:'PAGO_CONFIRMADO', fromState:'PROCESSING', toState:'PAID', monto: pedido.precio, eventoTimestamp: new Date() }).catch(()=>{});
           emitEvent({ entityType: 'job', type: 'JOB_PAID', aggregateId: pedido._id,
-            payload: { precio: pedido.precio, rubro: pedido.tipoServicio } });
+            payload: { workerId: String(pedido.workerAcepto||''), clientId: String(pedido.cliente||''),
+                       precio: pedido.precio, rubro: pedido.tipoServicio, zona: pedido.zona||'AMBA' } });
         }
         
         // ── Registrar en línea de tiempo ─────────────────────────

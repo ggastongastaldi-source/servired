@@ -123,6 +123,12 @@ async function _appendEvent(event) {
       throw e;
     }
   }
+
+  // Economic Graph E1 — fire-and-forget, nunca bloquea el bus
+  try {
+    const { projectEvent } = require('../../services/economicGraphProjection');
+    projectEvent(event).catch(err => console.error('[EconGraph] async error:', err.message));
+  } catch (_) {}
 }
 
 module.exports = { emitEvent, runWithContext, startCorrelation, getContext, contextStorage };
