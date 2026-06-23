@@ -36,21 +36,36 @@ async function run() {
   // ── A) Colecciones existentes ────────────────────────
   section('A) Colecciones');
   const cols = (await db.listCollections().toArray()).map(c => c.name);
-  const required = ['events', 'commerces', 'payments', 'usuarios'];
+  const required = ['commerces', 'payments', 'usuarios'];
   for (const c of required) {
     if (cols.includes(c)) ok(`Colección '${c}' existe`);
     else warn(`Colección '${c}' no encontrada (puede ser nombre diferente)`);
   }
 
   // ── B) Integridad de marketing_events ────────────────
-  section('B) Integridad marketing_events');
-  const evColl = db.collection('events');
-  const total = await evColl.countDocuments();
-  console.log(`  Total eventos: ${total}`);
-
-  if (total === 0) {
-    warn('Sin eventos todavía — sistema recién instrumentado, OK si es deploy fresco');
+  // ── SINAPSIS event bus (sistema) ────────────────────
+  section('B) SINAPSIS event bus');
+  const sinapsisCol = db.collection('events');
+  const sinapsisTotal = await sinapsisCol.countDocuments();
+  console.log(`  Total eventos SINAPSIS: ${sinapsisTotal}`);
+  if (sinapsisTotal > 0) {
+    const sample = await sinapsisCol.findOne();
+    const hasTimestamp = sample && sample.timestamp;
+    hasTimestamp ? ok('Campo timestamp presente en eventos SINAPSIS') : warn('Sin timestamp en eventos SINAPSIS');
+    const dist = await sinapsisCol.aggregate([
+      { $group: { _id: '$type', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }, { $limit: 5 }
+    ]).toArray();
+    console.log('  Top tipos SINAPSIS:', dist.map(d => `${d._id}:${d.count}`).join(', '));
+    ok(`SINAPSIS bus activo — ${sinapsisTotal} eventos`);
   } else {
+    warn('SINAPSIS bus vacío');
+  }
+
+  // ── MarketingEvent (analytics) ───────────────────────
+  section('B2) Marketing events (analytics)');
+  const evColl = db.collection('marketing_events');
+  if (total > 0) {
     // Sin type
     const noType = await evColl.countDocuments({ type: { $exists: false } });
     noType === 0 ? ok('Todos los eventos tienen type') : fail(`${noType} eventos sin type`);
@@ -75,6 +90,9 @@ async function run() {
 
   // ── C) Invariantes de métricas (si hay datos) ────────
   section('C) Invariantes de métricas');
+  const total = await evColl.countDocuments();
+  console.log(`  Total marketing_events: ${total}`);
+  if (total === 0) { warn("Sin marketing events — se generarán con uso real del producto"); }
   if (total > 0) {
     const count = async (type) => evColl.countDocuments({ type });
     const [viewed, started, paid, regStarted, regCompleted, feedViews, feedClicks] = await Promise.all([
@@ -166,7 +184,7 @@ async function run() {
   // ── F) Variables de entorno críticas ─────────────────
   section('F) Variables de entorno');
   const envVars = [
-    ['MONGODB_URI', '✅ conexión DB'],
+    [process.env.MONGODB_URI ? 'MONGODB_URI' : 'MONGO_URI', '✅ conexión DB'],
     ['MP_ACCESS_TOKEN', '✅ Mercado Pago'],
     ['GROQ_API_KEY', '✅ Asistente IA'],
     ['JWT_SECRET', '✅ Auth'],
