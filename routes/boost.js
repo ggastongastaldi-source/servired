@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 const Commerce = require('../src/core/models/Commerce');
-const authMiddleware = require('../src/core/middleware/auth');
+const { verificarToken } = require('../src/core/middleware/auth');
 const { trackEvent } = require('../src/core/services/trackEvent');
 
 const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 
 // POST /api/boost/iniciar
-router.post('/iniciar', authMiddleware, async (req, res) => {
+router.post('/iniciar', verificarToken, async (req, res) => {
   try {
     const { commerceId } = req.body;
     if (!commerceId) return res.status(400).json({ error: 'commerceId requerido' });
