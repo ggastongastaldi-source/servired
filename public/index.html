@@ -88,7 +88,7 @@ async function loadCommerceFeed() {
     console.warn('[feed] Error cargando comercios:', e.message);
   }
 }
-document.addEventListener('DOMContentLoaded', loadCommerceFeed);
+// loadCommerceFeed se llama al final del body
 
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -1242,5 +1242,6 @@ function abrirModal(id) {
   </button>
 </nav>
 
+<script>loadCommerceFeed();</script>
 </body>
 </html>
