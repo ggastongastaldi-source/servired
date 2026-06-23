@@ -110,7 +110,7 @@ app.use(express.static('public', {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
-    } else if (path.match(/\.(js|css|png|jpg|ico|svg|woff2?)$/)) {
+    } else if (path.match(/[.](js|css|png|jpg|ico|svg|woff2?)$/)) {
       // Assets: 7 días (cambiarán de nombre cuando cambien)
       res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
     }
