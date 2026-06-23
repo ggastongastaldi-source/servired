@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const { verificarToken } = require('../middleware/auth');
 const Usuario  = require('../models/Usuario');
 const Payment  = require('../models/Payment');
+const { trackEvent } = require('../services/trackEvent');
 
 // Outbox helper
 async function outboxPush(channel, template, payload, correlationId) {
@@ -91,6 +92,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         boost_payment_id: paymentId
       });
       console.log('[BOOST] ✅ Comercio', metadata.commerceId, 'boosted hasta', boostExpiry);
+      trackEvent('boost_paid', { actorId: metadata.commerceId, meta: { paymentId, boostExpiry } });
       return;
     }
     // ── FIN BOOST handler ───────────────────────────────────────────────────

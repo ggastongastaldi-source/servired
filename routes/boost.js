@@ -3,6 +3,7 @@ const router = express.Router();
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 const Commerce = require('../src/core/models/Commerce');
 const authMiddleware = require('../middleware/auth');
+const { trackEvent } = require('../src/core/services/trackEvent');
 
 const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 
@@ -38,6 +39,7 @@ router.post('/iniciar', authMiddleware, async (req, res) => {
       }
     });
 
+    trackEvent('boost_started', { meta: { commerceId, preferenceId: response.id } });
     res.json({ init_point: response.init_point, preference_id: response.id });
   } catch (err) {
     console.error('[BOOST] Error iniciando boost:', err);

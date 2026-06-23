@@ -4,6 +4,7 @@ const QRCode   = require('qrcode');
 const router   = express.Router();
 const Commerce = require('../models/Commerce');
 const BASE_URL = process.env.BASE_URL || 'https://servired.online';
+const { trackEvent } = require('../services/trackEvent');
 
 // POST /api/commerce/register
 router.post('/register', async (req, res) => {

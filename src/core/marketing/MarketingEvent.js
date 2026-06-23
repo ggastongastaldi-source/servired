@@ -3,11 +3,25 @@
 const mongoose = require('mongoose');
 
 const EVENT_TYPES = [
+  // Core
   'usuario_registrado',
   'profesional_aprobado',
   'servicio_publicado',
   'resena_recibida',
   'contratacion_realizada',
+  // Boost funnel
+  'boost_viewed',
+  'boost_started',
+  'boost_paid',
+  // Commerce feed
+  'commerce_feed_view',
+  'commerce_feed_click',
+  // Asistente
+  'assistant_boost_chip_click',
+  'assistant_session_started',
+  // Wizard comercio
+  'commerce_register_started',
+  'commerce_register_completed',
 ];
 
 const marketingEventSchema = new mongoose.Schema(
