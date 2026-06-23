@@ -11,7 +11,7 @@ const router = express.Router();
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = 'llama3-8b-8192';
+const MODEL = 'llama-3.1-8b-instant';
 
 const SYSTEM_PROMPT = `Sos el Asistente Beta de ServiRed — una plataforma hiperlocal que conecta vecinos, técnicos del hogar y comercios en el AMBA, Argentina.
 
