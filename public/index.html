@@ -1246,6 +1246,30 @@ function abrirModal(id) {
   </button>
 </nav>
 
-<script>loadCommerceFeed();</script>
+<script>
+(async function() {
+  try {
+    const list = document.getElementById('commerce-feed-list');
+    if (!list) return;
+    const r = await fetch('/api/commerce/feed');
+    const d = await r.json();
+    if (d.ok && d.comercios && d.comercios.length > 0) {
+      list.innerHTML = d.comercios.map(c => `
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:1.5rem;">🏪</div>
+          <div>
+            <div style="font-weight:700;color:#e2e8f0;">${c.nombre}</div>
+            <div style="font-size:0.78rem;color:#64748b;">${c.rubro||''} · ${c.localidad||''}</div>
+            ${c.is_boosted ? '<div style="color:#FFD700;font-size:0.72rem;">⭐ Destacado</div>' : ''}
+          </div>
+        </div>`).join('');
+    } else {
+      list.innerHTML = '<div style="color:#64748b;font-size:0.82rem;text-align:center;padding:18px 0;">Sin comercios registrados aún.</div>';
+    }
+  } catch(e) {
+    console.error('[feed]', e.message);
+  }
+})();
+</script>
 </body>
 </html>
