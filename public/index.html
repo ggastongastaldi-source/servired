@@ -206,6 +206,13 @@ body{padding-top:64px;}
 .chip.chip-green{background:rgba(0,200,83,0.08);border-color:rgba(0,200,83,0.3);color:#00C853;}
 .chip.chip-gold{background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.4);color:#FFD700;}
 
+
+/* ── Wizard comercio ──────────────────────────────────── */
+.wizard-step{animation:wizIn 0.2s ease;}
+@keyframes wizIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.wiz-rubro-btn{background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;color:#e2e8f0;padding:10px 8px;font-family:'Rajdhani',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.15s;text-align:center;}
+.wiz-rubro-btn:active,.wiz-rubro-btn.selected{background:rgba(255,109,0,0.15);border-color:#FF6D00;color:#FF6D00;}
+
 </style>
 
   <!-- PWA -->
@@ -297,25 +304,99 @@ body{padding-top:64px;}
 </div>
 
 <div class="modal-bg" id="modal-onboarding-comercio">
-  <div class="modal" style="max-width:420px;padding:24px 20px;">
-    <div class="modal-title" style="font-size:1.05rem;margin-bottom:4px;">🏪 Sumá tu comercio</div>
-    <p style="color:var(--muted);font-size:0.82rem;text-align:center;margin-bottom:16px;">Formá parte de la red local más grande del AMBA.</p>
-    <div class="field"><label>Nombre del comercio</label><input type="text" id="com-nombre" placeholder="Ferretería El Tornillo"></div>
-    <div class="field"><label>Email</label><input type="email" id="com-email" placeholder="tu@comercio.com"></div>
-    <div class="field"><label>Teléfono</label><input type="tel" id="com-tel" placeholder="11 1234-5678"></div>
-    <div class="field"><label>Rubro</label><input type="text" id="com-rubro" placeholder="Ferretería, Kiosco, Farmacia..."></div>
-    <div class="field"><label>Dirección</label><input type="text" id="com-dir" placeholder="Av. San Martín 1234"></div>
-    <div class="field"><label>Localidad</label><input type="text" id="com-loc" placeholder="La Matanza, Morón..."></div>
-    <div class="err" id="com-err" style="display:none;color:var(--danger);font-size:0.8rem;margin-bottom:8px;"></div>
-    <div id="com-qr-result" style="display:none;text-align:center;margin-bottom:16px;">
-      <p style="color:#00C853;font-size:0.85rem;margin-bottom:10px;">✅ ¡Comercio registrado! Tu QR está listo.</p>
-      <img id="com-qr-img" src="" style="width:200px;height:200px;border-radius:12px;border:2px solid #00E5FF;" alt="QR ServiRed">
-      <p style="color:var(--muted);font-size:0.75rem;margin-top:8px;">Imprimí este QR y pegalo en tu local.<br>Cada trabajador que lo escanee queda vinculado a tu comercio.</p>
+  <div class="modal" style="max-width:420px;padding:0;overflow:hidden;">
+
+    <!-- PROGRESS BAR -->
+    <div style="padding:16px 20px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:0.92rem;font-weight:700;color:#fff;">🏪 Sumá tu comercio</span>
+        <span id="wiz-step-label" style="font-size:0.72rem;color:#64748b;">Paso 1 de 4</span>
+      </div>
+      <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
+        <div id="wiz-progress" style="height:100%;background:linear-gradient(90deg,#FF6D00,#00E5FF);border-radius:4px;transition:width 0.3s;width:25%;"></div>
+      </div>
     </div>
-    <div class="modal-btns" id="com-btns">
-      <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
-      <button class="btn-sm btn-sm-pri" onclick="registrarComercio()">Registrarme →</button>
+
+    <!-- STEP 1: Datos básicos -->
+    <div class="wizard-step" id="wiz-step-1" style="padding:18px 20px 20px;">
+      <p style="color:#64748b;font-size:0.8rem;margin:0 0 14px;">Contanos quién sos</p>
+      <div class="field"><label>Nombre del comercio *</label><input type="text" id="com-nombre" placeholder="Ferretería El Tornillo" oninput="wizValidateStep1()"></div>
+      <div class="field"><label>Email *</label><input type="email" id="com-email" placeholder="tu@comercio.com" oninput="wizValidateStep1()"></div>
+      <div class="field"><label>Teléfono</label><input type="tel" id="com-tel" placeholder="11 1234-5678"></div>
+      <div class="err" id="com-err" style="display:none;color:var(--danger);font-size:0.8rem;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
+        <button class="btn-sm btn-sm-pri" id="wiz-btn-1" onclick="wizGoTo(2)" disabled style="opacity:0.45;flex:1;">Siguiente →</button>
+      </div>
     </div>
+
+    <!-- STEP 2: Categoría -->
+    <div class="wizard-step" id="wiz-step-2" style="display:none;padding:18px 20px 20px;">
+      <p style="color:#64748b;font-size:0.8rem;margin:0 0 14px;">¿Qué tipo de comercio tenés?</p>
+      <div id="wiz-rubros" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <button class="wiz-rubro-btn" onclick="wizSelectRubro(this,'Ferretería')">🔨 Ferretería</button>
+        <button class="wiz-rubro-btn" onclick="wizSelectRubro(this,'Kiosco')">🍬 Kiosco</button>
+        <button class="wiz-rubro-btn" onclick="wizSelectRubro(this,'Farmacia')">💊 Farmacia</button>
+        <button class="wiz-rubro-btn" onclick="wizSelectRubro(this,'Verdulería')">🥬 Verdulería</button>
+        <button class="wiz-rubro-btn" onclick="wizSelectRubro(this,'Panadería')">🍞 Panadería</button>
+        <button class="wiz-rubro-btn" onclick="wizSelectRubro(this,'Carnicería')">🥩 Carnicería</button>
+        <button class="wiz-rubro-btn" onclick="wizSelectRubro(this,'Librería')">📚 Librería</button>
+        <button class="wiz-rubro-btn" onclick="wizSelectRubro(this,'Otro')">➕ Otro</button>
+      </div>
+      <div class="field" id="wiz-rubro-otro" style="display:none;">
+        <label>Especificá el rubro</label>
+        <input type="text" id="com-rubro" placeholder="Ej: Pinturería, Electricidad..." oninput="wizValidateRubro()">
+      </div>
+      <input type="hidden" id="com-rubro" style="display:none;">
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn-sm btn-sm-sec" onclick="wizGoTo(1)">← Atrás</button>
+        <button class="btn-sm btn-sm-pri" id="wiz-btn-2" onclick="wizGoTo(3)" disabled style="opacity:0.45;flex:1;">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Ubicación -->
+    <div class="wizard-step" id="wiz-step-3" style="display:none;padding:18px 20px 20px;">
+      <p style="color:#64748b;font-size:0.8rem;margin:0 0 14px;">¿Dónde está tu local?</p>
+      <div class="field"><label>Dirección *</label><input type="text" id="com-dir" placeholder="Av. San Martín 1234" oninput="wizValidateStep3()"></div>
+      <div class="field">
+        <label>Localidad *</label>
+        <select id="com-loc" onchange="wizValidateStep3()" style="width:100%;padding:10px 12px;background:#1a2035;border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:0.95rem;">
+          <option value="">Seleccioná tu localidad...</option>
+          <option>La Matanza</option><option>Morón</option><option>Merlo</option>
+          <option>Ituzaingó</option><option>Hurlingham</option><option>Tres de Febrero</option>
+          <option>San Martín</option><option>La Plata</option><option>Quilmes</option>
+          <option>Lanús</option><option>Lomas de Zamora</option><option>Avellaneda</option>
+          <option>Almirante Brown</option><option>Berazategui</option><option>Florencio Varela</option>
+          <option>Tigre</option><option>San Isidro</option><option>Vicente López</option>
+          <option>Capital Federal</option><option>Otra</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn-sm btn-sm-sec" onclick="wizGoTo(2)">← Atrás</button>
+        <button class="btn-sm btn-sm-pri" id="wiz-btn-3" onclick="wizGoTo(4)" disabled style="opacity:0.45;flex:1;">Ver resumen →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Confirmación -->
+    <div class="wizard-step" id="wiz-step-4" style="display:none;padding:18px 20px 20px;">
+      <p style="color:#64748b;font-size:0.8rem;margin:0 0 14px;">Confirmá tus datos antes de registrarte</p>
+      <div id="wiz-summary" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:0.88rem;line-height:1.8;color:#e2e8f0;"></div>
+      <div id="com-qr-result" style="display:none;text-align:center;margin-bottom:16px;">
+        <p style="color:#00C853;font-size:0.85rem;margin-bottom:10px;">✅ ¡Comercio registrado! Tu QR está listo.</p>
+        <img id="com-qr-img" src="" style="width:180px;height:180px;border-radius:12px;border:2px solid #00E5FF;" alt="QR ServiRed">
+        <p style="color:var(--muted);font-size:0.75rem;margin-top:8px;">Imprimí este QR y pegalo en tu local.</p>
+        <div style="margin-top:12px;padding:10px 14px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:10px;">
+          <p style="color:#FFD700;font-size:0.8rem;margin:0 0 8px;font-weight:700;">⭐ ¿Querés aparecer primero en el feed?</p>
+          <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 10px;">Activá Boost Destacado por ARS 2.500 y tu comercio aparece primero durante 7 días.</p>
+          <button class="btn-sm btn-sm-pri" style="width:100%;background:linear-gradient(135deg,#b8860b,#FFD700);color:#0f1117;" onclick="cerrarModals();abrirModal('boost-info')">Activar Boost ⭐</button>
+        </div>
+      </div>
+      <div id="com-btns" style="display:flex;gap:10px;">
+        <button class="btn-sm btn-sm-sec" onclick="wizGoTo(3)">← Atrás</button>
+        <button class="btn-sm btn-sm-pri" id="wiz-btn-submit" onclick="registrarComercio()" style="flex:1;">Registrarme →</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -888,13 +969,91 @@ if(btnInstall) {
 
 
 <script>
+// ── Wizard Comercio V2 ─────────────────────────────────
+let wizData = {};
+
+function wizGoTo(step) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('wiz-step-' + i);
+    if (el) el.style.display = i === step ? 'block' : 'none';
+  }
+  const labels = ['','Paso 1 de 4','Paso 2 de 4','Paso 3 de 4','Paso 4 de 4'];
+  const widths  = ['','25%','50%','75%','100%'];
+  document.getElementById('wiz-step-label').textContent = labels[step];
+  document.getElementById('wiz-progress').style.width = widths[step];
+  if (step === 4) wizBuildSummary();
+}
+
+function wizValidateStep1() {
+  const nombre = document.getElementById('com-nombre').value.trim();
+  const email  = document.getElementById('com-email').value.trim();
+  const ok = nombre.length > 1 && /\S+@\S+\.\S+/.test(email);
+  const btn = document.getElementById('wiz-btn-1');
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.45';
+}
+
+function wizSelectRubro(btn, rubro) {
+  document.querySelectorAll('.wiz-rubro-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const otroDiv = document.getElementById('wiz-rubro-otro');
+  if (rubro === 'Otro') {
+    otroDiv.style.display = 'block';
+    wizData.rubro = '';
+  } else {
+    otroDiv.style.display = 'none';
+    wizData.rubro = rubro;
+    // usar el hidden input
+    const hi = document.querySelector('#wiz-step-2 input[type=hidden]');
+    if (hi) hi.value = rubro;
+  }
+  wizValidateRubro();
+}
+
+function wizValidateRubro() {
+  const ok = wizData.rubro && wizData.rubro.length > 0 ||
+    (document.getElementById('wiz-rubro-otro').style.display !== 'none' &&
+     document.getElementById('com-rubro') &&
+     document.getElementById('com-rubro').value.trim().length > 1);
+  if (document.getElementById('wiz-rubro-otro').style.display !== 'none') {
+    const v = document.getElementById('com-rubro')?.value.trim();
+    if (v) wizData.rubro = v;
+  }
+  const btn = document.getElementById('wiz-btn-2');
+  btn.disabled = !wizData.rubro;
+  btn.style.opacity = wizData.rubro ? '1' : '0.45';
+}
+
+function wizValidateStep3() {
+  const dir = document.getElementById('com-dir').value.trim();
+  const loc = document.getElementById('com-loc').value;
+  const ok = dir.length > 3 && loc !== '';
+  const btn = document.getElementById('wiz-btn-3');
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.45';
+}
+
+function wizBuildSummary() {
+  const nombre = document.getElementById('com-nombre').value.trim();
+  const email  = document.getElementById('com-email').value.trim();
+  const tel    = document.getElementById('com-tel').value.trim();
+  const dir    = document.getElementById('com-dir').value.trim();
+  const loc    = document.getElementById('com-loc').value;
+  document.getElementById('wiz-summary').innerHTML =
+    `<div>🏪 <strong>${nombre}</strong></div>` +
+    `<div>📧 ${email}</div>` +
+    (tel ? `<div>📞 ${tel}</div>` : '') +
+    `<div>🗂 ${wizData.rubro || '—'}</div>` +
+    `<div>📍 ${dir}, ${loc}</div>`;
+}
+
 async function registrarComercio() {
   const nombre   = document.getElementById('com-nombre').value.trim();
   const email    = document.getElementById('com-email').value.trim();
   const telefono = document.getElementById('com-tel').value.trim();
-  const rubro    = document.getElementById('com-rubro').value.trim();
+  const rubro    = wizData.rubro || '';
   const direccion= document.getElementById('com-dir').value.trim();
-  const localidad= document.getElementById('com-loc').value.trim();
+  const localidad= document.getElementById('com-loc').value;
   const errEl    = document.getElementById('com-err');
   errEl.style.display = 'none';
 
@@ -904,7 +1063,7 @@ async function registrarComercio() {
     return;
   }
 
-  const btn = document.querySelector('#com-btns .btn-sm-pri');
+  const btn = document.getElementById('wiz-btn-submit');
   btn.textContent = 'Registrando...';
   btn.disabled = true;
 
