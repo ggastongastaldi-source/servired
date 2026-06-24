@@ -1369,10 +1369,10 @@ const VA = (() => {
       const r = await fetch('/api/asistente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, source: 'voice-v3', memory: sessionMemory })
+        body: JSON.stringify({ messages: [{ role: 'user', content: text }] })
       });
       const d = await r.json();
-      const reply = d.reply || d.message || 'No pude procesar tu consulta.';
+      const reply = d.reply || d.message || d.respuesta || 'No pude procesar tu consulta.';
       agregarMensaje(reply, 'bot');
       speak(reply);
     } catch(e) {
