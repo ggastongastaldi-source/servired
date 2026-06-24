@@ -65,9 +65,10 @@
 }
 
 // ── Commerce Feed ──────────────────────────────────────
-async function loadCommerceFeed() {
+async function loadCommerceFeed(rubro) {
   try {
-    const r = await fetch('/api/commerce/feed');
+    const url = rubro ? '/api/commerce/feed?rubro=' + encodeURIComponent(rubro) : '/api/commerce/feed';
+    const r = await fetch(url);
     const d = await r.json();
     const list = document.getElementById('commerce-feed-list');
     if (!list) return;
@@ -244,6 +245,8 @@ body{padding-top:64px;}
 .bn-publish-inner .bn-label{color:#fff;font-size:0.6rem;}
 body{padding-bottom:70px;}
 
+
+.rubro-btn.active{border-color:rgba(255,109,0,0.8)!important;background:rgba(255,109,0,0.18)!important;color:#FF6D00!important;}
 </style>
 
   <!-- PWA -->
@@ -638,16 +641,16 @@ function toggleNotif(){
     <span style="color:#64748b;font-size:0.75rem;">✓ Técnicos verificados</span>
   </div>
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;margin-top:12px;">
-    <button onclick="handleCTAPrimaria()" style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.25);border-radius:12px;padding:10px 4px;color:#e2e8f0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
+    <button class="rubro-btn" data-rubro="electricista" onclick="irAExplorar('electricista')" style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.25);border-radius:12px;padding:10px 4px;color:#e2e8f0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
       <span style="font-size:1.3rem;">⚡</span><span style="font-size:0.65rem;color:#94a3b8;">Electricista</span>
     </button>
-    <button onclick="handleCTAPrimaria()" style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.25);border-radius:12px;padding:10px 4px;color:#e2e8f0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
+    <button class="rubro-btn" data-rubro="plomeria" onclick="irAExplorar('plomeria')" style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.25);border-radius:12px;padding:10px 4px;color:#e2e8f0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
       <span style="font-size:1.3rem;">🔧</span><span style="font-size:0.65rem;color:#94a3b8;">Plomero</span>
     </button>
-    <button onclick="handleCTAPrimaria()" style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.25);border-radius:12px;padding:10px 4px;color:#e2e8f0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
+    <button class="rubro-btn" data-rubro="construccion" onclick="irAExplorar('construccion')" style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.25);border-radius:12px;padding:10px 4px;color:#e2e8f0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
       <span style="font-size:1.3rem;">🏠</span><span style="font-size:0.65rem;color:#94a3b8;">Albañil</span>
     </button>
-    <button onclick="handleCTAPrimaria()" style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.25);border-radius:12px;padding:10px 4px;color:#e2e8f0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
+    <button class="rubro-btn" data-rubro="pintura" onclick="irAExplorar('pintura')" style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.25);border-radius:12px;padding:10px 4px;color:#e2e8f0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
       <span style="font-size:1.3rem;">🎨</span><span style="font-size:0.65rem;color:#94a3b8;">Pintor</span>
     </button>
   </div>
@@ -1160,10 +1163,17 @@ function handleCTAPrimaria() {
 
 function handleFAB() { abrirModal('soporte'); } // legacy compat
 
-function irAExplorar() {
+function irAExplorar(rubro) {
   bnActivate('explorar');
   const feed = document.getElementById('seccion-comercios');
   if (feed) feed.scrollIntoView({ behavior: 'smooth' });
+  if (rubro) {
+    loadCommerceFeed(rubro);
+    // marcar botón activo
+    document.querySelectorAll('.rubro-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector('.rubro-btn[data-rubro="' + rubro + '"]');
+    if (btn) btn.classList.add('active');
+  }
 }
 
 function bnActivate(id) {
