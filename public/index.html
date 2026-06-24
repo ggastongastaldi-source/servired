@@ -73,7 +73,10 @@ async function loadCommerceFeed(rubro) {
     const list = document.getElementById('commerce-feed-list');
     if (!list) return;
     if (!d.ok || !d.comercios || d.comercios.length === 0) {
-      list.innerHTML = '<div style="color:#64748b;font-size:0.82rem;padding:16px;text-align:center;line-height:1.6;">Aún no hay comercios registrados en tu zona.<br><span style=\'color:#FF6D00;font-size:0.78rem;\'>¿Tenés un negocio? Sumate →</span></div>';
+      const msg = rubro
+        ? '<div style="color:#64748b;font-size:0.82rem;padding:16px;text-align:center;line-height:1.8;">Sin resultados para <strong style="color:#FF6D00;">' + rubro + '</strong> en tu zona.<br><span onclick="irAExplorar()" style="color:#00E5FF;font-size:0.78rem;cursor:pointer;">Ver todos los comercios →</span></div>'
+        : '<div style="color:#64748b;font-size:0.82rem;padding:16px;text-align:center;line-height:1.6;">Aún no hay comercios registrados en tu zona.<br><span style="color:#FF6D00;font-size:0.78rem;">¿Tenés un negocio? Sumate →</span></div>';
+      list.innerHTML = msg;
       return;
     }
     const count = document.getElementById('feed-count');
