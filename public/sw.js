@@ -1,4 +1,4 @@
-const CACHE = 'servired-v82b610';
+const CACHE = 'servired-vfc92c3';
 const ASSETS = ['/', '/index.html', '/cliente.html', '/trabajador.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
