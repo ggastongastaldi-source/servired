@@ -291,4 +291,34 @@ router.get('/wallet', verificarToken, async (req, res) => {
     res.json({ ok: false, error: e.message });
   }
 });
+
+// POST /api/pagos/boost — crea preferencia MP para Boost Destacado
+router.post('/boost', async (req, res) => {
+  try {
+    const { commerceId, commerceEmail, commerceNombre } = req.body;
+    if (!commerceId || !commerceEmail) {
+      return res.status(400).json({ ok: false, error: 'commerceId y commerceEmail requeridos' });
+    }
+    const BOOST_PRECIO = 2500;
+    const pedidoId = require('uuid').v4();
+    const result = await crearPreferencia({
+      pedidoId,
+      servicio: 'Boost Destacado 7 días',
+      precio: BOOST_PRECIO,
+      clienteEmail: commerceEmail,
+      workerId: null,
+    });
+    // Sobreescribir metadata con tipo boost
+    const { MercadoPagoConfig, Preference } = require('mercadopago');
+    // Guardar referencia para el webhook
+    const Commerce = require('../models/Commerce');
+    await Commerce.findByIdAndUpdate(commerceId, { boost_payment_id: pedidoId });
+    console.log('[boost] preferencia creada para comercio', commerceId, 'ref:', pedidoId);
+    res.json({ ok: true, init_point: result.init_point, pedidoId });
+  } catch(e) {
+    console.error('[boost] Error:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;

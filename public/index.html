@@ -1179,6 +1179,32 @@ function irAExplorar(rubro) {
   }
 }
 
+
+async function activarBoost() {
+  const btn = document.getElementById('boost-pay-btn');
+  const err = document.getElementById('boost-err');
+  if (btn) { btn.disabled = true; btn.textContent = 'Procesando...'; }
+  if (err) err.style.display = 'none';
+  try {
+    const commerceId = localStorage.getItem('commerceId');
+    const commerceEmail = localStorage.getItem('commerceEmail');
+    if (!commerceId || !commerceEmail) {
+      throw new Error('Registrá tu comercio primero para activar el Boost');
+    }
+    const r = await fetch('/api/pagos/boost', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commerceId, commerceEmail })
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Error al generar el pago');
+    window.location.href = d.init_point;
+  } catch(e) {
+    if (err) { err.textContent = e.message; err.style.display = 'block'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Activar Boost ⭐'; }
+  }
+}
+
 function bnActivate(id) {
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   const el = document.getElementById('bn-' + id);
@@ -1290,5 +1316,34 @@ function srTrack(event, meta) {
   }
 })();
 </script>
+
+<div class="modal-bg" id="modal-boost-info">
+  <div class="modal">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:2.5rem;">⭐</div>
+      <div class="modal-title" style="color:#FFD700;margin-bottom:4px;">Boost Destacado</div>
+      <div style="color:#64748b;font-size:0.8rem;">Tu comercio aparece primero en el feed durante 7 días</div>
+    </div>
+    <div style="background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="color:#e2e8f0;font-size:0.88rem;">Boost 7 días</span>
+        <span style="color:#FFD700;font-weight:700;font-size:1.1rem;">ARS 2.500</span>
+      </div>
+      <div style="color:#64748b;font-size:0.75rem;line-height:1.6;">
+        ✓ Posición destacada en Actividad económica local<br>
+        ✓ Badge ⭐ visible en tu tarjeta<br>
+        ✓ Pago seguro vía Mercado Pago
+      </div>
+    </div>
+    <div id="boost-err" style="display:none;color:#ef4444;font-size:0.78rem;margin-bottom:8px;text-align:center;"></div>
+    <div class="modal-btns">
+      <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
+      <button class="btn-sm btn-sm-pri" id="boost-pay-btn"
+        style="background:linear-gradient(135deg,#b8860b,#FFD700);color:#0f1117;flex:1;font-weight:700;"
+        onclick="activarBoost()">Activar Boost ⭐</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
