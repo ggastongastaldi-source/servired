@@ -1134,6 +1134,11 @@ async function registrarComercio() {
     document.getElementById('com-qr-img').src = data.qr_image;
     document.getElementById('com-qr-result').style.display = 'block';
     document.getElementById('com-btns').style.display = 'none';
+    // Guardar para Boost
+    if (data.commerce && data.commerce._id) {
+      localStorage.setItem('commerceId', data.commerce._id);
+      localStorage.setItem('commerceEmail', email);
+    }
 
   } catch(e) {
     errEl.textContent = e.message;
