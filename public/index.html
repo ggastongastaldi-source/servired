@@ -70,26 +70,36 @@ async function loadCommerceFeed() {
     const r = await fetch('/api/commerce/feed');
     const d = await r.json();
     const list = document.getElementById('commerce-feed-list');
-    if (!list) { console.error('[feed] commerce-feed-list no existe en DOM'); return; }
+    if (!list) return;
     if (!d.ok || !d.comercios || d.comercios.length === 0) {
-      list.innerHTML = '<div style="color:#f59e0b;font-size:0.75rem;padding:8px;">Sin comercios: ok=' + d.ok + ' cant=' + (d.comercios?.length||0) + '</div>';
+      list.innerHTML = '<div style="color:#64748b;font-size:0.82rem;padding:16px;text-align:center;line-height:1.6;">Aún no hay comercios registrados en tu zona.<br><span style=\'color:#FF6D00;font-size:0.78rem;\'>¿Tenés un negocio? Sumate →</span></div>';
       return;
     }
-    list.innerHTML = '<div style="color:#10b981;font-size:0.75rem;padding:4px;">Cargando ' + d.comercios.length + ' comercios...</div>';
-    list.innerHTML = d.comercios.map(c => `
-      <div class="commerce-card${c.is_boosted ? ' boosted' : ''}">
-        <div class="commerce-card-icon">🏪</div>
+    const count = document.getElementById('feed-count');
+    if (count) count.textContent = d.comercios.length + ' activos';
+    list.innerHTML = d.comercios.map(c => {
+      const rubroEmoji = {
+        'Ferretería':'🔨','Kiosco':'🍬','Farmacia':'💊','Verdulería':'🥬',
+        'Panadería':'🍞','Carnicería':'🥩','Librería':'📚','Pinturería':'🎨',
+        'Corralón':'🏗️','Materiales':'🏗️'
+      }[c.rubro] || '🏪';
+      const diasActivo = c.createdAt ? Math.floor((Date.now() - new Date(c.createdAt)) / 86400000) : null;
+      const antiguedad = diasActivo !== null ? (diasActivo === 0 ? '· Nuevo hoy' : diasActivo < 7 ? '· Esta semana' : '') : '';
+      return \`<div class="commerce-card\${c.is_boosted ? ' boosted' : ''}">
+        <div class="commerce-card-icon">\${rubroEmoji}</div>
         <div class="commerce-card-body">
-          <div class="commerce-card-name">${c.nombre || c.name || 'Comercio'}</div>
-          <div class="commerce-card-sub">${c.rubro || ''} · ${c.localidad || ''}</div>
-          ${c.is_boosted ? '<div class="boost-badge">⭐ Destacado</div>' : ''}
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div class="commerce-card-name">\${c.nombre}</div>
+            \${c.is_boosted ? '<div class="boost-badge">⭐</div>' : ''}
+          </div>
+          <div class="commerce-card-sub">\${c.rubro} · \${c.localidad} \${antiguedad}</div>
         </div>
-      </div>
-    `).join('');
+      </div>\`;
+    }).join('');
   } catch(e) {
     console.warn('[feed] Error cargando comercios:', e.message);
     const list = document.getElementById('commerce-feed-list');
-    if (list) list.innerHTML = '<div style="color:#ef4444;font-size:0.75rem;padding:8px;">Error: ' + e.message + '</div>';
+    if (list) list.innerHTML = '<div style="color:#ef4444;font-size:0.75rem;padding:8px;">Error cargando actividad local.</div>';
   }
 }
 // loadCommerceFeed se llama al final del body
