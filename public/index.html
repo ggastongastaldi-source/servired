@@ -1217,10 +1217,7 @@ const _cerrarModalsOrig = typeof cerrarModals === 'function' ? cerrarModals : nu
 
 // Registrar modo cuando el usuario elige un portal secundario
 document.addEventListener('DOMContentLoaded', () => {
-  const wBtn = document.querySelector('[onclick="abrirModal('worker-login')"]');
-  const cBtn = document.querySelector('[onclick="abrirModal('onboarding-comercio')"]');
-  if (wBtn) wBtn.addEventListener('click', () => AppMode.set(AppMode.MODES.TECNICO));
-  if (cBtn) cBtn.addEventListener('click', () => AppMode.set(AppMode.MODES.COMERCIO));
+  // AppMode se setea desde los botones directamente
 });
 
 // ── ServiRed Tracking ──────────────────────────────────
