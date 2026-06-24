@@ -1146,6 +1146,12 @@ function handleCTAPrimaria() {
 
 function handleFAB() { abrirModal('soporte'); } // legacy compat
 
+function irAExplorar() {
+  bnActivate('explorar');
+  const feed = document.getElementById('seccion-comercios');
+  if (feed) feed.scrollIntoView({ behavior: 'smooth' });
+}
+
 function bnActivate(id) {
   document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   const el = document.getElementById('bn-' + id);
@@ -1158,7 +1164,7 @@ function bnAbrirPerfil() {
   if (mode === AppMode.MODES.TECNICO && token) {
     window.location.href = '/trabajador.html';
   } else if (mode === AppMode.MODES.COMERCIO && token) {
-    abrirModal('onboarding-comercio');
+    window.location.href = '/comercio.html';
   } else {
     abrirModal('login-gen');
   }
@@ -1236,13 +1242,13 @@ function abrirModal(id) {
 
 
 <nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Navegación principal">
-  <button class="bn-item active" id="bn-inicio" onclick="bnActivate('inicio')" aria-label="Inicio">
+  <button class="bn-item active" id="bn-inicio" onclick="bnActivate('inicio');window.scrollTo({top:0,behavior:'smooth'})" aria-label="Inicio">
     <span class="bn-icon">🏠</span>
     <span class="bn-label">Inicio</span>
   </button>
-  <button class="bn-item" id="bn-buscar" onclick="bnActivate('buscar');abrirModal('cliente-login')" aria-label="Buscar">
+  <button class="bn-item" id="bn-explorar" onclick="irAExplorar()" aria-label="Explorar">
     <span class="bn-icon">🔍</span>
-    <span class="bn-label">Buscar</span>
+    <span class="bn-label">Explorar</span>
   </button>
   <button class="bn-item bn-publish" id="bn-publicar" onclick="bnActivate('publicar');handleCTAPrimaria()" aria-label="Publicar">
     <div class="bn-publish-inner">
