@@ -1135,8 +1135,8 @@ async function registrarComercio() {
     document.getElementById('com-qr-result').style.display = 'block';
     document.getElementById('com-btns').style.display = 'none';
     // Guardar para Boost
-    if (data.commerce && data.commerce._id) {
-      localStorage.setItem('commerceId', data.commerce._id);
+    if (data.commerce_id) {
+      localStorage.setItem('commerceId', data.commerce_id);
       localStorage.setItem('commerceEmail', email);
     }
 
