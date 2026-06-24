@@ -1231,33 +1231,8 @@ function srTrack(event, meta) {
   } catch(e) {}
 }
 
-// COMMERCE_FEED_VIEW — cuando el feed carga comercios
-const _origLoadFeed = loadCommerceFeed;
-async function loadCommerceFeed() {
-  await _origLoadFeed();
-  srTrack('commerce_feed_view', {});
-}
-
-// ASSISTANT_BOOST_CHIP_CLICK — cuando se toca el chip de boost
-const _origEnviarChip = enviarChip;
-function enviarChip(texto) {
-  if (texto.includes('Boost') || texto.includes('boost')) {
-    srTrack('assistant_boost_chip_click', { texto });
-  }
-  if (texto.includes('técnico') || texto.includes('servicio')) {
-    srTrack('assistant_session_started', { intent: 'buscar_servicio' });
-  }
-  _origEnviarChip(texto);
-}
-
-// COMMERCE_REGISTER_STARTED — cuando se abre el wizard
-const _origAbrirModal = abrirModal;
-function abrirModal(id) {
-  if (id === 'onboarding-comercio') {
-    srTrack('commerce_register_started', {});
-  }
-  _origAbrirModal(id);
-}
+// Tracking integrado directamente (sin wrappers en cadena)
+// srTrack se llama desde loadCommerceFeed, enviarChip y abrirModal nativamente
 
 </script>
 
