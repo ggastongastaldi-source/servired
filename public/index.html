@@ -513,7 +513,11 @@ async function enviarChat() {
     const data = await r.json();
     document.getElementById('chat-typing')?.remove();
     const reply = data.reply || 'No pude responder en este momento.';
-    chatHistory.push({ role: 'assistant', content: reply });
+    const replyClean = reply.replace(/\[ACCION:[^\]]*\]/gi, '').replace(/\[ACTION:[^\]]*\]/gi, '').trim();
+    chatHistory.push({ role: 'assistant', content: replyClean });
+    // reemplazar en DOM el último mensaje bot
+    const msgs = document.querySelectorAll('.chat-bot');
+    if (msgs.length) msgs[msgs.length-1].textContent = replyClean;
     agregarMensaje(reply, 'bot');
   } catch(e) {
     document.getElementById('chat-typing')?.remove();
@@ -1372,7 +1376,8 @@ const VA = (() => {
         body: JSON.stringify({ messages: [{ role: 'user', content: text }] })
       });
       const d = await r.json();
-      const reply = d.reply || d.message || d.respuesta || 'No pude procesar tu consulta.';
+      const replyRaw = d.reply || d.message || d.respuesta || 'No pude procesar tu consulta.';
+      const reply = replyRaw.replace(/\[ACCION:[^\]]*\]/gi, '').replace(/\[ACTION:[^\]]*\]/gi, '').trim();
       agregarMensaje(reply, 'bot');
       speak(reply);
     } catch(e) {
