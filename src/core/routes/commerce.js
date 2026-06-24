@@ -85,8 +85,10 @@ router.get('/', async (req, res) => {
 router.get('/feed', async (req, res) => {
   try {
     const { getCommerceFeed } = require('../../../services/commerceFeed');
-    const { locality } = req.query;
-    const filter = locality ? { localidad: locality } : {};
+    const { locality, rubro } = req.query;
+    const filter = {};
+    if (locality) filter.localidad = locality;
+    if (rubro) filter.rubro = new RegExp(rubro, 'i');
     const comercios = await getCommerceFeed(filter, 20);
     res.json({ ok: true, comercios });
   } catch(e) {
