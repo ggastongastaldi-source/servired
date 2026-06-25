@@ -82,11 +82,48 @@ const OBRAS = [
  * clasificarObra(texto) — detecta obra compleja desde lenguaje de usuario
  * Nivel 2 de clasificación — complementa clasificar() de rubrosCatalog
  */
+// Normalización Unicode — elimina tildes, ñ→n, lowercase
+function _normalize(str) {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/ñ/g, 'n')
+    .replace(/ü/g, 'u')
+    .trim();
+}
+
+// Sinónimos de intención de obra compleja
+const OBRA_INTENT_WORDS = [
+  'remodelar','remodelacion','reformar','reforma','refaccionar',
+  'refaccion','renovar','renovacion','rehacer','reconstruir',
+  'completo','completa','entero','entera','integral','total',
+  'nuevo','nueva','desde cero'
+];
+
 function clasificarObra(texto) {
-  const lower = texto.toLowerCase();
-  return OBRAS.filter(o =>
-    o.keywords && o.keywords.some(kw => lower.includes(kw))
-  );
+  const norm = _normalize(texto);
+
+  return OBRAS.filter(o => {
+    // Nivel 1: match directo por keywords normalizadas
+    const kwMatch = o.keywords && o.keywords.some(kw =>
+      norm.includes(_normalize(kw))
+    );
+    if (kwMatch) return true;
+
+    // Nivel 2: intent semántico — verbo de obra + palabra del nombre/rubros
+    const hasIntent = OBRA_INTENT_WORDS.some(w => norm.includes(w));
+    if (!hasIntent) return false;
+
+    // Verificar que mencione algo relacionado con la obra
+    const obraTerms = [
+      ...(o.keywords || []),
+      o.nombre,
+      ...o.rubros
+    ].map(_normalize);
+
+    return obraTerms.some(t => norm.includes(t) || t.includes(norm.split(' ')[0]));
+  });
 }
 
 /**
