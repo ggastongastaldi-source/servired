@@ -3,6 +3,7 @@
 // No expone la API key al cliente.
 
 const express = require('express');
+const giaRouterMiddleware = require('../middleware/giaRouter');
 const rateLimiter    = require('../middleware/rateLimit')({ limit: 20, windowMs: 60_000 });
 const contextInjector = require('../middleware/contextInjector');
 
@@ -101,7 +102,7 @@ Reglas de conducta:
 - Máximo 3-4 oraciones por respuesta salvo que el usuario pida más detalle
 `;
 
-router.post('/', rateLimiter, contextInjector, async (req, res) => {
+router.post('/', giaRouterMiddleware,, rateLimiter, contextInjector, async (req, res) => {
   const { messages, correlationId } = req.body;
 
   if (!messages || !Array.isArray(messages)) {
