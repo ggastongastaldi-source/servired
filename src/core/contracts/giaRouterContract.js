@@ -2,7 +2,7 @@ const { randomUUID } = require('crypto');
 const crypto = require('crypto');
 
 const VALID_SOURCES = ['gia', 'internal_system'];
-const VALID_INTENTS = ['pricing', 'catalog', 'general_query', 'rubro_query'];
+const VALID_INTENTS = ['pricing', 'catalog', 'general_query', 'rubro_query', 'obra_compleja'];
 const VALID_ROUTES  = ['aladin', 'gia_renderer', 'reject'];
 
 function validateGIARequest(req) {
@@ -43,13 +43,17 @@ function validateAladinResponse(response, intent) {
 }
 
 function classifyIntent(query) {
+  // ADR-006: delegar al catálogo canónico — clasificador hardcodeado eliminado
+  try {
+    const { clasificarIntent } = require('../../shared/catalogs/obrasCatalog');
+    const result = clasificarIntent(query);
+    if (result.esObraCompleja)     return 'obra_compleja';
+    if (result.rubros?.length > 0) return 'rubro_query';
+  } catch (_) {}
+  // Fallback mínimo solo para pricing (no cubierto por catálogo de rubros)
   const q = query.toLowerCase();
-  const pricing = ['cuanto sale','cuanto cuesta','precio','presupuesto','costo','cobran','cotizacion','vale','tarifa','m2','metro','metros'];
-  const catalog = ['tabique','cielorraso','durlock','revestimiento','placa','material','cemento','electricidad','plomeria'];
-  const rubro   = ['domestica','limpieza','pintura','electricista','plomero','gasista','carpintero','albanil','jardinero','tecnico','servicio','rubro','oficio'];
+  const pricing = ['cuanto sale','cuanto cuesta','precio','costo','cotizacion','tarifa'];
   if (pricing.some(k => q.includes(k))) return 'pricing';
-  if (catalog.some(k => q.includes(k))) return 'catalog';
-  if (rubro.some(k => q.includes(k)))   return 'rubro_query';
   return 'general_query';
 }
 

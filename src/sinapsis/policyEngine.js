@@ -2,6 +2,43 @@
 // Decisiones declarativas sobre eventos
 
 const POLICIES = {
+  // ── Intent lifecycle policies (ADR-006) ───────────────────
+  'INTENT_CLASSIFIED': [
+    {
+      id: 'intent_no_classification',
+      condition: (e) => !e.payload?.rubros?.length && !e.payload?.obras?.length,
+      decision: 'REJECT',
+      reason: 'Intent sin rubros ni obras'
+    },
+    {
+      id: 'intent_obra_compleja_hold',
+      condition: (e) => e.payload?.esObraCompleja === true,
+      decision: 'HOLD',
+      reason: 'Obra compleja requiere Presupuesto Inteligente'
+    },
+    {
+      id: 'intent_rubro_simple_execute',
+      condition: (e) => !e.payload?.esObraCompleja && (e.payload?.rubros?.length > 0),
+      decision: 'EXECUTE',
+      reason: 'Rubro simple — avanzar a matching'
+    }
+  ],
+  'INTENT_VALIDATED': [
+    {
+      id: 'intent_validated_passthrough',
+      condition: () => true,
+      decision: 'EXECUTE',
+      reason: 'Intent validado — avanzar a policy evaluation'
+    }
+  ],
+  'INTENT_TRANSITION': [
+    {
+      id: 'intent_transition_logged',
+      condition: () => true,
+      decision: 'EXECUTE',
+      reason: 'Transición registrada en WAL'
+    }
+  ],
   'servired.order.created': [
     {
       id: 'order_risk_check',
