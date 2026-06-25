@@ -22,6 +22,9 @@ async function main() {
   const metrics = new MetricsCollector(runId, scenario);
   try {
     await scenarios[scenario].run({ rng, metrics, runId, seed });
+    // Esperar 2 ciclos de micro-batch para que el observer procese
+    console.log('[ChaosLab] Esperando flush del observer...');
+    await new Promise(r => setTimeout(r, 5000));
   } catch (err) {
     console.error('[ChaosLab] ERROR:', err.message);
   } finally {

@@ -1,22 +1,19 @@
 'use strict';
-const { adapter } = require('../../../shared/events/router-instance');
-const { randomUUID } = require('crypto');
+const { router } = require('../../../shared/events/router-instance');
+const { createEvent } = require('../../../shared/events/createEvent');
 
 async function inject(opts) {
   const { type, actorId, zoneId, payload, runId, scenario, seed } = opts;
 
-  const envelope = {
-    event_id:       randomUUID(),
-    event_type:     type,
-    correlation_id: runId,
-    causation:      null,
-    actor:          { id: actorId, role: 'chaosLab' },
-    context:        { zoneId: zoneId || 'la_matanza' },
-    payload,
-    metadata:       { source: 'chaosLab', scenario, runId, seed: seed ?? null },
-  };
+  const event = createEvent({
+    type,
+    actor:   { user_id: actorId, role: 'chaosLab' },
+    context: { zone: zoneId || 'la_matanza', source: 'chaosLab' },
+    payload: { ...payload, _meta: { source: 'chaosLab', scenario, runId, seed: seed ?? null } },
+    correlationId: runId,
+  });
 
-  return await adapter.persist(envelope);
+  return await router.publish(event);
 }
 
 module.exports = { inject };
