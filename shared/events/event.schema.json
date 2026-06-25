@@ -34,7 +34,9 @@
         "job_completed",
         "job_unfulfilled",
         "wallet_opened",
-        "lead_attributed"
+        "lead_attributed",
+        "PRICE_SUBMITTED",
+        "AnomalyDetected"
       ]
     },
     "timestamp": {
@@ -48,30 +50,77 @@
     "causation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["event_id", "event_type"],
+      "required": [
+        "event_id",
+        "event_type"
+      ],
       "properties": {
-        "event_id": { "type": ["string", "null"] },
-        "event_type": { "type": ["string", "null"] }
+        "event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "event_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "actor": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["user_id", "role"],
+      "required": [
+        "user_id",
+        "role"
+      ],
       "properties": {
-        "user_id": { "type": ["string", "null"] },
-        "role": { "type": "string", "minLength": 1 }
+        "user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "context": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["tenant_id", "session_id", "zone", "source"],
+      "required": [
+        "tenant_id",
+        "session_id",
+        "zone",
+        "source"
+      ],
       "properties": {
-        "tenant_id": { "type": "string", "minLength": 1 },
-        "session_id": { "type": ["string", "null"] },
-        "zone": { "type": ["string", "null"] },
-        "source": { "type": ["string", "null"] }
+        "tenant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "zone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "payload": {
@@ -80,10 +129,19 @@
     "metadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["version", "environment"],
+      "required": [
+        "version",
+        "environment"
+      ],
       "properties": {
-        "version": { "type": "integer", "minimum": 1 },
-        "environment": { "type": "string", "minLength": 1 }
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }
