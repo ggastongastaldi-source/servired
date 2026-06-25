@@ -13,7 +13,7 @@ async function emit({ rng, metrics, runId, scenario, count = 20, lambdaPerSec = 
     const event = await inject({ type: 'PRICE_SUBMITTED', actorId, zoneId: 'la_matanza', payload: { price: crashPrice, rubro: 'construccion_seca', index: i, _attack: 'flash_crash' }, runId, scenario, seed: null });
     metrics.recordEvent({ isChaos: true });
     metrics.recordPrice({ baseline: BASELINE_PRICE_ARS, effective: crashPrice });
-    if (event?.eventId) metrics.recordInjection(event.eventId);
+    if (event?.event?.event_id) metrics.recordInjection(event.event.event_id);
     await new Promise(r => setTimeout(r, poissonInterval(rng, lambdaPerSec)));
   }
 }

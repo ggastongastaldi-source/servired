@@ -14,7 +14,7 @@ async function emit({ rng, metrics, runId, scenario, count = 10, intervalMs = 20
     const event = await inject({ type: 'PRICE_SUBMITTED', actorId, zoneId: 'la_matanza', payload: { price, rubro: 'construccion_seca', index: i }, runId, scenario, seed: null });
     metrics.recordEvent({ isChaos: false });
     metrics.recordPrice({ baseline: price, effective: price });
-    if (event?.eventId) metrics.recordInjection(event.eventId);
+    if (event?.event?.event_id) metrics.recordInjection(event.event.event_id);
     await new Promise(r => setTimeout(r, intervalMs));
   }
 }
