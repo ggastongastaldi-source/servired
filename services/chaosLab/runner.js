@@ -1,4 +1,6 @@
 'use strict';
+const mongoose = require('mongoose');
+require('dotenv').config();
 const { parseArgs } = require('./lib/args');
 const { buildRng } = require('./lib/rng');
 const MetricsCollector = require('./metrics/collector');
@@ -14,10 +16,18 @@ async function main() {
   const runId = `run_${Date.now()}_${seed ?? 'stochastic'}`;
   console.log(`[ChaosLab] Escenario: ${scenario} | Modo: ${mode} | Seed: ${seed ?? 'N/A'} | RunId: ${runId}`);
   if (dryRun) { console.log('[ChaosLab] DRY-RUN OK.'); return; }
+  await mongoose.connect(process.env.MONGO_URI, { family: 4 });
+  console.log('[ChaosLab] MongoDB conectado.');
   const rng = buildRng(seed);
   const metrics = new MetricsCollector(runId, scenario);
-  try { await scenarios[scenario].run({ rng, metrics, runId, seed }); }
-  catch (err) { console.error('[ChaosLab] ERROR:', err.message); process.exit(1); }
+  try {
+    await scenarios[scenario].run({ rng, metrics, runId, seed });
+  } catch (err) {
+    console.error('[ChaosLab] ERROR:', err.message);
+  } finally {
+    await mongoose.disconnect();
+    console.log('[ChaosLab] MongoDB desconectado.');
+  }
   console.log('\n[ChaosLab] ===== REPORTE =====');
   console.log(JSON.stringify(metrics.report(), null, 2));
 }

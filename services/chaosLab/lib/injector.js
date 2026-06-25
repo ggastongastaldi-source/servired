@@ -1,13 +1,22 @@
 'use strict';
-const busAdapter = require('../../../shared/events/persistenceAdapters/sinapsisBusAdapter');
+const { adapter } = require('../../../shared/events/router-instance');
+const { randomUUID } = require('crypto');
+
 async function inject(opts) {
   const { type, actorId, zoneId, payload, runId, scenario, seed } = opts;
-  const event = {
-    type, actorId,
-    zoneId: zoneId || 'la_matanza',
+
+  const envelope = {
+    event_id:       randomUUID(),
+    event_type:     type,
+    correlation_id: runId,
+    causation:      null,
+    actor:          { id: actorId, role: 'chaosLab' },
+    context:        { zoneId: zoneId || 'la_matanza' },
     payload,
-    _meta: { source: 'chaosLab', scenario, runId, seed: seed ?? null },
+    metadata:       { source: 'chaosLab', scenario, runId, seed: seed ?? null },
   };
-  return await busAdapter.publish(event);
+
+  return await adapter.persist(envelope);
 }
+
 module.exports = { inject };
