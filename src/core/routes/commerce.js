@@ -30,6 +30,10 @@ router.post('/register', async (req, res) => {
     commerce.qr_code     = qrDataUrl;
     commerce.origin_qr_id = String(commerce._id);
     await commerce.save();
+    try {
+      const rtmil = require('../../../services/rtmilIngest');
+      rtmil.ingest({ type: 'COMMERCE_REGISTERED', actorId: commerce._id.toString(), zoneId: commerce.localidad || null, payload: { nombre: commerce.nombre, rubro: commerce.rubro } }).catch(() => {});
+    } catch (_) {}
 
     console.log(`[Commerce] ✅ Registrado: ${nombre} | ${localidad} | id:${commerce._id}`);
 
