@@ -1,5 +1,5 @@
 'use strict';
-const busAdapter = require('../../services/sinapsisBusAdapter');
+const busAdapter = require('../../../shared/events/persistenceAdapters/sinapsisBusAdapter');
 async function inject(opts) {
   const { type, actorId, zoneId, payload, runId, scenario, seed } = opts;
   const event = {
