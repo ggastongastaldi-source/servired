@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { assertSingleWriter } = require('./src/sinapsis/singleWriterGuard');
+const rtmil = require('./services/rtmilIngest');
 assertSingleWriter();
 const express = require('express');
 
@@ -164,6 +165,8 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
       console.log('✅ MongoDB conectado');
     assertSystemUsers().catch(e => console.error('[assertSystemUsers]', e.message));
 require('./services/boostExpiry').startBoostExpiryCron();
+    rtmil.init({ durabilityMode: 'SAFE' });
+    console.log('[RTMIL] Pipeline activo — WAL + Backpressure + Spill');
     require('./src/core/services/financeWatchdog').iniciar();
     // Dixie Terminal — scan inicial y cron cada 30 minutos
     const { scan: dixieScan } = require('./src/sinapsis/dixieTerminal/dixieScanner');
