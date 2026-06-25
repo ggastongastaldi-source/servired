@@ -1,12 +1,14 @@
+'use strict';
 const { EventRouter } = require('./eventRouter');
 const { createSinapsisBusAdapter } = require('./persistenceAdapters/sinapsisBusAdapter');
-
+const priceAnomalyObserver = require('../observers/priceAnomalyObserver');
 
 const adapter = createSinapsisBusAdapter();
 const router  = new EventRouter({ persistenceAdapter: adapter });
 
+// Logger original — intacto
 router.subscribe('*', function (persisted) {
-  if (!persisted) return; // evento duplicado idempotente → skip
+  if (!persisted) return;
   const e = persisted.event;
   console.log(JSON.stringify({
     level:      'info',
@@ -23,5 +25,8 @@ router.subscribe('*', function (persisted) {
       : null
   }));
 });
+
+// Reactor Layer V1 — Price Anomaly Observer
+priceAnomalyObserver.init(router);
 
 module.exports = { router, adapter };
