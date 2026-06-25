@@ -106,13 +106,8 @@ function _updateState(memRatio, queueRatio) {
 
 // ── Memoria ────────────────────────────────────────────────────
 function _getMemoryRatio() {
-  // Node.js heap como proxy del buffer en memoria
-  const heapUsed  = process.memoryUsage().heapUsed;
-  const heapTotal = process.memoryUsage().heapTotal;
-  // Usar el mayor entre heap ratio y memoryUsed/MAX
-  const heapRatio = heapUsed / heapTotal;
-  const bufRatio  = memoryUsed / MAX_MEMORY_BUFFER;
-  return Math.max(heapRatio, bufRatio);
+  // En Render free tier el heap arranca en ~88% — usar solo bufRatio real
+  return memoryUsed / MAX_MEMORY_BUFFER;
 }
 
 // ── Emisión a SINAPSIS ─────────────────────────────────────────
