@@ -2,14 +2,11 @@
 const Groq = require('groq-sdk');
 const PrecioMercado = require('../models/PrecioMercado');
 
-const RUBROS = [
-  'limpieza_hogar','servicio_domestico','plomeria','electricidad','gasista',
-  'pintura','albanileria','cerrajeria','jardineria','fletes_mudanzas',
-  'durlock','pisos_revestimientos','techistas','herreria','carpinteria',
-  'revestimientos_pvc','antihumedad','climatizacion','camaras_seguridad',
-  'alarmas','domotica_automatizacion','paneles_solares','mecanica_auxilio',
-  'mantenimiento_consorcios','peluqueria_canina','fumigacion'
-];
+// ADR-006 corolario: RUBROS derivado del catálogo canónico — no hardcodeado
+const { getActivos } = require('../../../shared/catalogs/rubrosCatalog');
+const RUBROS = getActivos()
+  .filter(r => r.rolesPermitidos.includes('worker'))
+  .map(r => r.id);
 
 let _groq = null;
 function getGroq() {
