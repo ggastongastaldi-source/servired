@@ -102,7 +102,7 @@ Reglas de conducta:
 - Máximo 3-4 oraciones por respuesta salvo que el usuario pida más detalle
 `;
 
-router.post('/', giaRouterMiddleware,, rateLimiter, contextInjector, async (req, res) => {
+router.post('/', giaRouterMiddleware, rateLimiter, contextInjector, async (req, res) => {
   const { messages, correlationId } = req.body;
 
   if (!messages || !Array.isArray(messages)) {
