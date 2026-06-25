@@ -86,6 +86,26 @@ router.post('/', giaRouterMiddleware, rateLimiter, contextInjector, async (req, 
     .join('\n');
   const systemPromptFinal = SYSTEM_PROMPT.replace('[[RUBRO_KEYWORDS_INJECTED]]', rubroKeywords);
 
+  // Intent Enforcement Layer — clasificar último mensaje del usuario
+  let intentContext = '';
+  try {
+    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+    if (lastUserMsg) {
+      const { clasificarIntent } = require('../../../shared/catalogs/obrasCatalog');
+      const intent = clasificarIntent(lastUserMsg.content);
+      if (intent.esObraCompleja && intent.obras.length > 0) {
+        const obraIds = intent.obras.map(o => o.id).join(', ');
+        const obraNombres = intent.obras.map(o => o.nombre).join(' / ');
+        const rubrosReq = [...new Set(intent.obras.flatMap(o => o.rubros))].join(', ');
+        intentContext = `\n\n[INTENT DETECTADO — OBRA COMPLEJA]\nTipo: ${obraNombres}\nIDs: ${obraIds}\nRubros involucrados: ${rubrosReq}\nINSTRUCCIÓN OBLIGATORIA: Esta es una obra compleja multi-rubro. NO respondas con precio ni estimación. Derivá OBLIGATORIAMENTE al Presupuesto Inteligente de ServiRed. Mencioná los rubros involucrados (${rubrosReq}) para que el usuario entienda la complejidad.`;
+      } else if (!intent.esObraCompleja && intent.rubros.length > 0) {
+        const rubroNombres = intent.rubros.map(r => r.nombre).join(', ');
+        const esEmergencia = intent.rubros.some(r => r.admiteEmergencia);
+        intentContext = `\n\n[INTENT DETECTADO — RUBRO SIMPLE]\nRubro(s): ${rubroNombres}\nEmergencia posible: ${esEmergencia}\nINSTRUCCIÓN: Confirmá disponibilidad del rubro en ServiRed y ofrecé conectar con un profesional.`;
+      }
+    }
+  } catch (_) {}
+
   try {
     const response = await fetch(GROQ_URL, {
       method: 'POST',
@@ -96,7 +116,7 @@ router.post('/', giaRouterMiddleware, rateLimiter, contextInjector, async (req, 
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: 'system', content: systemPromptFinal + roleContext },
+          { role: 'system', content: systemPromptFinal + roleContext + intentContext },
           ...messages.slice(-10) // ventana de 10 turnos máximo
         ],
         max_tokens: 512,
