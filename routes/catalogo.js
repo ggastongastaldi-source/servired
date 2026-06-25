@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const CatalogoItem = require('../models/CatalogoItem');
 const { presupuestar, presupuestarEspacio } = require('../services/aladinPresupuesto');
-const sinapsis = require('../services/sinapsisBusAdapter');
+const sinapsis = require('../../shared/events/persistenceAdapters/sinapsisBusAdapter');
 const { v4: uuidv4 } = require('uuid');
 
 // POST /api/catalogo — carga individual por comercio
