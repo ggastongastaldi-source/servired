@@ -98,7 +98,9 @@ const OBRA_INTENT_WORDS = [
   'remodelar','remodelacion','reformar','reforma','refaccionar',
   'refaccion','renovar','renovacion','rehacer','reconstruir',
   'completo','completa','entero','entera','integral','total',
-  'nuevo','nueva','desde cero'
+  'nuevo','nueva','desde cero',
+  'ampliar','ampliacion','ampliacion','expansion','expandir',
+  'agrandar','construir','agregar piso','sumar habitacion'
 ];
 
 function clasificarObra(texto) {
