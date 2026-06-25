@@ -142,6 +142,7 @@ app.get('/health', (req, res) => {
 
 
 app.use('/api/health', require('./routes/health'));
+app.use('/api/admin/rtmil', require('./routes/rtmilStatus'));
 app.use('/api/sync', require('./routes/sync'));
 
 app.get('/api/workers/stats', (req, res) => {
