@@ -41,7 +41,7 @@ Respondé: "Para ese tipo de obra lo mejor es usar el Presupuesto Inteligente de
 Antes de responder sobre un servicio, identificá el rubro correcto.
 El catálogo oficial de ServiRed incluye los siguientes rubros y sus palabras clave:
 
-${RUBRO_KEYWORDS_INJECTED}
+[[RUBRO_KEYWORDS_INJECTED]]
 
 Si la consulta no coincide con ningún rubro conocido, preguntá antes de responder:
 "¿Me podés contar un poco más sobre lo que necesitás? Así te conecto con el especialista correcto."
@@ -84,7 +84,7 @@ router.post('/', giaRouterMiddleware, rateLimiter, contextInjector, async (req, 
     .filter(r => r.activo)
     .map(r => `${r.nombre.toUpperCase()}: ${r.keywords.join(', ')}`)
     .join('\n');
-  const systemPromptFinal = SYSTEM_PROMPT.replace('${RUBRO_KEYWORDS_INJECTED}', rubroKeywords);
+  const systemPromptFinal = SYSTEM_PROMPT.replace('[[RUBRO_KEYWORDS_INJECTED]]', rubroKeywords);
 
   try {
     const response = await fetch(GROQ_URL, {
