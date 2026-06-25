@@ -2,6 +2,7 @@
 const { EventRouter } = require('./eventRouter');
 const { createSinapsisBusAdapter } = require('./persistenceAdapters/sinapsisBusAdapter');
 const priceAnomalyObserver = require('../observers/priceAnomalyObserver');
+const trustDecayReactor    = require('../reactors/trustDecayReactor');
 
 const adapter = createSinapsisBusAdapter();
 const router  = new EventRouter({ persistenceAdapter: adapter });
@@ -26,7 +27,10 @@ router.subscribe('*', function (persisted) {
   }));
 });
 
-// Reactor Layer V1 — Price Anomaly Observer
+// Reactor Layer V1
 priceAnomalyObserver.init(router);
 
-module.exports = { router, adapter };
+// Reactor Layer V2 — TrustDecay
+trustDecayReactor.init(router);
+
+module.exports = { router, adapter, trustDecayReactor };

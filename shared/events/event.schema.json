@@ -36,7 +36,9 @@
         "wallet_opened",
         "lead_attributed",
         "PRICE_SUBMITTED",
-        "AnomalyDetected"
+        "AnomalyDetected",
+        "ActorTrustUpdated",
+        "ActorInfluenceReduced"
       ]
     },
     "timestamp": {
