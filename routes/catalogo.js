@@ -2,7 +2,19 @@ const express = require('express');
 const router = express.Router();
 const CatalogoItem = require('../models/CatalogoItem');
 const { presupuestar, presupuestarEspacio } = require('../services/aladinPresupuesto');
-const sinapsis = require('../../shared/events/persistenceAdapters/sinapsisBusAdapter');
+// SINAPSIS — carga resiliente, no crashea si el path varía por entorno
+let sinapsis = { publish: async () => {} }; // noop por defecto
+try {
+  const paths = [
+    '../shared/events/persistenceAdapters/sinapsisBusAdapter',
+    '../../shared/events/persistenceAdapters/sinapsisBusAdapter',
+    '../services/sinapsisBusAdapter',
+    '../../src/core/services/sinapsisBusAdapter',
+  ];
+  for (const p of paths) {
+    try { sinapsis = require(p); break; } catch(e) {}
+  }
+} catch(e) {}
 const { v4: uuidv4 } = require('uuid');
 
 // POST /api/catalogo — carga individual por comercio
