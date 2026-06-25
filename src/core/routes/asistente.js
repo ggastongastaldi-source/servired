@@ -38,22 +38,10 @@ NUNCA cotices ni estimes el total.
 Respondé: "Para ese tipo de obra lo mejor es usar el Presupuesto Inteligente de ServiRed, que desglosa materiales, mano de obra y zona. ¿Querés que te ayude a empezar?"
 
 ## REGLA GIA-004 — CLASIFICACIÓN DE OFICIOS
-Antes de responder sobre un servicio, identificá el rubro correcto según estas palabras clave:
+Antes de responder sobre un servicio, identificá el rubro correcto.
+El catálogo oficial de ServiRed incluye los siguientes rubros y sus palabras clave:
 
-ELECTRICIDAD: térmica, termomagnética, tablero, disyuntor, cable, cableado, enchufe, toma, llave de luz, interruptor, diferencial, puesta a tierra, cortocircuito, instalación eléctrica, medidor, monofásico, trifásico
-PLOMERÍA: caño, cañería, pérdida, goteo, sifón, inodoro, canilla, ducha, termotanque, calefón, desagüe, cloacas, agua caliente, presión de agua
-GAS: garrafa, tubo de gas, pérdida de gas, caldera, estufa, cocina a gas, habilitación gas, instalación gas, ENARGAS
-AIRE ACONDICIONADO: split, inverter, compresor, frío calor, BTU, instalación split, service AC
-ALBAÑILERÍA: pared, revoque, contrapiso, hormigón, ladrillo, fisura, humedad en pared, zarpeo, membrana
-DURLOCK: tabique, placa, cielorraso, steel framing, construcción en seco, perfil metálico, durlock
-PINTURA: pintar, pintura, látex, esmalte, membrana, enduido, lija, rodillo
-PLOMERÍA FINA: pileta de cocina, bacha, grifo, bidet, válvula, mochila de inodoro
-CERRAJERÍA: cerradura, llave, puerta, cerrojo, candado, bomba de cerradura, duplicado de llave, apertura sin llave
-LIMPIEZA: limpieza, empleada, doméstica, planchar, lavar, alfombra, tapizado
-MUDANZA: mudanza, flete, camión, transporte de muebles, guardamuebles
-JARDÍN: poda, pasto, jardín, plantas, desmalezado, árbol, paisajismo
-SEGURIDAD: cámara, alarma, CCTV, DVR, sensor, control de acceso
-AUTOMOTOR: auto, mecánico, frenos, aceite, tren delantero, electricidad del auto, gomería
+${RUBRO_KEYWORDS_INJECTED}
 
 Si la consulta no coincide con ningún rubro conocido, preguntá antes de responder:
 "¿Me podés contar un poco más sobre lo que necesitás? Así te conecto con el especialista correcto."
@@ -90,6 +78,14 @@ router.post('/', giaRouterMiddleware, rateLimiter, contextInjector, async (req, 
 
   const roleContext = req.assistantContext ?? '';
 
+  // Inyectar keywords del catálogo oficial en GIA-004
+  const { RUBROS } = require('../../../shared/catalogs/rubrosCatalog');
+  const rubroKeywords = RUBROS
+    .filter(r => r.activo)
+    .map(r => `${r.nombre.toUpperCase()}: ${r.keywords.join(', ')}`)
+    .join('\n');
+  const systemPromptFinal = SYSTEM_PROMPT.replace('${RUBRO_KEYWORDS_INJECTED}', rubroKeywords);
+
   try {
     const response = await fetch(GROQ_URL, {
       method: 'POST',
@@ -100,7 +96,7 @@ router.post('/', giaRouterMiddleware, rateLimiter, contextInjector, async (req, 
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT + roleContext },
+          { role: 'system', content: systemPromptFinal + roleContext },
           ...messages.slice(-10) // ventana de 10 turnos máximo
         ],
         max_tokens: 512,
