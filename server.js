@@ -54,6 +54,7 @@ app.use('/api/auth', require('./src/core/routes/auth'));
 const pedidosRoute = require('./src/core/routes/pedidos')(io);
 app.use('/api/upload', require('./src/core/routes/upload'));
 app.use('/api/pedidos', pedidosRoute);
+app.use('/api/catalogo', catalogoRoute);
 app.use('/api/leads', require('./src/core/routes/leads'));
 app.use('/api/admin', require('./src/core/routes/admin'));
 app.use('/api/matching', require('./src/core/routes/matching'));
