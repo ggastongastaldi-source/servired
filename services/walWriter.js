@@ -10,6 +10,15 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
+// G5 — Event Archive (Mongo) — lazy load para no bloquear arranque
+let _archive = null;
+function _getArchive() {
+  if (!_archive) {
+    try { _archive = require('../models/WalEventArchive'); } catch (_) {}
+  }
+  return _archive;
+}
+
 // ── Configuración ──────────────────────────────────────────────
 const WAL_DIR = path.join(process.cwd(), 'wal_segments');
 const MAX_SEGMENT_SIZE = 64 * 1024 * 1024; // 64MB
@@ -123,12 +132,24 @@ function _flushBuffer() {
     fs.writeSync(currentFd, combined);
     currentSegmentSize += combined.length;
 
+    const segName = _segmentName(currentSegmentIndex);
     batch.forEach(({ entry, resolve }) => {
       resolve({
-        seq:     entry.seq,
+        seq:      entry.seq,
         checksum: entry.checksum,
-        segment:  _segmentName(currentSegmentIndex)
+        segment:  segName
       });
+      // G5 — archivar en Mongo fire-and-forget
+      const Archive = _getArchive();
+      if (Archive) {
+        Archive.create({ ...entry, segment: segName })
+          .catch(err => {
+            // duplicate key = ya archivado — ignorar
+            if (err.code !== 11000) {
+              console.warn('[WAL] Archive error:', err.message);
+            }
+          });
+      }
     });
 
     if (currentSegmentSize >= MAX_SEGMENT_SIZE) {
