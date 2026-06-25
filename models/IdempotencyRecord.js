@@ -22,7 +22,6 @@ const IdempotencyRecordSchema = new mongoose.Schema({
   expireAt: { type: Date, required: true, default: () => new Date(Date.now() + THIRTY_DAYS_MS) }
 });
 
-IdempotencyRecordSchema.index({ commandId: 1 }, { unique: true });
 IdempotencyRecordSchema.index({ actorId: 1, deviceId: 1, clientSequence: -1 });
 IdempotencyRecordSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
