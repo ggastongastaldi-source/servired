@@ -116,13 +116,20 @@ function clasificarObra(texto) {
     if (!hasIntent) return false;
 
     // Verificar que mencione algo relacionado con la obra
+    // Extraer tokens significativos del input (>3 chars)
+    const inputTokens = norm.split(/\s+/).filter(t => t.length > 3);
+
     const obraTerms = [
       ...(o.keywords || []),
       o.nombre,
       ...o.rubros
     ].map(_normalize);
 
-    return obraTerms.some(t => norm.includes(t) || t.includes(norm.split(' ')[0]));
+    // Match si algún token del input aparece en algún término de la obra
+    // O si algún término de la obra aparece en el input
+    return inputTokens.some(token =>
+      obraTerms.some(t => t.includes(token) || norm.includes(t))
+    );
   });
 }
 
