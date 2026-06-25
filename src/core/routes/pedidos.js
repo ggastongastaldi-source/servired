@@ -123,6 +123,10 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     });
 
     const pedidoGuardado = await nuevoPedido.save();
+    try {
+      const rtmil = require('../../../services/rtmilIngest');
+      rtmil.ingest({ type: 'SERVICE_REQUESTED', actorId: pedidoGuardado.cliente?.toString() || null, zoneId: pedidoGuardado.zona || null, payload: { pedidoId: pedidoGuardado._id.toString(), tipoServicio: pedidoGuardado.tipoServicio } }).catch(() => {});
+    } catch (_) {}
   // SINAPSIS AUDIT MODE
   const { auditOrder } = require('../../sinapsis/auditMode');
   auditOrder(pedidoGuardado.toObject(), 'servired.pedidos.route').catch(e => console.error('[SINAPSIS]', e.message));

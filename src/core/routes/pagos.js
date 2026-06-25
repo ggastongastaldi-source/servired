@@ -92,6 +92,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         boost_payment_id: paymentId
       });
       console.log('[BOOST] ✅ Comercio', metadata.commerceId, 'boosted hasta', boostExpiry);
+      try {
+        const rtmil = require('../../../services/rtmilIngest');
+        rtmil.ingest({ type: 'BOOST_PURCHASED', actorId: metadata.commerceId, zoneId: null, payload: { paymentId, boostExpiry } }).catch(() => {});
+      } catch (_) {}
       trackEvent('boost_paid', { actorId: metadata.commerceId, meta: { paymentId, boostExpiry } });
       return;
     }
@@ -120,6 +124,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     }
 
     console.log(`[pagos] ✅ Payment ${mapped} — ref:${externalReference} — $${mpData.transaction_amount}`);
+    try {
+      const rtmil = require('../../../services/rtmilIngest');
+      rtmil.ingest({ type: 'PAYMENT_CONFIRMED', actorId: externalReference || null, zoneId: null, payload: { mapped, amount: mpData.transaction_amount, paymentId } }).catch(() => {});
+    } catch (_) {}
 
     // Actualizar pedido
     if (mapped === 'APPROVED') {
