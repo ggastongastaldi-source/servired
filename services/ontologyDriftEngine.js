@@ -58,17 +58,16 @@ function _norm(str) {
 async function recordObservation(inputTerm, source, opts = {}) {
   if (!inputTerm || typeof inputTerm !== 'string') return;
   try {
-    await Observation.create({
+    const doc = await Observation.create({
       inputTerm:     inputTerm,
       normalizedTerm: _norm(inputTerm),
       source,
       zoneId:  opts.zoneId  || 'UNKNOWN_ZONE',
       actorId: opts.actorId || null
     });
+    console.log('[ODE] ✅ Observacion persistida:', inputTerm, '→', _norm(inputTerm), '| _id:', doc._id);
   } catch (err) {
-    if (err.code !== 11000) {
-      console.warn('[ODE] recordObservation error:', err.message);
-    }
+    console.error('[ODE] ❌ Error persistiendo observacion:', inputTerm, '| code:', err.code, '| msg:', err.message);
   }
 }
 
