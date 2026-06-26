@@ -10,6 +10,18 @@ router.get('/status', (req, res) => {
   }
 });
 
+router.post('/aladin/run', async (req, res) => {
+  try {
+    const { ejecutarCicloAladin } = require('../src/core/services/priceWorker');
+    await ejecutarCicloAladin();
+    const ode = require('../services/ontologyDriftEngine');
+    const result = await ode.aggregate();
+    res.json({ ok: true, cycle: 'complete', ...result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.get('/ode', async (req, res) => {
   try {
     const ode = require('../services/ontologyDriftEngine');
