@@ -68,6 +68,7 @@ app.use('/api/sinapsis/dixie', require('./src/core/routes/dixieTerminal'));
 app.use('/api/admin/referidos', require('./src/core/routes/referidosAdmin'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
 const gatewayRoutes = require('./routes/gatewayRoutes');
+const merchantRoutes = require('./routes/merchantRoutes');
 const simulationRoutes = require('./routes/simulationRoutes');
 const policyRoutes = require('./routes/policyRoutes');
 require('./services/gatewayListeners');
