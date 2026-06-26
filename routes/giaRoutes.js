@@ -1,0 +1,11 @@
+'use strict';
+
+const express = require('express');
+const router  = express.Router();
+const gia     = require('../controllers/giaController');
+const auth    = require('../middleware/authMiddleware');
+
+router.get('/health',   gia.health);
+router.get('/priority', auth, gia.getPriorityAction);
+
+module.exports = router;

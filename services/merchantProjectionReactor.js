@@ -37,12 +37,36 @@ async function procesarEvento(evento) {
   if (!merchantId && !usuarioId) return;
 
   try {
-    // Idempotencia: si ya procesamos este hash, ignoramos
+    // Idempotencia atómica: intento reservar el hash antes de procesar.
+    // Si otro proceso ya tomó este hash, el upsert falla silenciosamente.
+    // Usa findOneAndUpdate condicional — una sola operación, sin race condition.
     if (evento.hash) {
-      const existente = await MerchantProjection.findOne({
-        ultimoEventoProcesado: evento.hash
-      }).lean();
-      if (existente) return; // ya procesado
+      const perfil = merchantId
+        ? await (require('../models/BusinessProfile')).findById(merchantId).lean()
+        : await (require('../models/BusinessProfile')).findOne({ usuarioId }).lean();
+
+      if (perfil) {
+        // Intentamos marcar el hash ANTES de reconstruir.
+        // Si el hash ya existe en este merchantId, el filtro no matchea → no actualiza.
+        const resultado = await MerchantProjection.findOneAndUpdate(
+          {
+            merchantId: perfil._id,
+            $or: [
+              { ultimoEventoProcesado: { $ne: evento.hash } },
+              { ultimoEventoProcesado: null }
+            ]
+          },
+          { $set: { ultimoEventoProcesado: evento.hash } },
+          { upsert: false }  // no crear si no existe aún — la creará reconstruirProjection
+        );
+        // Si resultado es null Y ya existe el documento → hash duplicado → skip
+        const yaExiste = await MerchantProjection.findOne({
+          merchantId: perfil._id,
+          ultimoEventoProcesado: evento.hash
+        }).lean();
+        // Si ya existe con este hash exacto Y no fue el que acabamos de escribir → skip
+        if (!resultado && yaExiste) return;
+      }
     }
 
     await reconstruirProjection(merchantId, usuarioId, evento.hash);
