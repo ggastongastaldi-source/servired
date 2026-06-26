@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ServiRed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:       #0a0a0d;
+  --surface:  #13131a;
+  --border:   #1e1e2a;
+  --text:     #f0f0f8;
+  --text2:    #6b6b88;
+  --accent:   #6c63ff;
+  --success:  #22c55e;
+  --warning:  #f59e0b;
+  --danger:   #ef4444;
+  --critica:  #ff4757;
+  --alta:     #f59e0b;
+  --media:    #6c63ff;
+  --baja:     #22c55e;
+}
+
+html,body{
+  height:100%; background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,sans-serif; font-size:15px;
+  overflow:hidden; -webkit-tap-highlight-color:transparent;
+}
+
+/* ── LAYOUT ── */
+.app{
+  display:flex; flex-direction:column;
+  height:100vh; max-width:480px; margin:0 auto;
+  position:relative;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px 12px;
+  flex-shrink:0;
+}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 10px var(--accent);
+}
+.logo-name{font-weight:700;font-size:17px;letter-spacing:-.3px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--accent);display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:13px;cursor:pointer;
+}
+.rol-badge{
+  font-size:11px;color:var(--text2);
+  background:var(--surface);border:1px solid var(--border);
+  padding:3px 10px;border-radius:20px;text-transform:capitalize;
+}
+
+/* ── MAIN ── */
+.main{
+  flex:1;display:flex;flex-direction:column;
+  padding:0 20px 20px;overflow-y:auto;
+  gap:16px;
+}
+
+/* ── SALUDO ── */
+.saludo{
+  padding:4px 0 8px;
+}
+.saludo-hora{font-size:13px;color:var(--text2);margin-bottom:4px}
+.saludo-texto{font-size:22px;font-weight:700;letter-spacing:-.4px}
+
+/* ── PRIORITY CARD ── */
+.priority-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px 24px;
+  position:relative;
+  overflow:hidden;
+  transition:.2s ease;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.priority-card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:3px;
+  background:var(--urgencia-color,var(--accent));
+  border-radius:20px 20px 0 0;
+}
+.priority-card:active{transform:scale(.98)}
+
+.priority-card.urgencia-CRITICA{--urgencia-color:var(--critica)}
+.priority-card.urgencia-ALTA   {--urgencia-color:var(--alta)}
+.priority-card.urgencia-MEDIA  {--urgencia-color:var(--media)}
+.priority-card.urgencia-BAJA   {--urgencia-color:var(--baja)}
+
+.pc-urgencia{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--urgencia-color,var(--accent));
+  margin-bottom:14px;
+}
+.pc-urgencia-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--urgencia-color,var(--accent));
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.pc-titulo{
+  font-size:22px;font-weight:800;letter-spacing:-.5px;
+  margin-bottom:10px;line-height:1.2;
+}
+.pc-desc{
+  font-size:14px;color:var(--text2);line-height:1.5;
+  margin-bottom:24px;
+}
+
+.pc-cta{
+  width:100%;padding:15px;
+  background:var(--urgencia-color,var(--accent));
+  color:#fff;border:none;border-radius:12px;
+  font-size:15px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:.15s ease;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.pc-cta:active{transform:scale(.97);opacity:.9}
+.pc-cta-arrow{font-size:18px;transition:.15s ease}
+.pc-cta:hover .pc-cta-arrow{transform:translateX(3px)}
+
+/* ── SECONDARY ACTIONS ── */
+.secondary-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.sec-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:16px;cursor:pointer;
+  transition:.15s ease;
+}
+.sec-card:active{transform:scale(.97)}
+.sec-card:hover{border-color:var(--accent)}
+.sec-icon{font-size:20px;margin-bottom:8px}
+.sec-label{font-size:13px;font-weight:600;margin-bottom:2px}
+.sec-desc{font-size:11px;color:var(--text2)}
+
+/* ── STATUS STRIP ── */
+.status-strip{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:12px 16px;
+}
+.ss-item{text-align:center}
+.ss-val{font-size:16px;font-weight:700;color:var(--accent)}
+.ss-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+/* ── SKELETON ── */
+.skeleton{
+  background:linear-gradient(90deg,var(--surface) 25%,var(--border) 50%,var(--surface) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:8px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-card{height:220px;border-radius:20px;margin-bottom:16px}
+.sk-row{height:80px;border-radius:14px}
+
+/* ── LOADING / ERROR ── */
+.loading-state,.error-state{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:12px;color:var(--text2);text-align:center;
+  padding:40px 20px;
+}
+.error-state .err-icon{font-size:40px;opacity:.5}
+.error-state p{font-size:14px;max-width:260px;line-height:1.5}
+.btn-retry{
+  background:var(--accent);color:#fff;border:none;
+  border-radius:10px;padding:10px 24px;
+  font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+}
+
+/* ── BOTTOMNAV ── */
+.bottomnav{
+  display:flex;border-top:1px solid var(--border);
+  background:var(--bg);flex-shrink:0;
+  padding:8px 0 max(8px, env(safe-area-inset-bottom));
+}
+.bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:3px;padding:6px 0;cursor:pointer;
+  color:var(--text2);transition:.15s ease;
+  font-size:10px;font-weight:500;
+}
+.bn-item.active{color:var(--accent)}
+.bn-item:active{transform:scale(.92)}
+.bn-icon{font-size:20px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span class="logo-name">ServiRed</span>
+    </div>
+    <div class="topbar-right">
+      <span class="rol-badge" id="rolBadge">—</span>
+      <div class="avatar" id="avatarEl">?</div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main" id="mainContent">
+    <!-- Skeleton inicial -->
+    <div class="skeleton sk-card" id="skCard"></div>
+    <div class="skeleton sk-row"  id="skRow"></div>
+  </main>
+
+  <!-- BOTTOMNAV -->
+  <nav class="bottomnav">
+    <div class="bn-item active" onclick="irHome()">
+      <span class="bn-icon">◈</span>
+      <span>Inicio</span>
+    </div>
+    <div class="bn-item" onclick="irPanel()">
+      <span class="bn-icon">◧</span>
+      <span>Panel</span>
+    </div>
+    <div class="bn-item" onclick="irActividad()">
+      <span class="bn-icon">◎</span>
+      <span>Actividad</span>
+    </div>
+    <div class="bn-item" onclick="irPerfil()">
+      <span class="bn-icon">◉</span>
+      <span>Perfil</span>
+    </div>
+  </nav>
+
+</div>
+
+<script>
+'use strict';
+
+// ── Config ──────────────────────────────────────────────────────────────────
+const GIA_POLL_MS = 30000; // refresca cada 30s
+let pollingTimer  = null;
+let estadoActual  = null;
+
+// ── Auth ────────────────────────────────────────────────────────────────────
+const getToken = () =>
+  localStorage.getItem('merchant_token') ||
+  localStorage.getItem('token') ||
+  sessionStorage.getItem('token');
+
+// ── API ──────────────────────────────────────────────────────────────────────
+async function fetchPriority() {
+  const token = getToken();
+  const res = await fetch('/api/gia/priority', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function renderHome(data) {
+  estadoActual = data;
+  const { action, state } = data;
+  const main = document.getElementById('mainContent');
+
+  // Topbar
+  document.getElementById('rolBadge').textContent = state.rol;
+  const ini = state.rol === 'merchant' ? '🏪' : state.rol === 'worker' ? '🔧' : '👤';
+  document.getElementById('avatarEl').textContent = ini;
+
+  // Saludo
+  const hora = new Date().getHours();
+  const saludo = hora < 12 ? 'Buenos días' : hora < 20 ? 'Buenas tardes' : 'Buenas noches';
+
+  // Secondary actions por rol
+  const secundarias = getSecundarias(state.rol, action.tipo);
+
+  // Status strip (KPIs rápidos)
+  const strip = getStatusStrip(state.rol, data);
+
+  main.innerHTML = `
+    <div class="saludo">
+      <div class="saludo-hora">${saludo}</div>
+      <div class="saludo-texto">${getTituloRol(state.rol)}</div>
+    </div>
+
+    <div class="priority-card urgencia-${action.urgencia}" onclick="ejecutarAccion()">
+      <div class="pc-urgencia">
+        <span class="pc-urgencia-dot"></span>
+        ${labelUrgencia(action.urgencia)}
+      </div>
+      <div class="pc-titulo">${action.titulo}</div>
+      <div class="pc-desc">${action.descripcion}</div>
+      ${action.cta ? `
+        <button class="pc-cta" onclick="ejecutarAccion(event)">
+          ${action.cta}
+          <span class="pc-cta-arrow">→</span>
+        </button>
+      ` : ''}
+    </div>
+
+    ${strip ? `<div class="status-strip">${strip}</div>` : ''}
+
+    <div class="secondary-grid">
+      ${secundarias.map(s => `
+        <div class="sec-card" onclick="${s.onclick}">
+          <div class="sec-icon">${s.icon}</div>
+          <div class="sec-label">${s.label}</div>
+          <div class="sec-desc">${s.desc}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderError(msg) {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <div class="error-state">
+      <span class="err-icon">◌</span>
+      <p>${msg || 'No pudimos cargar tu estado. Verificá tu conexión.'}</p>
+      <button class="btn-retry" onclick="cargarPrioridad()">Reintentar</button>
+    </div>`;
+}
+
+// ── Helpers de presentación ──────────────────────────────────────────────────
+function labelUrgencia(u) {
+  return { CRITICA:'Urgente', ALTA:'Importante', MEDIA:'Esta semana', BAJA:'Oportunidad' }[u] || u;
+}
+
+function getTituloRol(rol) {
+  return { worker:'¿Qué hacemos hoy?', cliente:'¿Qué necesitás?', merchant:'Tu negocio hoy' }[rol] || 'Bienvenido';
+}
+
+function getSecundarias(rol, tipoActual) {
+  const todas = {
+    worker: [
+      { icon:'◧', label:'Mis trabajos',   desc:'Historial completo', onclick:"irPanel()" },
+      { icon:'◎', label:'Mi zona',         desc:'Pedidos disponibles', onclick:"irActividad()" },
+      { icon:'◉', label:'Mi perfil',       desc:'Datos y calificación', onclick:"irPerfil()" },
+      { icon:'◈', label:'Mi saldo',        desc:'Wallet y retiros', onclick:"irSaldo()" }
+    ],
+    cliente: [
+      { icon:'◧', label:'Buscar',          desc:'Encontrar prestador', onclick:"irBuscar()" },
+      { icon:'◎', label:'Mis pedidos',     desc:'Estado y seguimiento', onclick:"irPanel()" },
+      { icon:'◉', label:'Calificaciones',  desc:'Dar y ver reseñas', onclick:"irActividad()" },
+      { icon:'◈', label:'Mi perfil',       desc:'Datos personales', onclick:"irPerfil()" }
+    ],
+    merchant: [
+      { icon:'◧', label:'Catálogo',        desc:'Productos y precios', onclick:"irCatalogo()" },
+      { icon:'◎', label:'Campañas',        desc:'Boost y visibilidad', onclick:"irCampanias()" },
+      { icon:'◉', label:'Analítica',       desc:'Métricas y tendencias', onclick:"irAnalitica()" },
+      { icon:'◈', label:'Panel completo',  desc:'Todas las herramientas', onclick:"irPanel()" }
+    ]
+  };
+  return (todas[rol] || todas.cliente).slice(0, 4);
+}
+
+function getStatusStrip(rol, data) {
+  // Placeholder — se conecta con projection cuando esté disponible
+  const items = {
+    worker:   [ ['$0', 'Saldo'], ['0', 'Trabajos'], ['—', 'Zona'] ],
+    cliente:  [ ['0', 'Pedidos'], ['—', 'Activo'], ['—', 'Zona'] ],
+    merchant: [ ['0', 'Vistas'], ['0', 'Solicitudes'], ['0', 'Boost'] ]
+  }[rol];
+  if (!items) return '';
+  return items.map(([v, l]) =>
+    `<div class="ss-item"><div class="ss-val">${v}</div><div class="ss-label">${l}</div></div>`
+  ).join('');
+}
+
+// ── Acciones ──────────────────────────────────────────────────────────────────
+function ejecutarAccion(ev) {
+  if (ev) ev.stopPropagation();
+  if (!estadoActual) return;
+  const { action } = estadoActual;
+
+  const rutas = {
+    TRABAJO_CONFIRMAR_LLEGADA: () => ir('/'),
+    TRABAJO_EN_CURSO:          () => ir('/'),
+    COBRAR_SALDO:              () => ir('/'),
+    MATCH_DISPONIBLE:          () => ir('/'),
+    COMPLETAR_PERFIL_WORKER:   () => irPerfil(),
+    ZONA_SIN_ACTIVIDAD:        () => irActividad(),
+    SEGUIR_PRESTADOR:          () => ir('/'),
+    CALIFICAR_TRABAJO:         () => ir('/'),
+    RESOLVER_PROBLEMA:         () => irBuscar(),
+    COMPLETAR_PERFIL_MERCHANT: () => irPanel(),
+    SOLICITUDES_PENDIENTES:    () => irPanel(),
+    CATALOGO_VACIO:            () => irCatalogo(),
+    RENOVAR_CAMPANIA:          () => irCampanias(),
+    AUMENTAR_VISIBILIDAD:      () => irCampanias()
+  };
+
+  const handler = rutas[action.tipo];
+  if (handler) handler();
+}
+
+// ── Navegación ────────────────────────────────────────────────────────────────
+function ir(url)        { window.location.href = url; }
+function irHome()       { cargarPrioridad(); }
+function irPanel()      {
+  const rol = estadoActual?.state?.rol;
+  if (rol === 'merchant') ir('/merchant.html');
+  else ir('/');
+}
+function irActividad()  { ir('/'); }
+function irPerfil()     { ir('/'); }
+function irBuscar()     { ir('/'); }
+function irSaldo()      { ir('/'); }
+function irCatalogo()   { ir('/merchant.html#catalogo'); }
+function irCampanias()  { ir('/merchant.html#campanias'); }
+function irAnalitica()  { ir('/merchant.html#analitica'); }
+
+// ── Polling ───────────────────────────────────────────────────────────────────
+async function cargarPrioridad() {
+  // Mostrar skeleton
+  const main = document.getElementById('mainContent');
+  if (!estadoActual) {
+    main.innerHTML = `
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-row"></div>`;
+  }
+
+  try {
+    const data = await fetchPriority();
+    renderHome(data);
+  } catch (e) {
+    // Si no hay auth, redirigir al index (flujo de login existente)
+    if (e.message.includes('401') || e.message.includes('403')) {
+      window.location.href = '/';
+      return;
+    }
+    renderError(e.message);
+  }
+}
+
+function iniciarPolling() {
+  if (pollingTimer) clearInterval(pollingTimer);
+  pollingTimer = setInterval(cargarPrioridad, GIA_POLL_MS);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (!getToken()) {
+    window.location.href = '/';
+    return;
+  }
+  cargarPrioridad();
+  iniciarPolling();
+
+  // Refrescar al volver de background
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) cargarPrioridad();
+  });
+});
+</script>
+</body>
+</html>
