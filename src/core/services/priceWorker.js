@@ -98,12 +98,10 @@ async function ejecutarCicloAladin() {
     if (!RUBROS.includes(rubroFinal)) {
       console.log(`[Aladdín-Worker] ⚠️  Rubro espurio ignorado: ${rubro}`);
       try {
-        const mongoose = require('mongoose');
-        const ode = require('../../services/ontologyDriftEngine');
-        const rs = mongoose.connection.readyState;
-        if (rs !== 1) {
-          console.warn('[ODE-PW] Skip readyState:', rs, 'para rubro:', rubro);
+        if (!global._dbReady) {
+          console.warn('[ODE-PW] Skip — DB no lista para rubro:', rubro);
         } else {
+          const ode = require('../../services/ontologyDriftEngine');
           ode.recordObservation(rubro, 'priceWorker', {})
             .then(() => console.log('[ODE-PW] ✅ observacion registrada:', rubro))
             .catch(e => console.error('[ODE-PW] ❌ error:', e.message));

@@ -161,6 +161,13 @@ app.get('/api/trabajadores', (req, res) => {
 // MongoDB
 const { assertSystemUsers } = require('./utils/assertSystemUsers');
 
+// DB Readiness Latch — consultable por cualquier worker sin dispersar readyState
+global._dbReady = false;
+mongoose.connection.once('connected', () => {
+  global._dbReady = true;
+  console.log('[DB] Latch activado — conexion lista para workers');
+});
+
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
     .then(() => {
       console.log('✅ MongoDB conectado');
