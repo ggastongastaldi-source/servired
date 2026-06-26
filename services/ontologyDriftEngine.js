@@ -22,8 +22,11 @@ const ObservationSchema = new mongoose.Schema({
 ObservationSchema.index({ normalizedTerm: 1, observedAt: -1 });
 ObservationSchema.index({ observedAt: -1 });
 
-const Observation = mongoose.models.OdeObservation
-  || mongoose.model('OdeObservation', ObservationSchema);
+// Lazy model access — evita registro antes de conexión activa
+function getObservation() {
+  return mongoose.models.OdeObservation
+    || mongoose.model('OdeObservation', ObservationSchema);
+}
 
 // ── Schema de señales de drift ─────────────────────────────────
 const DriftSignalSchema = new mongoose.Schema({
@@ -43,8 +46,10 @@ const DriftSignalSchema = new mongoose.Schema({
 DriftSignalSchema.index({ driftScore: -1 });
 DriftSignalSchema.index({ status: 1, driftScore: -1 });
 
-const DriftSignal = mongoose.models.OdeDriftSignal
-  || mongoose.model('OdeDriftSignal', DriftSignalSchema);
+function getDriftSignal() {
+  return mongoose.models.OdeDriftSignal
+    || mongoose.model('OdeDriftSignal', DriftSignalSchema);
+}
 
 // ── Normalización interna ──────────────────────────────────────
 function _norm(str) {
@@ -57,6 +62,11 @@ function _norm(str) {
 // ── Registrar observación (llamado por RRL cuando UNKNOWN_RUBRO) ──
 async function recordObservation(inputTerm, source, opts = {}) {
   if (!inputTerm || typeof inputTerm !== 'string') return;
+  // Guard: no intentar escribir si Mongoose no está conectado
+  if (mongoose.connection.readyState !== 1) {
+    console.warn('[ODE] Skip — Mongoose no conectado (readyState:', mongoose.connection.readyState, ')');
+    return;
+  }
   try {
     const doc = await Observation.create({
       inputTerm:     inputTerm,
@@ -98,6 +108,7 @@ async function aggregate() {
     { $sort: { frequency7d: -1 } }
   ];
 
+  const Observation = getObservation();
   const groups = await Observation.aggregate(pipeline);
 
   // Contar freq 24h por separado
@@ -125,7 +136,7 @@ async function aggregate() {
     const status = driftScore >= 40 ? 'PROPOSED' : 'OBSERVED';
     if (status === 'PROPOSED') proposed++;
 
-    await DriftSignal.findOneAndUpdate(
+    await getDriftSignal().findOneAndUpdate(
       { normalizedTerm: g._id },
       {
         $set: {
@@ -151,14 +162,14 @@ async function aggregate() {
 
 // ── Consulta de señales para revisión manual ───────────────────
 async function getProposals(limit = 20) {
-  return DriftSignal.find({ status: 'PROPOSED' })
+  return getDriftSignal().find({ status: 'PROPOSED' })
     .sort({ driftScore: -1 })
     .limit(limit)
     .lean();
 }
 
 async function getAll(limit = 50) {
-  return DriftSignal.find({})
+  return getDriftSignal().find({})
     .sort({ driftScore: -1 })
     .limit(limit)
     .lean();
