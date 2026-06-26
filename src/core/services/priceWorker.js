@@ -98,9 +98,19 @@ async function ejecutarCicloAladin() {
     if (!RUBROS.includes(rubroFinal)) {
       console.log(`[Aladdín-Worker] ⚠️  Rubro espurio ignorado: ${rubro}`);
       try {
+        const mongoose = require('mongoose');
         const ode = require('../../services/ontologyDriftEngine');
-        ode.recordObservation(rubro, 'priceWorker', {}).catch(() => {});
-      } catch (_) {}
+        const rs = mongoose.connection.readyState;
+        if (rs !== 1) {
+          console.warn('[ODE-PW] Skip readyState:', rs, 'para rubro:', rubro);
+        } else {
+          ode.recordObservation(rubro, 'priceWorker', {})
+            .then(() => console.log('[ODE-PW] ✅ observacion registrada:', rubro))
+            .catch(e => console.error('[ODE-PW] ❌ error:', e.message));
+        }
+      } catch (e) {
+        console.error('[ODE-PW] ❌ require error:', e.message);
+      }
       continue;
     }
     await PrecioMercado.findOneAndUpdate(
