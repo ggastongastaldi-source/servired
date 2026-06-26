@@ -97,6 +97,10 @@ async function ejecutarCicloAladin() {
     const rubroFinal = rubroCanon !== UNKNOWN_RUBRO ? rubroCanon : rubro;
     if (!RUBROS.includes(rubroFinal)) {
       console.log(`[Aladdín-Worker] ⚠️  Rubro espurio ignorado: ${rubro}`);
+      try {
+        const ode = require('../../services/ontologyDriftEngine');
+        ode.recordObservation(rubro, 'priceWorker', {}).catch(() => {});
+      } catch (_) {}
       continue;
     }
     await PrecioMercado.findOneAndUpdate(
