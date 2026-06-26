@@ -10,4 +10,24 @@ router.get('/status', (req, res) => {
   }
 });
 
+router.get('/ode', async (req, res) => {
+  try {
+    const ode = require('../services/ontologyDriftEngine');
+    const [proposals, all] = await Promise.all([ode.getProposals(10), ode.getAll(20)]);
+    res.json({ ok: true, proposals, all });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/ode/aggregate', async (req, res) => {
+  try {
+    const ode = require('../services/ontologyDriftEngine');
+    const result = await ode.aggregate();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

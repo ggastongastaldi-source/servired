@@ -733,6 +733,11 @@ function resolveRubro(input) {
   _rubroUnresolvedLog.push({ original: input, normalized: norm, timestamp: new Date().toISOString() });
   if (_rubroUnresolvedLog.length <= 100)
     console.warn('[Geomesh] ⚠️  Rubro no resuelto: "' + input + '" → UNKNOWN_RUBRO');
+  // ODE: registrar evidencia fire-and-forget
+  try {
+    const ode = require('../services/ontologyDriftEngine');
+    ode.recordObservation(input, 'rrl', {}).catch(() => {});
+  } catch (_) {}
   return UNKNOWN_RUBRO;
 }
 function getRubroUnresolvedLog() { return [..._rubroUnresolvedLog]; }
