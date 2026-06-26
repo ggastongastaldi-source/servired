@@ -68,7 +68,7 @@ async function recordObservation(inputTerm, source, opts = {}) {
     return;
   }
   try {
-    const doc = await Observation.create({
+    const doc = await getObservation().create({
       inputTerm:     inputTerm,
       normalizedTerm: _norm(inputTerm),
       source,
@@ -108,12 +108,11 @@ async function aggregate() {
     { $sort: { frequency7d: -1 } }
   ];
 
-  const Observation = getObservation();
-  const groups = await Observation.aggregate(pipeline);
+  const groups = await getObservation().aggregate(pipeline);
 
   // Contar freq 24h por separado
   const freq24hMap = {};
-  const obs24h = await Observation.aggregate([
+  const obs24h = await getObservation().aggregate([
     { $match: { observedAt: { $gte: ago24h } } },
     { $group: { _id: '$normalizedTerm', count: { $sum: 1 } } }
   ]);
