@@ -161,11 +161,15 @@ app.get('/api/trabajadores', (req, res) => {
 // MongoDB
 const { assertSystemUsers } = require('./utils/assertSystemUsers');
 
-// DB Readiness Latch — consultable por cualquier worker sin dispersar readyState
+// DB Readiness Promise Gate — garantía causal, no flag probabilístico
 global._dbReady = false;
+global.dbReadyPromise = new Promise((resolve) => {
+  global._resolveDB = resolve;
+});
 mongoose.connection.once('connected', () => {
   global._dbReady = true;
-  console.log('[DB] Latch activado — conexion lista para workers');
+  global._resolveDB();
+  console.log('[DB] Gate abierto — conexion lista para workers');
 });
 
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')

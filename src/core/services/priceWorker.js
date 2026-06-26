@@ -98,14 +98,13 @@ async function ejecutarCicloAladin() {
     if (!RUBROS.includes(rubroFinal)) {
       console.log(`[Aladdín-Worker] ⚠️  Rubro espurio ignorado: ${rubro}`);
       try {
-        if (!global._dbReady) {
-          console.warn('[ODE-PW] Skip — DB no lista para rubro:', rubro);
-        } else {
-          const ode = require('../../services/ontologyDriftEngine');
-          ode.recordObservation(rubro, 'priceWorker', {})
-            .then(() => console.log('[ODE-PW] ✅ observacion registrada:', rubro))
-            .catch(e => console.error('[ODE-PW] ❌ error:', e.message));
-        }
+        const ode = require('../../services/ontologyDriftEngine');
+        const doRecord = async () => {
+          if (global.dbReadyPromise) await global.dbReadyPromise;
+          await ode.recordObservation(rubro, 'priceWorker', {});
+          console.log('[ODE-PW] ✅ observacion registrada:', rubro);
+        };
+        doRecord().catch(e => console.error('[ODE-PW] ❌ error:', e.message));
       } catch (e) {
         console.error('[ODE-PW] ❌ require error:', e.message);
       }
