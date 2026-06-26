@@ -35,6 +35,10 @@ const CatalogItemSchema = new mongoose.Schema({
   // Estado
   estado:       { type: String, enum: ['ACTIVO','PAUSADO','BORRADOR'], default: 'ACTIVO', index: true },
 
+  // Ciclo de vida (para Aladín)
+  activoDesde:  { type: Date, default: Date.now },
+  ultimaVenta:  { type: Date, default: null },
+
   // Métricas (actualizadas por projection)
   metricas: {
     vistas:     { type: Number, default: 0 },

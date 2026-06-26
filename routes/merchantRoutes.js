@@ -23,4 +23,15 @@ router.delete('/catalog/:itemId',   auth, mc.deleteItem);
 // Analytics
 router.get('/analytics', auth, mc.getAnalytics);
 
+// Admin: reconstrucción forzada de proyecciones (requiere auth)
+router.post('/admin/reconstruct', auth, async (req, res) => {
+  try {
+    const { reconstruirTodos } = require('../services/merchantProjectionReactor');
+    const result = await reconstruirTodos();
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

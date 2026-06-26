@@ -69,6 +69,7 @@ app.use('/api/admin/referidos', require('./src/core/routes/referidosAdmin'));
 app.use('/api/payment', require('./src/engine/paymentRoutes'));
 const gatewayRoutes = require('./routes/gatewayRoutes');
 const merchantRoutes = require('./routes/merchantRoutes');
+const { procesarEvento: merchantReactorHandle } = require('./services/merchantProjectionReactor');
 const simulationRoutes = require('./routes/simulationRoutes');
 const policyRoutes = require('./routes/policyRoutes');
 require('./services/gatewayListeners');
@@ -475,3 +476,17 @@ app.get('/api/sinapsis/crash-recovery', soloAdmin, async (req, res) => {
 app.get('/b19', soloAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'b19.html'));
 });
+
+// ── MerchantProjectionReactor: suscripción al bus SINAPSIS ─────────────────
+// Se suscribe después de la conexión a MongoDB para garantizar modelos listos
+try {
+  const sinapsisBus = require('./services/sinapsisBusAdapter');
+  if (sinapsisBus && typeof sinapsisBus.subscribe === 'function') {
+    sinapsisBus.subscribe('*', merchantReactorHandle);
+    console.log('[MerchantReactor] suscrito al bus SINAPSIS');
+  } else {
+    console.log('[MerchantReactor] sinapsisBusAdapter sin subscribe — reactor en modo manual');
+  }
+} catch (e) {
+  console.warn('[MerchantReactor] no se pudo suscribir al bus:', e.message);
+}
