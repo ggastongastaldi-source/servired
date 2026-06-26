@@ -94,7 +94,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       console.log('[BOOST] ✅ Comercio', metadata.commerceId, 'boosted hasta', boostExpiry);
       try {
         const rtmil = require('../../../services/rtmilIngest');
-        rtmil.ingest({ type: 'BOOST_PURCHASED', actorId: metadata.commerceId, zoneId: null, payload: { paymentId, boostExpiry } }).catch(() => {});
+        rtmil.ingest({ type: 'BOOST_PURCHASED', actorId: metadata.commerceId, zoneId: metadata.zoneId || 'UNKNOWN_ZONE', payload: { paymentId, boostExpiry } }).catch(() => {});
       } catch (_) {}
       trackEvent('boost_paid', { actorId: metadata.commerceId, meta: { paymentId, boostExpiry } });
       return;

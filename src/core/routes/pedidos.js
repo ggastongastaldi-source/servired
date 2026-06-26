@@ -125,7 +125,13 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
     const pedidoGuardado = await nuevoPedido.save();
     try {
       const rtmil = require('../../../services/rtmilIngest');
-      rtmil.ingest({ type: 'SERVICE_REQUESTED', actorId: pedidoGuardado.cliente?.toString() || null, zoneId: pedidoGuardado.zona || null, payload: { pedidoId: pedidoGuardado._id.toString(), tipoServicio: pedidoGuardado.tipoServicio } }).catch(() => {});
+      try {
+        const { resolveZone } = require('../../../shared/catalogs/zonesCatalog');
+        const { clasificar }  = require('../../../shared/catalogs/rubrosCatalog');
+        const zoneId   = resolveZone(pedidoGuardado.zona || '');
+        const rubros   = clasificar(pedidoGuardado.tipoServicio || '').map(r => r.id);
+        rtmil.ingest({ type: 'SERVICE_REQUESTED', actorId: pedidoGuardado.cliente?.toString() || null, zoneId, payload: { pedidoId: pedidoGuardado._id.toString(), tipoServicio: pedidoGuardado.tipoServicio, rubros } }).catch(() => {});
+      } catch (_) {}
     } catch (_) {}
   // SINAPSIS AUDIT MODE
   const { auditOrder } = require('../../sinapsis/auditMode');

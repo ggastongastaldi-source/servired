@@ -696,6 +696,47 @@ function getCategorias() {
   return [...new Set(RUBROS.map(r => r.categoria))];
 }
 
+/**
+ * resolveRubro(input) → rubroId canónico o UNKNOWN_RUBRO
+ * RRL: Rubro Resolution Layer — análogo al ZRL de zonas
+ * Determinístico, sin IO, loguea espurios
+ */
+const UNKNOWN_RUBRO = 'UNKNOWN_RUBRO';
+const _rubroAliasIndex = new Map();
+// Construir índice: id directo + keywords normalizadas
+function _buildRubroIndex() {
+  for (const r of RUBROS) {
+    _rubroAliasIndex.set(_normalizeRubro(r.id), r.id);
+    for (const kw of r.keywords) {
+      if (!_rubroAliasIndex.has(_normalizeRubro(kw))) {
+        _rubroAliasIndex.set(_normalizeRubro(kw), r.id);
+      }
+    }
+  }
+}
+function _normalizeRubro(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+    .replace(/ñ/g, 'n').replace(/[^a-z0-9_]/g, '_')
+    .replace(/_+/g, '_').replace(/^_|_$/g, '').trim();
+}
+const _rubroUnresolvedLog = [];
+function resolveRubro(input) {
+  if (!input || typeof input !== 'string') return UNKNOWN_RUBRO;
+  if (_rubroAliasIndex.size === 0) _buildRubroIndex();
+  const norm = _normalizeRubro(input);
+  if (_rubroAliasIndex.has(norm)) return _rubroAliasIndex.get(norm);
+  // Match parcial
+  for (const [alias, id] of _rubroAliasIndex) {
+    if (norm.includes(alias) || alias.includes(norm)) return id;
+  }
+  _rubroUnresolvedLog.push({ original: input, normalized: norm, timestamp: new Date().toISOString() });
+  if (_rubroUnresolvedLog.length <= 100)
+    console.warn('[Geomesh] ⚠️  Rubro no resuelto: "' + input + '" → UNKNOWN_RUBRO');
+  return UNKNOWN_RUBRO;
+}
+function getRubroUnresolvedLog() { return [..._rubroUnresolvedLog]; }
+
 module.exports = {
   RUBROS,
   getActivos,
@@ -704,5 +745,8 @@ module.exports = {
   clasificar,
   getParaComercio,
   getEmergencia,
-  getCategorias
+  getCategorias,
+  resolveRubro,
+  getRubroUnresolvedLog,
+  UNKNOWN_RUBRO
 };

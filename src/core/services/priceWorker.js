@@ -88,12 +88,19 @@ async function ejecutarCicloAladin() {
   for (const [rubro, vals] of Object.entries(precios)) {
     if (!vals.baja || !vals.alta) continue;
     // WHITELIST — ignorar cualquier rubro que Groq haya inventado
-    if (!RUBROS.includes(rubro)) {
+    // RRL: resolver alias legacy al id canónico antes del whitelist
+    const { resolveRubro, UNKNOWN_RUBRO } = require('../../../shared/catalogs/rubrosCatalog');
+    const rubroCanon = resolveRubro(rubro);
+    if (rubroCanon !== UNKNOWN_RUBRO && rubroCanon !== rubro) {
+      console.log(`[Aladdín-Worker] 🔄 Rubro resuelto: ${rubro} → ${rubroCanon}`);
+    }
+    const rubroFinal = rubroCanon !== UNKNOWN_RUBRO ? rubroCanon : rubro;
+    if (!RUBROS.includes(rubroFinal)) {
       console.log(`[Aladdín-Worker] ⚠️  Rubro espurio ignorado: ${rubro}`);
       continue;
     }
     await PrecioMercado.findOneAndUpdate(
-      { rubro },
+      { rubro: rubroFinal },
       {
         baja: vals.baja,
         alta: vals.alta,

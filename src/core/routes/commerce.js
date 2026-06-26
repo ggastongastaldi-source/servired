@@ -32,7 +32,11 @@ router.post('/register', async (req, res) => {
     await commerce.save();
     try {
       const rtmil = require('../../../services/rtmilIngest');
-      rtmil.ingest({ type: 'COMMERCE_REGISTERED', actorId: commerce._id.toString(), zoneId: commerce.localidad || null, payload: { nombre: commerce.nombre, rubro: commerce.rubro } }).catch(() => {});
+      try {
+        const { resolveZone } = require('../../../shared/catalogs/zonesCatalog');
+        const zoneId = resolveZone(commerce.localidad || commerce.zona || '');
+        rtmil.ingest({ type: 'COMMERCE_REGISTERED', actorId: commerce._id.toString(), zoneId, payload: { nombre: commerce.nombre, rubro: commerce.rubro } }).catch(() => {});
+      } catch (_) {}
     } catch (_) {}
 
     console.log(`[Commerce] ✅ Registrado: ${nombre} | ${localidad} | id:${commerce._id}`);
