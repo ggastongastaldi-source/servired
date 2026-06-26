@@ -98,7 +98,7 @@ async function ejecutarCicloAladin() {
     if (!RUBROS.includes(rubroFinal)) {
       console.log(`[Aladdín-Worker] ⚠️  Rubro espurio ignorado: ${rubro}`);
       try {
-        const ode = require('../../services/ontologyDriftEngine');
+        const ode = require('../../../services/ontologyDriftEngine');
         const doRecord = async () => {
           if (global.dbReadyPromise) await global.dbReadyPromise;
           await ode.recordObservation(rubro, 'priceWorker', {});
