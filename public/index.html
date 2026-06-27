@@ -218,6 +218,8 @@ body{padding-top:64px;}
 .action-card-full:hover{transform:translateY(-2px);}
 .action-card-full .action-card-icon{margin-bottom:0;flex-shrink:0;}
 .cats-section{margin-bottom:80px;}
+.authenticated #home-login-block{display:none!important;}
+.authenticated .welcome-card{display:flex!important;}
 .cats-title{font-size:0.8rem;color:#64748b;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;}
 .cats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
 .cat-item{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:transform 0.15s;}
@@ -636,6 +638,18 @@ function toggleNotif(){
   <div class="welcome-avatar" id="welcome-avatar">?</div>
 </div>
 <!-- ACTION CARDS -->
+<!-- LOGIN HOME - visible solo sin sesion -->
+<div id="home-login-block" style="margin-bottom:18px;">
+  <div id="home-google-btn" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
+  <div style="text-align:center;color:#64748b;font-size:0.72rem;margin-bottom:10px;">— o ingresa con email —</div>
+  <button onclick="abrirModal('modal-login-gen')" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;padding:12px;border-radius:10px;font-family:Rajdhani,sans-serif;font-size:0.95rem;cursor:pointer;">
+    Ingresar con email
+  </button>
+  <div style="text-align:center;margin-top:10px;">
+    <span style="color:#64748b;font-size:0.75rem;">No tenes cuenta? </span>
+    <span onclick="abrirModal('modal-login-gen')" style="color:#00E5FF;font-size:0.75rem;cursor:pointer;">Registrate gratis</span>
+  </div>
+</div>
 <div id="action-cards-section">
   <div class="action-cards">
     <div class="action-card" style="border-color:rgba(0,229,255,0.25);" onclick="abrirModalConDestino('cliente')">
@@ -1595,7 +1609,15 @@ window.addEventListener("load", function() {
   if (window.google && window.google.accounts) { initGoogleSignIn(); }
   else { document.addEventListener("googleAccountsReady", initGoogleSignIn); }
   setTimeout(initGoogleSignIn, 2000);
+  setTimeout(renderHomeGoogleBtn, 2500);
 });
+
+function renderHomeGoogleBtn() {
+  if (!window.google || !window.google.accounts) { setTimeout(renderHomeGoogleBtn, 500); return; }
+  var el = document.getElementById("home-google-btn");
+  if (!el) return;
+  google.accounts.id.renderButton(el, { theme:"filled_black", size:"large", text:"continue_with", locale:"es_419", width:320 });
+}
 </script>
 
 <script>
@@ -1607,6 +1629,7 @@ async function initAppShell() {
     const data = await r.json();
     if (!data.ok) { localStorage.removeItem("token"); return; }
     window.__userSnapshot = data.snapshot;
+    document.body.classList.add("authenticated");
     if (data.snapshot.state === "BLOQUEADO") { document.body.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e1a;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1.2rem;'>Cuenta bloqueada. Contacta soporte.</div>"; return; }
     if (data.snapshot.needsOnboarding) { mostrarSeleccionRol(data.snapshot); return; }
     const headerUser = document.getElementById("header-user");
