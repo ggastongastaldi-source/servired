@@ -1619,7 +1619,7 @@ function elegirRol(btn, rol) {
   document.querySelectorAll("#rol-selector-overlay button").forEach(b => b.disabled = true);
   btn.textContent = "Cargando...";
   if (rol === "CLIENTE") { location.reload(); }
-  else if (rol === "TRABAJADOR") { window.location.href = "/registro-trabajador.html"; }
+  else if (rol === "TRABAJADOR") { iniciarWizardProvider(document.getElementById("rol-selector-overlay")); }
   else if (rol === "COMERCIO") { abrirModal("wiz-comercio"); document.getElementById("rol-selector-overlay").remove(); }
 }
 
