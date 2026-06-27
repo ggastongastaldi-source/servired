@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 const usuarioSchema = new mongoose.Schema({
   nombre:       { type: String, required: true },
   email:        { type: String, required: true, unique: true },
-  password:     { type: String, required: true },
+  password:     { type: String, default: null },
+  googleId:     { type: String, default: null, index: true },
+  avatar:       { type: String, default: null },
+  provider:     { type: String, enum: ['local','google'], default: 'local' },
+  emailVerified:{ type: Boolean, default: false },
   roles:        { type: [String], enum: ['CLIENTE', 'TRABAJADOR', 'ADMIN'], default: ['CLIENTE'] },
   // legacy - mantener para compatibilidad
   rol:          { type: String, enum: ['CLIENTE', 'TRABAJADOR', 'WORKER', 'ADMIN'], default: 'CLIENTE' },

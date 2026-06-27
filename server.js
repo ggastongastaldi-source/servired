@@ -131,16 +131,7 @@ app.get('/r/:ref_code', (req, res) => res.redirect('/?ref=' + req.params.ref_cod
 // Estado global
 
 // Health check CRÍTICO para Railway
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: 'OK',
-        sistema: 'ServiRed',
-        moneda: 'ARS',
-        timestamp: new Date().toISOString(),
-        workers: [...(io.sockets.adapter.rooms || new Map())].filter(([k]) => k.startsWith("worker_")).length,
-        uptime: process.uptime()
-    });
-});
+
 
 // Rutas API
 
@@ -488,3 +479,23 @@ app.get('/b19', soloAdmin, (req, res) => {
 // cuando llegan por el Change Stream de la colección 'events'.
 // En modo manual: reconstruirTodos() disponible en /api/merchant/admin/reconstruct
 console.log('[MerchantReactor] activo — conectado a Nexus changeStreamObserver');
+
+const bus = require("./runtime/systemStateBus");
+
+
+const bus = require("./runtime/systemStateBus");
+
+
+});
+
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'ServiRed',
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+    memory: process.memoryUsage(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});

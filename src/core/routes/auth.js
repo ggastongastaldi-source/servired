@@ -203,4 +203,57 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
+
+// ── GOOGLE SIGN-IN ──────────────────────────────────────────
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+router.post('/google', async (req, res) => {
+  try {
+    const { id_token } = req.body;
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: id_token,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name: nombre, picture: avatar, email_verified } = payload;
+
+    let u = await Usuario.findOne({ $or: [{ googleId }, { email }] });
+
+    if (u) {
+      // Usuario existente: actualizar googleId si vino por email
+      if (!u.googleId) {
+        await Usuario.findByIdAndUpdate(u._id, { googleId, avatar, provider: "google", emailVerified: !!email_verified });
+        u = await Usuario.findById(u._id);
+      }
+    } else {
+      // Usuario nuevo
+      u = await Usuario.create({
+        nombre,
+        email,
+        googleId,
+        avatar,
+        provider: 'google',
+        rol: 'CLIENTE',
+        roles: ['CLIENTE'],
+        estado: 'ACTIVO'
+      });
+      // Email bienvenida async
+      try { enviarBienvenidaCliente({ nombre: u.nombre, email: u.email }).catch(()=>{}); } catch(e) {}
+    }
+
+    const token = jwt.sign(
+      { id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona },
+      SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado, avatar: u.avatar }, needsOnboarding });
+  } catch(e) {
+    console.error('[Google Auth]', e.message);
+    res.status(401).json({ ok: false, error: 'Token de Google inválido' });
+  }
+});
+
 module.exports = router;
