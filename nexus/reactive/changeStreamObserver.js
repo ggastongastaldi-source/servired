@@ -49,6 +49,7 @@ async function iniciarObserver(io) {
         else if (event.entityType === 'lead')    procesarLeadEvent(event, io);
         else if (event.entityType === 'worker')  { /* Sprint 2 */ }
         else if (event.entityType === 'payment') { /* Sprint 3 */ }
+        else if (event.entityType === 'finance') procesarFinanceEvent(event, io);
       } catch(e) {
         console.error('[Nexus-Routing-Error]:', e.message, '| event:', event.type);
       }
@@ -118,6 +119,58 @@ function procesarLeadEvent(event, io) {
   });
 }
 
+
+// ── Finance Event Processor ───────────────────────────────────────────────
+// Maneja eventos emitidos por financeEngine post-commit ACID.
+// NUNCA modifica estado directamente — solo notifica vía socket.
+// GIA StateReader leerá wallet_available desde Usuario (ya actualizado por ACID).
+function procesarFinanceEvent(event, io) {
+  const { type, aggregateId, payload } = event;
+  const base = { ...payload, _nexusTs: new Date().toISOString() };
+
+  switch (type) {
+
+    case 'WorkerFundsReleased': {
+      // Fondos liberados de PENDING → AVAILABLE
+      // El wallet ya fue actualizado por financeEngine en la misma transacción ACID.
+      // Solo notificamos al worker para que GIA Home refresque.
+      const workerId = payload.workerId;
+      if (workerId) {
+        // Socket directo al worker conectado (si está online)
+        io.to('worker_' + workerId).emit('gia:priority:refresh', {
+          reason:  'WorkerFundsReleased',
+          payload: base
+        });
+        // También al admin para trazabilidad
+        io.to('admins').emit('nexus:finance:released', {
+          workerId, amount: payload.amount, ...base
+        });
+      }
+      console.log(`[Finance] 💰 WorkerFundsReleased — worker:${workerId} amount:${payload.amount}`);
+      break;
+    }
+
+    case 'WorkerWithdrawalCompleted': {
+      // Retiro completado — notificar confirmación al worker
+      const workerId = payload.worker_id;
+      if (workerId) {
+        io.to('worker_' + workerId).emit('gia:priority:refresh', {
+          reason:  'WithdrawalCompleted',
+          payload: base
+        });
+        io.to('admins').emit('nexus:finance:withdrawal', {
+          workerId, amount: payload.amount, ...base
+        });
+      }
+      console.log(`[Finance] 🏦 WithdrawalCompleted — worker:${workerId} amount:${payload.amount}`);
+      break;
+    }
+
+    default:
+      // Eventos financieros sin handler específico — log silencioso
+      console.log(`[Finance] Evento sin handler: ${type}`);
+  }
+}
 module.exports = { iniciarObserver };
 
 // NarrativeObserver hook — evalúa cada evento con TRS
