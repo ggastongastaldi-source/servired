@@ -410,6 +410,20 @@ cron.schedule('30 * * * *', async () => {
   }
 });
 
+// ── PROVIDER STATE RECONCILIATOR ────────────────────────────────
+cron.schedule('0 * * * *', async () => {
+  try {
+    const { reconcileAllProviders } = require('./src/core/services/providerStateReconciliator');
+    const r = await reconcileAllProviders();
+    if (r.drift > 0) {
+      console.error('[STATE DRIFT] CRITICAL providers con drift detectado:', r.drift, JSON.stringify(r));
+    } else {
+      console.log('[Reconciliator] batch OK — total=' + r.total + ' consistent=' + r.consistent + ' errors=' + r.errors);
+    }
+  } catch(e) { console.error('[Reconciliator] error batch:', e.message); }
+});
+
+
 // ===============================
 // KEEPALIVE / ANTI-SPINDOWN
 // ===============================
@@ -495,6 +509,16 @@ app.get('/b19', soloAdmin, (req, res) => {
 console.log('[MerchantReactor] activo — conectado a Nexus changeStreamObserver');
 
 
+
+
+// ── RECONCILIATOR ON-DEMAND ──────────────────────────────────────
+app.get('/api/admin/reconcile', async (req, res) => {
+  try {
+    const { reconcileAllProviders } = require('./src/core/services/providerStateReconciliator');
+    const r = await reconcileAllProviders();
+    res.json({ ok: true, ...r });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
 
 app.get('/health', (req, res) => {
   res.json({
