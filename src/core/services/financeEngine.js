@@ -6,14 +6,19 @@ const FinancialTransaction        = require('../models/FinancialTransaction');
 const Usuario                     = require('../models/Usuario');
 const Pedido                      = require('../models/Pedido');
 
-// ── Domain Event Emitter (lazy — no bloquea si SINAPSIS no está disponible) ─
+// ── Domain Event Emitter — bus canónico Nexus Universal Emitter v3.0 ────────
+// Mismo bus que usa socketHandlers y el resto del ecosistema.
+// Si Nexus no está disponible (test/offline), falla silenciosamente.
 function emitDomainEvent(eventType, payload) {
   try {
-    const bus = require('../../services/sinapsisBusAdapter');
-    if (bus && typeof bus.emitEvent === 'function') {
-      bus.emitEvent(eventType, payload).catch(() => {});
-    }
-  } catch (_) { /* SINAPSIS no disponible — fallo silencioso */ }
+    const { emitEvent } = require('../../../nexus/events/emitEvent');
+    emitEvent({
+      entityType:  'finance',
+      type:        eventType,
+      aggregateId: payload.transaction_id || payload.worker_id || 'unknown',
+      payload
+    });
+  } catch (_) { /* Nexus no disponible — no crítico, commit ya ocurrió */ }
 }
 
 
