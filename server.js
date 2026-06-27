@@ -493,7 +493,6 @@ app.get('/b19', soloAdmin, (req, res) => {
 // En modo manual: reconstruirTodos() disponible en /api/merchant/admin/reconstruct
 console.log('[MerchantReactor] activo — conectado a Nexus changeStreamObserver');
 
-const bus = require("./runtime/systemStateBus");
 
 
 app.get('/health', (req, res) => {
