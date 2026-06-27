@@ -279,6 +279,7 @@ body{padding-bottom:70px;}
   <!-- SW -->
   <script src="/js/rubros.js"></script>
   <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then(()=>console.log('[SW] ServiRed activo'));</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -741,7 +742,7 @@ function toggleNotif(){
 <div class="modal-bg" id="modal-login-gen">
   <div class="modal">
     <div class="modal-title">🔑 Ya tengo cuenta</div>
-    <div class="field"><label>Email o Teléfono</label><input type="text" id="gl-email" placeholder="tu@email.com o 1112345678"></div>
+    <div style="margin-bottom:12px;"><div id="google-signin-btn" style="display:flex;justify-content:center;"></div><div style="text-align:center;color:#64748b;font-size:0.72rem;margin:8px 0;">— o ingresá con email —</div></div><div class="field"><label>Email o Teléfono</label><input type="text" id="gl-email" placeholder="tu@email.com o 1112345678"></div>
     <div class="field"><label>Contraseña</label><div style="position:relative;"><input type="password" id="gl-pass" placeholder="••••••••" style="padding-right:36px;width:100%;box-sizing:border-box;"><span onclick="togglePass('gl-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">👁️</span></div></div>
     <div class="err" id="gl-err">Email o contraseña incorrectos</div>
     <div class="modal-btns">
@@ -1544,6 +1545,90 @@ const VA = (() => {
     </div>
   </div>
 </div>
+
+
+<script>
+function initGoogleSignIn() {
+  if (!window.google || !window.google.accounts) return;
+  const clientId = "GOOGLE_CLIENT_ID_PLACEHOLDER";
+  google.accounts.id.initialize({
+    client_id: clientId,
+    callback: async function(response) {
+      try {
+        const r = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_token: response.credential })
+        });
+        const data = await r.json();
+        if (!data.ok) { alert("Error al ingresar con Google: " + data.error); return; }
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("usuario", JSON.stringify(data.usuario));
+        cerrarModal("modal-login-gen");
+        cerrarModal("modal-cliente-login");
+        cerrarModal("modal-worker-login");
+        if (data.needsOnboarding) {
+          mostrarSeleccionRol(data.usuario);
+        } else {
+          location.reload();
+        }
+      } catch(e) {
+        alert("Error de conexion. Intenta de nuevo.");
+      }
+    }
+  });
+  const btn = document.getElementById("google-signin-btn");
+  if (btn) {
+    google.accounts.id.renderButton(btn, {
+      theme: "filled_black",
+      size: "large",
+      text: "continue_with",
+      locale: "es_419",
+      width: 280
+    });
+  }
+}
+
+function mostrarSeleccionRol(usuario) {
+  const nombre = usuario.nombre ? usuario.nombre.split(" ")[0] : "vos";
+  const overlay = document.createElement("div");
+  overlay.id = "rol-selector-overlay";
+  overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,14,26,0.97);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;";
+  overlay.innerHTML = `
+    <div style="max-width:360px;width:100%;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:8px;">👋</div>
+      <h2 style="color:#00E5FF;font-family:Rajdhani,sans-serif;font-size:1.4rem;margin-bottom:6px;">Hola, ${nombre}</h2>
+      <p style="color:#64748b;font-size:0.85rem;margin-bottom:28px;">Bienvenido a ServiRed. ¿Qué querés hacer?</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button onclick="elegirRol(this,'CLIENTE')" style="background:#111827;border:1px solid #00E5FF;color:#00E5FF;padding:14px 20px;border-radius:10px;font-size:0.95rem;font-family:Rajdhani,sans-serif;cursor:pointer;text-align:left;">
+          🔍 Buscar un trabajador o servicio
+        </button>
+        <button onclick="elegirRol(this,'TRABAJADOR')" style="background:#111827;border:1px solid #FF6D00;color:#FF6D00;padding:14px 20px;border-radius:10px;font-size:0.95rem;font-family:Rajdhani,sans-serif;cursor:pointer;text-align:left;">
+          🔧 Ofrecer mis servicios
+        </button>
+        <button onclick="elegirRol(this,'COMERCIO')" style="background:#111827;border:1px solid #39ff14;color:#39ff14;padding:14px 20px;border-radius:10px;font-size:0.95rem;font-family:Rajdhani,sans-serif;cursor:pointer;text-align:left;">
+          🏪 Registrar mi comercio
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function elegirRol(btn, rol) {
+  document.querySelectorAll("#rol-selector-overlay button").forEach(b => b.disabled = true);
+  btn.textContent = "Cargando...";
+  if (rol === "CLIENTE") { location.reload(); }
+  else if (rol === "TRABAJADOR") { window.location.href = "/registro-trabajador.html"; }
+  else if (rol === "COMERCIO") { abrirModal("wiz-comercio"); document.getElementById("rol-selector-overlay").remove(); }
+}
+
+window.addEventListener("load", function() {
+  if (window.google && window.google.accounts) { initGoogleSignIn(); }
+  else { document.addEventListener("googleAccountsReady", initGoogleSignIn); }
+  setTimeout(initGoogleSignIn, 2000);
+});
+</script>
 
 </body>
 </html>
