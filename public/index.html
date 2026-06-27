@@ -1630,5 +1630,22 @@ window.addEventListener("load", function() {
 });
 </script>
 
+<script>
+async function initAppShell() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const r = await fetch("/api/auth/me", { headers: { "Authorization": "Bearer " + token } });
+    const data = await r.json();
+    if (!data.ok) { localStorage.removeItem("token"); return; }
+    window.__userSnapshot = data.snapshot;
+    if (data.snapshot.state === "BLOQUEADO") { document.body.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e1a;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1.2rem;'>Cuenta bloqueada. Contacta soporte.</div>"; return; }
+    if (data.snapshot.needsOnboarding) { mostrarSeleccionRol(data.snapshot); return; }
+    const headerUser = document.getElementById("header-user");
+    if (headerUser) { const n = data.snapshot.nombre ? data.snapshot.nombre.split(" ")[0] : ""; headerUser.innerHTML = data.snapshot.avatar ? "<img src='"+data.snapshot.avatar+"' style='width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:6px;'>"+n : n; }
+  } catch(e) { console.warn("[AppShell]", e.message); }
+}
+document.addEventListener("DOMContentLoaded", initAppShell);
+</script>
 </body>
 </html>
