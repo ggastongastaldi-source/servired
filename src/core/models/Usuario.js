@@ -46,6 +46,12 @@ const usuarioSchema = new mongoose.Schema({
   verificado:   { type: Boolean, default: false },
   fcmToken:     { type: String, default: null },
 
+  // ── PROVIDER ACTIVATION FSM ──────────────────────────────
+  onboardingStep:   { type: String, default: null },
+  providerState:    { type: String, enum: ["NONE","ONBOARDING","ACTIVE_PROVIDER","SUSPENDED"], default: "NONE" },
+  providerCategory: { type: String, default: null },
+  serviceZone:      { type: String, default: null },
+
   // ── WALLET ───────────────────────────────────────────────
   wallet_pending:   { type: Number, default: 0 }, // fondos capturados, pendientes de liberacion
   wallet_available: { type: Number, default: 0 }, // fondos disponibles para retiro

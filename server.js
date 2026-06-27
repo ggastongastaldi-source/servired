@@ -52,6 +52,7 @@ const sitemapsRouter = require('./src/core/routes/sitemaps');
 app.use('/', sitemapsRouter);
 app.use('/api/mensajes', rutaMensajes);
 app.use('/api/auth', require('./src/core/routes/auth'));
+app.use('/api/onboarding/provider', require('./src/core/routes/onboardingRoutes'));
 const pedidosRoute = require('./src/core/routes/pedidos')(io);
 app.use('/api/upload', require('./src/core/routes/upload'));
 app.use('/api/pedidos', pedidosRoute);
