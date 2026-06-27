@@ -108,6 +108,19 @@ app.get('/api/gps/positions', (req, res) => {
 });
 
 // Cache-busting: HTML nunca se cachea, assets estáticos sí (1 semana)
+
+// Inyectar GOOGLE_CLIENT_ID en index.html sin exponerlo en el repo
+app.get("/", (req, res) => {
+  const html = require("fs").readFileSync(require("path").join(__dirname, "public/index.html"), "utf8");
+  const clientId = process.env.GOOGLE_CLIENT_ID || "";
+  const patched = html.replace(
+    "</head>",
+    `<meta name="google-client-id" content="${clientId}">
+</head>`
+  );
+  res.send(patched);
+});
+
 app.use(express.static('public', {
   etag: true,
   lastModified: true,

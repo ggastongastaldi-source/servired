@@ -1550,7 +1550,7 @@ const VA = (() => {
 <script>
 function initGoogleSignIn() {
   if (!window.google || !window.google.accounts) return;
-  const clientId = "GOOGLE_CLIENT_ID_PLACEHOLDER";
+  const clientId = document.querySelector("meta[name=google-client-id]")?.content || "";
   google.accounts.id.initialize({
     client_id: clientId,
     callback: async function(response) {
