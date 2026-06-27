@@ -73,13 +73,14 @@ async function buildWorkerState(usuario) {
   return {
     pedidoActivo,
     saldo: {
-      disponible: usuario.wallet_available || 0,
-      pendiente:  usuario.wallet_pending   || 0
+      disponible: usuario.wallet_available ?? 0,
+      pendiente:  usuario.wallet_pending   ?? 0
     },
     matches: [], // DispatchEngine / Glóbulo Rojo los inyecta en tiempo real
     perfil: {
       completitud: calcularCompletitudWorker(usuario),
-      zonaId:      usuario.zona || usuario.zonaId
+      zonaId:      usuario.zona || usuario.zonaId,
+      nombre:      usuario.nombre
     }
   };
 }

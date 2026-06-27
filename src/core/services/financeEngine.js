@@ -6,6 +6,17 @@ const FinancialTransaction        = require('../models/FinancialTransaction');
 const Usuario                     = require('../models/Usuario');
 const Pedido                      = require('../models/Pedido');
 
+// ── Domain Event Emitter (lazy — no bloquea si SINAPSIS no está disponible) ─
+function emitDomainEvent(eventType, payload) {
+  try {
+    const bus = require('../../services/sinapsisBusAdapter');
+    if (bus && typeof bus.emitEvent === 'function') {
+      bus.emitEvent(eventType, payload).catch(() => {});
+    }
+  } catch (_) { /* SINAPSIS no disponible — fallo silencioso */ }
+}
+
+
 // ─── capturePayment ───────────────────────────────────────────────────────────
 async function capturePayment({ provider, provider_transaction_id, order_id, amount }, externalSession, _attempt = 0) {
   const ownSession = !externalSession;
@@ -107,6 +118,19 @@ async function releaseWorkerFunds({ transaction_id }, externalSession) {
     );
 
     if (ownSession) { await session.commitTransaction(); session.endSession(); }
+
+    // ── Evento de dominio: post-commit, fuera de la transacción ACID ──────
+    // Si el emit falla, los fondos ya están liberados — fallo no crítico.
+    try {
+      const workerId = pedido?.worker ? String(pedido.worker) : null;
+      emitDomainEvent('WorkerFundsReleased', {
+        transaction_id,
+        order_id: ft.order_id,
+        workerId,
+        amount: ft.workerPayout
+      });
+    } catch (_) { /* emit no crítico — no revierte el release */ }
+
     return { success: true, transaction_id };
 
   } catch(err) {
@@ -215,6 +239,16 @@ async function withdrawWorkerFunds({ worker_id, amount }) {
 
     await session.commitTransaction();
     session.endSession();
+
+    // ── Evento de dominio: post-commit ────────────────────────────────────
+    try {
+      emitDomainEvent('WorkerWithdrawalCompleted', {
+        transaction_id,
+        worker_id: String(worker_id),
+        amount
+      });
+    } catch (_) { /* emit no crítico */ }
+
     return { success: true, transaction_id, worker_id, amount };
 
   } catch(err) {
