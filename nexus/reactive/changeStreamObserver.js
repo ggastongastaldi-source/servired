@@ -45,11 +45,13 @@ async function iniciarObserver(io) {
 
       // Routing por dominio
       try {
-        if      (event.entityType === 'job')     procesarJobEvent(event, io);
-        else if (event.entityType === 'lead')    procesarLeadEvent(event, io);
-        else if (event.entityType === 'worker')  { /* Sprint 2 */ }
-        else if (event.entityType === 'payment') { /* Sprint 3 */ }
-        else if (event.entityType === 'finance') procesarFinanceEvent(event, io);
+        if      (event.entityType === 'job')      procesarJobEvent(event, io);
+        else if (event.entityType === 'lead')     procesarLeadEvent(event, io);
+        else if (event.entityType === 'worker')   { /* Sprint 2 */ }
+        else if (event.entityType === 'payment')  { /* Sprint 3 */ }
+        else if (event.entityType === 'finance')  procesarFinanceEvent(event, io);
+        else if (event.entityType === 'merchant' ||
+                 event.entityType === 'catalog')  procesarMerchantEvent(event);
       } catch(e) {
         console.error('[Nexus-Routing-Error]:', e.message, '| event:', event.type);
       }
@@ -119,6 +121,27 @@ function procesarLeadEvent(event, io) {
   });
 }
 
+
+
+// ── Merchant Event Processor ──────────────────────────────────────────────
+// Conecta changeStreamObserver con MerchantProjectionReactor.
+// Procesa: MERCHANT_PROFILE_CREATED/UPDATED, CATALOG_ITEM_*
+// Sin socket.io — las projections se leen por polling desde el dashboard.
+function procesarMerchantEvent(event) {
+  try {
+    const { procesarEvento } = require('../services/merchantProjectionReactor');
+    procesarEvento({
+      eventType:  event.type,
+      hash:       event.eventId,  // usa eventId como clave de idempotencia
+      payload:    event.payload || {},
+      properties: event.payload || {}
+    }).catch(e => {
+      console.error('[MerchantReactor] error procesando evento:', event.type, e.message);
+    });
+  } catch (e) {
+    console.error('[MerchantReactor] require falló:', e.message);
+  }
+}
 
 // ── Finance Event Processor ───────────────────────────────────────────────
 // Maneja eventos emitidos por financeEngine post-commit ACID.

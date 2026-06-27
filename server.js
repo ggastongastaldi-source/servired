@@ -479,16 +479,12 @@ app.get('/b19', soloAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'b19.html'));
 });
 
-// ── MerchantProjectionReactor: suscripción al bus SINAPSIS ─────────────────
-// Se suscribe después de la conexión a MongoDB para garantizar modelos listos
-try {
-  const sinapsisBus = require('./services/sinapsisBusAdapter');
-  if (sinapsisBus && typeof sinapsisBus.subscribe === 'function') {
-    sinapsisBus.subscribe('*', merchantReactorHandle);
-    console.log('[MerchantReactor] suscrito al bus SINAPSIS');
-  } else {
-    console.log('[MerchantReactor] sinapsisBusAdapter sin subscribe — reactor en modo manual');
-  }
-} catch (e) {
-  console.warn('[MerchantReactor] no se pudo suscribir al bus:', e.message);
-}
+// ── MerchantProjectionReactor: conectado al changeStreamObserver ────────────
+// ARQUITECTURA:
+//   sinapsisBusAdapter = Event Store append-only (audit log, NO suscribible)
+//   changeStreamObserver = runtime reactive stream (correcto para reactors)
+//
+// El MerchantReactor procesa eventos de dominio relevantes (MERCHANT_*, CATALOG_*)
+// cuando llegan por el Change Stream de la colección 'events'.
+// En modo manual: reconstruirTodos() disponible en /api/merchant/admin/reconstruct
+console.log('[MerchantReactor] activo — conectado a Nexus changeStreamObserver');
