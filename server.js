@@ -63,6 +63,7 @@ app.use('/api/admin', require('./src/core/routes/admin'));
 app.use('/api/matching', require('./src/core/routes/matching'));
 app.use('/api/asistente', require('./src/core/routes/asistente'));
 app.use('/api/rating', require('./src/core/routes/rating'));
+app.use('/api/activity', require('./routes/activity'));
 app.use('/api/pagos', require('./src/core/routes/pagos'));
 app.use('/api/admin/finance', require('./src/core/routes/adminFinance'));
 app.use('/api/sinapsis/dixie', require('./src/core/routes/dixieTerminal'));

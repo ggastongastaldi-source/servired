@@ -14,7 +14,44 @@
     p{color:#64748b;font-size:0.9rem;line-height:1.6;max-width:280px;margin:0 auto 24px;}
     .badge{display:inline-block;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:6px 14px;font-size:0.78rem;color:#00E5FF;margin-bottom:32px;}
     a{color:#FF6D00;font-size:0.85rem;text-decoration:none;}
-  </style>
+  
+/* ===== GIA PANEL ===== */
+#gia-fab{position:fixed;bottom:28px;right:24px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#48cfad);color:#fff;font-size:26px;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(108,99,255,.45);z-index:1000;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+#gia-fab:hover{transform:scale(1.1)}
+#gia-fab .gia-badge{position:absolute;top:2px;right:2px;background:#ff4757;color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:18px;height:18px;display:none;align-items:center;justify-content:center}
+#gia-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:998}
+#gia-overlay.open{display:block}
+#gia-panel{position:fixed;top:0;right:-420px;width:400px;height:100vh;background:#fff;box-shadow:-4px 0 30px rgba(0,0,0,.15);z-index:999;display:flex;flex-direction:column;transition:right .3s ease}
+#gia-panel.open{right:0}
+#gia-ph{background:linear-gradient(135deg,#6c63ff,#48cfad);color:#fff;padding:18px 20px 14px;display:flex;align-items:center;justify-content:space-between}
+#gia-ph .gt{font-size:16px;font-weight:700}
+#gia-ph .gc{font-size:11px;opacity:.85;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+#gia-pc{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:.8}
+#gia-tabs{display:flex;border-bottom:1px solid #eee}
+.gia-tab{flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:#888;border-bottom:2px solid transparent;transition:all .2s}
+.gia-tab.active{color:#6c63ff;border-bottom-color:#6c63ff}
+#gia-body{flex:1;overflow-y:auto;padding:16px}
+.act-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0}
+.act-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.act-icon.info{background:#e8f4fd}.act-icon.propuesta{background:#fff3cd}.act-icon.automatico{background:#d4edda}.act-icon.requiere_confirmacion{background:#fdecea}
+.act-desc{font-size:13px;color:#333;line-height:1.4}
+.act-meta{font-size:11px;color:#aaa;margin-top:3px}
+.act-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:4px;text-transform:uppercase}
+.badge-info{background:#e8f4fd;color:#1a73e8}.badge-propuesta{background:#fff3cd;color:#856404}.badge-automatico{background:#d4edda;color:#155724}.badge-requiere_confirmacion{background:#fdecea;color:#c62828}
+.act-actions{display:flex;gap:8px;margin-top:8px}
+.btn-ap{background:#48cfad;color:#fff;border:none;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer}
+.btn-re{background:#fff;color:#ff4757;border:1px solid #ff4757;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer}
+#gia-messages{flex:1;overflow-y:auto;padding:8px 0}
+.gia-msg{margin-bottom:12px;max-width:85%}
+.gia-msg.gia{align-self:flex-start}.gia-msg.user{align-self:flex-end;margin-left:auto}
+.gia-bubble{padding:10px 14px;border-radius:18px;font-size:13px;line-height:1.5}
+.gia-msg.gia .gia-bubble{background:#f0f0ff;color:#333;border-bottom-left-radius:4px}
+.gia-msg.user .gia-bubble{background:#6c63ff;color:#fff;border-bottom-right-radius:4px}
+#gia-input-area{display:flex;gap:8px;padding:12px 0 0;border-top:1px solid #eee}
+#gia-input{flex:1;border:1px solid #ddd;border-radius:20px;padding:8px 14px;font-size:13px;outline:none}
+#gia-send{background:#6c63ff;color:#fff;border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+
+</style>
 </head>
 <body>
   <div class="icon">🏪</div>
@@ -22,5 +59,126 @@
   <div class="badge">Panel en construcción</div>
   <p>Próximamente: métricas, Boost, administración de tu presencia en ServiRed.</p>
   <a href="/">← Volver al inicio</a>
+
+<div id="gia-overlay" onclick="GIA.cerrar()"></div>
+<button id="gia-fab" onclick="GIA.abrir()" title="G.I.A.">✦<span class="gia-badge" id="gia-badge">0</span></button>
+<div id="gia-panel">
+  <div id="gia-ph">
+    <div><div class="gt">✦ G.I.A.</div><div class="gc" id="gia-ctx">Sistema Operativo ServiRed</div></div>
+    <button id="gia-pc" onclick="GIA.cerrar()">✕</button>
+  </div>
+  <div id="gia-tabs">
+    <div class="gia-tab active" onclick="GIA.tab('act')">📋 Actividad</div>
+    <div class="gia-tab" onclick="GIA.tab('chat')">💬 Consultar</div>
+  </div>
+  <div id="gia-body">
+    <div id="gia-tab-act"><div id="gia-act-list"><p style="color:#aaa;font-size:13px;text-align:center;padding:20px">Cargando...</p></div></div>
+    <div id="gia-tab-chat" style="display:none;height:calc(100vh - 180px);flex-direction:column">
+      <div style="display:flex;flex-direction:column;height:100%">
+        <div id="gia-messages" style="flex:1;overflow-y:auto;padding:8px 0"></div>
+        <div id="gia-input-area">
+          <input id="gia-input" type="text" placeholder="Preguntale algo a G.I.A..." onkeydown="if(event.key==='Enter')GIA.enviar()"/>
+          <button id="gia-send" onclick="GIA.enviar()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const GIA = (() => {
+  let _cid = null, _modulo = 'pulse', _tab = 'act';
+  const ctx = {pulse:'Pulse — Centro de Comando',productos:'Módulo Productos',ventas:'Módulo Ventas',clientes:'Módulo Clientes',proveedores:'Módulo Proveedores',mostrador:'Modo Mostrador',caja:'Módulo Caja',automatizaciones:'Automatizaciones',sistema:'Sistema Operativo ServiRed'};
+  const ico = {info:'ℹ️',propuesta:'💡',automatico:'⚡',requiere_confirmacion:'⚠️'};
+  const lbl = {info:'Info',propuesta:'Propuesta',automatico:'Automático',requiere_confirmacion:'Requiere aprobación'};
+
+  function setComercioId(id){ _cid = id; }
+  function setModulo(m){
+    _modulo = m;
+    const el = document.getElementById('gia-ctx');
+    if(el) el.textContent = ctx[m] || ctx.sistema;
+  }
+  function rel(ts){ const d=Date.now()-new Date(ts).getTime(),m=Math.floor(d/60000); return m<1?'ahora mismo':m<60?`hace ${m}m`:m<1440?`hace ${Math.floor(m/60)}h`:`hace ${Math.floor(m/1440)}d`; }
+
+  function abrir(){ document.getElementById('gia-panel').classList.add('open'); document.getElementById('gia-overlay').classList.add('open'); if(_tab==='act') cargar(); }
+  function cerrar(){ document.getElementById('gia-panel').classList.remove('open'); document.getElementById('gia-overlay').classList.remove('open'); }
+
+  function tab(t){
+    _tab=t;
+    document.querySelectorAll('.gia-tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='act')||(i===1&&t==='chat')));
+    document.getElementById('gia-tab-act').style.display  = t==='act'?'block':'none';
+    const chat = document.getElementById('gia-tab-chat');
+    chat.style.display = t==='chat'?'flex':'none';
+    if(t==='act') cargar();
+    else if(!document.getElementById('gia-messages').children.length) addMsg(`Hola 👋 Estás en <strong>${ctx[_modulo]||ctx.sistema}</strong>. ¿En qué te puedo ayudar?`,'gia');
+  }
+
+  async function cargar(){
+    if(!_cid) return;
+    const list = document.getElementById('gia-act-list');
+    list.innerHTML='<p style="color:#aaa;font-size:13px;text-align:center;padding:20px">Cargando...</p>';
+    try{
+      const r = await fetch('/api/activity/'+_cid,{credentials:'include'});
+      const d = await r.json();
+      const badge = document.getElementById('gia-badge');
+      if(d.pendientes>0){badge.textContent=d.pendientes;badge.style.display='flex';}else{badge.style.display='none';}
+      list.innerHTML = d.eventos?.length ? d.eventos.map(renderEv).join('') : '<p style="color:#aaa;font-size:13px;text-align:center;padding:20px">Sin actividad reciente.</p>';
+    }catch(e){ list.innerHTML='<p style="color:#c00;font-size:13px;padding:10px">Error de conexión.</p>'; }
+  }
+
+  function renderEv(e){
+    const nr = e.nivelRiesgo||'info';
+    const acs = (nr==='requiere_confirmacion'&&e.estado==='pendiente')
+      ? `<div class="act-actions"><button class="btn-ap" onclick="GIA.aprobar('${e._id}')">✓ Aprobar</button><button class="btn-re" onclick="GIA.rechazar('${e._id}')">✕ Rechazar</button></div>`
+      : e.estado==='aprobado'?'<div style="font-size:11px;color:#48cfad;margin-top:4px">✓ Aprobado</div>'
+      : e.estado==='ejecutado'?'<div style="font-size:11px;color:#48cfad;margin-top:4px">⚡ Ejecutado</div>'
+      : e.estado==='error'?`<div style="font-size:11px;color:#ff4757;margin-top:4px">❌ Error${e.errorCode?' ('+e.errorCode+')':''}</div>`
+      : e.estado==='rechazado'?'<div style="font-size:11px;color:#ff4757;margin-top:4px">✕ Rechazado</div>':'' ;
+    return `<div class="act-item"><div class="act-icon ${nr}">${ico[nr]||'ℹ️'}</div><div style="flex:1"><div class="act-desc">${e.descripcion}</div><div class="act-meta">${rel(e.timestamp)} · ${e.actor?.nombre||'Sistema'} · ${e.modulo}</div><span class="act-badge badge-${nr}">${lbl[nr]||nr}</span>${acs}</div></div>`;
+  }
+
+  async function aprobar(id){ await fetch('/api/activity/'+id+'/aprobar',{method:'PATCH',credentials:'include'}); cargar(); }
+  async function rechazar(id){ await fetch('/api/activity/'+id+'/rechazar',{method:'PATCH',credentials:'include'}); cargar(); }
+
+  function addMsg(html,role='gia'){
+    const msgs = document.getElementById('gia-messages');
+    if(!msgs) return;
+    const d = document.createElement('div');
+    d.className='gia-msg '+role;
+    d.innerHTML=`<div class="gia-bubble">${html}</div>`;
+    msgs.appendChild(d);
+    msgs.scrollTop=msgs.scrollHeight;
+  }
+
+  async function enviar(){
+    const inp = document.getElementById('gia-input');
+    const txt = inp.value.trim(); if(!txt) return;
+    inp.value='';
+    addMsg(txt,'user');
+    addMsg('Pensando...','gia');
+    try{
+      const r = await fetch('/api/gia/consulta',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({mensaje:txt,modulo:_modulo,comercioId:_cid})});
+      const d = await r.json();
+      document.getElementById('gia-messages').lastChild.remove();
+      addMsg(d.respuesta||'Sin respuesta.','gia');
+    }catch(e){
+      document.getElementById('gia-messages').lastChild.remove();
+      addMsg('Error de conexión con G.I.A.','gia');
+    }
+  }
+
+  function detectar(){
+    const h=(location.hash+location.pathname).toLowerCase();
+    for(const m of Object.keys(ctx)){ if(h.includes(m)){ setModulo(m); return; } }
+    setModulo('pulse');
+  }
+  window.addEventListener('hashchange', detectar);
+  document.addEventListener('DOMContentLoaded', detectar);
+
+  return { abrir, cerrar, tab, setComercioId, setModulo, aprobar, rechazar, enviar, cargar };
+})();
+</script>
+
 </body>
 </html>
