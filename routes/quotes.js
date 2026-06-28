@@ -167,26 +167,36 @@ router.post("/:id/withdraw", requireAuth, async (req, res) => {
 
 /**
  * POST /api/quotes/:id/select
- * Body: { clienteId }
+ * Identidad desde req.user — nunca desde body.
+ * Verifica ownership: quote.clienteId === req.user._id
  */
 router.post("/:id/select", requireAuth, async (req, res) => {
   try {
-    const { clienteId } = req.body;
-    if (!clienteId) return fail(res, "clienteId requerido");
+    const userId = req.user?._id || req.user?.id;
+    if (!userId) return fail(res, "Sesión inválida", 401);
+
+    const QuoteModel = require("../models/Quote");
+    const quote = await QuoteModel.findOne({ quoteId: req.params.id }).lean();
+    if (!quote) return fail(res, "Quote no encontrada", 404);
+
+    if (String(quote.clienteId) !== String(userId)) {
+      return fail(res, "No autorizado: esta cotización no pertenece a tu solicitud", 403);
+    }
 
     const result = await quoteService.selectQuote({
-      quoteId:  req.params.id,
-      clienteId,
-      actor:    buildActor(req),
-      context:  buildContext(req),
+      quoteId:   req.params.id,
+      clienteId: String(userId),
+      actor:     buildActor(req),
+      context:   buildContext(req),
     });
 
-    const status = result.idempotent ? 200 : 200;
-    return ok(res, result, status);
+    return ok(res, result, 200);
   } catch (err) {
     console.error("[POST /api/quotes/:id/select]", err.message);
-    const status = err.message.includes("no puede") || err.message.includes("no disponible") ? 409 : 500;
-    return fail(res, err.message, status);
+    const isConflict = err.message.includes("no puede") ||
+                       err.message.includes("no disponible") ||
+                       err.message.includes("ya existe");
+    return fail(res, err.message, isConflict ? 409 : 500);
   }
 });
 

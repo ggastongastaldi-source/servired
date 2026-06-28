@@ -152,39 +152,63 @@ async function withdrawQuote({ quoteId, actor, context }) {
  * es responsabilidad de AuctionOutcomeProjection (reactor).
  */
 async function selectQuote({ quoteId, clienteId, actor, context }) {
-  // Idempotencia sin estado transitorio:
-  // 1. Leer estado actual
-  // 2. Si ya está "selected", devolver resultado anterior (idempotente)
-  // 3. Si no está "sent", rechazar
-  // 4. Emitir evento — el bus rechaza duplicados por event_id (sinapsisBusAdapter L:60)
-  // 5. Actualizar proyección solo si el evento se persistió
-  //
-  // No hay estado "_selecting": si el proceso cae entre 4 y 5,
-  // el ProviderStateReconciliator detecta la divergencia en su próximo ciclo.
-  const quote = await Quote.findOne({ quoteId });
-  if (!quote) throw new Error(`Quote no encontrada: ${quoteId}`);
-
-  if (quote.status === "selected") {
-    console.warn(`[QuoteService] selectQuote idempotente: ${quoteId} ya seleccionada`);
-    return { quoteId, eventId: quote.ultimoEventoId, idempotent: true };
-  }
-
-  if (quote.status !== "sent") {
-    throw new Error(`Quote ${quoteId} no puede seleccionarse en estado "${quote.status}"`);
-  }
-
+  // Transición atómica sent → selected.
+  // findOneAndUpdate con filtro { quoteId, status:"sent" } garantiza
+  // que solo un proceso puede ganar la carrera.
   const ahora = new Date();
+
+  // ── Paso 1: transición atómica sent → selected ───────────────
+  const updated = await Quote.findOneAndUpdate(
+    { quoteId, status: "sent" },
+    { $set: { status: "selected", seleccionadaEn: ahora } },
+    { new: true }
+  );
+
+  // ── Paso 2: si la transición no ocurrió ──────────────────────
+  if (!updated) {
+    const current = await Quote.findOne({ quoteId });
+    if (!current) throw new Error(`Quote no encontrada: ${quoteId}`);
+    if (current.status === "selected") {
+      console.warn(`[QuoteService] selectQuote idempotente: ${quoteId} ya seleccionada`);
+      return { quoteId, eventId: current.ultimoEventoId, idempotent: true };
+    }
+    throw new Error(`Quote ${quoteId} no puede seleccionarse en estado "${current.status}"`);
+  }
+
+  // ── Paso 3: guard de invarianza a nivel requestId ────────────
+  // Una sola ganadora por solicitud.
+  const otraSeleccionada = await Quote.exists({
+    requestId: updated.requestId,
+    status: "selected",
+    quoteId: { $ne: quoteId },
+  });
+
+  if (otraSeleccionada) {
+    await Quote.findOneAndUpdate(
+      { quoteId },
+      { $set: { status: "sent", seleccionadaEn: null } }
+    );
+    throw new Error(`Ya existe una cotización seleccionada para la solicitud ${updated.requestId}`);
+  }
+
+  // ── Paso 4: emitir evento y actualizar trazabilidad ──────────
   const ev = _emit("QUOTE_SELECTED", {
     quoteId,
-    requestId:   quote.requestId,
+    requestId:   updated.requestId,
     clienteId,
-    prestadorId: quote.prestadorId,
-    precio:      quote.precio,
-    rubroId:     quote.rubroId,
-    zonaId:      quote.zonaId,
+    prestadorId: updated.prestadorId,
+    precio:      updated.precio,
+    rubroId:     updated.rubroId,
+    zonaId:      updated.zonaId,
   }, { actor, context });
 
-  await _applyToProjection(quoteId, { status: "selected", seleccionadaEn: ahora }, ev.event_id, "QUOTE_SELECTED");
+  await Quote.findOneAndUpdate(
+    { quoteId },
+    {
+      $set: { ultimoEventoId: ev.event_id, ultimoEventoTipo: "QUOTE_SELECTED" },
+      $inc: { version: 1 },
+    }
+  );
 
   return { quoteId, eventId: ev.event_id };
 }
