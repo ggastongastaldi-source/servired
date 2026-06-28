@@ -1,9 +1,9 @@
 const express = require('express');
 const router  = express.Router();
-const { requireAuth } = require('../middleware/auth');
+const { auth } = require('../middleware/authMiddleware');
 const orchestrator = require('../services/gia/GiaOrchestrator');
 
-router.post('/consulta', requireAuth, async (req, res) => {
+router.post('/consulta', auth, async (req, res) => {
   try {
     const { mensaje, modulo, comercioId } = req.body;
     const userId = req.user?._id || req.user?.id;
@@ -25,7 +25,7 @@ router.post('/consulta', requireAuth, async (req, res) => {
   }
 });
 
-router.delete('/conversacion/:comercioId', requireAuth, async (req, res) => {
+router.delete('/conversacion/:comercioId', auth, async (req, res) => {
   try {
     const GiaConversation = require('../models/GiaConversation');
     await GiaConversation.deleteOne({

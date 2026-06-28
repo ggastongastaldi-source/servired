@@ -1,7 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const ActivityLog = require('../models/ActivityLog');
-const { requireAuth } = require('../middleware/auth');
+const { auth } = require('../middleware/authMiddleware');
 
 const TRANSICIONES_VALIDAS = {
   pendiente:  ['aprobado', 'rechazado'],
@@ -20,7 +20,7 @@ async function transicionar(id, nuevoEstado, extra = {}) {
   return evento;
 }
 
-router.get('/:comercioId', requireAuth, async (req, res) => {
+router.get('/:comercioId', auth, async (req, res) => {
   try {
     const { comercioId } = req.params;
     const { limite = 50, modulo, nivelRiesgo, soloConfirmaciones } = req.query;
@@ -39,7 +39,7 @@ router.get('/:comercioId', requireAuth, async (req, res) => {
   } catch(err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const evento = new ActivityLog(req.body);
     await evento.save();
@@ -47,7 +47,7 @@ router.post('/', requireAuth, async (req, res) => {
   } catch(err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-router.patch('/:id/aprobar', requireAuth, async (req, res) => {
+router.patch('/:id/aprobar', auth, async (req, res) => {
   try {
     const e = await transicionar(req.params.id, 'aprobado');
     if (!e) return res.status(404).json({ ok: false, error: 'No encontrado' });
@@ -55,7 +55,7 @@ router.patch('/:id/aprobar', requireAuth, async (req, res) => {
   } catch(err) { res.status(400).json({ ok: false, error: err.message }); }
 });
 
-router.patch('/:id/rechazar', requireAuth, async (req, res) => {
+router.patch('/:id/rechazar', auth, async (req, res) => {
   try {
     const e = await transicionar(req.params.id, 'rechazado');
     if (!e) return res.status(404).json({ ok: false, error: 'No encontrado' });
@@ -63,7 +63,7 @@ router.patch('/:id/rechazar', requireAuth, async (req, res) => {
   } catch(err) { res.status(400).json({ ok: false, error: err.message }); }
 });
 
-router.patch('/:id/ejecutado', requireAuth, async (req, res) => {
+router.patch('/:id/ejecutado', auth, async (req, res) => {
   try {
     const e = await transicionar(req.params.id, 'ejecutado', {
       executor: req.body.executor,
@@ -74,7 +74,7 @@ router.patch('/:id/ejecutado', requireAuth, async (req, res) => {
   } catch(err) { res.status(400).json({ ok: false, error: err.message }); }
 });
 
-router.patch('/:id/error', requireAuth, async (req, res) => {
+router.patch('/:id/error', auth, async (req, res) => {
   try {
     const e = await transicionar(req.params.id, 'error', {
       errorCode:    req.body.errorCode,
