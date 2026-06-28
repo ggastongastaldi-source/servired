@@ -1,6 +1,6 @@
 const express = require('express');
 const router  = express.Router();
-const { auth } = require('../middleware/authMiddleware');
+const auth = require('../middleware/authMiddleware');
 const orchestrator = require('../services/gia/GiaOrchestrator');
 
 router.post('/consulta', auth, async (req, res) => {
