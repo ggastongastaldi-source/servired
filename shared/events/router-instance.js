@@ -3,6 +3,7 @@ const { EventRouter } = require('./eventRouter');
 const { createSinapsisBusAdapter } = require('./persistenceAdapters/sinapsisBusAdapter');
 const priceAnomalyObserver = require('../observers/priceAnomalyObserver');
 const trustDecayReactor    = require('../reactors/trustDecayReactor');
+const auctionOutcomeProjection = require('../reactors/auctionOutcomeProjection');
 
 const adapter = createSinapsisBusAdapter();
 const router  = new EventRouter({ persistenceAdapter: adapter });
@@ -33,4 +34,7 @@ priceAnomalyObserver.init(router);
 // Reactor Layer V2 — TrustDecay
 trustDecayReactor.init(router);
 
-module.exports = { router, adapter, trustDecayReactor };
+// Reactor Layer V3 — AuctionOutcome (CQRS)
+auctionOutcomeProjection.init(router);
+
+module.exports = { router, adapter, trustDecayReactor, auctionOutcomeProjection };
