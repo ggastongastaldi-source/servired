@@ -38,7 +38,13 @@
         "PRICE_SUBMITTED",
         "AnomalyDetected",
         "ActorTrustUpdated",
-        "ActorInfluenceReduced"
+        "ActorInfluenceReduced",
+        "QUOTE_CREATED",
+        "QUOTE_SENT",
+        "QUOTE_UPDATED",
+        "QUOTE_EXPIRED",
+        "QUOTE_WITHDRAWN",
+        "QUOTE_SELECTED"
       ]
     },
     "timestamp": {
