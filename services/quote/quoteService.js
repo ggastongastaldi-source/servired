@@ -152,20 +152,25 @@ async function withdrawQuote({ quoteId, actor, context }) {
  * es responsabilidad de AuctionOutcomeProjection (reactor).
  */
 async function selectQuote({ quoteId, clienteId, actor, context }) {
-  // Optimistic locking: findOneAndUpdate atómico previene doble selección
-  const quote = await Quote.findOneAndUpdate(
-    { quoteId, status: "sent" },
-    { $set: { status: "_selecting" } },
-    { new: false }
-  );
-  if (!quote) {
-    // Verificar si ya fue seleccionada (idempotencia)
-    const existing = await Quote.findOne({ quoteId });
-    if (existing && existing.status === "selected") {
-      console.warn(`[QuoteService] selectQuote idempotente: ${quoteId} ya seleccionada`);
-      return { quoteId, eventId: existing.ultimoEventoId, idempotent: true };
-    }
-    throw new Error(`Quote ${quoteId} no disponible para selección (status actual: ${existing?.status ?? "no encontrada"})`);
+  // Idempotencia sin estado transitorio:
+  // 1. Leer estado actual
+  // 2. Si ya está "selected", devolver resultado anterior (idempotente)
+  // 3. Si no está "sent", rechazar
+  // 4. Emitir evento — el bus rechaza duplicados por event_id (sinapsisBusAdapter L:60)
+  // 5. Actualizar proyección solo si el evento se persistió
+  //
+  // No hay estado "_selecting": si el proceso cae entre 4 y 5,
+  // el ProviderStateReconciliator detecta la divergencia en su próximo ciclo.
+  const quote = await Quote.findOne({ quoteId });
+  if (!quote) throw new Error(`Quote no encontrada: ${quoteId}`);
+
+  if (quote.status === "selected") {
+    console.warn(`[QuoteService] selectQuote idempotente: ${quoteId} ya seleccionada`);
+    return { quoteId, eventId: quote.ultimoEventoId, idempotent: true };
+  }
+
+  if (quote.status !== "sent") {
+    throw new Error(`Quote ${quoteId} no puede seleccionarse en estado "${quote.status}"`);
   }
 
   const ahora = new Date();

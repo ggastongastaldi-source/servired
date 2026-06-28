@@ -481,6 +481,7 @@ app.use('/api/boost', require('./routes/boost'));
 app.use('/api/graph', require('./routes/economicGraph'));
 app.use('/api/track', require('./routes/track'));
 app.use('/api/analytics', require('./src/core/routes/analytics'));
+app.use('/api/quotes',   require('./routes/quotes'));
 
 // B19 Control Plane — solo admin
 
