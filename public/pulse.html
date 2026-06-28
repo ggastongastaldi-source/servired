@@ -123,39 +123,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 const COMERCIO_ID_KEY = 'servired_comercio_id';
 
 async function cargarPulse() {
-  const comercioId = localStorage.getItem(COMERCIO_ID_KEY) || sessionStorage.getItem(COMERCIO_ID_KEY);
-  if (!comercioId) {
-    document.getElementById('ph-nombre').textContent = 'Sin comercio activo';
-    return;
-  }
-
   try {
-    // Cargar proyección
-    const r = await fetch('/api/merchant/projection/' + comercioId, { credentials: 'include' });
+    // Cargar dashboard (usa sesión autenticada, no necesita comercioId en URL)
+    const r = await fetch('/api/merchant/dashboard', { credentials: 'include' });
     const data = await r.json();
 
-    if (!data.ok && !data.projection) {
+    if (!data.ok && !data.dashboard) {
       document.getElementById('ph-nombre').textContent = 'Sin datos disponibles';
       return;
     }
 
-    const proj = data.projection || data;
-    const d = proj.dashboard  || {};
-    const c = proj.catalogo   || {};
+    const proj = data;
+    const d = data.actividad || {};
+    const c = data.catalogo  || {};
+    const ing = data.ingresos || {};
+    const comercioId = data.merchantId ? String(data.merchantId) : null;
 
     // Header
     document.getElementById('ph-nombre').textContent = proj.nombreComercial || 'Mi Comercio';
 
     // Estado
-    const enEstres = (c.sinStock > 2) || (d.calificacionPromedio > 0 && d.calificacionPromedio < 3);
+    const enEstres = (c.sinStock > 2) || (d.calificacion > 0 && d.calificacion < 3);
     document.getElementById('estado-dot').className   = 'estado-dot' + (enEstres ? ' stress' : '');
     document.getElementById('estado-label').textContent = enEstres ? 'Atención requerida' : 'Normal';
 
     // KPIs
     document.getElementById('kv-solicitudes').textContent = d.solicitudesHoy ?? '0';
     document.getElementById('ks-pedidos').textContent     = `${d.pedidosConcretados ?? 0} pedidos concretados`;
-    document.getElementById('kv-ingresos').textContent    = '$' + (d.ingresosEstimadoMes || 0).toLocaleString('es-AR');
-    document.getElementById('ks-calificacion').textContent = d.calificacionPromedio ? `★ ${d.calificacionPromedio.toFixed(1)}` : 'Sin calificaciones';
+    document.getElementById('kv-ingresos').textContent    = '$' + (ing.estimadoMes || 0).toLocaleString('es-AR');
+    document.getElementById('ks-calificacion').textContent = d.calificacion ? `★ ${d.calificacion.toFixed(1)}` : 'Sin calificaciones';
     document.getElementById('kv-catalogo').textContent    = c.totalItems ?? '0';
     document.getElementById('ks-promo').textContent       = `${c.enPromocion ?? 0} en promoción`;
 
@@ -169,12 +165,12 @@ async function cargarPulse() {
     const alertas = [];
     if (sinStockN > 0) alertas.push({ msg: `${sinStockN} producto(s) sin stock`, tipo: 'critica' });
     if (d.solicitudesHoy === 0) alertas.push({ msg: 'Sin solicitudes hoy — considerá lanzar una promoción', tipo: '' });
-    if (d.calificacionPromedio > 0 && d.calificacionPromedio < 3.5) alertas.push({ msg: `Calificación baja (${d.calificacionPromedio.toFixed(1)}) — revisá reseñas recientes`, tipo: 'critica' });
+    if (d.calificacion > 0 && d.calificacion < 3.5) alertas.push({ msg: `Calificación baja (${d.calificacion.toFixed(1)}) — revisá reseñas recientes`, tipo: 'critica' });
     if (alertas.length === 0) alertas.push({ msg: '✓ Todo en orden — operación normal', tipo: 'ok' });
     alertasEl.innerHTML = alertas.map(a => `<div class="alerta-item ${a.tipo}">${a.msg}</div>`).join('');
 
     // Cargar catálogo detallado
-    const rc = await fetch('/api/merchant/catalog/' + comercioId + '?estado=ACTIVO', { credentials: 'include' });
+    const rc = await fetch('/api/merchant/catalog?estado=ACTIVO', { credentials: 'include' });
     const dc = await rc.json();
     const items = dc.items || dc || [];
 
@@ -196,7 +192,7 @@ async function cargarPulse() {
     }
 
     // GIA insight
-    pedirInsightGIA(comercioId);
+    pedirInsightGIA(comercioId || '');
 
   } catch(err) {
     console.error('Pulse error:', err);
