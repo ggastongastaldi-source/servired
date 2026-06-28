@@ -16,5 +16,6 @@ function getRelevant(context) {
 register(require('./tools/ActivityLogTool'));
 register(require('./tools/AladdinTool'));
 register(require('./tools/PulseTool'));
+register(require('./tools/CommerceTool'));
 
 module.exports = { register, getRelevant };

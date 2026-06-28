@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pulse — ServiRed Comercio</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f6fa;color:#333;min-height:100vh}
+
+/* Header */
+#pulse-header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.ph-brand{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:1px}
+.ph-nombre{font-size:18px;font-weight:700;margin-top:2px}
+.ph-estado{display:flex;align-items:center;gap:6px;font-size:12px}
+.estado-dot{width:8px;height:8px;border-radius:50%;background:#48cfad;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.estado-dot.stress{background:#ff4757;animation:none}
+
+/* KPIs */
+#pulse-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:16px}
+.kpi-card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.kpi-label{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.5px}
+.kpi-valor{font-size:28px;font-weight:800;margin:4px 0;color:#1a1a2e}
+.kpi-sub{font-size:11px;color:#aaa}
+.kpi-card.alerta .kpi-valor{color:#ff4757}
+.kpi-card.ok    .kpi-valor{color:#48cfad}
+
+/* Alertas */
+#pulse-alertas{padding:0 16px 12px}
+.alerta-item{background:#fff3cd;border-left:3px solid #ffc107;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#856404}
+.alerta-item.critica{background:#fdecea;border-color:#ff4757;color:#c62828}
+.alerta-item.ok{background:#d4edda;border-color:#48cfad;color:#155724}
+
+/* Secciones */
+.pulse-section{padding:0 16px 16px}
+.pulse-section h3{font-size:13px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+
+/* Productos críticos */
+.prod-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.prod-nombre{font-size:13px;font-weight:600}
+.prod-meta{font-size:11px;color:#aaa}
+.prod-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+.badge-sin-stock{background:#fdecea;color:#c62828}
+.badge-promo{background:#d4edda;color:#155724}
+
+/* GIA insight */
+#gia-insight{margin:16px;background:linear-gradient(135deg,#6c63ff15,#48cfad15);border:1px solid #6c63ff30;border-radius:16px;padding:16px}
+.gi-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.gi-icon{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#48cfad);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.gi-title{font-size:13px;font-weight:700;color:#6c63ff}
+.gi-text{font-size:13px;color:#444;line-height:1.6}
+.gi-loading{color:#aaa;font-size:13px;font-style:italic}
+
+/* FAB GIA */
+#gia-fab{position:fixed;bottom:28px;right:24px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#48cfad);color:#fff;font-size:22px;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(108,99,255,.45);z-index:100;display:flex;align-items:center;justify-content:center}
+
+/* Refresh */
+#pulse-refresh{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;color:#aaa;font-size:11px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div id="pulse-header">
+  <div>
+    <div class="ph-brand">ServiRed Comercio</div>
+    <div class="ph-nombre" id="ph-nombre">Cargando...</div>
+  </div>
+  <div class="ph-estado">
+    <div class="estado-dot" id="estado-dot"></div>
+    <span id="estado-label">Normal</span>
+  </div>
+</div>
+
+<div id="pulse-kpis">
+  <div class="kpi-card" id="kpi-solicitudes">
+    <div class="kpi-label">Solicitudes hoy</div>
+    <div class="kpi-valor" id="kv-solicitudes">—</div>
+    <div class="kpi-sub" id="ks-pedidos">— pedidos concretados</div>
+  </div>
+  <div class="kpi-card" id="kpi-ingresos">
+    <div class="kpi-label">Ingresos del mes</div>
+    <div class="kpi-valor" id="kv-ingresos">—</div>
+    <div class="kpi-sub" id="ks-calificacion">— calificación</div>
+  </div>
+  <div class="kpi-card" id="kpi-catalogo">
+    <div class="kpi-label">Productos activos</div>
+    <div class="kpi-valor" id="kv-catalogo">—</div>
+    <div class="kpi-sub" id="ks-promo">— en promoción</div>
+  </div>
+  <div class="kpi-card" id="kpi-stock">
+    <div class="kpi-label">Sin stock</div>
+    <div class="kpi-valor" id="kv-stock">—</div>
+    <div class="kpi-sub">productos agotados</div>
+  </div>
+</div>
+
+<div id="pulse-alertas"></div>
+
+<div id="gia-insight">
+  <div class="gi-header">
+    <div class="gi-icon">✦</div>
+    <div class="gi-title">G.I.A. — Análisis del día</div>
+  </div>
+  <div class="gi-text gi-loading" id="gia-insight-text">Consultando el estado de tu negocio...</div>
+</div>
+
+<div class="pulse-section" id="section-sin-stock" style="display:none">
+  <h3>⚠️ Productos sin stock</h3>
+  <div id="list-sin-stock"></div>
+</div>
+
+<div class="pulse-section" id="section-promos" style="display:none">
+  <h3>🏷️ En promoción</h3>
+  <div id="list-promos"></div>
+</div>
+
+<div id="pulse-refresh" onclick="cargarPulse()">↻ Actualizar</div>
+
+<button id="gia-fab" onclick="window.location.href='/comercio.html'" title="Ir al comercio">⬅</button>
+
+<script>
+const COMERCIO_ID_KEY = 'servired_comercio_id';
+
+async function cargarPulse() {
+  const comercioId = localStorage.getItem(COMERCIO_ID_KEY) || sessionStorage.getItem(COMERCIO_ID_KEY);
+  if (!comercioId) {
+    document.getElementById('ph-nombre').textContent = 'Sin comercio activo';
+    return;
+  }
+
+  try {
+    // Cargar proyección
+    const r = await fetch('/api/merchant/projection/' + comercioId, { credentials: 'include' });
+    const data = await r.json();
+
+    if (!data.ok && !data.projection) {
+      document.getElementById('ph-nombre').textContent = 'Sin datos disponibles';
+      return;
+    }
+
+    const proj = data.projection || data;
+    const d = proj.dashboard  || {};
+    const c = proj.catalogo   || {};
+
+    // Header
+    document.getElementById('ph-nombre').textContent = proj.nombreComercial || 'Mi Comercio';
+
+    // Estado
+    const enEstres = (c.sinStock > 2) || (d.calificacionPromedio > 0 && d.calificacionPromedio < 3);
+    document.getElementById('estado-dot').className   = 'estado-dot' + (enEstres ? ' stress' : '');
+    document.getElementById('estado-label').textContent = enEstres ? 'Atención requerida' : 'Normal';
+
+    // KPIs
+    document.getElementById('kv-solicitudes').textContent = d.solicitudesHoy ?? '0';
+    document.getElementById('ks-pedidos').textContent     = `${d.pedidosConcretados ?? 0} pedidos concretados`;
+    document.getElementById('kv-ingresos').textContent    = '$' + (d.ingresosEstimadoMes || 0).toLocaleString('es-AR');
+    document.getElementById('ks-calificacion').textContent = d.calificacionPromedio ? `★ ${d.calificacionPromedio.toFixed(1)}` : 'Sin calificaciones';
+    document.getElementById('kv-catalogo').textContent    = c.totalItems ?? '0';
+    document.getElementById('ks-promo').textContent       = `${c.enPromocion ?? 0} en promoción`;
+
+    const sinStockN = c.sinStock ?? 0;
+    document.getElementById('kv-stock').textContent = sinStockN;
+    const kpiStock = document.getElementById('kpi-stock');
+    kpiStock.className = 'kpi-card ' + (sinStockN > 0 ? 'alerta' : 'ok');
+
+    // Alertas
+    const alertasEl = document.getElementById('pulse-alertas');
+    const alertas = [];
+    if (sinStockN > 0) alertas.push({ msg: `${sinStockN} producto(s) sin stock`, tipo: 'critica' });
+    if (d.solicitudesHoy === 0) alertas.push({ msg: 'Sin solicitudes hoy — considerá lanzar una promoción', tipo: '' });
+    if (d.calificacionPromedio > 0 && d.calificacionPromedio < 3.5) alertas.push({ msg: `Calificación baja (${d.calificacionPromedio.toFixed(1)}) — revisá reseñas recientes`, tipo: 'critica' });
+    if (alertas.length === 0) alertas.push({ msg: '✓ Todo en orden — operación normal', tipo: 'ok' });
+    alertasEl.innerHTML = alertas.map(a => `<div class="alerta-item ${a.tipo}">${a.msg}</div>`).join('');
+
+    // Cargar catálogo detallado
+    const rc = await fetch('/api/merchant/catalog/' + comercioId + '?estado=ACTIVO', { credentials: 'include' });
+    const dc = await rc.json();
+    const items = dc.items || dc || [];
+
+    const sinStock = items.filter(i => i.stock === 0);
+    const enPromo  = items.filter(i => i.enPromocion);
+
+    if (sinStock.length) {
+      document.getElementById('section-sin-stock').style.display = 'block';
+      document.getElementById('list-sin-stock').innerHTML = sinStock.map(p =>
+        `<div class="prod-row"><div><div class="prod-nombre">${p.nombre}</div><div class="prod-meta">${p.rubroId || ''}</div></div><span class="prod-badge badge-sin-stock">Sin stock</span></div>`
+      ).join('');
+    }
+
+    if (enPromo.length) {
+      document.getElementById('section-promos').style.display = 'block';
+      document.getElementById('list-promos').innerHTML = enPromo.map(p =>
+        `<div class="prod-row"><div><div class="prod-nombre">${p.nombre}</div><div class="prod-meta">$${p.precioPromo?.toLocaleString('es-AR')} (antes $${p.precioARS?.toLocaleString('es-AR')})</div></div><span class="prod-badge badge-promo">Promo</span></div>`
+      ).join('');
+    }
+
+    // GIA insight
+    pedirInsightGIA(comercioId);
+
+  } catch(err) {
+    console.error('Pulse error:', err);
+    document.getElementById('ph-nombre').textContent = 'Error cargando datos';
+  }
+}
+
+async function pedirInsightGIA(comercioId) {
+  const el = document.getElementById('gia-insight-text');
+  try {
+    const r = await fetch('/api/gia/consulta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        mensaje: 'Dame un análisis rápido del estado actual de mi negocio. Qué está bien, qué necesita atención y cuál es tu recomendación más importante para hoy.',
+        modulo: 'pulse',
+        comercioId
+      })
+    });
+    const d = await r.json();
+    el.className = 'gi-text';
+    el.textContent = d.respuesta || 'Sin análisis disponible.';
+  } catch(e) {
+    el.className = 'gi-text';
+    el.textContent = 'G.I.A. no disponible en este momento.';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cargarPulse);
+</script>
+</body>
+</html>
