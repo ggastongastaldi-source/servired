@@ -86,6 +86,11 @@ class ObserverService {
   }
 
   _observe(event) {
+    if (!event || typeof event !== 'object') return;
+    const type = event.type;
+    const payload = event.payload || {};
+    const ts = event.ts || Date.now();
+
     try {
       // fixed destructuring removed
       // fixed destructuring removed
@@ -97,17 +102,17 @@ class ObserverService {
 
       // Latencia — registrar inicio
       for (const pair of LATENCY_PAIRS) {
-        if (type === pair.from && payload.aggregateId) {
-          this._pending[payload.aggregateId] = { type, ts, pair };
+        if (type === pair.from && (payload && payload.aggregateId)) {
+          this._pending[(payload && payload.aggregateId)] = { type, ts, pair };
         }
-        if (type === pair.to && payload.aggregateId) {
-          const start = this._pending[payload.aggregateId];
+        if (type === pair.to && (payload && payload.aggregateId)) {
+          const start = this._pending[(payload && payload.aggregateId)];
           if (start && start.pair.to === type) {
             const key = `${pair.from}→${pair.to}`;
             if (!this._latency[key]) this._latency[key] = [];
             this._latency[key].push(ts - start.ts);
             if (this._latency[key].length > 100) this._latency[key].shift();
-            delete this._pending[payload.aggregateId];
+            delete this._pending[(payload && payload.aggregateId)];
           }
         }
       }
