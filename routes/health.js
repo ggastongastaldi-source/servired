@@ -126,6 +126,16 @@ router.post('/runtime/probe-pipeline', async (req, res) => {
     const origTap = tap.tap;
     let tapCalled = false;
     tap.tap = (type, payload) => { tapCalled = true; trace.push('tap:' + type); origTap(type, payload); };
+    // Parchear _appendEvent para capturar error
+    const nexusModule = require('../nexus/events/emitEvent');
+    let appendError = null;
+    const origEmit = nexusModule.emitEvent;
+    // Envolver con Promise para capturar el error async
+    const mongoose = require('mongoose');
+    const colTest = mongoose.connection.collection('events');
+    let mongoOk = false;
+    try { await colTest.findOne({}); mongoOk = true; } catch(e) { appendError = 'mongo:' + e.message; }
+    trace.push('mongo-ready:' + mongoOk);
     emitEvent({
       entityType:  req.body.entityType  || 'probe',
       type:        req.body.type        || 'WORKER_ACTIVATED',
