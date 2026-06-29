@@ -473,3 +473,123 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+<script>
+// ── ServiRed Socket Bridge v1.0 ─────────────────────────────────────────────
+(function() {
+  const TOKEN = localStorage.getItem('token') || localStorage.getItem('srv_token');
+  if (!TOKEN) return;
+
+  const srSocket = io(window.location.origin, {
+    auth: { token: TOKEN },
+    transports: ['websocket', 'polling'],
+    reconnectionDelay: 1500,
+    reconnectionAttempts: 10
+  });
+
+  // ── Estado unificado del mercado ──────────────────────────────────────────
+  const srState = { jobs: [], alerts: [], workerCount: 0 };
+
+  // ── UI helpers ────────────────────────────────────────────────────────────
+  function getBadge() {
+    let b = document.getElementById('sr-live-badge');
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'sr-live-badge';
+      b.style.cssText = 'position:fixed;top:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:6px;max-width:260px;pointer-events:none';
+      document.body.appendChild(b);
+    }
+    return b;
+  }
+
+  function toast(msg, color) {
+    const badge = getBadge();
+    const t = document.createElement('div');
+    t.style.cssText = 'background:' + (color||'#1a1a2e') + ';border:1px solid #7c3aed44;border-radius:10px;padding:10px 14px;font-family:Rajdhani,sans-serif;font-size:0.85rem;color:#e2e8f0;box-shadow:0 4px 16px #0008;opacity:1;transition:opacity 0.4s';
+    t.textContent = msg;
+    badge.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 5000);
+  }
+
+  function updateStatusStrip(key, value) {
+    // Intenta actualizar los valores del status strip si existen en el DOM
+    const strips = document.querySelectorAll('.status-val, .stat-val, .sr-stat');
+    strips.forEach(el => { if (el.dataset.key === key) el.textContent = value; });
+  }
+
+  // ── Event bridge: backend → frontend semántico ────────────────────────────
+
+  // Worker: nueva oportunidad de trabajo
+  srSocket.on('nueva_oportunidad', function(data) {
+    srState.jobs.unshift(data);
+    if (srState.jobs.length > 20) srState.jobs.pop();
+    const precio = data.precio ? '$ ' + Number(data.precio).toLocaleString('es-AR') : '';
+    const zona   = data.zona   ? ' · ' + data.zona : '';
+    const rubro  = data.tipoServicio || data.rubro || 'Servicio';
+    toast('🔔 Nueva oportunidad: ' + rubro + zona + (precio ? ' · ' + precio : ''), '#0f172a');
+  });
+
+  // Cliente + worker: cambio de estado del pedido
+  srSocket.on('estado_pedido', function(data) {
+    const estado = (data.estado || '').replace(/_/g, ' ');
+    const pedidoShort = data.pedidoId ? '#' + String(data.pedidoId).slice(-4) : '';
+    toast('📋 Pedido ' + pedidoShort + ': ' + estado, '#0f2027');
+  });
+
+  // Alertas de riesgo (ventana crítica)
+  srSocket.on('alerta_ventana_critica', function(data) {
+    toast('⚠️ ' + (data.mensaje || 'Alerta en pedido activo'), '#3b0d0d');
+  });
+
+  // Pacto nocturno
+  srSocket.on('pacto_nocturno', function(data) {
+    toast('🌙 Pacto nocturno: ' + (data.workerNombre || 'Tu profesional') + ' confirmó para mañana', '#0d1b2a');
+  });
+
+  // Último aviso
+  srSocket.on('ultimo_aviso_pacto', function(data) {
+    toast('🚨 ' + (data.mensaje || 'Último aviso: confirmá el pacto'), '#2d0a00');
+  });
+
+  // Worker pausado
+  srSocket.on('worker_hold', function(data) {
+    toast('⏸ Worker en espera: ' + (data.mensaje || 'Confirmación requerida'), '#1a1a00');
+  });
+
+  // Alerta crítica de admin (watchdog)
+  srSocket.on('alerta_critica', function(data) {
+    toast('🔴 Sistema: ' + (data.mensaje || 'Alerta crítica'), '#3b0000');
+  });
+
+  // Pedido creado (cliente)
+  srSocket.on('pedido_creado', function(data) {
+    const pid = data.pedidoId || (data.pedido && data.pedido._id) || '';
+    toast('✅ Pedido #' + String(pid).slice(-4) + ' creado — buscando profesional...', '#0a2010');
+  });
+
+  // Trabajo aceptado (cliente)
+  srSocket.on('trabajo_aceptado', function(data) {
+    toast('🚀 Profesional asignado — en camino', '#0a1020');
+  });
+
+  // ── Conexión ──────────────────────────────────────────────────────────────
+  srSocket.on('connect', function() {
+    console.log('[SR Bridge] socket conectado:', srSocket.id);
+    // Si es worker, unirse a sala de rubro+zona
+    const rol  = (window.state && window.state.rol) || localStorage.getItem('srv_rol') || '';
+    const zona = localStorage.getItem('srv_zona') || '';
+    const rubro= localStorage.getItem('srv_rubro') || '';
+    if (rol === 'worker' && zona)  srSocket.emit('join_room', { room: 'zona_' + zona });
+    if (rol === 'worker' && rubro) srSocket.emit('join_room', { room: 'rubro_' + rubro });
+  });
+
+  srSocket.on('disconnect', function() {
+    console.log('[SR Bridge] socket desconectado');
+  });
+
+  // Exponer para debug desde consola
+  window.srSocket = srSocket;
+  window.srState  = srState;
+
+  console.log('[SR Bridge] event bridge activo v1.0');
+})();
+</script>
