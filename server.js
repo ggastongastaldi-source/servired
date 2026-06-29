@@ -482,6 +482,7 @@ app.use('/api/graph', require('./routes/economicGraph'));
 app.use('/api/track', require('./routes/track'));
 app.use('/api/analytics', require('./src/core/routes/analytics'));
 app.use('/api/quotes',   require('./routes/quotes'));
+app.use('/api/jobs',     require('./routes/jobs'));
 app.use('/api/zones', require('./routes/zones'));
 
 // B19 Control Plane — solo admin
