@@ -59,6 +59,20 @@ class ObserverService {
   }
 
   async start(bus) {
+  try {
+    if (typeof bus.on === 'function') {
+      ALL_DOMAIN_EVENTS.forEach(type => {
+        bus.on(type, event => this._observe(event));
+      });
+    }
+
+    if (typeof bus.use === 'function') {
+      bus.use(event => this._observe(event));
+    }
+  } catch (err) {
+    console.error('[Observer] start error:', err.message);
+  }
+
     this._startedAt = Date.now();
     this._unsub = bus.on(ALL_DOMAIN_EVENTS, event => this._observe(event));
     this._timer = setInterval(() => this._snapshot(), SNAPSHOT_INTERVAL_MS);
@@ -133,6 +147,10 @@ class ObserverService {
 
     // Exponer al proceso para GIA y dashboards
     global.observerSnapshot = snapshot;
+    global.__observerDebug = {
+      tapCounter: global.__tapCounter || 0,
+      lastTap: global.__lastTap || null
+    };
 
     if (total > 0) {
       console.log(`[Observer] snapshot | total:${total} | tpm:${snapshot.throughput_per_min} | latency pairs:${Object.keys(latencyStats).length}`);
