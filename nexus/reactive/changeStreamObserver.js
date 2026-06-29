@@ -45,7 +45,7 @@ async function iniciarObserver(io) {
 
       // Routing por dominio
       try {
-        if      (event.entityType === 'job')      procesarJobEvent(event, io);
+        if      (event.entityType === 'job')    { procesarJobEvent(event, io); procesarMarketFieldEvent(event); }
         else if (event.entityType === 'lead')     procesarLeadEvent(event, io);
         else if (event.entityType === 'worker')   { /* Sprint 2 */ }
         else if (event.entityType === 'payment')  { /* Sprint 3 */ }

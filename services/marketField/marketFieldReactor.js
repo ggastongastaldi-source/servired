@@ -1,33 +1,29 @@
-const ZoneState = require('../../models/ZoneState');
-const emitEvent = require('./'.replace('//', '/'));
+const { emitEvent } = require('../../nexus/events/emitEvent');
 
 const THRESHOLDS = {
-  OVERHEAT:   { pressure:  0.75, event: 'ZONE_OVERHEATED'    },
-  UNDERSUPPLY:{ pressure:  0.40, event: 'ZONE_UNDERSUPPLIED' },
-  RECOVERY:   { pressure:  0.10, event: 'ZONE_RECOVERED'     },
+  OVERHEAT:    0.75,
+  UNDERSUPPLY: 0.40,
+  RECOVERY:    0.10,
 };
 
-// estado efímero de alertas activas (no persiste — invariante de replay)
+// estado efímero — no persiste, preserva invariante de replay
 const activeAlerts = new Map();
 
 async function checkThresholds(zoneOutput) {
-  const { zoneId, marketPressure, zoneState } = zoneOutput;
-  const wasAlerting = activeAlerts.get(zoneId);
+  const { zoneId, marketPressure } = zoneOutput;
+  const current = activeAlerts.get(zoneId);
 
-  if (marketPressure >= THRESHOLDS.OVERHEAT.pressure && wasAlerting !== 'OVERHEAT') {
+  if (marketPressure >= THRESHOLDS.OVERHEAT && current !== 'OVERHEAT') {
     activeAlerts.set(zoneId, 'OVERHEAT');
-    await emitEvent('ZONE_OVERHEATED', { zoneId, marketPressure, zoneState });
-    console.log('[MarketFieldReactor] ZONE_OVERHEATED →', zoneId);
+    await emitEvent('ZONE_OVERHEATED', { zoneId, marketPressure });
 
-  } else if (marketPressure >= THRESHOLDS.UNDERSUPPLY.pressure && wasAlerting !== 'UNDERSUPPLY') {
+  } else if (marketPressure >= THRESHOLDS.UNDERSUPPLY && current !== 'UNDERSUPPLY') {
     activeAlerts.set(zoneId, 'UNDERSUPPLY');
-    await emitEvent('ZONE_UNDERSUPPLIED', { zoneId, marketPressure, zoneState });
-    console.log('[MarketFieldReactor] ZONE_UNDERSUPPLIED →', zoneId);
+    await emitEvent('ZONE_UNDERSUPPLIED', { zoneId, marketPressure });
 
-  } else if (marketPressure <= THRESHOLDS.RECOVERY.pressure && wasAlerting) {
+  } else if (marketPressure <= THRESHOLDS.RECOVERY && current) {
     activeAlerts.delete(zoneId);
-    await emitEvent('ZONE_RECOVERED', { zoneId, marketPressure, zoneState });
-    console.log('[MarketFieldReactor] ZONE_RECOVERED →', zoneId);
+    await emitEvent('ZONE_RECOVERED', { zoneId, marketPressure });
   }
 }
 
