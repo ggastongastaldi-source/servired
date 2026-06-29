@@ -558,3 +558,22 @@ io.on("connection", (socket) => {
 });
 // ===== END FIX =====
 
+
+
+// ===== SERVIRED REAL SOCKET ACTIVATION =====
+const { handleSocketEvents } = require('./src/core/services/socketHandlers');
+
+io.on("connection", (socket) => {
+
+  console.log("[SR ACTIVE SOCKET]", socket.id);
+
+  socket.on("job_request", (data) => {
+    console.log("[SR ENTRY job_request]", data);
+
+    // 👉 pasa al runtime REAL del sistema
+    handleSocketEvents?.("job_request", data, io);
+  });
+
+});
+// ===== END ACTIVATION =====
+
