@@ -73,7 +73,7 @@ function emitEvent({
   _dixieIntercept(event).catch(() => {});
 
   // Persistencia con OCC — sequenceNumber monotónico
-  _appendEvent(event).catch(err => console.error(`[Nexus-Error] [${entityType}:${type}]:`, err.message, err.stack?.split('\n')[1]?.trim()));
+  _appendEvent(event).catch(err => { console.error(`[Nexus-Error] [${entityType}:${type}]:`, err.message); global._lastNexusError = { type, entityType, msg: err.message, stack: err.stack?.split('\n').slice(0,3).join(' | '), ts: Date.now() }; });
 }
 
 async function _dixieIntercept(event) {
