@@ -177,7 +177,10 @@ router.post('/runtime/probe-pipeline', async (req, res) => {
     tap.tap = origTap;
     const snapAfter = { ...runtime.bus.stats() };
     const observerSnap = global.observerSnapshot || null;
-    res.json({ ok: true, trace, tapCalled, snapBefore, snapAfter, observerTotal: observerSnap ? observerSnap.total_events : null });
+    res.json({ ok: true, trace, tapCalled, snapBefore, snapAfter, observerTotal: observerSnap ? observerSnap.total_events : null,
+      tapCounter: global.__tapCounter || 0,
+      lastTap: global.__lastTap || null
+    });
   } catch(err) {
     res.status(500).json({ ok: false, layer: 'full-pipeline', error: err.message });
   }
