@@ -73,7 +73,8 @@ class ObserverService {
 
   _observe(event) {
     try {
-      const { type, payload = {}, ts = Date.now() } = event;
+      console.log('[Observer] evento recibido:', type);
+    const { type, payload = {}, ts = Date.now() } = event;
 
       // Throughput
       this._counts[type]   = (this._counts[type] || 0) + 1;

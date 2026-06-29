@@ -17,6 +17,7 @@ function tap(eventType, payload) {
   try {
     if (!_bus) _bus = require('./index').bus;
     // fire-and-forget: el dominio no espera a los servicios del runtime
+    console.log('[NexusTap] publicando:', eventType);
     _bus.publish({ type: eventType, payload, ts: Date.now() }).catch(err => {
       console.error('[NexusTap] error en bus:', err.message);
     });
