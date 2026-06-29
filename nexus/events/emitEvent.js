@@ -129,9 +129,10 @@ async function _appendEvent(event) {
     const { projectEvent } = require('../../services/economicGraphProjection');
     projectEvent(event).catch(err => console.error('[EconGraph] async error:', err.message));
   } catch (_) {}
-}
+
   // ServiRed OS Runtime — tap post-persistencia
   try { require("../../runtime/NexusTap").tap(event.type, event.payload); } catch (_) {}
+}
 
 
 module.exports = { emitEvent, runWithContext, startCorrelation, getContext, contextStorage };
