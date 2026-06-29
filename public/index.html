@@ -1633,7 +1633,7 @@ function elegirRol(btn, rol) {
   btn.textContent = "Cargando...";
   if (rol === "CLIENTE") { location.reload(); }
   else if (rol === "TRABAJADOR") { iniciarWizardProvider(document.getElementById("rol-selector-overlay")); }
-  else if (rol === "COMERCIO") { abrirModal("wiz-comercio"); document.getElementById("rol-selector-overlay").remove(); }
+  else if (rol === "COMERCIO") { document.getElementById("rol-selector-overlay").remove(); abrirModal("onboarding-comercio"); }
 }
 
 window.addEventListener("load", function() {
