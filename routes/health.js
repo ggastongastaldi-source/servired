@@ -103,4 +103,15 @@ router.get('/', async (req, res) => {
   res.status(httpStatus).json({ status, timestamp: new Date().toISOString(), services, metrics });
 });
 
+
+router.post('/runtime/probe', async (req, res) => {
+  try {
+    const runtime = require('../runtime');
+    await runtime.bus.publish({ type: req.body.type || 'WORKER_ACTIVATED', payload: req.body.payload || { workerId: 'probe-test', source: 'health-probe' }, ts: Date.now() });
+    res.json({ ok: true, stats: runtime.bus.stats() });
+  } catch(err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
