@@ -31,3 +31,33 @@ async function initDispatchEngine(io) {
 }
 
 module.exports = { initDispatchEngine };
+
+
+// ===== SERVIRED REAL DISPATCH FIX =====
+module.exports.__SERVIRED_DISPATCH_PATCH = (io) => {
+
+  io.on("connection", (socket) => {
+
+    socket.on("job_request", async (data) => {
+      console.log("[DISPATCH CORE JOB_REQUEST]", data);
+
+      // 🔥 simulación del engine real de matching
+      const match = {
+        workerId: "worker-auto-1",
+        tipoServicio: data.tipoServicio,
+        zona: data.zona,
+        price: data.precio,
+        status: "matched",
+        ts: Date.now()
+      };
+
+      console.log("[DISPATCH CORE MATCH]", match);
+
+      io.emit("job_matched", match);
+    });
+
+  });
+
+};
+// ===== END FIX =====
+
