@@ -5,9 +5,9 @@ const eventLogger = require('./middleware/eventLogger');
 const NotificationService = require('./services/NotificationService');
 const AnalyticsService = require('./services/AnalyticsService');
 const ObserverService = require('./services/ObserverService');
-let __observerInstance = null;
+
 let _observerHook = null;
-let __observerInstance = null;
+
 let _started = false;
 
 async function start(io) {
