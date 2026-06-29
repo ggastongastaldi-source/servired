@@ -6,6 +6,8 @@ const NotificationService = require('./services/NotificationService');
 const AnalyticsService = require('./services/AnalyticsService');
 const ObserverService = require('./services/ObserverService');
 let __observerInstance = null;
+let _observerHook = null;
+let __observerInstance = null;
 let _started = false;
 
 async function start(io) {
@@ -31,6 +33,17 @@ if (typeof __observerInstance.start === 'function') {
 // Publicar al bus interno — solo usado por el NexusTap
 async function emit(type, payload) {
   await bus.publish({ type, payload, ts: Date.now() });
+}
+
+
+const originalEmit = module.exports.emitEvent;
+if (originalEmit) {
+  module.exports.emitEvent = function(event) {
+    if (_observerHook) {
+      try { _observerHook(event); } catch(e) {}
+    }
+    return originalEmit.apply(this, arguments);
+  };
 }
 
 module.exports = { start, emit, bus, registry };
