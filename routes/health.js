@@ -114,4 +114,22 @@ router.post('/runtime/probe', async (req, res) => {
   }
 });
 
+
+router.post('/runtime/probe-pipeline', async (req, res) => {
+  try {
+    const { emitEvent } = require('../nexus/events/emitEvent');
+    emitEvent({
+      entityType:  req.body.entityType  || 'probe',
+      type:        req.body.type        || 'WORKER_ACTIVATED',
+      aggregateId: req.body.aggregateId || 'probe-aggregate-001',
+      payload:     req.body.payload     || { workerId: 'probe-test', source: 'pipeline-probe' },
+    });
+    await new Promise(r => setTimeout(r, 150));
+    const runtime = require('../runtime');
+    res.json({ ok: true, layer: 'full-pipeline', stats: runtime.bus.stats() });
+  } catch(err) {
+    res.status(500).json({ ok: false, layer: 'full-pipeline', error: err.message });
+  }
+});
+
 module.exports = router;
