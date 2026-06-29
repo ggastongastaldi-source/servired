@@ -73,8 +73,8 @@ class ObserverService {
 
   _observe(event) {
     try {
-      const { type, payload = {}, ts = Date.now() } = event;
-      const { type, payload = {}, ts = Date.now() } = event;
+      // fixed destructuring removed
+      // fixed destructuring removed
     console.log('[Observer] evento recibido:', type);
 
       // Throughput
