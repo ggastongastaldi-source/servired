@@ -198,6 +198,9 @@ require('./services/boostExpiry').startBoostExpiryCron();
     });
 
     require('./src/dispatch').initDispatchEngine(io).catch(e => console.error('[DispatchEngine] init error:', e.message));
+    const { init: initJobReactor } = require('./nexus/reactive/jobRequestedReactor');
+    initJobReactor(io);
+    console.log('[jobRequestedReactor] io inicializado');
       const { initNexus } = require('./nexus/initNexus');
       initNexus(io)
         .then(r => console.log('[Server] Nexus:', r?.status || 'OK'))
