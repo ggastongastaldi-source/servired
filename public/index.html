@@ -311,133 +311,89 @@ body{padding-bottom:70px;}
 <body>
 <div id="splash-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;box-sizing:border-box;overflow:hidden;background:#060c1a;">
 <style>
-@keyframes bg-pulse{
-  0%{background:radial-gradient(ellipse at 50% 40%,rgba(0,229,255,0.13) 0%,rgba(6,12,26,1) 65%)}
-  25%{background:radial-gradient(ellipse at 50% 40%,rgba(255,109,0,0.13) 0%,rgba(6,12,26,1) 65%)}
-  50%{background:radial-gradient(ellipse at 50% 40%,rgba(255,0,170,0.11) 0%,rgba(6,12,26,1) 65%)}
-  75%{background:radial-gradient(ellipse at 50% 40%,rgba(57,255,20,0.09) 0%,rgba(6,12,26,1) 65%)}
-  100%{background:radial-gradient(ellipse at 50% 40%,rgba(0,229,255,0.13) 0%,rgba(6,12,26,1) 65%)}
-}
+@keyframes bg-pulse{0%{background:radial-gradient(ellipse at 50% 42%,rgba(0,229,255,0.25) 0%,rgba(6,12,26,1) 58%)}25%{background:radial-gradient(ellipse at 50% 42%,rgba(255,109,0,0.25) 0%,rgba(6,12,26,1) 58%)}50%{background:radial-gradient(ellipse at 50% 42%,rgba(255,0,170,0.25) 0%,rgba(6,12,26,1) 58%)}75%{background:radial-gradient(ellipse at 50% 42%,rgba(57,255,20,0.2) 0%,rgba(6,12,26,1) 58%)}100%{background:radial-gradient(ellipse at 50% 42%,rgba(0,229,255,0.25) 0%,rgba(6,12,26,1) 58%)}}
 @keyframes arc-a{from{stroke-dashoffset:0}to{stroke-dashoffset:-320}}
 @keyframes arc-b{from{stroke-dashoffset:0}to{stroke-dashoffset:320}}
 @keyframes arc-c{from{stroke-dashoffset:0}to{stroke-dashoffset:-120}}
 @keyframes arc-d{from{stroke-dashoffset:0}to{stroke-dashoffset:160}}
-@keyframes node-blink{0%,100%{opacity:1}50%{opacity:0.2}}
-@keyframes glow-s{0%,100%{filter:drop-shadow(0 0 8px #FF6D00)}50%{filter:drop-shadow(0 0 22px #FF6D00) drop-shadow(0 0 8px #ff00aa)}}
+@keyframes node-blink{0%,100%{opacity:1}50%{opacity:0.15}}
+@keyframes glow-s{0%,100%{filter:drop-shadow(0 0 12px #FF6D00)}33%{filter:drop-shadow(0 0 28px #FF6D00) drop-shadow(0 0 14px #ff00aa)}66%{filter:drop-shadow(0 0 22px #FF6D00) drop-shadow(0 0 10px #39ff14)}}
 @keyframes fadein-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes bar-fill{0%{width:0%}80%{width:82%}100%{width:100%}}
 @keyframes msg-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @keyframes check-pop{0%{opacity:0;transform:scale(0.3)}60%{transform:scale(1.3)}100%{opacity:1;transform:scale(1)}}
 @keyframes particle-f{0%{opacity:0;transform:translate(0,0)}40%{opacity:0.9}100%{opacity:0;transform:translate(var(--tx),var(--ty))}}
 </style>
-
-<!-- FONDO ANIMADO -->
-<div id="splash-bg" style="position:absolute;inset:0;animation:bg-pulse 2.5s ease-in-out infinite;pointer-events:none;"></div>
-
-<!-- PARTÍCULAS -->
+<div id="splash-bg" style="position:absolute;inset:0;animation:bg-pulse 2.8s ease-in-out infinite;pointer-events:none;"></div>
 <div id="splash-pts" style="position:absolute;inset:0;pointer-events:none;"></div>
-
-<!-- LOGO -->
 <div style="position:relative;z-index:2;margin-bottom:22px;">
-<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:115px;height:115px;overflow:visible;">
-<defs><filter id="sg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
-<path d="M 80 12 A 68 68 0 1 1 12.1 97" fill="none" stroke="#FF6D00" stroke-width="5" stroke-linecap="round" filter="url(#sg)" stroke-dasharray="320" style="animation:arc-a 4s linear infinite"/>
-<path d="M 80 22 A 58 58 0 1 0 24.5 107" fill="none" stroke="#00E5FF" stroke-width="3.5" stroke-linecap="round" filter="url(#sg)" stroke-dasharray="280" style="animation:arc-b 5s linear infinite"/>
-<path d="M 80 28 A 52 52 0 0 1 126 54" fill="none" stroke="#ff00aa" stroke-width="2.5" stroke-linecap="round" filter="url(#sg)" stroke-dasharray="120" style="animation:arc-c 3s linear infinite"/>
-<path d="M 80 30 A 50 50 0 0 0 34 107" fill="none" stroke="#39ff14" stroke-width="2" stroke-linecap="round" filter="url(#sg)" stroke-dasharray="80" style="animation:arc-d 6s linear infinite"/>
-<line x1="80" y1="80" x2="52" y2="52" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
-<line x1="80" y1="80" x2="108" y2="52" stroke="#FF6D00" stroke-width="1" opacity="0.5"/>
-<line x1="80" y1="80" x2="44" y2="88" stroke="#ff00aa" stroke-width="1" opacity="0.4"/>
-<line x1="80" y1="80" x2="116" y2="88" stroke="#FF6D00" stroke-width="1" opacity="0.4"/>
-<line x1="80" y1="80" x2="58" y2="112" stroke="#39ff14" stroke-width="1" opacity="0.4"/>
-<line x1="80" y1="80" x2="102" y2="112" stroke="#00E5FF" stroke-width="1" opacity="0.4"/>
-<circle cx="52" cy="52" r="4.5" fill="#00E5FF" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite"/>
-<circle cx="108" cy="52" r="4.5" fill="#FF6D00" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:.25s"/>
-<circle cx="44" cy="88" r="3.5" fill="#ff00aa" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:.5s"/>
-<circle cx="116" cy="88" r="3.5" fill="#FF6D00" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:.75s"/>
-<circle cx="58" cy="112" r="4" fill="#39ff14" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:1s"/>
-<circle cx="102" cy="112" r="4" fill="#00E5FF" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:.12s"/>
-<text x="80" y="88" text-anchor="middle" font-family="Rajdhani,sans-serif" font-size="42" font-weight="700" fill="#FF6D00" style="animation:glow-s 2s ease-in-out infinite">S</text>
+<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:130px;height:130px;overflow:visible;">
+<defs><filter id="sg"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+<path d="M 80 12 A 68 68 0 1 1 12.1 97" fill="none" stroke="#FF6D00" stroke-width="6" stroke-linecap="round" filter="url(#sg)" stroke-dasharray="320" style="animation:arc-a 4s linear infinite"/>
+<path d="M 80 22 A 58 58 0 1 0 24.5 107" fill="none" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" filter="url(#sg)" stroke-dasharray="280" style="animation:arc-b 5s linear infinite"/>
+<path d="M 80 28 A 52 52 0 0 1 126 54" fill="none" stroke="#ff00aa" stroke-width="3" stroke-linecap="round" filter="url(#sg)" stroke-dasharray="120" style="animation:arc-c 3s linear infinite"/>
+<path d="M 80 30 A 50 50 0 0 0 34 107" fill="none" stroke="#39ff14" stroke-width="2.5" stroke-linecap="round" filter="url(#sg)" stroke-dasharray="80" style="animation:arc-d 6s linear infinite"/>
+<line x1="80" y1="80" x2="52" y2="52" stroke="#00E5FF" stroke-width="1.2" opacity="0.5"/>
+<line x1="80" y1="80" x2="108" y2="52" stroke="#FF6D00" stroke-width="1.2" opacity="0.5"/>
+<line x1="80" y1="80" x2="44" y2="88" stroke="#ff00aa" stroke-width="1.2" opacity="0.45"/>
+<line x1="80" y1="80" x2="116" y2="88" stroke="#FF6D00" stroke-width="1.2" opacity="0.45"/>
+<line x1="80" y1="80" x2="58" y2="112" stroke="#39ff14" stroke-width="1.2" opacity="0.45"/>
+<line x1="80" y1="80" x2="102" y2="112" stroke="#00E5FF" stroke-width="1.2" opacity="0.45"/>
+<circle cx="52" cy="52" r="5" fill="#00E5FF" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite"/>
+<circle cx="108" cy="52" r="5" fill="#FF6D00" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:.25s"/>
+<circle cx="44" cy="88" r="4" fill="#ff00aa" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:.5s"/>
+<circle cx="116" cy="88" r="4" fill="#FF6D00" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:.75s"/>
+<circle cx="58" cy="112" r="4.5" fill="#39ff14" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:1s"/>
+<circle cx="102" cy="112" r="4.5" fill="#00E5FF" filter="url(#sg)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:.12s"/>
+<text x="80" y="95" text-anchor="middle" font-family="Rajdhani,Arial Black,sans-serif" font-size="72" font-weight="900" fill="#FF6D00" style="animation:glow-s 2.5s ease-in-out infinite">S</text>
 </svg>
 </div>
-
-<!-- TITULO -->
 <div style="z-index:2;animation:fadein-up .4s ease .15s both;text-align:center;margin-bottom:12px;">
 <span style="font-family:Rajdhani,sans-serif;font-size:2.1rem;font-weight:700;letter-spacing:3px;color:#fff;">SERVI</span><span style="font-family:Rajdhani,sans-serif;font-size:2.1rem;font-weight:700;letter-spacing:3px;color:#FF6D00;">RED</span>
 </div>
-
-<!-- SALUDO -->
 <div id="splash-saludo" style="z-index:2;animation:fadein-up .4s ease .35s both;font-family:Rajdhani,sans-serif;font-size:1.15rem;font-weight:700;color:#00E5FF;margin-bottom:5px;text-align:center;"></div>
 <div id="splash-sub" style="z-index:2;animation:fadein-up .4s ease .5s both;color:#cbd5e1;font-size:0.82rem;margin-bottom:6px;text-align:center;line-height:1.5;"></div>
-
-<!-- TAGLINE -->
-<div id="splash-tl" style="z-index:2;animation:fadein-up .4s ease .65s both;margin-bottom:24px;text-align:center;">
-<span style="color:#94a3b8;font-size:0.72rem;font-style:italic;letter-spacing:.5px;"></span>
-</div>
-
-<!-- MSG -->
-<div id="splash-msg" style="z-index:2;height:16px;margin-bottom:12px;text-align:center;">
-<span style="font-family:Rajdhani,sans-serif;font-size:0.75rem;color:#00E5FF;letter-spacing:.8px;opacity:0.7;"></span>
-</div>
-
-<!-- BARRA -->
+<div id="splash-tl" style="z-index:2;animation:fadein-up .4s ease .65s both;margin-bottom:24px;text-align:center;"><span style="color:#94a3b8;font-size:0.72rem;font-style:italic;letter-spacing:.5px;"></span></div>
+<div id="splash-msg" style="z-index:2;height:16px;margin-bottom:12px;text-align:center;"><span style="font-family:Rajdhani,sans-serif;font-size:0.75rem;color:#00E5FF;letter-spacing:.8px;opacity:0.85;"></span></div>
 <div style="z-index:2;width:200px;height:2px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-bottom:12px;">
-<div style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,#00E5FF,#ff00aa,#FF6D00,#39ff14);animation:bar-fill 2.4s cubic-bezier(.4,0,.2,1) forwards;"></div>
+<div style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,#00E5FF,#ff00aa,#FF6D00,#39ff14);animation:bar-fill 3.4s cubic-bezier(.4,0,.2,1) forwards;"></div>
 </div>
-
-<!-- CHECK -->
-<div id="splash-check" style="z-index:2;opacity:0;font-family:Rajdhani,sans-serif;font-size:0.85rem;color:#39ff14;letter-spacing:1.5px;">✓ &nbsp;LISTO</div>
-
+<div id="splash-check" style="z-index:2;opacity:0;font-family:Rajdhani,sans-serif;font-size:0.85rem;color:#39ff14;letter-spacing:1.5px;">&#10003; &nbsp;LISTO</div>
 <script>
 (function(){
-var tls=['Sistema operativo de servicios inteligentes.','IA conectando personas reales.','Tu red profesional comienza aquí.','Clientes. Comercios. Trabajadores.','Construyendo oportunidades locales.','Inteligencia territorial en acción.'];
-var msgs=['Sincronizando tu entorno...','Preparando tu experiencia...','Conectando la red...','Todo listo.'];
+var tls=["Sistema operativo de servicios inteligentes.","IA conectando personas reales.","Tu red profesional comienza aqui.","Clientes. Comercios. Trabajadores.","Construyendo oportunidades locales.","Inteligencia territorial en accion."];
+var msgs=["Sincronizando tu entorno...","Preparando tu experiencia...","Conectando la red...","Todo listo."];
 try{
-  var u=JSON.parse(localStorage.getItem('usuario')||'{}');
-  var n=u.nombre?u.nombre.split(' ')[0]:null;
-  document.getElementById('splash-saludo').textContent=n?'Hola, '+n+' 👋':'Bienvenido/a 👋';
-  document.getElementById('splash-sub').innerHTML=n?'¿En qué podemos ayudarte hoy?':'Conectando clientes, comercios<br>y trabajadores.';
+  var u=JSON.parse(localStorage.getItem("usuario")||"{}");
+  var n=u.nombre?u.nombre.split(" ")[0]:null;
+  document.getElementById("splash-saludo").textContent=n?"Hola, "+n+" :)":"Bienvenido/a";
+  document.getElementById("splash-sub").innerHTML=n?"En que podemos ayudarte hoy?":"Conectando clientes, comercios<br>y trabajadores.";
 }catch(e){
-  document.getElementById('splash-saludo').textContent='Bienvenido/a 👋';
-  document.getElementById('splash-sub').textContent='Conectando clientes, comercios y trabajadores.';
+  document.getElementById("splash-saludo").textContent="Bienvenido/a";
+  document.getElementById("splash-sub").textContent="Conectando clientes, comercios y trabajadores.";
 }
-document.getElementById('splash-tl').querySelector('span').textContent=tls[Math.floor(Math.random()*tls.length)];
-var mi=0, msgEl=document.getElementById('splash-msg').querySelector('span');
-function nxtMsg(){
-  if(mi>=msgs.length)return;
-  msgEl.style.animation='none'; msgEl.offsetHeight;
-  msgEl.textContent=msgs[mi++];
-  msgEl.style.animation='msg-in .5s ease forwards';
-}
-nxtMsg(); var mt=setInterval(function(){if(mi<msgs.length)nxtMsg();else clearInterval(mt);},600);
-// Partículas
-var pc=document.getElementById('splash-pts');
-var cs=['#00E5FF','#FF6D00','#ff00aa','#39ff14','#ffffff'];
-for(var i=0;i<20;i++){
-  var el=document.createElement('div');
-  var tx=(Math.random()-0.5)*160, ty=(Math.random()-0.5)*200;
-  var lx=30+Math.random()*40, ly=20+Math.random()*60;
+document.getElementById("splash-tl").querySelector("span").textContent=tls[Math.floor(Math.random()*tls.length)];
+var mi=0,msgEl=document.getElementById("splash-msg").querySelector("span");
+function nxtMsg(){if(mi>=msgs.length)return;msgEl.style.animation="none";msgEl.offsetHeight;msgEl.textContent=msgs[mi++];msgEl.style.animation="msg-in .5s ease forwards";}
+nxtMsg();var mt=setInterval(function(){if(mi<msgs.length)nxtMsg();else clearInterval(mt);},800);
+var pc=document.getElementById("splash-pts");
+var cs=["#00E5FF","#FF6D00","#ff00aa","#39ff14","#ffffff"];
+for(var i=0;i<22;i++){
+  var el=document.createElement("div");
+  var tx=(Math.random()-0.5)*180,ty=(Math.random()-0.5)*220;
+  var lx=28+Math.random()*44,ly=15+Math.random()*65;
   var c=cs[Math.floor(Math.random()*cs.length)];
-  var dl=Math.random()*2.5, dr=1.2+Math.random()*1.8;
-  el.style.cssText='position:absolute;width:'+(2+Math.random()*2)+'px;height:'+(2+Math.random()*2)+'px;border-radius:50%;background:'+c+';left:'+lx+'%;top:'+ly+'%;--tx:'+tx+'px;--ty:'+ty+'px;animation:particle-f '+dr+'s ease '+dl+'s infinite;opacity:0;';
+  var dl=Math.random()*3,dr=1.4+Math.random()*2;
+  el.style.cssText="position:absolute;width:"+(2+Math.random()*2.5)+"px;height:"+(2+Math.random()*2.5)+"px;border-radius:50%;background:"+c+";left:"+lx+"%;top:"+ly+"%;--tx:"+tx+"px;--ty:"+ty+"px;animation:particle-f "+dr+"s ease "+dl+"s infinite;opacity:0;";
   pc.appendChild(el);
 }
-// Checkmark
-setTimeout(function(){
-  var ck=document.getElementById('splash-check');
-  ck.style.animation='check-pop .35s ease forwards';
-},2300);
-// Fadeout
-setTimeout(function(){
-  var sp=document.getElementById('splash-screen');
-  sp.style.transition='opacity .65s ease';
-  sp.style.opacity='0';
-  setTimeout(function(){sp.style.display='none';},650);
-},2800);
+setTimeout(function(){var ck=document.getElementById("splash-check");ck.style.animation="check-pop .35s ease forwards";},3200);
+setTimeout(function(){var sp=document.getElementById("splash-screen");sp.style.transition="opacity .7s ease";sp.style.opacity="0";setTimeout(function(){sp.style.display="none";},700);},3800);
 })();
 </script>
 </div>
+
 
 
 <!-- TITULO -->
