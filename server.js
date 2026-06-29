@@ -212,6 +212,9 @@ require('./services/boostExpiry').startBoostExpiryCron();
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 
+const runtime = require('./runtime');
+runtime.start(io).catch(err => console.error('[Runtime] boot error:', err.message));
+
 server.listen(PORT, HOST, () => {
     console.log('🚀 ServiRed activo en puerto', PORT);
     console.log('📡 Socket.IO escuchando');
@@ -726,7 +729,6 @@ module.exports.__servired_safe_socket = __servired_safe_socket;
  * === SERVIRED PERSISTED STATE (MONGO LAYER) ===
  */
 
-const mongoose = require('mongoose');
 
 const JobStateSchema = new mongoose.Schema({
   jobId: { type: String, unique: true },
