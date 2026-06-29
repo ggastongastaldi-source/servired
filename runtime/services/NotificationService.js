@@ -10,7 +10,7 @@
  */
 
 const SUBSCRIPTIONS = [
-  { type: 'QUOTE_SUBMITTED',    room: p => 'worker_' + p.workerId,  event: 'notification', msg: p => ({ text: 'Recibiste un presupuesto nuevo', quoteId: p.quoteId }) },
+  { type: 'QUOTE_SENT',    room: p => 'worker_' + p.workerId,  event: 'notification', msg: p => ({ text: 'Recibiste un presupuesto nuevo', quoteId: p.quoteId }) },
   { type: 'QUOTE_SELECTED',     room: p => 'worker_' + p.workerId,  event: 'notification', msg: p => ({ text: 'Te seleccionaron para un trabajo', quoteId: p.quoteId }) },
   { type: 'QUOTE_REJECTED',     room: p => 'worker_' + p.workerId,  event: 'notification', msg: p => ({ text: 'Tu presupuesto no fue seleccionado', quoteId: p.quoteId }) },
   { type: 'SERVICE_COMPLETED',  room: p => 'pedido_' + p.pedidoId,  event: 'notification', msg: p => ({ text: 'El servicio fue completado' }) },

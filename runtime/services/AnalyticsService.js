@@ -8,7 +8,7 @@
  */
 
 const DOMAIN_TO_MARKETING = {
-  QUOTE_SUBMITTED:   { type: 'contratacion_realizada', role: 'trabajador', actorField: 'workerId' },
+  QUOTE_SENT:   { type: 'contratacion_realizada', role: 'trabajador', actorField: 'workerId' },
   QUOTE_SELECTED:    { type: 'contratacion_realizada', role: 'cliente',    actorField: 'clientId' },
   WORKER_ACTIVATED:  { type: 'profesional_aprobado',   role: 'trabajador', actorField: 'workerId' },
   SERVICE_COMPLETED: { type: 'contratacion_realizada', role: 'sistema',    actorField: null       },

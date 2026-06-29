@@ -23,6 +23,8 @@ const express = require("express");
 const router  = express.Router();
 
 const quoteService     = require("../services/quote/quoteService");
+const QuoteRouterAdapter = require("../runtime/QuoteRouterAdapter");
+quoteService.init(QuoteRouterAdapter);
 const Quote            = require("../models/Quote");
 const AuctionOutcome   = require("../models/AuctionOutcome");
 

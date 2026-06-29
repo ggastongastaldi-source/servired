@@ -18,7 +18,7 @@ const ALL_DOMAIN_EVENTS = [
   // Job lifecycle
   'JOB_CREATED', 'JOB_STARTED', 'JOB_COMPLETED', 'JOB_PAID',
   // Quote / Auction
-  'QUOTE_SUBMITTED', 'QUOTE_SELECTED', 'QUOTE_REJECTED',
+  'QUOTE_SENT', 'QUOTE_SELECTED', 'QUOTE_REJECTED',
   'AUCTION_COMPLETED', 'AUCTION_FALLBACK', 'PRICE_SUBMITTED',
   // Payment
   'PAYMENT_CONFIRMED', 'PAYMENT_CAPTURED', 'PAYMENT_REFUNDED',
@@ -37,7 +37,7 @@ const ALL_DOMAIN_EVENTS = [
 // Pares para medir latencia entre eventos del mismo aggregate
 const LATENCY_PAIRS = [
   { from: 'JOB_CREATED',    to: 'JOB_COMPLETED'  },
-  { from: 'QUOTE_SUBMITTED', to: 'QUOTE_SELECTED' },
+  { from: 'QUOTE_SENT', to: 'QUOTE_SELECTED' },
   { from: 'PAYMENT_CAPTURED', to: 'WORKER_FUNDS_RELEASED' },
 ];
 
