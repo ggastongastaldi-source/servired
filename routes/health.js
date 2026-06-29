@@ -117,16 +117,27 @@ router.post('/runtime/probe', async (req, res) => {
 
 router.post('/runtime/probe-pipeline', async (req, res) => {
   try {
+    const trace = [];
     const { emitEvent } = require('../nexus/events/emitEvent');
+    const runtime = require('../runtime');
+    const snapBefore = { ...runtime.bus.stats() };
+    // Parchear NexusTap temporalmente para capturar si se ejecuta
+    const tap = require('../runtime/NexusTap');
+    const origTap = tap.tap;
+    let tapCalled = false;
+    tap.tap = (type, payload) => { tapCalled = true; trace.push('tap:' + type); origTap(type, payload); };
     emitEvent({
       entityType:  req.body.entityType  || 'probe',
       type:        req.body.type        || 'WORKER_ACTIVATED',
-      aggregateId: req.body.aggregateId || 'probe-aggregate-001',
+      aggregateId: req.body.aggregateId || ('probe-' + Date.now()),
       payload:     req.body.payload     || { workerId: 'probe-test', source: 'pipeline-probe' },
     });
-    await new Promise(r => setTimeout(r, 150));
-    const runtime = require('../runtime');
-    res.json({ ok: true, layer: 'full-pipeline', stats: runtime.bus.stats() });
+    trace.push('emitEvent-called');
+    await new Promise(r => setTimeout(r, 300));
+    tap.tap = origTap;
+    const snapAfter = { ...runtime.bus.stats() };
+    const observerSnap = global.observerSnapshot || null;
+    res.json({ ok: true, trace, tapCalled, snapBefore, snapAfter, observerTotal: observerSnap ? observerSnap.total_events : null });
   } catch(err) {
     res.status(500).json({ ok: false, layer: 'full-pipeline', error: err.message });
   }
