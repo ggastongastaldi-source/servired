@@ -130,8 +130,9 @@ async function _appendEvent(event) {
     projectEvent(event).catch(err => console.error('[EconGraph] async error:', err.message));
   } catch (_) {}
 
+  console.log("[_appendEvent] llegando al tap:", event.type);
   // ServiRed OS Runtime — tap post-persistencia
-  try { require("../../runtime/NexusTap").tap(event.type, event.payload); } catch (_) {}
+  try { require("../../runtime/NexusTap").tap(event.type, event.payload); } catch (tapErr) { console.error("[NexusTap-CATCH]", tapErr.message); }
 }
 
 
