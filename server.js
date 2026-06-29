@@ -537,3 +537,24 @@ app.get('/health', (req, res) => {
     env: process.env.NODE_ENV || 'development'
   });
 });
+
+
+// ===== SERVIRED SOCKET FANOUT FIX =====
+io.on("connection", (socket) => {
+  console.log("[SR CONNECT]", socket.id);
+
+  socket.on("job_request", (data) => {
+    console.log("[SR JOB_REQUEST]", data);
+
+    // forward into system pipeline
+    io.emit("job_request", data);
+  });
+
+  socket.on("nueva_oportunidad", (data) => {
+    console.log("[SR NUEVA_OP]", data);
+
+    io.emit("nueva_oportunidad", data);
+  });
+});
+// ===== END FIX =====
+
