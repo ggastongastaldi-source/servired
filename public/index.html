@@ -309,70 +309,145 @@ body{padding-bottom:70px;}
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
+<div id="splash-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#060c1a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;box-sizing:border-box;overflow:hidden;">
+<style>
+@keyframes halo-breathe{0%,100%{opacity:0.15;transform:scale(1)}50%{opacity:0.35;transform:scale(1.12)}}
+@keyframes halo-breathe2{0%,100%{opacity:0.08;transform:scale(1)}50%{opacity:0.22;transform:scale(1.18)}}
+@keyframes arc-spin-a{from{stroke-dashoffset:0}to{stroke-dashoffset:-320}}
+@keyframes arc-spin-b{from{stroke-dashoffset:0}to{stroke-dashoffset:320}}
+@keyframes arc-spin-c{from{stroke-dashoffset:0}to{stroke-dashoffset:-120}}
+@keyframes node-blink{0%,100%{opacity:1}50%{opacity:0.25}}
+@keyframes particle-float{0%{opacity:0;transform:translate(0,0) scale(0)}40%{opacity:1;transform:translate(var(--px),var(--py)) scale(1)}100%{opacity:0;transform:translate(var(--px2),var(--py2)) scale(0.5)}}
+@keyframes fadein-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow-s{0%,100%{filter:drop-shadow(0 0 6px #FF6D00)}50%{filter:drop-shadow(0 0 18px #FF6D00) drop-shadow(0 0 6px #ff00aa)}}
+@keyframes bar-fill{0%{width:0%}85%{width:88%}100%{width:100%}}
+@keyframes msg-fade{0%{opacity:0;transform:translateY(6px)}15%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateY(-4px)}}
+@keyframes checkmark-pop{0%{opacity:0;transform:scale(0.4)}60%{transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
+@keyframes splash-fadeout{to{opacity:0}}
+</style>
 
-<div id="splash-screen" style="
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:#060c1a;z-index:99999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:32px;box-sizing:border-box;
-  transition:opacity 0.8s ease;
-">
-  <style>
-    @keyframes splash-pulse {
-      0%,100%{transform:scale(1);opacity:1}
-      50%{transform:scale(1.08);opacity:0.85}
-    }
-    @keyframes splash-glow-cyan {
-      0%,100%{box-shadow:0 0 0px rgba(0,229,255,0)}
-      50%{box-shadow:0 0 40px rgba(0,229,255,0.18)}
-    }
-    @keyframes splash-bar {
-      0%{width:0%;background:linear-gradient(90deg,#00E5FF,#FF6D00)}
-      60%{width:75%;background:linear-gradient(90deg,#00E5FF,#FF6D00,#39ff14)}
-      100%{width:100%;background:linear-gradient(90deg,#39ff14,#00E5FF)}
-    }
-    @keyframes splash-fadein {
-      from{opacity:0;transform:translateY(12px)}
-      to{opacity:1;transform:translateY(0)}
-    }
-    @keyframes arc-spin {
-      from{stroke-dashoffset:0}
-      to{stroke-dashoffset:-320}
-    }
-    @keyframes node-blink {
-      0%,100%{opacity:1;r:5}
-      50%{opacity:0.4;r:3}
-    }
-  </style>
+<!-- HALOS -->
+<div style="position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.18) 0%,transparent 70%);animation:halo-breathe 2s ease-in-out infinite;pointer-events:none;"></div>
+<div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,0,170,0.07) 0%,transparent 70%);animation:halo-breathe2 3s ease-in-out infinite;pointer-events:none;"></div>
 
-  <!-- LOGO -->
-  <div style="animation:splash-pulse 2s ease-in-out infinite;margin-bottom:28px;">
-    <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:110px;height:110px;overflow:visible;">
-      <defs>
-        <filter id="sp-glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      </defs>
-      <circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
-      <path d="M 80 12 A 68 68 0 1 1 12.1 97" fill="none" stroke="#FF6D00" stroke-width="6" stroke-linecap="round"
-        filter="url(#sp-glow)" stroke-dasharray="320" style="animation:arc-spin 3s linear infinite"/>
-      <path d="M 80 22 A 58 58 0 1 0 24.5 107" fill="none" stroke="#00E5FF" stroke-width="4" stroke-linecap="round"
-        filter="url(#sp-glow)" stroke-dasharray="280" style="animation:arc-spin 4s linear infinite reverse"/>
-      <path d="M 80 28 A 52 52 0 0 1 126 54" fill="none" stroke="#39ff14" stroke-width="3" stroke-linecap="round"
-        filter="url(#sp-glow)" stroke-dasharray="120" style="animation:arc-spin 2s linear infinite"/>
-      <line x1="80" y1="80" x2="52" y2="52" stroke="#00E5FF" stroke-width="1.2" opacity="0.5"/>
-      <line x1="80" y1="80" x2="108" y2="52" stroke="#FF6D00" stroke-width="1.2" opacity="0.5"/>
-      <line x1="80" y1="80" x2="44" y2="88" stroke="#00E5FF" stroke-width="1.2" opacity="0.5"/>
-      <line x1="80" y1="80" x2="116" y2="88" stroke="#FF6D00" stroke-width="1.2" opacity="0.5"/>
-      <circle cx="52" cy="52" r="5" fill="#00E5FF" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite"/>
-      <circle cx="108" cy="52" r="5" fill="#FF6D00" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:0.3s"/>
-      <circle cx="44" cy="88" r="4" fill="#00E5FF" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:0.6s"/>
-      <circle cx="116" cy="88" r="4" fill="#FF6D00" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:0.9s"/>
-      <circle cx="58" cy="112" r="4.5" fill="#00E5FF" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:1.2s"/>
-      <circle cx="102" cy="112" r="4.5" fill="#FF6D00" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:0.15s"/>
-      <text x="80" y="88" text-anchor="middle" font-family="Rajdhani,sans-serif" font-size="42" font-weight="700" fill="#FF6D00" filter="url(#sp-glow)">S</text>
-    </svg>
-  </div>
+<!-- PARTÍCULAS -->
+<div style="position:absolute;width:100%;height:100%;pointer-events:none;" id="splash-particles"></div>
 
-  <!-- TITULO -->
+<!-- LOGO -->
+<div style="position:relative;z-index:2;margin-bottom:24px;">
+<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:110px;height:110px;overflow:visible;">
+<defs><filter id="sp-glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.07)" stroke-width="1"/>
+<path d="M 80 12 A 68 68 0 1 1 12.1 97" fill="none" stroke="#FF6D00" stroke-width="5" stroke-linecap="round" filter="url(#sp-glow)" stroke-dasharray="320" style="animation:arc-spin-a 4s linear infinite"/>
+<path d="M 80 22 A 58 58 0 1 0 24.5 107" fill="none" stroke="#00E5FF" stroke-width="3.5" stroke-linecap="round" filter="url(#sp-glow)" stroke-dasharray="280" style="animation:arc-spin-b 5s linear infinite"/>
+<path d="M 80 28 A 52 52 0 0 1 126 54" fill="none" stroke="#ff00aa" stroke-width="2.5" stroke-linecap="round" filter="url(#sp-glow)" stroke-dasharray="120" style="animation:arc-spin-c 3s linear infinite"/>
+<path d="M 80 30 A 50 50 0 0 0 34 107" fill="none" stroke="#39ff14" stroke-width="2" stroke-linecap="round" filter="url(#sp-glow)" stroke-dasharray="80" style="animation:arc-spin-a 6s linear infinite reverse"/>
+<line x1="80" y1="80" x2="52" y2="52" stroke="#00E5FF" stroke-width="1" opacity="0.4"/>
+<line x1="80" y1="80" x2="108" y2="52" stroke="#FF6D00" stroke-width="1" opacity="0.4"/>
+<line x1="80" y1="80" x2="44" y2="88" stroke="#ff00aa" stroke-width="1" opacity="0.3"/>
+<line x1="80" y1="80" x2="116" y2="88" stroke="#FF6D00" stroke-width="1" opacity="0.4"/>
+<line x1="80" y1="80" x2="58" y2="112" stroke="#39ff14" stroke-width="1" opacity="0.3"/>
+<line x1="80" y1="80" x2="102" y2="112" stroke="#00E5FF" stroke-width="1" opacity="0.3"/>
+<circle cx="52" cy="52" r="4.5" fill="#00E5FF" filter="url(#sp-glow)" style="animation:node-blink 1.6s ease-in-out infinite"/>
+<circle cx="108" cy="52" r="4.5" fill="#FF6D00" filter="url(#sp-glow)" style="animation:node-blink 1.6s ease-in-out infinite;animation-delay:.3s"/>
+<circle cx="44" cy="88" r="3.5" fill="#ff00aa" filter="url(#sp-glow)" style="animation:node-blink 1.6s ease-in-out infinite;animation-delay:.6s"/>
+<circle cx="116" cy="88" r="3.5" fill="#FF6D00" filter="url(#sp-glow)" style="animation:node-blink 1.6s ease-in-out infinite;animation-delay:.9s"/>
+<circle cx="58" cy="112" r="4" fill="#39ff14" filter="url(#sp-glow)" style="animation:node-blink 1.6s ease-in-out infinite;animation-delay:1.2s"/>
+<circle cx="102" cy="112" r="4" fill="#00E5FF" filter="url(#sp-glow)" style="animation:node-blink 1.6s ease-in-out infinite;animation-delay:.15s"/>
+<text x="80" y="88" text-anchor="middle" font-family="Rajdhani,sans-serif" font-size="42" font-weight="700" fill="#FF6D00" style="animation:glow-s 2s ease-in-out infinite">S</text>
+</svg>
+</div>
+
+<!-- TITULO -->
+<div style="animation:fadein-up .5s ease .2s both;text-align:center;margin-bottom:10px;z-index:2;">
+<div style="font-family:Rajdhani,sans-serif;font-size:2rem;font-weight:700;letter-spacing:3px;color:#fff;">SERVI<span style="color:#FF6D00;">RED</span></div>
+</div>
+
+<!-- SALUDO -->
+<div id="splash-saludo" style="animation:fadein-up .5s ease .45s both;text-align:center;margin-bottom:4px;z-index:2;font-family:Rajdhani,sans-serif;font-size:1.05rem;color:#00E5FF;font-weight:600;"></div>
+<div id="splash-sub" style="animation:fadein-up .5s ease .6s both;text-align:center;margin-bottom:6px;z-index:2;color:#64748b;font-size:0.78rem;line-height:1.5;"></div>
+
+<!-- TAGLINE ROTANTE -->
+<div id="splash-tagline" style="animation:fadein-up .5s ease .75s both;text-align:center;margin-bottom:28px;z-index:2;min-height:1.1rem;">
+<span style="color:#475569;font-size:0.68rem;font-style:italic;letter-spacing:.5px;"></span>
+</div>
+
+<!-- MENSAJES DE CARGA -->
+<div id="splash-msg" style="z-index:2;height:18px;margin-bottom:14px;text-align:center;">
+<span style="font-family:Rajdhani,sans-serif;font-size:0.78rem;color:#334155;letter-spacing:.5px;"></span>
+</div>
+
+<!-- BARRA -->
+<div style="width:180px;height:2px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;z-index:2;margin-bottom:10px;">
+<div id="splash-bar" style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,#00E5FF,#ff00aa,#FF6D00);animation:bar-fill 2.8s cubic-bezier(.4,0,.2,1) forwards;"></div>
+</div>
+
+<!-- CHECKMARK -->
+<div id="splash-check" style="z-index:2;opacity:0;font-size:0.82rem;color:#39ff14;font-family:Rajdhani,sans-serif;letter-spacing:1px;">✓ &nbsp;Listo</div>
+
+<script>
+(function(){
+var taglines=['Sistema operativo de servicios inteligentes.','IA conectando personas reales.','Tu red profesional comienza aquí.','Clientes. Comercios. Trabajadores.','Construyendo oportunidades locales.','Inteligencia territorial en acción.','Todo listo para empezar.'];
+var msgs=['Sincronizando tu entorno...','Preparando tu experiencia...','Conectando la red...','Todo listo.'];
+
+// Saludo
+try{
+  var u=JSON.parse(localStorage.getItem('usuario')||'{}');
+  var nombre=u.nombre?u.nombre.split(' ')[0]:null;
+  document.getElementById('splash-saludo').textContent=nombre?'Hola, '+nombre+' 👋':'Bienvenido/a 👋';
+  document.getElementById('splash-sub').innerHTML=nombre?'¿En qué podemos ayudarte hoy?':'Conectando clientes, comercios<br>y trabajadores.';
+}catch(e){document.getElementById('splash-saludo').textContent='Bienvenido/a 👋';document.getElementById('splash-sub').textContent='Conectando clientes, comercios y trabajadores.';}
+
+// Tagline rotante
+var tl=taglines[Math.floor(Math.random()*taglines.length)];
+document.getElementById('splash-tagline').querySelector('span').textContent=tl;
+
+// Mensajes de carga
+var mi=0;
+var msgEl=document.getElementById('splash-msg').querySelector('span');
+function showMsg(){
+  if(mi>=msgs.length)return;
+  msgEl.style.animation='none';
+  msgEl.offsetHeight;
+  msgEl.textContent=msgs[mi++];
+  msgEl.style.animation='msg-fade .7s ease forwards';
+}
+showMsg();
+var mt=setInterval(function(){
+  if(mi<msgs.length)showMsg(); else clearInterval(mt);
+},700);
+
+// Partículas
+var pc=document.getElementById('splash-particles');
+var colors=['#00E5FF','#FF6D00','#ff00aa','#39ff14'];
+for(var i=0;i<18;i++){
+  var d=document.createElement('div');
+  var cx=35+Math.random()*30, cy=35+Math.random()*30;
+  var px=(Math.random()-0.5)*80, py=(Math.random()-0.5)*80;
+  var px2=(Math.random()-0.5)*120, py2=(Math.random()-0.5)*120;
+  var c=colors[Math.floor(Math.random()*colors.length)];
+  var delay=Math.random()*2, dur=1.5+Math.random()*1.5;
+  d.style.cssText='position:absolute;width:3px;height:3px;border-radius:50%;background:'+c+';left:'+cx+'%;top:'+cy+'%;--px:'+px+'px;--py:'+py+'px;--px2:'+px2+'px;--py2:'+py2+'px;animation:particle-float '+dur+'s ease '+delay+'s infinite;opacity:0;';
+  pc.appendChild(d);
+}
+
+// Checkmark + fadeout
+setTimeout(function(){
+  var ck=document.getElementById('splash-check');
+  ck.style.animation='checkmark-pop .4s ease forwards';
+  ck.style.opacity='1';
+},2600);
+setTimeout(function(){
+  var sp=document.getElementById('splash-screen');
+  sp.style.transition='opacity .7s ease';
+  sp.style.opacity='0';
+  setTimeout(function(){sp.style.display='none';},700);
+},3100);
+})();
+</script>
+</div>
+
+<!-- TITULO -->
   <div style="animation:splash-fadein 0.6s ease 0.2s both;text-align:center;margin-bottom:8px;">
     <div style="font-family:Rajdhani,sans-serif;font-size:2rem;font-weight:700;letter-spacing:3px;color:#fff;">
       SERVI<span style="color:#FF6D00;">RED</span>
