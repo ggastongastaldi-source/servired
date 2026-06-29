@@ -16,3 +16,4 @@ check_*.js
 test_*.js
 wal_segments/
 .env.local
+servired-eos/
