@@ -143,7 +143,30 @@ router.post('/runtime/probe-pipeline', async (req, res) => {
       trace.push('direct-insert:OK');
       await colTest.deleteOne({ eventId: testDoc.eventId });
     } catch(e) { trace.push('direct-insert:FAIL:' + e.message); }
+
+    // === appendEvent spy ===
+    const evModule = require('../nexus/events/emitEvent');
+    const originalAppend = evModule._appendEvent;
+    global.appendEventSpyInstalled = true;
+
+    if (originalAppend) {
+      evModule._appendEvent = async function(event) {
+        trace.push('appendEvent-enter');
+        try {
+          const r = await originalAppend(event);
+          trace.push('appendEvent-exit');
+          return r;
+        } catch(e) {
+          trace.push('appendEvent-error:' + e.message);
+          throw e;
+        }
+      };
+    } else {
+      trace.push('appendEvent-not-exported');
+    }
+
     emitEvent({
+
       entityType:  req.body.entityType  || 'probe',
       type:        req.body.type        || 'WORKER_ACTIVATED',
       aggregateId: req.body.aggregateId || ('probe-' + Date.now()),
