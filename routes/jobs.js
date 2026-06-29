@@ -9,7 +9,7 @@
 
 const express       = require('express');
 const router        = express.Router();
-const { requireAuth } = require('../middleware/authMiddleware');
+const requireAuth = require('../middleware/authMiddleware');
 const { classifyJob } = require('../services/jobClassifier');
 const { analyze }     = require('../services/marketField/marketFieldEngine');
 const emitEvent       = require('../nexus/events/emitEvent');
