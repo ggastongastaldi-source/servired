@@ -79,6 +79,16 @@ router.get('/', async (req, res) => {
     services.watchdog = { status: 'UNKNOWN', error: e.message };
   }
 
+  // ── 6. Runtime ──────────────────────────────────────────
+  try {
+    const runtime = require('../runtime');
+    const s = runtime.registry.status();
+    const bus = runtime.bus.stats();
+    services.runtime = { status: 'OK', services: s, bus };
+  } catch(e) {
+    services.runtime = { status: 'UNAVAILABLE', error: e.message };
+  }
+
   metrics.response_time_ms = Date.now() - start;
   metrics.uptime_s = Math.floor(process.uptime());
   metrics.memory_mb = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
