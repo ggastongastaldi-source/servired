@@ -310,6 +310,114 @@ body{padding-bottom:70px;}
 </head>
 <body>
 
+<div id="splash-screen" style="
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:#060c1a;z-index:99999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px;box-sizing:border-box;
+  transition:opacity 0.8s ease;
+">
+  <style>
+    @keyframes splash-pulse {
+      0%,100%{transform:scale(1);opacity:1}
+      50%{transform:scale(1.08);opacity:0.85}
+    }
+    @keyframes splash-glow-cyan {
+      0%,100%{box-shadow:0 0 0px rgba(0,229,255,0)}
+      50%{box-shadow:0 0 40px rgba(0,229,255,0.18)}
+    }
+    @keyframes splash-bar {
+      0%{width:0%;background:linear-gradient(90deg,#00E5FF,#FF6D00)}
+      60%{width:75%;background:linear-gradient(90deg,#00E5FF,#FF6D00,#39ff14)}
+      100%{width:100%;background:linear-gradient(90deg,#39ff14,#00E5FF)}
+    }
+    @keyframes splash-fadein {
+      from{opacity:0;transform:translateY(12px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes arc-spin {
+      from{stroke-dashoffset:0}
+      to{stroke-dashoffset:-320}
+    }
+    @keyframes node-blink {
+      0%,100%{opacity:1;r:5}
+      50%{opacity:0.4;r:3}
+    }
+  </style>
+
+  <!-- LOGO -->
+  <div style="animation:splash-pulse 2s ease-in-out infinite;margin-bottom:28px;">
+    <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:110px;height:110px;overflow:visible;">
+      <defs>
+        <filter id="sp-glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+      <path d="M 80 12 A 68 68 0 1 1 12.1 97" fill="none" stroke="#FF6D00" stroke-width="6" stroke-linecap="round"
+        filter="url(#sp-glow)" stroke-dasharray="320" style="animation:arc-spin 3s linear infinite"/>
+      <path d="M 80 22 A 58 58 0 1 0 24.5 107" fill="none" stroke="#00E5FF" stroke-width="4" stroke-linecap="round"
+        filter="url(#sp-glow)" stroke-dasharray="280" style="animation:arc-spin 4s linear infinite reverse"/>
+      <path d="M 80 28 A 52 52 0 0 1 126 54" fill="none" stroke="#39ff14" stroke-width="3" stroke-linecap="round"
+        filter="url(#sp-glow)" stroke-dasharray="120" style="animation:arc-spin 2s linear infinite"/>
+      <line x1="80" y1="80" x2="52" y2="52" stroke="#00E5FF" stroke-width="1.2" opacity="0.5"/>
+      <line x1="80" y1="80" x2="108" y2="52" stroke="#FF6D00" stroke-width="1.2" opacity="0.5"/>
+      <line x1="80" y1="80" x2="44" y2="88" stroke="#00E5FF" stroke-width="1.2" opacity="0.5"/>
+      <line x1="80" y1="80" x2="116" y2="88" stroke="#FF6D00" stroke-width="1.2" opacity="0.5"/>
+      <circle cx="52" cy="52" r="5" fill="#00E5FF" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite"/>
+      <circle cx="108" cy="52" r="5" fill="#FF6D00" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:0.3s"/>
+      <circle cx="44" cy="88" r="4" fill="#00E5FF" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:0.6s"/>
+      <circle cx="116" cy="88" r="4" fill="#FF6D00" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:0.9s"/>
+      <circle cx="58" cy="112" r="4.5" fill="#00E5FF" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:1.2s"/>
+      <circle cx="102" cy="112" r="4.5" fill="#FF6D00" filter="url(#sp-glow)" style="animation:node-blink 1.4s ease-in-out infinite;animation-delay:0.15s"/>
+      <text x="80" y="88" text-anchor="middle" font-family="Rajdhani,sans-serif" font-size="42" font-weight="700" fill="#FF6D00" filter="url(#sp-glow)">S</text>
+    </svg>
+  </div>
+
+  <!-- TITULO -->
+  <div style="animation:splash-fadein 0.6s ease 0.2s both;text-align:center;margin-bottom:8px;">
+    <div style="font-family:Rajdhani,sans-serif;font-size:2rem;font-weight:700;letter-spacing:3px;color:#fff;">
+      SERVI<span style="color:#FF6D00;">RED</span>
+    </div>
+  </div>
+
+  <!-- SALUDO -->
+  <div id="splash-saludo" style="animation:splash-fadein 0.6s ease 0.5s both;text-align:center;margin-bottom:6px;
+    font-family:Rajdhani,sans-serif;font-size:1.1rem;color:#00E5FF;font-weight:600;min-height:1.4rem;">
+  </div>
+
+  <!-- TAGLINE -->
+  <div style="animation:splash-fadein 0.6s ease 0.8s both;text-align:center;margin-bottom:36px;">
+    <div style="color:#94a3b8;font-size:0.78rem;line-height:1.5;">
+      Sistema operativo de clientes,<br>comercios y trabajadores
+    </div>
+    <div style="color:#475569;font-size:0.68rem;margin-top:4px;">Unidos por inteligencia artificial &middot; AMBA</div>
+  </div>
+
+  <!-- BARRA DE CARGA -->
+  <div style="width:200px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+    <div id="splash-bar" style="height:100%;width:0%;border-radius:2px;animation:splash-bar 2s ease forwards;"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var splash = document.getElementById('splash-screen');
+  var saludo = document.getElementById('splash-saludo');
+  // Saludo personalizado si hay usuario
+  try {
+    var u = JSON.parse(localStorage.getItem('usuario')||'{}');
+    var nombre = u.nombre ? u.nombre.split(' ')[0] : null;
+    if (nombre) saludo.textContent = 'Hola, ' + nombre + ' 👋';
+    else saludo.textContent = 'Bienvenido/a 👋';
+  } catch(e) { saludo.textContent = 'Bienvenido/a 👋'; }
+  // Fade out despues de 2.6s
+  setTimeout(function(){
+    splash.style.opacity = '0';
+    setTimeout(function(){ splash.style.display = 'none'; }, 800);
+  }, 2600);
+})();
+</script>
+
+
 <div class="topbar">
   <button class="topbar-btn" onclick="toggleDrawer()" aria-label="Menu">☰</button>
   <div class="topbar-brand">
