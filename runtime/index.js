@@ -2,6 +2,7 @@
 const bus      = require('./EventBus');
 const registry = require('./ServiceRegistry');
 const eventLogger = require('./middleware/eventLogger');
+const NotificationService = require('./services/NotificationService');
 let _started = false;
 
 async function start(io) {
@@ -10,6 +11,7 @@ async function start(io) {
   bus.use(eventLogger);
   // Servicios se registran aquí a medida que se crean
   // registry.register(new SomeService(io));
+  registry.register(new NotificationService(io));
   await registry.startAll(bus);
   process.on('SIGTERM', () => registry.stopAll());
   process.on('SIGINT',  () => registry.stopAll());
