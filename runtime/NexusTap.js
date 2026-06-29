@@ -14,6 +14,14 @@
 let _bus = null;
 
 function tap(eventType, payload) {
+  global.__tapCounter = (global.__tapCounter || 0) + 1;
+  global.__lastTap = {
+    n: global.__tapCounter,
+    eventType,
+    payload,
+    ts: Date.now()
+  };
+
   try {
     if (!_bus) _bus = require('./index').bus;
     // fire-and-forget: el dominio no espera a los servicios del runtime
