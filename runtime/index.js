@@ -5,6 +5,7 @@ const eventLogger = require('./middleware/eventLogger');
 const NotificationService = require('./services/NotificationService');
 const AnalyticsService = require('./services/AnalyticsService');
 const ObserverService = require('./services/ObserverService');
+let __observerInstance = null;
 let _started = false;
 
 async function start(io) {
@@ -15,7 +16,11 @@ async function start(io) {
   // registry.register(new SomeService(io));
   registry.register(new NotificationService(io));
   registry.register(new AnalyticsService());
-  registry.register(new ObserverService());
+  __observerInstance = new ObserverService();
+registry.register(__observerInstance);
+if (typeof __observerInstance.start === 'function') {
+  try { __observerInstance.start(bus); } catch (e) { console.error('[Observer-start-fail]', e.message); }
+}
   await registry.startAll(bus);
   process.on('SIGTERM', () => registry.stopAll());
   process.on('SIGINT',  () => registry.stopAll());
