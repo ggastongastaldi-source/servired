@@ -140,7 +140,7 @@ router.post('/runtime/probe-pipeline', async (req, res) => {
     try {
       const testDoc = { eventId: 'probe-test-' + Date.now(), entityType: 'probe', type: 'WORKER_ACTIVATED', aggregateId: 'debora-probe-direct', sequenceNumber: 999, correlationId: 'probe', causationId: null, rootCauseId: null, version: 1, payload: {}, timestamp: new Date(), metadata: { environment: 'test' } };
       await colTest.insertOne(testDoc);
-      trace.push('direct-insert:OK');
+      trace.push('direct-insert:DISABLED');
       await colTest.deleteOne({ eventId: testDoc.eventId });
     } catch(e) { trace.push('direct-insert:FAIL:' + e.message); }
 
