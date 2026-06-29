@@ -814,3 +814,48 @@ async function __servired_persistent_socket(io) {
 }
 
 module.exports.__servired_persistent_socket = __servired_persistent_socket;
+
+
+
+/**
+ * === LIFECYCLE EXTENSION (MINIMAL) ===
+ * MATCHED → ACCEPTED
+ */
+
+async function __servired_extend_lifecycle(io) {
+  if (!io || io.__lifecycle_extended) return;
+  io.__lifecycle_extended = true;
+
+  console.log('[SR LIFECYCLE] ACCEPTED stage enabled');
+
+  io.on('connection', (socket) => {
+
+    /**
+     * worker acepta job
+     */
+    socket.on('job_accept', async (data) => {
+
+      const event = {
+        jobId: data.jobId,
+        status: 'accepted',
+        workerId: data.workerId || 'unknown',
+        ts: Date.now()
+      };
+
+      console.log('[JOB ACCEPTED]', event);
+
+      /**
+       * notifica al cliente/flujo
+       */
+      socket.emit('job_accepted', event);
+
+      /**
+       * broadcast opcional (no rompe nada existente)
+       */
+      socket.broadcast.emit('job_accepted', event);
+    });
+
+  });
+}
+
+module.exports.__servired_extend_lifecycle = __servired_extend_lifecycle;
