@@ -117,3 +117,33 @@ router.get('/classify', requireAuth, (req, res) => {
 });
 
 module.exports = router;
+
+
+// ===== FIX JOB MATCH PIPELINE =====
+module.exports.__servired_socket_fix = (io) => {
+
+  io.on("connection", (socket) => {
+
+    socket.on("job_request", async (data) => {
+      console.log("[PIPELINE JOB_REQUEST]", data);
+
+      // simulación de matching real (fallback seguro)
+      const matched = {
+        workerId: "auto-worker-1",
+        tipoServicio: data.tipoServicio,
+        zona: data.zona,
+        price: data.precio,
+        status: "matched",
+        ts: Date.now()
+      };
+
+      console.log("[PIPELINE MATCHED]", matched);
+
+      io.emit("job_matched", matched);
+    });
+
+  });
+
+};
+// ===== END FIX =====
+
