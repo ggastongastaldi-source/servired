@@ -164,7 +164,7 @@ router.post('/runtime/probe-pipeline', async (req, res) => {
 router.get('/runtime/observer', async (req, res) => {
   try {
     const snap = global.observerSnapshot || { total_events: 0, counts: {}, note: 'no snapshot yet' };
-    res.json(snap);
+    res.json({ ...snap, lastNexusError: global._lastNexusError || null });
   } catch(err) {
     res.status(500).json({ error: err.message });
   }
