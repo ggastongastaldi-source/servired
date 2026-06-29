@@ -330,7 +330,7 @@ body{padding-bottom:70px;}
   <button class="drawer-item" onclick="closeDrawer();abrirModal('como-funciona')">📖 Cómo funciona ServiRed</button>
   <button class="drawer-item" onclick="closeDrawer();abrirModal('soporte')">💬 Ayuda / Soporte</button>
   <div style="border-top:1px solid rgba(255,255,255,0.08);margin:10px 0;"></div>
-  <button class="drawer-item" onclick="closeDrawer();abrirModal('login-gen')">🔑 Ya tengo cuenta</button>
+  <button class="drawer-item" onclick="closeDrawer();abrirModal('modal-login-gen')">🔑 Ya tengo cuenta</button>
 </div>
 
 <div class="modal-bg" id="modal-notif">
@@ -851,7 +851,7 @@ function toggleNotif(){
 let destinoLogin = null; sessionStorage.removeItem("destino");
 function abrirModalConDestino(destino){
   destinoLogin = destino;
-  abrirModal('login-gen');
+  abrirModal('modal-login-gen');
 }
 function abrirModal(id){cerrarModals();document.getElementById('modal-'+id).classList.add('show');}
 function cerrarModals(){document.querySelectorAll('.modal-bg').forEach(m=>m.classList.remove('show'));}
@@ -1276,7 +1276,7 @@ function bnAbrirPerfil() {
   } else if (mode === AppMode.MODES.COMERCIO && token) {
     window.location.href = '/comercio.html';
   } else {
-    abrirModal('login-gen');
+    abrirModal('modal-login-gen');
   }
 }
 
@@ -1661,6 +1661,7 @@ async function initAppShell() {
     if (!data.ok) { localStorage.removeItem("token"); return; }
     window.__userSnapshot = data.snapshot;
     document.body.classList.add("authenticated");
+    actualizarWelcomeCard(data.snapshot);
     if (data.snapshot.state === "BLOQUEADO") { document.body.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e1a;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1.2rem;'>Cuenta bloqueada. Contacta soporte.</div>"; return; }
     if (data.snapshot.needsOnboarding) { mostrarSeleccionRol(data.snapshot); return; }
     const headerUser = document.getElementById("header-user");
