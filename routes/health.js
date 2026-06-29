@@ -89,6 +89,12 @@ router.get('/', async (req, res) => {
     services.runtime = { status: 'UNAVAILABLE', error: e.message };
   }
 
+  // ── 7. Observer snapshot ────────────────────────────────
+  try {
+    const snap = global.observerSnapshot;
+    if (snap) metrics.observer = { total_events: snap.total_events, throughput_per_min: snap.throughput_per_min, latency: snap.latency, uptime_s: snap.uptime_s };
+  } catch(_) {}
+
   metrics.response_time_ms = Date.now() - start;
   metrics.uptime_s = Math.floor(process.uptime());
   metrics.memory_mb = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);

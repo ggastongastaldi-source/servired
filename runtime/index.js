@@ -4,6 +4,7 @@ const registry = require('./ServiceRegistry');
 const eventLogger = require('./middleware/eventLogger');
 const NotificationService = require('./services/NotificationService');
 const AnalyticsService = require('./services/AnalyticsService');
+const ObserverService = require('./services/ObserverService');
 let _started = false;
 
 async function start(io) {
@@ -14,6 +15,7 @@ async function start(io) {
   // registry.register(new SomeService(io));
   registry.register(new NotificationService(io));
   registry.register(new AnalyticsService());
+  registry.register(new ObserverService());
   await registry.startAll(bus);
   process.on('SIGTERM', () => registry.stopAll());
   process.on('SIGINT',  () => registry.stopAll());
