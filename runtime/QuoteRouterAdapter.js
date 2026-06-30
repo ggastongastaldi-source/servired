@@ -12,22 +12,25 @@
  */
 
 const { tap } = require('./NexusTap');
+const { router: sharedRouter } = require('../shared/events/router-instance');
 
 const QuoteRouterAdapter = {
   publish(event) {
     if (!event || !event.event_type) {
       return Promise.resolve();
     }
-    // Traducir event_type → type para el Runtime EventBus
+    // Traducir event_type → type para el Runtime EventBus (NexusTap)
     tap(event.event_type, {
       ...event.payload,
-      // Preservar metadata útil para el Observer
       _eventId:       event.event_id,
       _correlationId: event.correlation_id,
       _actor:         event.actor,
       _ts:            event.timestamp,
     });
-    return Promise.resolve();
+    // Publicar tambien en el EventRouter compartido para que los reactores lo reciban
+    return sharedRouter.publish(event).catch(e => {
+      console.error('[QuoteRouterAdapter] sharedRouter.publish error:', e.message);
+    });
   }
 };
 
