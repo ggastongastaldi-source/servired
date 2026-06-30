@@ -330,6 +330,7 @@ body{padding-bottom:70px;}
 <div style="position:absolute;inset:8px;border-radius:16px;border:1px solid rgba(0,229,255,0.3);animation:sp-border 3s ease-in-out infinite;pointer-events:none;"></div>
 <div id="sp-pts" style="position:absolute;inset:0;pointer-events:none;"></div>
 <div style="position:relative;z-index:2;margin-bottom:20px;">
+<div id="sp-logo-a" style="display:none;">
 <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:150px;height:150px;overflow:visible;">
 <defs><filter id="spg"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
 <circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
@@ -352,6 +353,45 @@ body{padding-bottom:70px;}
 <text x="80" y="97" text-anchor="middle" font-family="Rajdhani,Arial Black,sans-serif" font-size="78" font-weight="900" fill="#FF6D00" style="animation:glow-s 2.5s ease-in-out infinite">S</text>
 </svg>
 </div>
+
+<div id="sp-logo-b" style="display:none;">
+<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:150px;height:150px;overflow:visible;">
+<circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
+<g style="animation:arc-a 8s linear infinite;transform-origin:80px 80px;">
+<path d="M80 18 L86 30 L98 28 L100 40 L112 42 L108 54 L118 62 L108 70 L112 82 L100 84 L98 96 L86 94 L80 106 L74 94 L62 96 L60 84 L48 82 L52 70 L42 62 L52 54 L48 42 L60 40 L62 28 L74 30 Z" fill="none" stroke="#FF6D00" stroke-width="4" stroke-linejoin="round" filter="url(#spg)" opacity="0.85"/>
+</g>
+<circle cx="80" cy="80" r="32" fill="none" stroke="#00E5FF" stroke-width="4" filter="url(#spg)"/>
+<circle cx="80" cy="80" r="16" fill="#060c1a" stroke="#00E5FF" stroke-width="2"/>
+<line x1="80" y1="80" x2="55" y2="58" stroke="#00E5FF" stroke-width="1.3" opacity="0.6"/>
+<line x1="80" y1="80" x2="105" y2="58" stroke="#ff00aa" stroke-width="1.3" opacity="0.55"/>
+<line x1="80" y1="80" x2="48" y2="90" stroke="#39ff14" stroke-width="1.3" opacity="0.5"/>
+<line x1="80" y1="80" x2="112" y2="90" stroke="#FF6D00" stroke-width="1.3" opacity="0.5"/>
+<circle cx="55" cy="58" r="4.5" fill="#00E5FF" filter="url(#spg)" style="animation:nd-blink 1.4s ease-in-out infinite"/>
+<circle cx="105" cy="58" r="4.5" fill="#ff00aa" filter="url(#spg)" style="animation:nd-blink 1.4s ease-in-out infinite;animation-delay:.3s"/>
+<circle cx="48" cy="90" r="4" fill="#39ff14" filter="url(#spg)" style="animation:nd-blink 1.4s ease-in-out infinite;animation-delay:.6s"/>
+<circle cx="112" cy="90" r="4" fill="#FF6D00" filter="url(#spg)" style="animation:nd-blink 1.4s ease-in-out infinite;animation-delay:.9s"/>
+<text x="80" y="88" text-anchor="middle" font-family="Rajdhani,Arial Black,sans-serif" font-size="34" font-weight="900" fill="#FF6D00" style="animation:glow-s 2.5s ease-in-out infinite">S</text>
+</svg>
+</div>
+
+<div id="sp-logo-c" style="display:none;">
+<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:150px;height:150px;overflow:visible;">
+<circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
+<g style="animation:arc-c 5s ease-in-out infinite;transform-origin:80px 80px;">
+<path d="M58 38 L72 52 L66 58 L52 44 C46 50 46 60 52 66 L100 114 C104 118 110 118 114 114 C118 110 118 104 114 100 L66 52 L72 46 L86 60 L94 52 L80 38 C72 30 64 30 58 38 Z" fill="none" stroke="#00E5FF" stroke-width="3.5" stroke-linejoin="round" filter="url(#spg)" opacity="0.9"/>
+</g>
+<line x1="80" y1="80" x2="50" y2="65" stroke="#FF6D00" stroke-width="1.3" opacity="0.55"/>
+<line x1="80" y1="80" x2="110" y2="65" stroke="#ff00aa" stroke-width="1.3" opacity="0.5"/>
+<line x1="80" y1="80" x2="50" y2="100" stroke="#39ff14" stroke-width="1.3" opacity="0.5"/>
+<line x1="80" y1="80" x2="110" y2="100" stroke="#00E5FF" stroke-width="1.3" opacity="0.55"/>
+<circle cx="50" cy="65" r="4.5" fill="#FF6D00" filter="url(#spg)" style="animation:nd-blink 1.4s ease-in-out infinite"/>
+<circle cx="110" cy="65" r="4.5" fill="#ff00aa" filter="url(#spg)" style="animation:nd-blink 1.4s ease-in-out infinite;animation-delay:.3s"/>
+<circle cx="50" cy="100" r="4" fill="#39ff14" filter="url(#spg)" style="animation:nd-blink 1.4s ease-in-out infinite;animation-delay:.6s"/>
+<circle cx="110" cy="100" r="4" fill="#00E5FF" filter="url(#spg)" style="animation:nd-blink 1.4s ease-in-out infinite;animation-delay:.9s"/>
+<text x="80" y="100" text-anchor="middle" font-family="Rajdhani,Arial Black,sans-serif" font-size="52" font-weight="900" fill="#FF6D00" style="animation:glow-s 2.5s ease-in-out infinite">S</text>
+</svg>
+</div>
+</div>
 <div style="z-index:2;animation:fin-up .4s ease .1s both;text-align:center;margin-bottom:14px;">
 <span style="font-family:Rajdhani,sans-serif;font-size:2.4rem;font-weight:700;letter-spacing:4px;color:#fff;">SERVI</span><span style="font-family:Rajdhani,sans-serif;font-size:2.4rem;font-weight:700;letter-spacing:4px;color:#FF6D00;">RED</span>
 </div>
@@ -368,6 +408,9 @@ body{padding-bottom:70px;}
 var tls=["Sistema operativo de servicios inteligentes.","IA conectando personas reales.","Tu red profesional comienza aqui.","Clientes. Comercios. Trabajadores.","Construyendo oportunidades locales.","Inteligencia territorial en accion."];
 var msgs=["Sincronizando tu entorno...","Preparando tu experiencia...","Conectando la red...","Todo listo."];
 try{var u=JSON.parse(localStorage.getItem("usuario")||"{}");var n=u.nombre?u.nombre.split(" ")[0]:null;document.getElementById("sp-saludo").textContent=n?"Hola, "+n:"Bienvenido/a";document.getElementById("sp-sub").innerHTML=n?"En que podemos ayudarte hoy?":"Conectando clientes, comercios<br>y trabajadores.";}catch(e){document.getElementById("sp-saludo").textContent="Bienvenido/a";document.getElementById("sp-sub").textContent="Conectando clientes, comercios y trabajadores.";}
+var logos=["sp-logo-a","sp-logo-b","sp-logo-c"];
+var pickedLogo=logos[Math.floor(Math.random()*logos.length)];
+document.getElementById(pickedLogo).style.display="block";
 document.getElementById("sp-tl").querySelector("span").textContent=tls[Math.floor(Math.random()*tls.length)];
 var mi=0,msgEl=document.getElementById("sp-msg").querySelector("span");
 function nxt(){if(mi>=msgs.length)return;msgEl.style.animation="none";msgEl.offsetHeight;msgEl.textContent=msgs[mi++];msgEl.style.animation="msg-in .5s ease forwards";}
