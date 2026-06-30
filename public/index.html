@@ -401,7 +401,7 @@ setTimeout(function(){var sp=document.getElementById("splash-screen");sp.style.t
   <button class="drawer-item" onclick="closeDrawer();abrirModal('como-funciona')">📖 Cómo funciona ServiRed</button>
   <button class="drawer-item" onclick="closeDrawer();abrirModal('soporte')">💬 Ayuda / Soporte</button>
   <div style="border-top:1px solid rgba(255,255,255,0.08);margin:10px 0;"></div>
-  <button class="drawer-item" onclick="closeDrawer();abrirModal('modal-login-gen')">🔑 Ya tengo cuenta</button>
+  <button class="drawer-item" onclick="closeDrawer();abrirModal('login-gen')">🔑 Ya tengo cuenta</button>
 </div>
 
 <div class="modal-bg" id="modal-notif">
@@ -744,7 +744,7 @@ function toggleNotif(){
 <div id="home-login-block" style="margin-bottom:18px;">
   <div id="home-google-btn" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
   <div style="text-align:center;color:#64748b;font-size:0.72rem;margin-bottom:10px;">— o ingresa con email —</div>
-  <button onclick="abrirModal('modal-login-gen')" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;padding:12px;border-radius:10px;font-family:Rajdhani,sans-serif;font-size:0.95rem;cursor:pointer;">
+  <button onclick="abrirModal('login-gen')" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;padding:12px;border-radius:10px;font-family:Rajdhani,sans-serif;font-size:0.95rem;cursor:pointer;">
     Ingresar con email
   </button>
   <div style="text-align:center;margin-top:10px;">
@@ -926,7 +926,7 @@ function abrirModalConDestino(destino, rubro){
     if(destino==='cliente'){ irAExplorar(rubro); return; }
     if(destino==='trabajador'){ elegirRolDesdeHome('TRABAJADOR'); return; }
   }
-  abrirModal('modal-login-gen');
+  abrirModal('login-gen');
 }
 function abrirModal(id){cerrarModals();document.getElementById('modal-'+id).classList.add('show');}
 function cerrarModals(){document.querySelectorAll('.modal-bg').forEach(m=>m.classList.remove('show'));}
@@ -1351,7 +1351,7 @@ function bnAbrirPerfil() {
   } else if (mode === AppMode.MODES.COMERCIO && token) {
     window.location.href = '/comercio.html';
   } else {
-    abrirModal('modal-login-gen');
+    abrirModal('login-gen');
   }
 }
 
@@ -1747,7 +1747,7 @@ document.addEventListener("DOMContentLoaded", initAppShell);
 
 function elegirRolDesdeHome(rol) {
   var token = localStorage.getItem("token");
-  if (!token) { abrirModal("modal-login-gen"); return; }
+  if (!token) { abrirModal("login-gen"); return; }
   if (rol === "TRABAJADOR") { iniciarWizardProvider(null); }
 }
 
