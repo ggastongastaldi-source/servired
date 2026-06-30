@@ -32,10 +32,10 @@ const AuctionOutcome   = require("../models/AuctionOutcome");
 // Si el proyecto usa un nombre distinto, ajustar el require.
 let requireAuth;
 try {
-  requireAuth = require("../middleware/auth");
-} catch {
-  // Fallback si el middleware tiene otro path — log visible en arranque
-  console.warn("[quotes] middleware/auth no encontrado — endpoints sin protección");
+  requireAuth = require("../src/core/middleware/auth").verificarToken;
+  if (typeof requireAuth !== "function") throw new Error("verificarToken no exportado");
+} catch (e) {
+  console.warn("[quotes] middleware/auth no encontrado — endpoints sin protección:", e.message);
   requireAuth = (_req, _res, next) => next();
 }
 
