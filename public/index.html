@@ -749,7 +749,7 @@ function toggleNotif(){
   </button>
   <div style="text-align:center;margin-top:10px;">
     <span style="color:#64748b;font-size:0.75rem;">No tenes cuenta? </span>
-    <span onclick="abrirModal('modal-login-gen')" style="color:#00E5FF;font-size:0.75rem;cursor:pointer;">Registrate gratis</span>
+    <span onclick="abrirModal('registro-cliente')" style="color:#00E5FF;font-size:0.75rem;cursor:pointer;">Registrate gratis</span>
   </div>
 </div>
 <div id="action-cards-section">
@@ -920,8 +920,12 @@ function toggleNotif(){
 
 <script>
 let destinoLogin = null; sessionStorage.removeItem("destino");
-function abrirModalConDestino(destino){
+function abrirModalConDestino(destino, rubro){
   destinoLogin = destino;
+  if(localStorage.getItem('token')){
+    if(destino==='cliente'){ irAExplorar(rubro); return; }
+    if(destino==='trabajador'){ elegirRolDesdeHome('TRABAJADOR'); return; }
+  }
   abrirModal('modal-login-gen');
 }
 function abrirModal(id){cerrarModals();document.getElementById('modal-'+id).classList.add('show');}
