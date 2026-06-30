@@ -174,7 +174,8 @@ router.post("/:id/withdraw", requireAuth, async (req, res) => {
  */
 router.post("/:id/select", requireAuth, async (req, res) => {
   try {
-    const userId = req.user?._id || req.user?.id;
+    console.log("[DEBUG select] req.user:", JSON.stringify(req.user));
+    const userId = req.user?._id || req.user?.id || req.user?.userId;
     if (!userId) return fail(res, "Sesión inválida", 401);
 
     const QuoteModel = require("../models/Quote");
