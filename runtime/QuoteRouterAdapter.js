@@ -28,9 +28,11 @@ const QuoteRouterAdapter = {
       _ts:            event.timestamp,
     });
     // Publicar tambien en el EventRouter compartido para que los reactores lo reciban
-    return sharedRouter.publish(event).catch(e => {
-      console.error('[QuoteRouterAdapter] sharedRouter.publish error:', e.message);
-    });
+    return sharedRouter.publish(event)
+      .then(r => console.log('[QuoteRouterAdapter] sharedRouter OK:', event.event_type))
+      .catch(e => {
+        console.error('[QuoteRouterAdapter] sharedRouter.publish FAIL:', event.event_type, e.message);
+      });
   }
 };
 
