@@ -18,11 +18,11 @@ async function start(io) {
   // registry.register(new SomeService(io));
   registry.register(new NotificationService(io));
   registry.register(new AnalyticsService());
-  __observerInstance = new ObserverService();
-registry.register(__observerInstance);
-if (typeof __observerInstance.start === 'function') {
-  try { __observerInstance.start(bus); } catch (e) { console.error('[Observer-start-fail]', e.message); }
-}
+  const __observerInstance = new ObserverService();
+  registry.register(__observerInstance);
+  if (typeof __observerInstance.start === 'function') {
+    try { __observerInstance.start(bus); } catch (e) { console.error('[Observer-start-fail]', e.message); }
+  }
   await registry.startAll(bus);
   process.on('SIGTERM', () => registry.stopAll());
   process.on('SIGINT',  () => registry.stopAll());
