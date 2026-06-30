@@ -201,6 +201,14 @@ require('./services/boostExpiry').startBoostExpiryCron();
     const { init: initJobReactor } = require('./nexus/reactive/jobRequestedReactor');
     initJobReactor(io);
     console.log('[jobRequestedReactor] io inicializado');
+
+    try {
+      const { router: quoteEventRouter } = require('./shared/events/router-instance');
+      const auctionOutcomeProjection = require('./shared/reactors/auctionOutcomeProjection');
+      auctionOutcomeProjection.init(quoteEventRouter);
+    } catch (e) {
+      console.error('[AuctionOutcomeProjection] init error:', e.message);
+    }
       const { initNexus } = require('./nexus/initNexus');
       initNexus(io)
         .then(r => console.log('[Server] Nexus:', r?.status || 'OK'))
