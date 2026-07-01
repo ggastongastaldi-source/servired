@@ -55,7 +55,7 @@ const activityLogSchema = new mongoose.Schema({
   errorMessage:       { type: String },
 
   // Trazabilidad de eventos complejos
-  correlationId: { type: String, index: true },     // agrupa eventos de una misma operación
+  correlationId: { type: String },                  // agrupa eventos de una misma operación (índice declarado abajo)
   parentEventId: { type: mongoose.Schema.Types.ObjectId, ref: 'ActivityLog' },
 
   payload:    { type: mongoose.Schema.Types.Mixed, default: {} },
