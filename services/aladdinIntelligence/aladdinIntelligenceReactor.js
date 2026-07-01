@@ -19,6 +19,12 @@ const crypto = require("crypto");
 
 const busAdapter = createSinapsisBusAdapter();
 
+// Idempotencia: insightId determinístico (no UUID random) para que
+// un replay/retry del mismo QUOTE_SELECTED no duplique el insight.
+function _deriveInsightId(requestId, insightType) {
+  return crypto.createHash("sha256").update(`${requestId}:${insightType}`).digest("hex");
+}
+
 let _router = null;
 let _buffer = [];
 let _timer  = null;
@@ -90,21 +96,25 @@ async function _handleQuoteSelected(persisted) {
     const parcial = regla(outcome);
     if (!parcial) continue;
 
-    const insightId = crypto.randomUUID();
+    const insightId = _deriveInsightId(outcome.requestId, parcial.insightType);
     const generatedAt = new Date();
 
-    await AladdinInsight.findOneAndUpdate(
-      { insightId },
-      { $setOnInsert: {
-          insightId, insightType: parcial.insightType,
-          zonaId: outcome.zonaId || null, rubroId: outcome.rubroId || null,
-          requestId: outcome.requestId, confidence: parcial.confidence,
-          message: parcial.message,
-          sourceEventIds: [outcome.eventoSeleccionId, ev.event_id].filter(Boolean),
-          status: "active", generatedAt, version: 1,
-      }},
-      { upsert: true }
-    );
+    try {
+      await AladdinInsight.create({
+        insightId, insightType: parcial.insightType,
+        zonaId: outcome.zonaId || null, rubroId: outcome.rubroId || null,
+        requestId: outcome.requestId, confidence: parcial.confidence,
+        message: parcial.message,
+        sourceEventIds: [outcome.eventoSeleccionId, ev.event_id].filter(Boolean),
+        status: "active", generatedAt, version: 1,
+      });
+    } catch (err) {
+      if (err.code === 11000) {
+        // Ya existe: reprocesamiento idempotente (replay/retry). No re-emitir al bus.
+        continue;
+      }
+      throw err;
+    }
 
     await busAdapter.persist({
       event_id: crypto.randomUUID(),

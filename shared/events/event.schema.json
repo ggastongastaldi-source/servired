@@ -44,7 +44,8 @@
         "QUOTE_UPDATED",
         "QUOTE_EXPIRED",
         "QUOTE_WITHDRAWN",
-        "QUOTE_SELECTED"
+        "QUOTE_SELECTED",
+        "AladdinInsightGenerated"
       ]
     },
     "timestamp": {
