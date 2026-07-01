@@ -28,4 +28,20 @@ router.get('/bus-status', verificarToken, soloAdmin, (req, res) => {
   }
 });
 
+
+// GET /api/soc/dixie-status
+// Reutiliza services/dixieReportService.js (misma fuente que /api/sinapsis/dixie/report).
+// Scanner corre en boot + cron cada 30 min (server.js) — este endpoint SOLO lee lo ya persistido,
+// nunca dispara un scan on-demand.
+router.get('/dixie-status', verificarToken, soloAdmin, async (req, res) => {
+  try {
+    const { buildDixieReport } = require('../services/dixieReportService');
+    const report = await buildDixieReport();
+    res.json({ ok: true, ...report });
+  } catch (e) {
+    console.error('[SOC/dixie-status]', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
