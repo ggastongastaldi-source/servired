@@ -157,6 +157,7 @@ select option{background:#1a2236;color:#e2e8f0;}
   <div class="tab" onclick="irTab('finanzas',this)">FINANZAS</div>
   <div class="tab" onclick="irTab('live',this)">LIVE</div>
   <div class="tab" onclick="irTab('nexus',this)">NEXUS</div>
+  <div class="tab" onclick="irTab('soc',this)">SOC</div>
 </div>
 
 <!-- TAB PEDIDOS -->
@@ -288,6 +289,41 @@ select option{background:#1a2236;color:#e2e8f0;}
   <div class="feed" id="feed"></div>
 </div>
 
+<div class="tc" id="tc-soc">
+  <div class="sec-title">// ServiRed Command Center</div>
+
+  <div class="kpi-row" id="soc-exec-bar">
+    <div class="kpi c"><div class="kpi-num" id="soc-circuits">—</div><div class="kpi-lbl">Circuitos</div></div>
+    <div class="kpi g"><div class="kpi-num" id="soc-health">—</div><div class="kpi-lbl">Salud Dixie</div></div>
+    <div class="kpi o"><div class="kpi-num" id="soc-comercios">—</div><div class="kpi-lbl">Comercios</div></div>
+    <div class="kpi p"><div class="kpi-num" id="soc-insights">—</div><div class="kpi-lbl">Insights Aladdín</div></div>
+  </div>
+
+  <div class="sec-title" style="margin-top:16px;">// SINAPSIS — Estado del Bus</div>
+  <div id="soc-circuits-list"><div style="color:#94a3b8;font-size:0.8rem;padding:10px;">Cargando...</div></div>
+
+  <div class="sec-title" style="margin-top:16px;">// Dixie Gate — Gobernanza</div>
+  <div class="p-row" id="soc-dixie-row" style="display:none;">
+    <div class="p-info">
+      <div class="p-srv">Modo: <span id="soc-dixie-mode">—</span></div>
+      <div class="p-meta" id="soc-dixie-summary">—</div>
+    </div>
+    <span class="badge" id="soc-dixie-badge">—</span>
+  </div>
+  <div id="soc-dixie-empty" style="color:#94a3b8;font-size:0.8rem;padding:10px;">Cargando...</div>
+
+  <div class="sec-title" style="margin-top:16px;">// Radar Comercial</div>
+  <div id="soc-comercial-content"><div style="color:#94a3b8;font-size:0.8rem;padding:10px;">Cargando...</div></div>
+
+  <div class="sec-title" style="margin-top:16px;">// Control de Inteligencia (Aladdín)</div>
+  <div id="soc-aladdin-content"><div style="color:#94a3b8;font-size:0.8rem;padding:10px;">Cargando...</div></div>
+
+  <div class="sec-title" style="margin-top:16px;">// Próximamente</div>
+  <div style="color:#4a5568;font-size:0.75rem;padding:10px;background:var(--surface2);border-radius:8px;">
+    Mission Control territorial · Economía · Chaos Lab — se incorporan cuando exista agregación real respaldándolos.
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -347,7 +383,89 @@ function irTab(id,btn){
   if(id==='nexus')cargarNexus();
   if(id==='cola')cargarCola();
   if(id==='intel')cargarIntel();
+  if(id==='soc')cargarSOC();
   setTimeout(()=>mapa?.invalidateSize(),50);
+}
+
+async function cargarSOC(){
+  try{
+    const [rBus,rDixie,rCom,rAla] = await Promise.all([
+      fetch('/api/soc/bus-status',{headers:{Authorization:'Bearer '+TOKEN}}),
+      fetch('/api/soc/dixie-status',{headers:{Authorization:'Bearer '+TOKEN}}),
+      fetch('/api/soc/commercial-status',{headers:{Authorization:'Bearer '+TOKEN}}),
+      fetch('/api/soc/aladdin-status',{headers:{Authorization:'Bearer '+TOKEN}})
+    ]);
+    const bus = await rBus.json();
+    const dixie = await rDixie.json();
+    const com = await rCom.json();
+    const ala = await rAla.json();
+
+    // Executive bar
+    document.getElementById('soc-circuits').textContent = bus.ok ? bus.nexus.totalCircuits : '—';
+    document.getElementById('soc-health').textContent = dixie.ok ? dixie.health : '—';
+    document.getElementById('soc-comercios').textContent = com.ok ? com.totales.totalComercios : '—';
+    document.getElementById('soc-insights').textContent = ala.ok ? ala.totalActivos : '—';
+
+    // SINAPSIS circuits
+    const circList = document.getElementById('soc-circuits-list');
+    if(bus.ok && bus.nexus.circuits.length){
+      circList.innerHTML = bus.nexus.circuits.map(c=>`
+        <div class="p-row">
+          <div class="p-info">
+            <div class="p-srv">${c.circuitId}</div>
+            <div class="p-meta">fallas: ${c.failures} · éxitos: ${c.successes}</div>
+          </div>
+          <span class="badge ${c.state==='CLOSED'?'PAGADA':c.state==='OPEN'?'CANCELADA':'PENDIENTE'}">${c.state}</span>
+        </div>`).join('');
+    } else {
+      circList.innerHTML = '<div style="color:#94a3b8;font-size:0.8rem;padding:10px;">Sin circuitos activos</div>';
+    }
+
+    // Dixie
+    if(dixie.ok){
+      document.getElementById('soc-dixie-row').style.display='flex';
+      document.getElementById('soc-dixie-empty').style.display='none';
+      document.getElementById('soc-dixie-mode').textContent = dixie.mode;
+      document.getElementById('soc-dixie-summary').textContent =
+        `${dixie.summary.open} abiertos / ${dixie.summary.total} totales`;
+      const badge = document.getElementById('soc-dixie-badge');
+      badge.textContent = dixie.health;
+      badge.className = 'badge ' + (dixie.health==='CLEAN'?'PAGADA':dixie.health==='ALERT'?'CANCELADA':'PENDIENTE');
+    }
+
+    // Comercial
+    const comEl = document.getElementById('soc-comercial-content');
+    if(com.ok){
+      if(com.totales.totalComercios===0){
+        comEl.innerHTML = '<div style="color:#94a3b8;font-size:0.8rem;padding:10px;">Sin comercios registrados todavía</div>';
+      } else {
+        comEl.innerHTML = `
+          <div class="p-row"><div class="p-info"><div class="p-srv">Verificados</div></div><span class="badge PAGADA">${com.totales.verificados}</span></div>
+          <div class="p-row"><div class="p-info"><div class="p-srv">Vistas hoy</div></div><span class="badge ACEPTADA">${com.totales.vistasHoyTotal}</span></div>
+          <div class="p-row"><div class="p-info"><div class="p-srv">Ingresos estimados mes</div></div><span class="badge EN_PROCESO">$${com.totales.ingresosEstimadoMesTotal}</span></div>
+        `;
+      }
+    }
+
+    // Aladdín
+    const alaEl = document.getElementById('soc-aladdin-content');
+    if(ala.ok){
+      if(ala.totalActivos===0){
+        alaEl.innerHTML = '<div style="color:#94a3b8;font-size:0.8rem;padding:10px;">Sin insights activos todavía</div>';
+      } else {
+        alaEl.innerHTML = ala.recientes.map(i=>`
+          <div class="p-row">
+            <div class="p-info">
+              <div class="p-srv">${i.insightType}</div>
+              <div class="p-meta">${i.message}</div>
+            </div>
+            <span class="badge ACEPTADA">${Math.round(i.confidence*100)}%</span>
+          </div>`).join('');
+      }
+    }
+  }catch(e){
+    console.error('[SOC]', e.message);
+  }
 }
 
 async function cargarPed(){
