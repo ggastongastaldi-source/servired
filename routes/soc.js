@@ -44,4 +44,87 @@ router.get('/dixie-status', verificarToken, soloAdmin, async (req, res) => {
   }
 });
 
+
+// GET /api/soc/commercial-status
+// Agrega MerchantProjection (read model existente) — cero recálculo desde eventos.
+router.get('/commercial-status', verificarToken, soloAdmin, async (req, res) => {
+  try {
+    const MerchantProjection = require('../models/MerchantProjection');
+
+    const [totales, porZona, topActividad] = await Promise.all([
+      MerchantProjection.aggregate([
+        { $group: {
+            _id: null,
+            totalComercios: { $sum: 1 },
+            verificados: { $sum: { $cond: ['$verificado', 1, 0] } },
+            vistasHoyTotal: { $sum: '$dashboard.vistasHoy' },
+            solicitudesHoyTotal: { $sum: '$dashboard.solicitudesHoy' },
+            ingresosEstimadoMesTotal: { $sum: '$dashboard.ingresosEstimadoMes' },
+            boostActivosTotal: { $sum: '$dashboard.boostActivos' },
+        }}
+      ]),
+      MerchantProjection.aggregate([
+        { $group: { _id: '$zonaId', comercios: { $sum: 1 } } },
+        { $sort: { comercios: -1 } },
+        { $limit: 10 }
+      ]),
+      MerchantProjection.find({})
+        .sort({ 'dashboard.vistasHoy': -1 })
+        .limit(5)
+        .select('nombreComercial zonaId dashboard.vistasHoy dashboard.solicitudesHoy')
+        .lean()
+    ]);
+
+    res.json({
+      ok: true,
+      generatedAt: new Date().toISOString(),
+      totales: totales[0] || {
+        totalComercios: 0, verificados: 0, vistasHoyTotal: 0,
+        solicitudesHoyTotal: 0, ingresosEstimadoMesTotal: 0, boostActivosTotal: 0
+      },
+      porZona,
+      topActividad,
+    });
+  } catch (e) {
+    console.error('[SOC/commercial-status]', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// GET /api/soc/aladdin-status
+// Agrega AladdinInsight (read model existente, escrito solo por aladdinIntelligenceReactor).
+router.get('/aladdin-status', verificarToken, soloAdmin, async (req, res) => {
+  try {
+    const AladdinInsight = require('../models/AladdinInsight');
+
+    const [porTipo, activos, recientes] = await Promise.all([
+      AladdinInsight.aggregate([
+        { $match: { status: 'active' } },
+        { $group: { _id: '$insightType', total: { $sum: 1 }, confidenceProm: { $avg: '$confidence' } } }
+      ]),
+      AladdinInsight.countDocuments({ status: 'active' }),
+      AladdinInsight.find({ status: 'active' })
+        .sort({ generatedAt: -1 })
+        .limit(10)
+        .select('insightType zonaId rubroId confidence message generatedAt')
+        .lean()
+    ]);
+
+    res.json({
+      ok: true,
+      generatedAt: new Date().toISOString(),
+      totalActivos: activos,
+      porTipo: porTipo.map(t => ({
+        insightType: t._id,
+        total: t.total,
+        confidencePromedio: Math.round(t.confidenceProm * 100) / 100
+      })),
+      recientes,
+    });
+  } catch (e) {
+    console.error('[SOC/aladdin-status]', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
