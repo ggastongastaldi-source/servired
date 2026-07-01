@@ -273,6 +273,7 @@ router.get("/me", async (req, res) => {
     const profileCompletion = parseFloat(Math.min(1, (fields/3)*0.6 + (optional/3)*0.4).toFixed(2));
     let state = "APP_READY";
     if (u.estado === "BLOQUEADO") state = "BLOQUEADO";
+    else if (u.rol === "ADMIN") state = "APP_READY"; // Admins no pasan por onboarding de rol (cliente/trabajador/comercio) — ya tienen rol definido
     else if (!u.rol) state = "NUEVO";
     else if (profileCompletion < 1) state = "INCOMPLETO";
     res.json({ ok: true, snapshot: { userId: u._id, state, role: u.rol||null, profileCompletion, needsOnboarding: state==="NUEVO"||state==="INCOMPLETO", onboardingStep: state==="APP_READY"?null:(u.onboardingStep||"rol"), avatar: u.avatar||null, nombre: u.nombre, lastTransitionAt: u.updatedAt?new Date(u.updatedAt).getTime():Date.now() }});
