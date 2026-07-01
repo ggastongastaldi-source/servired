@@ -126,4 +126,4 @@ async function evaluateCircuitBreaker(openFindings, getState, SystemState) {
   return { action: 'NONE', reason: 'NO_TRIGGER', trigger: null };
 }
 
-module.exports = { evaluateCircuitBreaker };
+module.exports = { evaluateCircuitBreaker, ACCUMULATION_WINDOW_MS };
