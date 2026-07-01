@@ -143,6 +143,16 @@ async function scan() {
   // Reusa openFindings ya cargado arriba — sin query adicional.
   const breakerDecision = await evaluateCircuitBreaker(openFindings, getState, SystemState);
 
+  // ── Fiscal: correlaciona evidencia (PolicyFinding + salud de integraciones externas) en IncidentCase ──
+  // No bloquea el scan si falla — el Fiscal es best-effort, la evidencia (PolicyFinding) ya quedó persistida arriba.
+  let fiscalResult = { casesCreated: 0, casesUpdated: 0 };
+  try {
+    const { runCorrelation } = require('./incidentCaseAggregator');
+    fiscalResult = await runCorrelation();
+  } catch (e) {
+    console.error('[DIXIE_TERMINAL] Fiscal error (no bloqueante):', e.message);
+  }
+
   const status = created.length === 0 ? 'CLEAN' : 'FINDINGS_DETECTED';
 
   console.log(JSON.stringify({
@@ -159,6 +169,7 @@ async function scan() {
     decisions:     decisions.length,
     actionsApplied: appliedCount,
     circuitBreaker: breakerDecision,
+    fiscal: fiscalResult,
     bus: {
       total:       busResult.total,
       integrityOk: busResult.integrityOk,
