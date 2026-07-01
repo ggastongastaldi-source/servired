@@ -95,6 +95,20 @@ router.get('/', async (req, res) => {
     if (snap) metrics.observer = { total_events: snap.total_events, throughput_per_min: snap.throughput_per_min, latency: snap.latency, uptime_s: snap.uptime_s };
   } catch(_) {}
 
+  // ── 8. Integraciones externas (Google OAuth, Mercado Pago) ──────
+  // Lee snapshot cacheado por externalHealthMonitor.js — nunca llama
+  // a los proveedores externos en cada request a /health.
+  try {
+    const { getSnapshot } = require('../services/externalHealthMonitor');
+    const ext = getSnapshot();
+    services.googleOAuth = ext.googleOAuth;
+    services.mercadoPago = ext.mercadoPago;
+    if ((ext.googleOAuth.status === 'DOWN' || ext.mercadoPago.status === 'DOWN') && status === 'HEALTHY') status = 'DEGRADED';
+  } catch(e) {
+    services.googleOAuth = { status: 'UNKNOWN', error: e.message };
+    services.mercadoPago = { status: 'UNKNOWN', error: e.message };
+  }
+
   metrics.response_time_ms = Date.now() - start;
   metrics.uptime_s = Math.floor(process.uptime());
   metrics.memory_mb = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);

@@ -187,6 +187,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/servired')
       console.log('✅ MongoDB conectado');
     assertSystemUsers().catch(e => console.error('[assertSystemUsers]', e.message));
 require('./services/boostExpiry').startBoostExpiryCron();
+    require('./services/externalHealthMonitor').start();
     rtmil.init({ durabilityMode: 'SAFE' });
     console.log('[RTMIL] Pipeline activo — WAL + Backpressure + Spill');
     require('./src/core/services/financeWatchdog').iniciar();
