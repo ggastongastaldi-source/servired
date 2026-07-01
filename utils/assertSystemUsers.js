@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const USERS = [
   { email:'gaston@servired.com', password:'admin123', rol:'ADMIN', estado:'ACTIVO' },
+  { email:'ggastonnet@gmail.com', password:'28630732G@s', rol:'ADMIN', estado:'ACTIVO' },
   { email:'cliente@servired.com', password:'Test2026ok', rol:'CLIENTE', estado:'ACTIVO' },
   { email:'debora.rouiller.1@gmail.com', password:'debora123', rol:'TRABAJADOR', estado:'VERIFICADO', disponible:true, especialidades:['servicio_domestico','limpieza_hogar'], zona:'la_matanza' },
 ];
