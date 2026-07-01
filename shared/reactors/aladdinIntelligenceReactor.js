@@ -2,10 +2,12 @@
 /**
  * AladdinIntelligenceReactor — Reactor CQRS (ADR-003: read-only)
  *
- * Escucha: QUOTE_SELECTED (mismo evento que auctionOutcomeProjection)
+ * Escucha: AuctionOutcomeProjected (evento derivado, emitido recien
+ *          cuando AuctionOutcome ya esta materializado — elimina la
+ *          dependencia de orden entre reactores suscriptos a QUOTE_SELECTED)
  * Lee:     AuctionOutcome (read model YA calculado — no recalcula stats)
- * Produce: aladdin_insights + evento AladdinInsightGenerated en
- *          sinapsis_bus_log vía sinapsisBusAdapter (mismo hash-chain).
+ * Produce: aladdin_insights + evento AladdinInsightGenerated, publicado
+ *          via el mismo EventRouter (pasa por validateEvent y fan-out).
  *
  * ADR-003: nunca escribe en Quote, AuctionOutcome ni MarketField.
  * Los insights son advisory, no autoritativos.
@@ -14,13 +16,10 @@
 
 const AuctionOutcome = require("../../models/AuctionOutcome");
 const AladdinInsight = require("../../models/AladdinInsight");
-const { createSinapsisBusAdapter } = require("../../shared/events/persistenceAdapters/sinapsisBusAdapter");
 const crypto = require("crypto");
 
-const busAdapter = createSinapsisBusAdapter();
-
 // Idempotencia: insightId determinístico (no UUID random) para que
-// un replay/retry del mismo QUOTE_SELECTED no duplique el insight.
+// un replay/retry del mismo evento no duplique el insight.
 function _deriveInsightId(requestId, insightType) {
   return crypto.createHash("sha256").update(`${requestId}:${insightType}`).digest("hex");
 }
@@ -62,13 +61,13 @@ function init(router) {
   if (_active) return;
   _router = router;
   _active = true;
-  router.subscribe("QUOTE_SELECTED", _onQuoteSelected);
+  router.subscribe("AuctionOutcomeProjected", _onAuctionOutcomeProjected);
   _timer = setInterval(_processBatch, BATCH_INTERVAL_MS);
   if (_timer.unref) _timer.unref();
   console.log("[AladdinIntelligenceReactor] Activo.");
 }
 
-function _onQuoteSelected(persisted) {
+function _onAuctionOutcomeProjected(persisted) {
   if (!persisted) return;
   _buffer.push({ persisted, receivedAt: Date.now() });
 }
@@ -77,18 +76,20 @@ async function _processBatch() {
   if (!_buffer.length) return;
   const batch = _buffer.splice(0, _buffer.length);
   for (const { persisted } of batch) {
-    try { await _handleQuoteSelected(persisted); }
+    try { await _handleAuctionOutcomeProjected(persisted); }
     catch (err) { console.error("[AladdinIntelligenceReactor] Error:", err.message); }
   }
 }
 
-async function _handleQuoteSelected(persisted) {
+async function _handleAuctionOutcomeProjected(persisted) {
   const ev = persisted.event;
   const { requestId } = ev.payload;
 
   const outcome = await AuctionOutcome.findOne({ requestId }).lean();
   if (!outcome) {
-    console.warn(`[AladdinIntelligenceReactor] AuctionOutcome aun no disponible para requestId:${requestId}`);
+    // Defensa en profundidad: no deberia pasar, AuctionOutcomeProjected
+    // solo se emite despues de materializar el read model.
+    console.warn(`[AladdinIntelligenceReactor] AuctionOutcome no encontrado para requestId:${requestId} (inesperado)`);
     return;
   }
 
@@ -116,16 +117,17 @@ async function _handleQuoteSelected(persisted) {
       throw err;
     }
 
-    await busAdapter.persist({
+    await _router.publish({
       event_id: crypto.randomUUID(),
       event_type: "AladdinInsightGenerated",
+      timestamp: new Date().toISOString(),
       correlation_id: ev.correlation_id || ev.event_id,
       causation: { event_id: ev.event_id, event_type: ev.event_type },
       actor: { user_id: null, role: "system:aladdin-intelligence" },
       context: ev.context || { tenant_id: "servired", session_id: null, zone: outcome.zonaId || null, source: "aladdin-intelligence" },
       payload: { insightId, insightType: parcial.insightType, confidence: parcial.confidence, requestId: outcome.requestId },
       metadata: { version: 1, environment: process.env.NODE_ENV || "production" },
-    }).catch(e => console.error("[AladdinIntelligenceReactor] Error persistiendo en bus:", e.message));
+    }).catch(e => console.error("[AladdinIntelligenceReactor] Error publicando en router:", e.message));
 
     console.log(`[AladdinIntelligenceReactor] Insight: ${parcial.insightType} (${(parcial.confidence * 100).toFixed(0)}%) requestId:${outcome.requestId}`);
   }

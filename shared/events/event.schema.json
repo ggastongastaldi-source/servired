@@ -45,7 +45,8 @@
         "QUOTE_EXPIRED",
         "QUOTE_WITHDRAWN",
         "QUOTE_SELECTED",
-        "AladdinInsightGenerated"
+        "AladdinInsightGenerated",
+        "AuctionOutcomeProjected"
       ]
     },
     "timestamp": {

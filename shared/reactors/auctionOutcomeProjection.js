@@ -19,6 +19,7 @@
  */
 "use strict";
 
+const crypto = require("crypto");
 const Quote = require("../../models/Quote");
 const AuctionOutcome = require("../../models/AuctionOutcome");
 
@@ -144,6 +145,25 @@ async function _handleQuoteSelected(persisted) {
       }
     );
   }
+
+  // 5. Publicar evento derivado — la proyeccion ya esta materializada.
+  //    Aladdin Intelligence (y futuros consumidores) se suscriben a este
+  //    evento en vez de QUOTE_SELECTED, para no depender del orden de
+  //    ejecucion entre reactores.
+  await _router.publish({
+    event_id:       crypto.randomUUID(),
+    event_type:     "AuctionOutcomeProjected",
+    timestamp:      new Date().toISOString(),
+    correlation_id: ev.correlation_id || ev.event_id,
+    causation:      { event_id: ev.event_id, event_type: ev.event_type },
+    actor:          { user_id: null, role: "system:auction-outcome-projection" },
+    context:        ev.context || { tenant_id: "servired", session_id: null, zone: zonaId || null, source: "auction-outcome-projection" },
+    payload: {
+      requestId, quoteSeleccionadaId: quoteId, prestadorGanadorId: prestadorId,
+      precioGanador: precio, zonaId: zonaId || null, rubroId: rubroId || null,
+    },
+    metadata: { version: 1, environment: process.env.NODE_ENV || "production" },
+  }).catch((e) => console.error("[AuctionOutcomeProjection] Error publicando AuctionOutcomeProjected:", e.message));
 
   console.log(
     `[AuctionOutcome] requestId:${requestId} | ganadora:${quoteId} | precio:${precio} ARS | participantes:${cotizaciones.length} | rechazadas:${quoteIdsRechazadas.length}`
