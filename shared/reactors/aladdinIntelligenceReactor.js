@@ -13,7 +13,7 @@
  */
 
 const AuctionOutcome = require("../../models/AuctionOutcome");
-const AladdinInsight = require("./models/AladdinInsight");
+const AladdinInsight = require("../../models/AladdinInsight");
 const { createSinapsisBusAdapter } = require("../../shared/events/persistenceAdapters/sinapsisBusAdapter");
 const crypto = require("crypto");
 

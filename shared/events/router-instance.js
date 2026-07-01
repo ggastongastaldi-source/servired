@@ -4,6 +4,7 @@ const { createSinapsisBusAdapter } = require('./persistenceAdapters/sinapsisBusA
 const priceAnomalyObserver = require('../observers/priceAnomalyObserver');
 const trustDecayReactor    = require('../reactors/trustDecayReactor');
 const auctionOutcomeProjection = require('../reactors/auctionOutcomeProjection');
+const aladdinIntelligenceReactor = require('../reactors/aladdinIntelligenceReactor');
 
 const adapter = createSinapsisBusAdapter();
 const router  = new EventRouter({ persistenceAdapter: adapter });
@@ -37,4 +38,7 @@ trustDecayReactor.init(router);
 // Reactor Layer V3 — AuctionOutcome (CQRS)
 auctionOutcomeProjection.init(router);
 
-module.exports = { router, adapter, trustDecayReactor, auctionOutcomeProjection };
+// Reactor Layer V4 — Aladdin Intelligence (ADR-001/003: read-only sobre estado territorial)
+aladdinIntelligenceReactor.init(router);
+
+module.exports = { router, adapter, trustDecayReactor, auctionOutcomeProjection, aladdinIntelligenceReactor };
