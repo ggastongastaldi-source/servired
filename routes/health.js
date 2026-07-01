@@ -103,7 +103,8 @@ router.get('/', async (req, res) => {
     const ext = getSnapshot();
     services.googleOAuth = ext.googleOAuth;
     services.mercadoPago = ext.mercadoPago;
-    if ((ext.googleOAuth.status === 'DOWN' || ext.mercadoPago.status === 'DOWN') && status === 'HEALTHY') status = 'DEGRADED';
+    const _bad = ['DOWN', 'DEGRADED'];
+    if ((_bad.includes(ext.googleOAuth.status) || _bad.includes(ext.mercadoPago.status)) && status === 'HEALTHY') status = 'DEGRADED';
   } catch(e) {
     services.googleOAuth = { status: 'UNKNOWN', error: e.message };
     services.mercadoPago = { status: 'UNKNOWN', error: e.message };
