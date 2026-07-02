@@ -131,13 +131,13 @@ async function correlateExternalHealth() {
   return { casesCreated };
 }
 
-async function runCorrelation() {
+async function runCorrelation({ pipelineRunId = null } = {}) {
   const findingsResult = await correlateOpenFindings();
   const externalResult = await correlateExternalHealth();
   const total = findingsResult.casesCreated + externalResult.casesCreated;
   if (total > 0 || findingsResult.casesUpdated > 0) {
     console.log(JSON.stringify({
-      level: 'info', source: 'FISCAL',
+      level: 'info', source: 'FISCAL', pipelineRunId,
       casesCreated: total, casesUpdated: findingsResult.casesUpdated,
       timestamp: new Date().toISOString()
     }));

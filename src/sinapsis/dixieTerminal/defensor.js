@@ -56,7 +56,7 @@ async function processCase(incidentCase) {
   return { caseId: incidentCase.caseId, runbookId, resolved: outcome.resolved, applied: !!result };
 }
 
-async function runDefensor() {
+async function runDefensor({ pipelineRunId = null } = {}) {
   const openCases = await IncidentCase.find({ status: { $in: ['OPEN', 'INVESTIGATING'] } })
     .sort({ priority: 1, detectedAt: 1 })
     .lean();
@@ -71,7 +71,7 @@ async function runDefensor() {
   const resolved = results.filter(function(r) { return r.resolved; }).length;
 
   console.log(JSON.stringify({
-    level: 'info', source: 'DEFENSOR',
+    level: 'info', source: 'DEFENSOR', pipelineRunId,
     processed: results.length, resolved,
     timestamp: new Date().toISOString()
   }));

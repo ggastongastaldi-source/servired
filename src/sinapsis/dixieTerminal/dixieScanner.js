@@ -143,15 +143,9 @@ async function scan() {
   // Reusa openFindings ya cargado arriba — sin query adicional.
   const breakerDecision = await evaluateCircuitBreaker(openFindings, getState, SystemState);
 
-  // ── Fiscal: correlaciona evidencia (PolicyFinding + salud de integraciones externas) en IncidentCase ──
-  // No bloquea el scan si falla — el Fiscal es best-effort, la evidencia (PolicyFinding) ya quedó persistida arriba.
-  let fiscalResult = { casesCreated: 0, casesUpdated: 0 };
-  try {
-    const { runCorrelation } = require('./incidentCaseAggregator');
-    fiscalResult = await runCorrelation();
-  } catch (e) {
-    console.error('[DIXIE_TERMINAL] Fiscal error (no bloqueante):', e.message);
-  }
+  // Correlación (Fiscal) ya NO se ejecuta acá — pasó a ser responsabilidad
+  // exclusiva de socPipeline.js, que orquesta Police -> Fiscal -> Defensor.
+  // Ver socPipeline.js. Police solo detecta y persiste PolicyFinding.
 
   const status = created.length === 0 ? 'CLEAN' : 'FINDINGS_DETECTED';
 
@@ -169,7 +163,6 @@ async function scan() {
     decisions:     decisions.length,
     actionsApplied: appliedCount,
     circuitBreaker: breakerDecision,
-    fiscal: fiscalResult,
     bus: {
       total:       busResult.total,
       integrityOk: busResult.integrityOk,

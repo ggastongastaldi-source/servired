@@ -48,7 +48,7 @@ async function runSocPipeline() {
 
     t0 = Date.now();
     try {
-      result.correlation = await runCorrelation();
+      result.correlation = await runCorrelation({ pipelineRunId });
     } catch (e) {
       console.error('[SOC_PIPELINE]', pipelineRunId, 'Fiscal (runCorrelation) error:', e.message);
       result.errors.push('CORRELATION_FAILED: ' + e.message);
@@ -57,7 +57,7 @@ async function runSocPipeline() {
 
     t0 = Date.now();
     try {
-      result.defensor = await runDefensor();
+      result.defensor = await runDefensor({ pipelineRunId });
     } catch (e) {
       console.error('[SOC_PIPELINE]', pipelineRunId, 'Defensor (runDefensor) error:', e.message);
       result.errors.push('DEFENSOR_FAILED: ' + e.message);
