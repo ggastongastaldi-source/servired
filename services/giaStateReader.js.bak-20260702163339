@@ -1,11 +1,5 @@
 /**
- * GIA StateReader v1.1 — FIX: alineado al schema real de Pedido
- *
- * Bug corregido (julio 2026): consultaba workerId/clienteId y estados
- * ASIGNADO/EN_CAMINO/EN_CURSO/FINALIZADO que NO existen en el modelo real
- * (src/core/models/Pedido.js usa worker/cliente y
- * PENDIENTE/SEARCHING/EXPANDING_RADIUS/ACEPTADA/EN_PROCESO/REALIZADA/CERRADA/CANCELADA).
- * Como consecuencia, pedidoActivo devolvía siempre null para worker y cliente.
+ * GIA StateReader v1.0
  *
  * Construye el UserState que consume el PriorityEngine.
  * Lee únicamente desde:
@@ -15,17 +9,6 @@
  *
  * NUNCA modifica el Core.
  * NUNCA escribe en base de datos.
- *
- * TODOs pendientes (requieren Discovery Pass adicional antes de refinar):
- *   - llegadaConfirmada: no existe campo en el schema de Pedido. Hoy se
- *     asume false. Si existe un evento de "llegada" real, probablemente
- *     esté en pedido.timeline[] — no auditado todavía.
- *   - etaMinutos (cliente): no existe campo ETA en el schema. Hoy se
- *     devuelve 0. Confirmar si GlobuloRojo/dispatch calcula un ETA en
- *     algún otro lado antes de mostrar un número real en la UI.
- *   - expiraEn (pendienteCalificar): el schema no tiene timestamps
- *     automáticos (no usa { timestamps: true }), por eso se usa
- *     fechaCreacion en vez de updatedAt como aproximación.
  */
 'use strict';
 
@@ -55,48 +38,37 @@ async function buildUserState(userId) {
 
 // ── Detección de rol ───────────────────────────────────────────────────────
 function detectarRol(usuario) {
+  // Orden de prioridad: merchant > worker > cliente
   if (usuario.rol === 'comercio' || usuario.tipo === 'comercio') return 'merchant';
   if (usuario.rol === 'tecnico'  || usuario.tipo === 'tecnico')  return 'worker';
   return 'cliente';
 }
-
-// Traduce el estado real del schema al vocabulario que espera PriorityEngine
-// (PriorityEngine se mantiene intacto — es función pura con tests pasando —
-// la traducción vive acá, no ahí).
-const ETAPA_MAP_WORKER = Object.freeze({
-  ACEPTADA:   'ASIGNADO',
-  EN_PROCESO: 'EN_CURSO',
-  REALIZADA:  'FINALIZADO'
-});
 
 // ── Estado Worker ──────────────────────────────────────────────────────────
 async function buildWorkerState(usuario) {
   let pedidoActivo = null;
 
   try {
+    // Pedido model puede no estar disponible — falla silenciosamente
     const Pedido = require('../models/Pedido');
-    const raw = await Pedido.findOne({
-      worker: usuario._id,
-      estado: { $in: ['ACEPTADA', 'EN_PROCESO', 'REALIZADA'] }
-    }).sort({ fechaCreacion: -1 }).lean();
+    pedidoActivo = await Pedido.findOne({
+      workerId: usuario._id,
+      estado:   { $in: ['ASIGNADO', 'EN_CAMINO', 'EN_CURSO', 'FINALIZADO'] }
+    }).sort({ updatedAt: -1 }).lean();
 
-    if (raw) {
-      const pagado = ['PAID', 'HELD', 'RELEASED'].includes(raw.payment_status);
-
+    if (pedidoActivo) {
       pedidoActivo = {
-        id:                    String(raw._id),
-        etapa:                 ETAPA_MAP_WORKER[raw.estado] || raw.estado,
-        servicio:              raw.descripcion || raw.tipoServicio,
-        direccion:             raw.direccion,
-        montoFinal:            raw.total_estimado || raw.precio || 0,
-        pagoCobrado:           pagado,
-        llegadaConfirmada:     false, // TODO — ver nota de cabecera
-        minutos_transcurridos: raw.fechaCreacion
-          ? Math.round((Date.now() - new Date(raw.fechaCreacion)) / 60000)
-          : 0
+        id:                    String(pedidoActivo._id),
+        etapa:                 pedidoActivo.estado,
+        servicio:              pedidoActivo.descripcion || pedidoActivo.tipo,
+        direccion:             pedidoActivo.direccionCliente,
+        montoFinal:            pedidoActivo.montoFinal || pedidoActivo.precio,
+        pagoCobrado:           !!pedidoActivo.pagoCobrado,
+        llegadaConfirmada:     !!pedidoActivo.llegadaConfirmada,
+        minutos_transcurridos: Math.round((Date.now() - new Date(pedidoActivo.updatedAt)) / 60000)
       };
     }
-  } catch (_) { /* Pedido model no disponible — degradación segura */ }
+  } catch (_) { /* Pedido model aún no existe — ignorar */ }
 
   return {
     pedidoActivo,
@@ -120,37 +92,38 @@ async function buildClienteState(usuario) {
   try {
     const Pedido = require('../models/Pedido');
 
-    const raw = await Pedido.findOne({
-      cliente: usuario._id,
-      estado:  { $in: ['ACEPTADA', 'EN_PROCESO'] }
-    }).populate('worker', 'nombre').lean();
+    pedidoActivo = await Pedido.findOne({
+      clienteId: usuario._id,
+      estado:    { $in: ['EN_CAMINO', 'EN_CURSO'] }
+    }).lean();
 
-    if (raw) {
+    if (pedidoActivo) {
       pedidoActivo = {
-        id:           String(raw._id),
-        etapa:        'EN_CAMINO', // ACEPTADA/EN_PROCESO = seguimiento activo para el cliente
-        workerNombre: raw.worker?.nombre || 'tu profesional',
-        workerId:     raw.worker ? String(raw.worker._id || raw.worker) : null,
-        etaMinutos:   0 // TODO — ver nota de cabecera
+        id:          String(pedidoActivo._id),
+        etapa:       pedidoActivo.estado,
+        workerNombre:pedidoActivo.workerNombre,
+        workerId:    String(pedidoActivo.workerId),
+        etaMinutos:  pedidoActivo.etaMinutos || 0
       };
     }
 
+    // Pendiente de calificar: finalizado en últimas 24hs sin calificación
     const hace24h = new Date(Date.now() - 86400000);
     const sinCalificar = await Pedido.findOne({
-      cliente:             usuario._id,
-      estado:              'REALIZADA',
-      calificacionCliente: null,
-      fechaCreacion:        { $gte: hace24h }
-    }).populate('worker', 'nombre').lean();
+      clienteId:      usuario._id,
+      estado:         'FINALIZADO',
+      calificado:     { $ne: true },
+      updatedAt:      { $gte: hace24h }
+    }).lean();
 
     if (sinCalificar) {
       pendienteCalificar = {
-        id:           String(sinCalificar._id),
-        workerNombre: sinCalificar.worker?.nombre || 'tu profesional',
-        expiraEn:     new Date(new Date(sinCalificar.fechaCreacion).getTime() + 86400000).toISOString()
+        id:          String(sinCalificar._id),
+        workerNombre:sinCalificar.workerNombre,
+        expiraEn:    new Date(new Date(sinCalificar.updatedAt).getTime() + 86400000).toISOString()
       };
     }
-  } catch (_) { /* Pedido model no disponible */ }
+  } catch (_) { /* Pedido model aún no existe */ }
 
   return {
     pedidoActivo,
