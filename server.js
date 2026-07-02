@@ -138,7 +138,6 @@ app.use(express.static('public', {
     }
   }
 }));
-app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 // /r/:ref_code - URL publica de QR de referidos (redirige al flujo existente ?ref=)
 app.get('/r/:ref_code', (req, res) => res.redirect('/?ref=' + req.params.ref_code.toUpperCase()));
 
