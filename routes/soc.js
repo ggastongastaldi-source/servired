@@ -127,4 +127,42 @@ router.get('/aladdin-status', verificarToken, soloAdmin, async (req, res) => {
   }
 });
 
+
+// GET /api/soc/defensor-status
+// Agrega IncidentCase (Capa 3/4) — casos abiertos, runbooks intentados, resueltos recientes.
+// Solo lectura. runDefensor() se dispara por cron en server.js, NUNCA on-demand desde este endpoint.
+router.get('/defensor-status', verificarToken, soloAdmin, async (req, res) => {
+  try {
+    const { IncidentCase } = require('../src/sinapsis/dixieTerminal/IncidentCase');
+
+    const [abiertos, resueltosRecientes, porPrioridad] = await Promise.all([
+      IncidentCase.find({ status: { $in: ['OPEN', 'INVESTIGATING'] } })
+        .sort({ priority: 1, detectedAt: 1 })
+        .select('caseId severity priority status affectedService probableCause runbooksAttempted detectedAt')
+        .lean(),
+      IncidentCase.find({ status: 'RESOLVED' })
+        .sort({ 'resolution.resolvedAt': -1 })
+        .limit(10)
+        .select('caseId affectedService resolution')
+        .lean(),
+      IncidentCase.aggregate([
+        { $match: { status: { $in: ['OPEN', 'INVESTIGATING'] } } },
+        { $group: { _id: '$priority', total: { $sum: 1 } } }
+      ])
+    ]);
+
+    res.json({
+      ok: true,
+      generatedAt: new Date().toISOString(),
+      casosAbiertos: abiertos.length,
+      abiertos,
+      resueltosRecientes,
+      porPrioridad,
+    });
+  } catch (e) {
+    console.error('[SOC/defensor-status]', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
