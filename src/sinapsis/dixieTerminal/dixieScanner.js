@@ -39,7 +39,7 @@ async function upsertFinding(findingId, rule, detail) {
   );
 }
 
-async function scan() {
+async function scan({ pipelineRunId = null } = {}) {
   const scannedAt = new Date().toISOString();
   const created = [];
 
@@ -150,7 +150,7 @@ async function scan() {
   const status = created.length === 0 ? 'CLEAN' : 'FINDINGS_DETECTED';
 
   console.log(JSON.stringify({
-    level: 'info', source: 'DIXIE_TERMINAL',
+    level: 'info', source: 'DIXIE_TERMINAL', pipelineRunId,
     scannedAt, status,
     newFindings: created.length, openFindings: openCount
   }));

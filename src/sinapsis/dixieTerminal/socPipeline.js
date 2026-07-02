@@ -39,7 +39,7 @@ async function runSocPipeline() {
   try {
     let t0 = Date.now();
     try {
-      result.scan = await dixieScan();
+      result.scan = await dixieScan({ pipelineRunId });
     } catch (e) {
       console.error('[SOC_PIPELINE]', pipelineRunId, 'Police (dixieScan) error:', e.message);
       result.errors.push('SCAN_FAILED: ' + e.message);

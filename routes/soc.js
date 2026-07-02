@@ -165,4 +165,19 @@ router.get('/defensor-status', verificarToken, soloAdmin, async (req, res) => {
   }
 });
 
+
+// POST /api/soc/trigger-pipeline
+// TEMPORAL — dispara runSocPipeline() on-demand para validacion de integracion.
+// No reemplaza el cron de 30min. Retirar o proteger mejor una vez validado el flujo completo.
+router.post('/trigger-pipeline', verificarToken, soloAdmin, async (req, res) => {
+  try {
+    const { runSocPipeline } = require('../src/sinapsis/dixieTerminal/socPipeline');
+    const result = await runSocPipeline();
+    res.json({ ok: true, result });
+  } catch (e) {
+    console.error('[SOC/trigger-pipeline]', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
