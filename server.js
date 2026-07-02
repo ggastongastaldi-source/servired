@@ -190,11 +190,11 @@ require('./services/boostExpiry').startBoostExpiryCron();
     rtmil.init({ durabilityMode: 'SAFE' });
     console.log('[RTMIL] Pipeline activo — WAL + Backpressure + Spill');
     require('./src/core/services/financeWatchdog').iniciar();
-    // Dixie Terminal — scan inicial y cron cada 30 minutos
-    const { scan: dixieScan } = require('./src/sinapsis/dixieTerminal/dixieScanner');
-    dixieScan().catch(e => console.error('[DixieTerminal] scan inicial:', e.message));
+    // SOC Pipeline — Police -> Fiscal -> Defensor, corrida inicial y cron cada 30 minutos
+    const { runSocPipeline } = require('./src/sinapsis/dixieTerminal/socPipeline');
+    runSocPipeline().catch(e => console.error('[SocPipeline] corrida inicial:', e.message));
     cron.schedule('*/30 * * * *', () => {
-      dixieScan().catch(e => console.error('[DixieTerminal] cron scan:', e.message));
+      runSocPipeline().catch(e => console.error('[SocPipeline] cron:', e.message));
     });
 
     require('./src/dispatch').initDispatchEngine(io).catch(e => console.error('[DispatchEngine] init error:', e.message));
