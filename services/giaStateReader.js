@@ -31,6 +31,9 @@
 
 const Usuario            = require('../models/Usuario');
 const MerchantProjection = require('../models/MerchantProjection');
+const { analyze: marketFieldAnalyze } = require('./marketField/marketFieldEngine');
+const { computePricing }              = require('./pricing/pricingPolicyEngine');
+const AladdinInsight                  = require('../models/AladdinInsight');
 
 async function buildUserState(userId) {
   const usuario = await Usuario.findById(userId).lean();
@@ -159,15 +162,46 @@ async function buildClienteState(usuario) {
   };
 }
 
+// ── Contexto de mercado (Fase 2 — julio 2026) ───────────────────────────────
+// Enriquece el estado merchant reutilizando motores ya existentes.
+// Solo lectura. Degradación segura por fuente: si un motor falla, esa
+// porción queda null y las demás se intentan igual. No decide nada —
+// computePriorityAction sigue siendo el único lugar que decide (ADR-003).
+async function buildMarketContext(zonaId, rubroId) {
+  const context = { zonaId: zonaId || null, rubroId: rubroId || null, marketField: null, pricing: null, insight: null };
+  if (!zonaId) return context;
+
+  try {
+    context.marketField = await marketFieldAnalyze({ zoneId: zonaId, rubro: rubroId });
+  } catch (_) { /* MarketFieldEngine no disponible */ }
+
+  try {
+    context.pricing = await computePricing({ zoneId: zonaId, rubroId: rubroId || null });
+  } catch (_) { /* PricingPolicyEngine no disponible */ }
+
+  try {
+    const filtro = { status: 'active', zonaId };
+    if (rubroId) filtro.rubroId = rubroId;
+    context.insight = await AladdinInsight.findOne(filtro)
+      .sort({ generatedAt: -1 })
+      .select('insightType confidence message generatedAt')
+      .lean();
+  } catch (_) { /* AladdinInsight no disponible */ }
+
+  return context;
+}
+
 // ── Estado Merchant ────────────────────────────────────────────────────────
 async function buildMerchantState(usuario) {
   let projection = null;
+  let marketContext = null;
 
   try {
     const BusinessProfile = require('../models/BusinessProfile');
     const profile = await BusinessProfile.findOne({ usuarioId: usuario._id }).lean();
     if (profile) {
       projection = await MerchantProjection.findOne({ merchantId: profile._id }).lean();
+      marketContext = await buildMarketContext(profile.zonaId, profile.rubroId);
     }
   } catch (_) { /* silencioso */ }
 
@@ -180,7 +214,8 @@ async function buildMerchantState(usuario) {
     } : null,
     campanias: {
       vencidaConROI: null // futuro: conectar con módulo de campañas
-    }
+    },
+    marketContext // { zonaId, rubroId, marketField, pricing, insight } — null-safe
   };
 }
 

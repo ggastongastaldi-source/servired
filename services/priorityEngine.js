@@ -228,7 +228,7 @@ function priorizarCliente(state) {
 
 // ── Árbol de prioridades: MERCHANT ─────────────────────────────────────────
 function priorizarMerchant(state) {
-  const { projection, campanias } = state.merchant || {};
+  const { projection, campanias, marketContext } = state.merchant || {};
 
   // 1. Perfil DRAFT — sin esto nada funciona
   if (!projection || projection.estado === 'DRAFT') {
@@ -265,7 +265,9 @@ function priorizarMerchant(state) {
       descripcion: `${campanias.vencidaConROI.vistasGeneradas} vistas — renová para mantener la visibilidad`,
       cta:         'Renovar campaña',
       payload:     { campaniaId: campanias.vencidaConROI.id },
-      metrica:     'ingresos'
+      metrica:     'ingresos',
+      explicacion:       explicarMercado(marketContext),
+      resultadoEsperado: proyectarResultado(marketContext)
     });
   }
 
@@ -290,12 +292,39 @@ function priorizarMerchant(state) {
     descripcion: `Tu negocio tuvo ${projection.actividad?.vistasHoy ?? 0} vistas hoy`,
     cta:         'Activar Boost',
     payload:     { zonaId: projection.zonaId },
-    metrica:     'ingresos'
+    metrica:     'ingresos',
+    explicacion:       explicarMercado(marketContext),
+    resultadoEsperado: proyectarResultado(marketContext)
   });
 }
 
+// ── Explicación e impacto esperado (Fase 2) ─────────────────────────────────
+// Funciones puras: interpretan el marketContext ya calculado por
+// giaStateReader. No consultan nada, no importan Mongo ni servicios —
+// reciben datos, devuelven texto/objeto. Mantienen priorityEngine.js
+// desacoplado de motores externos.
+function explicarMercado(mc) {
+  if (!mc || !mc.marketField) return null;
+  const { zoneState, marketPressure } = mc.marketField;
+  const pct = Math.round(Math.abs(marketPressure || 0) * 100);
+  if (zoneState === 'SHORTAGE') return `Hay alta demanda en tu zona (presión de mercado +${pct}%) y pocos comercios cubriéndola.`;
+  if (zoneState === 'SURPLUS')  return `Tu zona tiene más oferta que demanda en este momento (presión -${pct}%).`;
+  return 'Tu zona está en equilibrio entre oferta y demanda.';
+}
+
+function proyectarResultado(mc) {
+  if (!mc || !mc.pricing || mc.pricing.suggestedPrice == null) return null;
+  return {
+    precioSugerido: mc.pricing.suggestedPrice,
+    confianza:      mc.pricing.confidence,
+    fuente:         mc.pricing.sampleSize
+      ? `basado en ${mc.pricing.sampleSize} operaciones recientes en tu zona`
+      : 'estimación de mercado'
+  };
+}
+
 // ── Constructores ──────────────────────────────────────────────────────────
-function accion({ tipo, urgencia, titulo, descripcion, cta, payload, metrica }) {
+function accion({ tipo, urgencia, titulo, descripcion, cta, payload, metrica, explicacion, resultadoEsperado }) {
   return Object.freeze({
     actionId:    `${tipo}_${Date.now()}`,
     tipo,
@@ -305,6 +334,11 @@ function accion({ tipo, urgencia, titulo, descripcion, cta, payload, metrica }) 
     cta,
     payload:     Object.freeze(payload || {}),
     metrica,
+    // Fase 2 (julio 2026) — ciclo cognitivo: explicacion responde "¿por qué?",
+    // resultadoEsperado responde "¿qué resultado espero?". Ambos opcionales —
+    // null si el state no trae marketContext (worker/cliente aún no lo usan).
+    explicacion:       explicacion || null,
+    resultadoEsperado: resultadoEsperado || null,
     computadaEn: new Date().toISOString()
   });
 }
@@ -415,7 +449,32 @@ function runTests() {
   try { r10.tipo = 'HACK'; } catch(e) { threw = true; }
   assert('Output es inmutable (Object.freeze)', threw || r10.tipo !== 'HACK');
 
-  console.log('\n✅ 10/10 tests pasaron\n');
+  // T11: Merchant sin marketContext (rama boost) — explicacion/resultadoEsperado null
+  const r11 = computePriorityAction({
+    rol: 'merchant',
+    merchant: { projection: { estado: 'ACTIVE', catalogo: { totalItems: 5 }, actividad: { solicitudesHoy: 0, vistasHoy: 20 }, zonaId: 'la_matanza' } }
+  });
+  assert('Merchant sin marketContext → AUMENTAR_VISIBILIDAD', r11.tipo === ACTION_TYPES.AUMENTAR_VISIBILIDAD);
+  assert('Sin marketContext → explicacion null', r11.explicacion === null);
+  assert('Sin marketContext → resultadoEsperado null', r11.resultadoEsperado === null);
+
+  // T12: Merchant con marketContext SHORTAGE — explicacion y resultadoEsperado poblados
+  const r12 = computePriorityAction({
+    rol: 'merchant',
+    merchant: {
+      projection: { estado: 'ACTIVE', catalogo: { totalItems: 5 }, actividad: { solicitudesHoy: 0, vistasHoy: 20 }, zonaId: 'la_matanza' },
+      marketContext: {
+        zonaId: 'la_matanza', rubroId: 'plomeria',
+        marketField: { zoneState: 'SHORTAGE', marketPressure: 0.42 },
+        pricing: { suggestedPrice: 8500, confidence: 0.7, sampleSize: 12 },
+        insight: null
+      }
+    }
+  });
+  assert('Merchant con marketContext SHORTAGE → explicacion definida', typeof r12.explicacion === 'string' && r12.explicacion.includes('demanda'));
+  assert('Merchant con marketContext → resultadoEsperado.precioSugerido', r12.resultadoEsperado && r12.resultadoEsperado.precioSugerido === 8500);
+
+  console.log('\n✅ 12/12 tests pasaron\n');
 }
 
 module.exports = {
