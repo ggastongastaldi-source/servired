@@ -499,6 +499,7 @@ app.use('/api/quotes',   require('./routes/quotes'));
 app.use('/api/jobs',     require('./routes/jobs'));
 app.use('/api/zones', require('./routes/zones'));
 app.use('/api/soc', require('./routes/soc'));
+app.use('/api/pricing', require('./routes/pricing'));
 
 // B19 Control Plane — solo admin
 
