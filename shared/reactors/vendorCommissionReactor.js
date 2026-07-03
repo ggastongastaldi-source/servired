@@ -1,5 +1,5 @@
-const { registrarEvento } = require('../../services/sinapsisBusAdapter'); // AJUSTAR si difiere
 const QRCodeCampaign = require('../../models/QRCodeCampaign');
+const { emitVendorCommissionAssigned } = require('../events/commerce-events');
 
 async function onCommerceCreated(event) {
   const { commerceId, sessionId, ref, campaign, qrId } = event.payload || event;
@@ -11,9 +11,7 @@ async function onCommerceCreated(event) {
     await campaignDoc.save();
   }
 
-  // Sin monto ni regla resuelta acá: el Commission Engine (próximo módulo)
-  // toma este evento crudo y calcula amount/rule con la lógica centralizada.
-  await registrarEvento('VENDOR_COMMISSION_ASSIGNED', {
+  const evt = emitVendorCommissionAssigned({
     vendorId: ref,
     commerceId,
     sessionId,
@@ -21,6 +19,13 @@ async function onCommerceCreated(event) {
     commissionRule: campaignDoc?.commissionRule || 'signup_base_commission',
     status: 'pending_calculation',
   });
+
+  try {
+    const { router: eventRouter } = require('../events/router-instance');
+    await eventRouter.publish(evt);
+  } catch (e) {
+    console.warn('[SQOP] eventRouter no disponible en commission reactor:', e.message);
+  }
 }
 
 module.exports = { onCommerceCreated };

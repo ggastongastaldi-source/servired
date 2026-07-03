@@ -3,14 +3,22 @@ const router = express.Router();
 const QRCodeCampaign = require('../models/QRCodeCampaign');
 const OnboardingSession = require('../models/OnboardingSession');
 const { verifyQRToken, newSessionId } = require('../services/qr/qrTokenService');
-const { registrarEvento } = require('../services/sinapsisBusAdapter'); // AJUSTAR si el path/export real difiere
+const { emitQRScanned, emitQRRejected, emitOnboardingSessionCreated } = require('../shared/events/commerce-events');
 
 const SESSION_TTL_MINUTES = 15;
 
+async function publish(evt) {
+  try {
+    const { router: eventRouter } = require('../shared/events/router-instance');
+    await eventRouter.publish(evt);
+  } catch (e) {
+    console.warn('[SQOP] eventRouter no disponible:', e.message);
+  }
+}
+
 router.get('/o', async (req, res) => {
   const { token } = req.query;
-  // ip/userAgent: SOLO auditoría/log. Nunca se usan para decisiones de seguridad
-  // (NAT, proxies y redes móviles los vuelven poco confiables como control).
+  // ip/userAgent: solo auditoria/log, nunca base de decisiones de seguridad
   const ip = req.ip;
   const userAgent = req.headers['user-agent'] || '';
 
@@ -19,7 +27,7 @@ router.get('/o', async (req, res) => {
   const { valid, payload, reason } = verifyQRToken(token);
 
   if (!valid) {
-    await registrarEvento('QR_REJECTED', { token, reason, ip, userAgent }).catch(() => {});
+    await publish(emitQRRejected({ token, reason, ip, userAgent }));
     return res.status(403).send('QR inválido o expirado');
   }
 
@@ -31,13 +39,11 @@ router.get('/o', async (req, res) => {
   }
 
   if (qrId && campaignDoc.revokedQrIds.includes(qrId)) {
-    await registrarEvento('QR_REJECTED', { token, reason: 'qr_revoked', qrId, ip, userAgent }).catch(() => {});
+    await publish(emitQRRejected({ token, reason: 'qr_revoked', qrId, ip, userAgent }));
     return res.status(403).send('Este QR fue revocado');
   }
 
-  await registrarEvento('QR_SCANNED', {
-    ref, campaign, region, scope, channel, qrId, ip, userAgent, timestamp: new Date(),
-  }).catch(() => {});
+  await publish(emitQRScanned({ ref, campaign, region, scope, channel, qrId, ip, userAgent }));
 
   campaignDoc.scansCount += 1;
   await campaignDoc.save();
@@ -47,15 +53,12 @@ router.get('/o', async (req, res) => {
 
   await OnboardingSession.create({ sessionId, ref, campaign, qrId, status: 'pending', ip, userAgent, expiresAt });
 
-  await registrarEvento('ONBOARDING_SESSION_CREATED', { sessionId, ref, campaign, qrId, expiresAt }).catch(() => {});
+  await publish(emitOnboardingSessionCreated({ sessionId, ref, campaign, qrId, expiresAt }));
 
-  // TODO (foreseen, no urgente): mover sessionId a cookie HTTP-only en vez de query param,
-  // una vez confirmado que cookie-parser está instalado y wireado en server.js.
+  // TODO (previsto, no urgente): mover sessionId a cookie HTTP-only en vez de query param.
   return res.redirect(`/onboarding?session=${sessionId}`);
 });
 
-// El frontend NUNCA recibe ref (identificador interno del vendedor).
-// Solo lo necesario para renderizar el onboarding.
 router.get('/api/onboarding/session/:sessionId', async (req, res) => {
   const { sessionId } = req.params;
   const session = await OnboardingSession.findOne({ sessionId });
@@ -69,6 +72,7 @@ router.get('/api/onboarding/session/:sessionId', async (req, res) => {
     await session.save();
   }
 
+  // El frontend NUNCA recibe ref (identificador interno del vendedor)
   return res.json({ sessionId: session.sessionId, campaign: session.campaign, status: session.status });
 });
 
