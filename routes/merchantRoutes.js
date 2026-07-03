@@ -2,14 +2,20 @@ const express = require('express');
 const router  = express.Router();
 const mc      = require('../controllers/merchantController');
 const auth    = require('../middleware/authMiddleware');
+const { whitelistBody, BUSINESS_PROFILE_FIELDS } = require('../middleware/schemaWhitelist');
+const { rateGuard } = require('../middleware/rateGuard');
+
+// Security Kernel — Input Non-Trust (P-2) + Sybil Defense (T-1)
+// aplicado sobre las rutas que escriben BusinessProfile.
+const guardProfileWrite = [rateGuard({ windowMs: 15 * 60 * 1000, limit: 10 }), whitelistBody(BUSINESS_PROFILE_FIELDS)];
 
 // Health
 router.get('/health', mc.health);
 
 // Profile
 router.get ('/profile', auth, mc.getProfile);
-router.post ('/profile', auth, mc.createProfile);
-router.patch('/profile', auth, mc.updateProfile);
+router.post ('/profile', auth, ...guardProfileWrite, mc.createProfile);
+router.patch('/profile', auth, ...guardProfileWrite, mc.updateProfile);
 
 // Dashboard (projection)
 router.get('/dashboard', auth, mc.getDashboard);
