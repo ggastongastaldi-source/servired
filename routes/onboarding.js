@@ -56,7 +56,7 @@ router.get('/o', async (req, res) => {
   await publish(emitOnboardingSessionCreated({ sessionId, ref, campaign, qrId, expiresAt }));
 
   // TODO (previsto, no urgente): mover sessionId a cookie HTTP-only en vez de query param.
-  return res.redirect(`/onboarding?session=${sessionId}`);
+  return res.redirect(`/qr/onboarding?session=${sessionId}`);
 });
 
 router.get('/api/onboarding/session/:sessionId', async (req, res) => {

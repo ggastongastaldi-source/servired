@@ -53,7 +53,7 @@ app.use('/', sitemapsRouter);
 app.use('/api/mensajes', rutaMensajes);
 app.use('/api/auth', require('./src/core/routes/auth'));
 app.use('/api/onboarding/provider', require('./src/core/routes/onboardingRoutes'));
-app.use('/', require('./routes/onboarding'));
+app.use('/qr', require('./routes/onboarding'));
 const pedidosRoute = require('./src/core/routes/pedidos')(io);
 app.use('/api/upload', require('./src/core/routes/upload'));
 app.use('/api/pedidos', pedidosRoute);
