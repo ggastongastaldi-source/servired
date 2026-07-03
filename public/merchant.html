@@ -500,9 +500,10 @@ const GIA = (() => {
     addMsg(txt,'user'); input.value='';
     try{
       const r = await fetch('/api/gia/consulta',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({mensaje:txt,modulo:'merchant',comercioId:_cid})});
+      if (!r.ok) { addMsg('Error G.I.A. ('+r.status+'): '+r.statusText,'gia'); return; }
       const d = await r.json();
       addMsg(d.respuesta || 'No pude procesar la consulta.','gia');
-    }catch(e){ addMsg('Error de conexión con G.I.A.','gia'); }
+    }catch(e){ addMsg('Error de conexión con G.I.A.: '+e.message,'gia'); }
   }
 
   return { setComercioId, abrir, cerrar, tab, aprobar, rechazar, enviar };
