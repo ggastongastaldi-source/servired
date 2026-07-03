@@ -1,56 +1,83 @@
+const crypto = require('crypto');
 
-// ── COMMERCE QR ONBOARDING EVENTS (SQOP v1) ─────────────────
-const COMMERCE_EVENTS = {
-  QR_SCANNED:                  "COMMERCE_QR_SCANNED",
-  QR_REJECTED:                 "COMMERCE_QR_REJECTED",
-  ONBOARDING_SESSION_CREATED:  "COMMERCE_ONBOARDING_SESSION_CREATED",
-  VENDOR_COMMISSION_ASSIGNED:  "VENDOR_COMMISSION_ASSIGNED"
+// Mapeo SQOP -> enum canonico real de event.schema.json (no se toca el schema compartido).
+// qr_scanned y lead_attributed ya existian en el enum; register_started y case_abandoned
+// se reusan por afinidad semantica en vez de agregar valores nuevos al contrato.
+const COMMERCE_EVENT_TYPES = {
+  QR_SCANNED: 'qr_scanned',
+  QR_REJECTED: 'case_abandoned',
+  ONBOARDING_SESSION_CREATED: 'register_started',
+  VENDOR_COMMISSION_ASSIGNED: 'lead_attributed',
 };
 
-function emitQRScanned({ ref, campaign, region, scope, channel, qrId, ip, userAgent }) {
+const TENANT_ID = 'servired'; // TODO: confirmar con Gaston si hay multi-tenant real
+const ENVIRONMENT = process.env.NODE_ENV || 'production';
+
+function buildEnvelope({ event_type, payload, actor, context, causation }) {
   return {
-    event_type: COMMERCE_EVENTS.QR_SCANNED,
-    aggregate_id: String(ref),
-    aggregate_type: "QRCampaign",
-    payload: { ref, campaign, region, scope, channel, qrId, ip, userAgent },
-    metadata: { timestamp: new Date().toISOString(), version: "1.0" }
+    event_id: crypto.randomUUID(),
+    event_type,
+    timestamp: new Date().toISOString(),
+    correlation_id: (context && context.session_id) || crypto.randomUUID(),
+    causation: causation || { event_id: null, event_type: null },
+    actor: {
+      user_id: (actor && actor.user_id) || null,
+      role: (actor && actor.role) || 'vendor',
+    },
+    context: {
+      tenant_id: TENANT_ID,
+      session_id: (context && context.session_id) || null,
+      zone: (context && context.zone) || null,
+      source: (context && context.source) || 'offline_qr',
+    },
+    payload: payload || {},
+    metadata: { version: 1, environment: ENVIRONMENT },
   };
+}
+
+function emitQRScanned({ ref, campaign, region, scope, channel, qrId, ip, userAgent }) {
+  return buildEnvelope({
+    event_type: COMMERCE_EVENT_TYPES.QR_SCANNED,
+    payload: { ref, campaign, region, scope, channel, qrId, ip, userAgent },
+    actor: { user_id: ref, role: 'vendor' },
+    context: { zone: region, source: channel },
+  });
 }
 
 function emitQRRejected({ token, reason, qrId, ip, userAgent }) {
-  return {
-    event_type: COMMERCE_EVENTS.QR_REJECTED,
-    aggregate_id: qrId || "unknown",
-    aggregate_type: "QRCampaign",
+  return buildEnvelope({
+    event_type: COMMERCE_EVENT_TYPES.QR_REJECTED,
     payload: { token, reason, qrId, ip, userAgent },
-    metadata: { timestamp: new Date().toISOString(), version: "1.0" }
-  };
+    actor: { user_id: null, role: 'unknown' },
+    context: { source: 'offline_qr' },
+  });
 }
 
-function emitOnboardingSessionCreated({ sessionId, ref, campaign, qrId, expiresAt }) {
-  return {
-    event_type: COMMERCE_EVENTS.ONBOARDING_SESSION_CREATED,
-    aggregate_id: String(sessionId),
-    aggregate_type: "OnboardingSession",
+function emitOnboardingSessionCreated({ sessionId, ref, campaign, qrId, expiresAt, qrScannedEvent }) {
+  return buildEnvelope({
+    event_type: COMMERCE_EVENT_TYPES.ONBOARDING_SESSION_CREATED,
     payload: { sessionId, ref, campaign, qrId, expiresAt },
-    metadata: { timestamp: new Date().toISOString(), version: "1.0" }
-  };
+    actor: { user_id: ref, role: 'vendor' },
+    context: { session_id: sessionId, source: 'offline_qr' },
+    causation: qrScannedEvent
+      ? { event_id: qrScannedEvent.event_id, event_type: qrScannedEvent.event_type }
+      : null,
+  });
 }
 
 function emitVendorCommissionAssigned({ vendorId, commerceId, sessionId, qrId, commissionRule, status }) {
-  return {
-    event_type: COMMERCE_EVENTS.VENDOR_COMMISSION_ASSIGNED,
-    aggregate_id: String(vendorId),
-    aggregate_type: "Vendor",
+  return buildEnvelope({
+    event_type: COMMERCE_EVENT_TYPES.VENDOR_COMMISSION_ASSIGNED,
     payload: { vendorId, commerceId, sessionId, qrId, commissionRule, status },
-    metadata: { timestamp: new Date().toISOString(), version: "1.0" }
-  };
+    actor: { user_id: vendorId, role: 'vendor' },
+    context: { session_id: sessionId, source: 'offline_qr' },
+  });
 }
 
 module.exports = {
-  COMMERCE_EVENTS,
+  COMMERCE_EVENT_TYPES,
   emitQRScanned,
   emitQRRejected,
   emitOnboardingSessionCreated,
-  emitVendorCommissionAssigned
+  emitVendorCommissionAssigned,
 };

@@ -11,14 +11,15 @@ async function publish(evt) {
   try {
     const { router: eventRouter } = require('../shared/events/router-instance');
     await eventRouter.publish(evt);
+    return evt;
   } catch (e) {
     console.warn('[SQOP] eventRouter no disponible:', e.message);
+    return evt;
   }
 }
 
 router.get('/o', async (req, res) => {
   const { token } = req.query;
-  // ip/userAgent: solo auditoria/log, nunca base de decisiones de seguridad
   const ip = req.ip;
   const userAgent = req.headers['user-agent'] || '';
 
@@ -43,7 +44,7 @@ router.get('/o', async (req, res) => {
     return res.status(403).send('Este QR fue revocado');
   }
 
-  await publish(emitQRScanned({ ref, campaign, region, scope, channel, qrId, ip, userAgent }));
+  const qrScannedEvent = await publish(emitQRScanned({ ref, campaign, region, scope, channel, qrId, ip, userAgent }));
 
   campaignDoc.scansCount += 1;
   await campaignDoc.save();
@@ -53,9 +54,8 @@ router.get('/o', async (req, res) => {
 
   await OnboardingSession.create({ sessionId, ref, campaign, qrId, status: 'pending', ip, userAgent, expiresAt });
 
-  await publish(emitOnboardingSessionCreated({ sessionId, ref, campaign, qrId, expiresAt }));
+  await publish(emitOnboardingSessionCreated({ sessionId, ref, campaign, qrId, expiresAt, qrScannedEvent }));
 
-  // TODO (previsto, no urgente): mover sessionId a cookie HTTP-only en vez de query param.
   return res.redirect(`/qr/onboarding?session=${sessionId}`);
 });
 
@@ -72,7 +72,6 @@ router.get('/api/onboarding/session/:sessionId', async (req, res) => {
     await session.save();
   }
 
-  // El frontend NUNCA recibe ref (identificador interno del vendedor)
   return res.json({ sessionId: session.sessionId, campaign: session.campaign, status: session.status });
 });
 

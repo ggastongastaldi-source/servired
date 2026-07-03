@@ -3,7 +3,7 @@ const { emitVendorCommissionAssigned } = require('../events/commerce-events');
 
 async function onCommerceCreated(event) {
   const { commerceId, sessionId, ref, campaign, qrId } = event.payload || event;
-  if (!ref) return; // alta sin origen QR, no dispara comisión
+  if (!ref) return;
 
   const campaignDoc = await QRCodeCampaign.findOne({ ref, campaign });
   if (campaignDoc) {
