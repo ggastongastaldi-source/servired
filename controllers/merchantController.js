@@ -54,3 +54,40 @@ exports.createProfile = async (req, res) => {
     res.status(500).json({ error: 'Error al crear perfil' });
   }
 };
+
+// ── STUBS TEMPORALES (destraban merchantRoutes.js, NO son implementacion real) ──
+// TODO: reemplazar cada uno con la logica real. Devuelven 501 a proposito
+// para que sea obvio en runtime que falta implementar, en vez de fallar
+// silenciosamente o inventar comportamiento.
+
+exports.health = (req, res) => {
+  res.json({ ok: true, module: 'merchant', status: 'up' });
+};
+
+exports.updateProfile = async (req, res) => {
+  res.status(501).json({ error: 'updateProfile no implementado aun' });
+};
+
+exports.getDashboard = async (req, res) => {
+  res.status(501).json({ error: 'getDashboard no implementado aun (ver Merchant Projection Layer)' });
+};
+
+exports.listCatalog = async (req, res) => {
+  res.status(501).json({ error: 'listCatalog no implementado aun' });
+};
+
+exports.createItem = async (req, res) => {
+  res.status(501).json({ error: 'createItem no implementado aun' });
+};
+
+exports.updateItem = async (req, res) => {
+  res.status(501).json({ error: 'updateItem no implementado aun' });
+};
+
+exports.deleteItem = async (req, res) => {
+  res.status(501).json({ error: 'deleteItem no implementado aun' });
+};
+
+exports.getAnalytics = async (req, res) => {
+  res.status(501).json({ error: 'getAnalytics no implementado aun (ver Merchant Projection Layer)' });
+};
