@@ -77,3 +77,60 @@ así, evaluar si conviene unificarlo más adelante).
 - Test de integración contra Mongo real para buildWorkerState/buildClienteState:
   seguía pendiente de la sesión anterior, no se hizo en esta iteración porque
   el foco fue merchant. Sigue en la cola.
+
+## Julio 2026 — Fase 3: Panel Comercial visible (merchant.html)
+
+**Contexto:** Discovery Pass de frontend confirmó que `merchant-app.js` (el
+controlador JS completo, con dashboard/perfil/catálogo/analítica) no tenía
+HTML — literalmente "el cerebro sin cuerpo". Además existían dos paneles de
+comercio en paralelo: `comercio.html` (placeholder "en construcción" con
+widget G.I.A. funcional) y `merchant-app.js` (lógica completa sin vista).
+
+**Cambios:**
+- `public/merchant.html` creado: cuerpo HTML completo con todos los IDs que
+  `merchant-app.js` ya esperaba (KPIs, formulario de perfil, grid de
+  catálogo, analítica, boost). Estética cyberpunk oscura consistente con
+  `admin.html` (cyan/naranja, Rajdhani + Share Tech Mono), con variante
+  clara vía `data-theme`.
+- Tarjeta de prioridad G.I.A. agregada al dashboard: consume
+  `/api/gia/priority` y renderiza `explicacion`/`resultadoEsperado`
+  (los campos agregados en la Fase 2 de esta misma bitácora) — primera
+  superficie visible de esa integración.
+- Widget flotante G.I.A. portado desde `comercio.html` (actividad + chat),
+  re-tematizado con los tokens de `merchant.html`. Misma lógica funcional,
+  no reescrita.
+- Selector Sol/Luna: implementado autocontenido en `merchant.html` vía
+  `data-theme` + clave `servired_theme` en localStorage. Se investigó si
+  ya existía un mecanismo reutilizable en `index.html`/`cliente.html` — el
+  match del grep anterior resultó ser el meta tag `theme-color` (falso
+  positivo), no un toggle real. Decisión: mecanismo propio y simple, sin
+  asumir una convención no verificada. Pendiente: si en el futuro se
+  confirma un toggle real en otras páginas, unificar clave.
+- `public/js/merchant-app.js`: un solo patch aditivo — emite el evento
+  `merchant:dashboard-loaded` con el `merchantId` tras cargar el dashboard,
+  para que el widget G.I.A. de `merchant.html` pueda conectarse sin poll
+  y sin que `merchant-app.js` conozca la existencia de ese widget.
+- `public/comercio.html`: pasa a redirigir a `/merchant.html` (con backup
+  `.bak-<timestamp>` conservado localmente, no versionado). Elimina la
+  duplicación de paneles señalada en esta sesión.
+
+**Punto 5 de la orden (token inválido) — revisado, sin fix nuevo:**
+`merchant-app.js` y `gia-home.html` ya usan una cadena de fallback
+(`merchant_token` → `token` → `sessionStorage.token`). El login real en
+`index.html`/`cliente.html`/`trabajador.html` siempre escribe `token`, así
+que ese fallback ya cubre el flujo de comerciante. No se encontró una causa
+raíz activa que corregir sin tocar los flujos de login de los otros roles
+(fuera del alcance de bajo riesgo pedido esta sesión). Se deja como
+observación: unificar a una sola clave (`token`) en todo el ecosistema
+sigue pendiente como mejora de consistencia, no como bug urgente.
+
+**No se tocó:** modelos, Dispatch, kernel, `priorityEngine.js`,
+`giaStateReader.js` (ya cerrados en Fase 2).
+
+**Estado tras esta sesión:** el Panel Comercial es ahora una superficie
+real y navegable en `/merchant.html`, alimentada por datos existentes
+(`MerchantProjection`, `priorityEngine` con `marketContext`, catálogo,
+G.I.A.). El siguiente salto de valor visible ya no requiere más backend —
+requiere iterar sobre esta misma pantalla (pulir estados vacíos, probar
+con datos reales de un comercio, verificar el flujo completo end-to-end
+en el dispositivo).

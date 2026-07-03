@@ -72,6 +72,12 @@ const MerchantApp = (() => {
 
     renderEstado({ estado: d.estado, nombreComercial: d.nombreComercial, logo: d.logo });
 
+    // Fase 3 (julio 2026) — notifica el merchantId para que el widget G.I.A.
+    // de merchant.html se conecte, sin acoplar merchant-app.js a ese script.
+    if (d.merchantId) {
+      document.dispatchEvent(new CustomEvent('merchant:dashboard-loaded', { detail: { merchantId: d.merchantId } }));
+    }
+
     const fechaEl = q('dashFecha');
     if (fechaEl) fechaEl.textContent = new Date().toLocaleDateString('es-AR',
       { weekday:'long', day:'numeric', month:'long' });

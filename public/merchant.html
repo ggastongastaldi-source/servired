@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mi Comercio · ServiRed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/merchant.css">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+/* ── TOKENS — dark (default) ────────────────────────────────────────────── */
+:root, [data-theme="dark"]{
+  --c-bg:       #05080f;
+  --c-surface:  #0d1321;
+  --c-surface2: #111927;
+  --c-border:   rgba(255,255,255,0.08);
+  --c-text:     #e2e8f0;
+  --c-text2:    #64748b;
+  --c-accent:   #00E5FF;
+  --c-accent2:  #FF6D00;
+  --c-success:  #10b981;
+  --c-warning:  #f59e0b;
+  --c-danger:   #ef4444;
+  --radius:     14px;
+  --radius-sm:  8px;
+  --shadow:     0 8px 30px rgba(0,0,0,.35);
+  --transition: .15s ease;
+}
+/* ── TOKENS — light ──────────────────────────────────────────────────────── */
+[data-theme="light"]{
+  --c-bg:       #f4f6fb;
+  --c-surface:  #ffffff;
+  --c-surface2: #eef1f8;
+  --c-border:   rgba(15,23,42,0.10);
+  --c-text:     #0f172a;
+  --c-text2:    #64748b;
+  --c-accent:   #0891b2;
+  --c-accent2:  #ea580c;
+  --c-success:  #059669;
+  --c-warning:  #d97706;
+  --c-danger:   #dc2626;
+  --shadow:     0 8px 24px rgba(15,23,42,.08);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--c-bg);color:var(--c-text);font-family:'Rajdhani',sans-serif;min-height:100vh;transition:background var(--transition),color var(--transition)}
+.mono{font-family:'Share Tech Mono',monospace}
+
+/* ── SHELL ──────────────────────────────────────────────────────────────── */
+.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── TOPBAR ─────────────────────────────────────────────────────────────── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 10px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--c-accent),var(--c-accent2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:15px}
+.merchant-name{font-weight:700;font-size:16px;letter-spacing:-.2px}
+.merchant-sub{font-size:11px;color:var(--c-text2)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{width:38px;height:38px;border-radius:50%;border:1px solid var(--c-border);background:var(--c-surface);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.theme-toggle:active{transform:scale(.9)}
+.status-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:4px 10px;border-radius:20px;border:1px solid var(--c-border)}
+.status-badge.active{color:var(--c-success);border-color:var(--c-success)}
+.status-badge.draft{color:var(--c-warning);border-color:var(--c-warning)}
+.status-badge.suspended{color:var(--c-danger);border-color:var(--c-danger)}
+
+/* ── NAV ────────────────────────────────────────────────────────────────── */
+.nav{display:flex;gap:4px;padding:0 14px 10px;overflow-x:auto;flex-shrink:0}
+.nav-item{flex-shrink:0;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600;color:var(--c-text2);cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:var(--transition)}
+.nav-item.active{color:var(--c-accent);border-color:var(--c-accent);background:rgba(0,229,255,.08)}
+[data-theme="light"] .nav-item.active{background:rgba(8,145,178,.08)}
+
+/* ── MAIN ───────────────────────────────────────────────────────────────── */
+.main{flex:1;padding:0 14px 90px;overflow-y:auto}
+.section{display:none}
+.section.active{display:block}
+
+/* ── PRIORITY CARD (G.I.A.) ────────────────────────────────────────────── */
+.priority-card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:18px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.priority-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--urg,var(--c-accent))}
+.priority-card.urgencia-CRITICA{--urg:#ff4757}
+.priority-card.urgencia-ALTA{--urg:var(--c-warning)}
+.priority-card.urgencia-MEDIA{--urg:var(--c-accent)}
+.priority-card.urgencia-BAJA{--urg:var(--c-success)}
+.pc-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--urg,var(--c-accent));margin-bottom:10px}
+.pc-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--urg,var(--c-accent))}
+.pc-titulo{font-size:18px;font-weight:800;margin-bottom:6px}
+.pc-desc{font-size:13px;color:var(--c-text2);line-height:1.5;margin-bottom:10px}
+.pc-explicacion{font-size:12px;color:var(--c-text2);background:var(--c-surface2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px;display:none}
+.pc-explicacion.show{display:block}
+.pc-resultado{font-size:12px;color:var(--c-accent);margin-bottom:14px;display:none}
+.pc-resultado.show{display:block}
+.pc-cta{width:100%;padding:13px;background:var(--urg,var(--c-accent));color:#000;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+.pc-cta:active{transform:scale(.98)}
+.pc-skel{height:150px;border-radius:18px;background:linear-gradient(90deg,var(--c-surface) 25%,var(--c-surface2) 50%,var(--c-surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;margin-bottom:14px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── KPI GRID ───────────────────────────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.kpi-card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--radius-sm);padding:12px}
+.kpi-value{font-size:20px;font-weight:800;color:var(--c-accent);font-family:'Share Tech Mono',monospace}
+.kpi-label{font-size:10px;color:var(--c-text2);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.kpi-delta{font-size:10px;color:var(--c-text2)}
+
+/* ── PANEL CARD ─────────────────────────────────────────────────────────── */
+.panel{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.panel-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--c-text2);margin-bottom:12px;font-weight:600}
+
+/* ── FORM ───────────────────────────────────────────────────────────────── */
+.form-row{display:flex;gap:10px;margin-bottom:10px}
+.form-field{flex:1;display:flex;flex-direction:column;gap:4px}
+.form-field.wide{flex:2}
+.form-field label{font-size:11px;color:var(--c-text2)}
+.form-field input,.form-field select{background:var(--c-surface2);border:1px solid var(--c-border);border-radius:var(--radius-sm);padding:9px 10px;color:var(--c-text);font-family:inherit;font-size:13px}
+.form-field input:focus,.form-field select:focus{outline:none;border-color:var(--c-accent)}
+.btn-primary{background:var(--c-accent);color:#000;border:none;border-radius:var(--radius-sm);padding:11px 20px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
+.save-status{font-size:11px;color:var(--c-success);margin-left:10px}
+
+/* ── CATALOG GRID (usa cards de merchant.css) ──────────────────────────── */
+.catalog-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.empty-state{grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--c-text2)}
+.empty-icon{font-size:32px;opacity:.4;margin-bottom:10px}
+
+/* ── TOASTS ─────────────────────────────────────────────────────────────── */
+#toastContainer{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;flex-direction:column;gap:8px;width:calc(100% - 28px);max-width:480px}
+.toast{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--radius-sm);padding:10px 16px;font-size:13px;box-shadow:var(--shadow);animation:toastIn .2s ease}
+.toast.success{border-color:var(--c-success);color:var(--c-success)}
+.toast.error{border-color:var(--c-danger);color:var(--c-danger)}
+.toast.info{border-color:var(--c-accent);color:var(--c-accent)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── BOTTOMNAV ──────────────────────────────────────────────────────────── */
+.bottomnav{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;display:flex;border-top:1px solid var(--c-border);background:var(--c-bg);padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;cursor:pointer;color:var(--c-text2);font-size:10px}
+.bn-item.active{color:var(--c-accent)}
+.bn-icon{font-size:18px}
+
+/* ── GIA WIDGET (reutilizado de comercio.html) ─────────────────────────── */
+#gia-fab{position:fixed;bottom:78px;right:18px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#48cfad);color:#fff;font-size:24px;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(108,99,255,.45);z-index:1000;display:flex;align-items:center;justify-content:center}
+#gia-fab .gia-badge{position:absolute;top:0;right:0;background:#ff4757;color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:17px;height:17px;display:none;align-items:center;justify-content:center}
+#gia-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:998}
+#gia-overlay.open{display:block}
+#gia-panel{position:fixed;top:0;right:-420px;width:min(400px,92vw);height:100vh;background:var(--c-surface);box-shadow:-4px 0 30px rgba(0,0,0,.2);z-index:999;display:flex;flex-direction:column;transition:right .3s ease}
+#gia-panel.open{right:0}
+#gia-ph{background:linear-gradient(135deg,#6c63ff,#48cfad);color:#fff;padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between}
+#gia-ph .gt{font-size:15px;font-weight:700}
+#gia-ph .gc{font-size:10px;opacity:.85;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+#gia-pc{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+#gia-tabs{display:flex;border-bottom:1px solid var(--c-border)}
+.gia-tab{flex:1;padding:10px 0;text-align:center;font-size:12px;font-weight:600;cursor:pointer;color:var(--c-text2);border-bottom:2px solid transparent}
+.gia-tab.active{color:#6c63ff;border-bottom-color:#6c63ff}
+#gia-body{flex:1;overflow-y:auto;padding:14px}
+.act-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--c-border)}
+.act-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.act-icon.info{background:rgba(0,229,255,.1)}.act-icon.propuesta{background:rgba(245,158,11,.12)}.act-icon.automatico{background:rgba(16,185,129,.12)}.act-icon.requiere_confirmacion{background:rgba(239,68,68,.1)}
+.act-desc{font-size:12px;line-height:1.4}
+.act-meta{font-size:10px;color:var(--c-text2);margin-top:2px}
+.act-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;margin-top:4px;text-transform:uppercase}
+.badge-info{background:rgba(0,229,255,.1);color:var(--c-accent)}.badge-propuesta{background:rgba(245,158,11,.12);color:var(--c-warning)}.badge-automatico{background:rgba(16,185,129,.12);color:var(--c-success)}.badge-requiere_confirmacion{background:rgba(239,68,68,.1);color:var(--c-danger)}
+.act-actions{display:flex;gap:6px;margin-top:6px}
+.btn-ap{background:var(--c-success);color:#fff;border:none;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer}
+.btn-re{background:transparent;color:var(--c-danger);border:1px solid var(--c-danger);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer}
+#gia-messages{flex:1;overflow-y:auto;padding:6px 0}
+.gia-msg{margin-bottom:10px;max-width:85%}
+.gia-msg.user{margin-left:auto}
+.gia-bubble{padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5}
+.gia-msg.gia .gia-bubble{background:var(--c-surface2);color:var(--c-text)}
+.gia-msg.user .gia-bubble{background:#6c63ff;color:#fff}
+#gia-input-area{display:flex;gap:8px;padding:10px 0 0;border-top:1px solid var(--c-border)}
+#gia-input{flex:1;border:1px solid var(--c-border);background:var(--c-surface2);color:var(--c-text);border-radius:20px;padding:8px 13px;font-size:12px;outline:none}
+#gia-send{background:#6c63ff;color:#fff;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:15px}
+</style>
+</head>
+<body>
+<div id="toastContainer"></div>
+
+<div class="app">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="avatar" id="avatarInitial">?</div>
+      <div>
+        <div class="merchant-name" id="merchantName">Mi Comercio</div>
+        <div class="merchant-sub" id="dashFecha">—</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-badge" id="statusBadge">—</span>
+      <button class="theme-toggle" id="themeToggle" title="Cambiar apariencia">🌙</button>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-item active" data-section="dashboard" onclick="irSeccion('dashboard')">Escritorio</div>
+    <div class="nav-item" data-section="perfil" onclick="irSeccion('perfil')">Perfil</div>
+    <div class="nav-item" data-section="catalogo" onclick="irSeccion('catalogo')">Catálogo</div>
+    <div class="nav-item" data-section="analitica" onclick="irSeccion('analitica')">Analítica</div>
+    <div class="nav-item" data-section="boost" onclick="irSeccion('boost')">Boost</div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <section class="section active" id="sec-dashboard">
+      <div class="pc-skel" id="prioritySkel"></div>
+      <div class="priority-card" id="priorityCard" style="display:none">
+        <div class="pc-tag"><span class="pc-tag-dot"></span><span id="pcUrgenciaLabel">—</span></div>
+        <div class="pc-titulo" id="pcTitulo">—</div>
+        <div class="pc-desc" id="pcDesc">—</div>
+        <div class="pc-explicacion" id="pcExplicacion"></div>
+        <div class="pc-resultado" id="pcResultado"></div>
+        <button class="pc-cta" id="pcCta" style="display:none">Ver más</button>
+      </div>
+
+      <div class="panel" id="statusMsgPanel">
+        <div class="panel-title">Estado del negocio</div>
+        <p id="statusMsg" style="font-size:13px;color:var(--c-text2)">Cargando...</p>
+        <button class="btn-primary" id="statusCTA" style="display:none;margin-top:10px" onclick="irSeccion('perfil')">Completar perfil</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card" id="kpiVistas"><div class="kpi-value">—</div><div class="kpi-label">Vistas</div><div class="kpi-delta">—</div></div>
+        <div class="kpi-card" id="kpiSolicitudes"><div class="kpi-value">—</div><div class="kpi-label">Solicitudes</div><div class="kpi-delta">—</div></div>
+        <div class="kpi-card" id="kpiPedidos"><div class="kpi-value">—</div><div class="kpi-label">Pedidos</div><div class="kpi-delta">—</div></div>
+        <div class="kpi-card" id="kpiCalificacion"><div class="kpi-value">—</div><div class="kpi-label">Calificación</div><div class="kpi-delta">—</div></div>
+        <div class="kpi-card" id="kpiIngresos"><div class="kpi-value">—</div><div class="kpi-label">Ingresos</div><div class="kpi-delta">—</div></div>
+        <div class="kpi-card" id="kpiCampanias"><div class="kpi-value">—</div><div class="kpi-label">Campañas</div><div class="kpi-delta">—</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Vistas últimos 7 días</div>
+        <div class="sparkline-container" id="sparklineVistas"></div>
+      </div>
+    </section>
+
+    <!-- ── PERFIL ── -->
+    <section class="section" id="sec-perfil">
+      <div class="panel">
+        <div class="panel-title">Datos del negocio</div>
+        <div class="form-row">
+          <div class="form-field wide"><label>Nombre comercial *</label><input id="fNombreComercial" type="text"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Razón social</label><input id="fRazonSocial" type="text"></div>
+          <div class="form-field"><label>CUIT</label><input id="fCuit" type="text"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Rubro</label><input id="fRubroId" type="text" placeholder="plomeria"></div>
+          <div class="form-field"><label>Zona</label><input id="fZonaId" type="text" placeholder="la_matanza"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field wide"><label>Dirección</label><input id="fDireccion" type="text"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>WhatsApp</label><input id="fWhatsapp" type="text"></div>
+          <div class="form-field"><label>Email</label><input id="fEmail" type="email"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Website</label><input id="fWebsite" type="text"></div>
+          <div class="form-field"><label>Instagram</label><input id="fInstagram" type="text"></div>
+        </div>
+        <button class="btn-primary" onclick="guardarPerfil()">Guardar perfil</button>
+        <span class="save-status" id="saveStatus"></span>
+      </div>
+    </section>
+
+    <!-- ── CATÁLOGO ── -->
+    <section class="section" id="sec-catalogo">
+      <div class="panel">
+        <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Catálogo</span>
+          <button class="btn-primary" style="padding:6px 14px;font-size:11px" onclick="abrirNuevoProducto()">+ Nuevo</button>
+        </div>
+        <div class="catalog-grid" id="catalogGrid"></div>
+      </div>
+    </section>
+
+    <!-- ── ANALÍTICA ── -->
+    <section class="section" id="sec-analitica">
+      <div class="panel">
+        <div class="panel-title">Top productos</div>
+        <div id="topProductos"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Tendencia</div>
+        <div id="tendenciaCrecimiento"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Conversión</div>
+        <div id="zonasActividad"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Horarios de mayor actividad</div>
+        <div id="horariosHeatmap"></div>
+      </div>
+    </section>
+
+    <!-- ── BOOST / CAMPAÑAS ── -->
+    <section class="section" id="sec-boost">
+      <div class="panel">
+        <div class="panel-title">Visibilidad</div>
+        <p style="font-size:13px;color:var(--c-text2);margin-bottom:14px">Activá Boost para aparecer primero en tu zona durante las próximas horas.</p>
+        <button class="btn-primary" onclick="iniciarBoost()">Activar Boost</button>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Campañas</div>
+        <button class="btn-primary" onclick="nuevaCampania()">Nueva campaña</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOMNAV -->
+  <nav class="bottomnav">
+    <div class="bn-item active" data-section="dashboard" onclick="irSeccion('dashboard')"><span class="bn-icon">◈</span><span>Escritorio</span></div>
+    <div class="bn-item" data-section="catalogo" onclick="irSeccion('catalogo')"><span class="bn-icon">◧</span><span>Catálogo</span></div>
+    <div class="bn-item" data-section="analitica" onclick="irSeccion('analitica')"><span class="bn-icon">◎</span><span>Analítica</span></div>
+    <div class="bn-item" data-section="boost" onclick="irSeccion('boost')"><span class="bn-icon">◉</span><span>Boost</span></div>
+  </nav>
+</div>
+
+<!-- GIA WIDGET (misma lógica de comercio.html, adaptada a tokens de esta página) -->
+<div id="gia-overlay" onclick="GIA.cerrar()"></div>
+<button id="gia-fab" onclick="GIA.abrir()" title="G.I.A.">✦<span class="gia-badge" id="gia-badge">0</span></button>
+<div id="gia-panel">
+  <div id="gia-ph">
+    <div><div class="gt">✦ G.I.A.</div><div class="gc" id="gia-ctx">Panel Comercial</div></div>
+    <button id="gia-pc" onclick="GIA.cerrar()">✕</button>
+  </div>
+  <div id="gia-tabs">
+    <div class="gia-tab active" onclick="GIA.tab('act')">📋 Actividad</div>
+    <div class="gia-tab" onclick="GIA.tab('chat')">💬 Consultar</div>
+  </div>
+  <div id="gia-body">
+    <div id="gia-tab-act"><div id="gia-act-list"><p style="color:var(--c-text2);font-size:13px;text-align:center;padding:20px">Cargando...</p></div></div>
+    <div id="gia-tab-chat" style="display:none;height:calc(100vh - 180px);flex-direction:column">
+      <div style="display:flex;flex-direction:column;height:100%">
+        <div id="gia-messages"></div>
+        <div id="gia-input-area">
+          <input id="gia-input" type="text" placeholder="Preguntale algo a G.I.A..." onkeydown="if(event.key==='Enter')GIA.enviar()"/>
+          <button id="gia-send" onclick="GIA.enviar()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/merchant-app.js"></script>
+<script>
+'use strict';
+
+/* ── THEME (Sol/Luna) ────────────────────────────────────────────────────
+   Autocontenido en esta página: atributo data-theme + clave localStorage
+   'servired_theme'. Si más adelante se confirma que index.html/cliente.html
+   usan otra convención, unificar en una pasada aparte — no se asumió acá
+   para no introducir un dato no verificado. */
+(function initTheme(){
+  const KEY = 'servired_theme';
+  const btn = document.getElementById('themeToggle');
+  const saved = localStorage.getItem(KEY) || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  btn.addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem(KEY, next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+  });
+})();
+
+/* ── Deep-link por hash (#catalogo, #campanias, #analitica) ─────────────── */
+(function initHash(){
+  const map = { catalogo:'catalogo', campanias:'boost', analitica:'analitica' };
+  const h = (location.hash || '').replace('#','');
+  if (map[h] && window.irSeccion) setTimeout(() => window.irSeccion(map[h]), 0);
+})();
+
+/* ── Tarjeta de prioridad G.I.A. (Fase 2: explicacion + resultadoEsperado) ─
+   Reutiliza el mismo endpoint que gia-home.html. No duplica priorityEngine —
+   solo consume y renderiza. */
+const getAuthToken = () =>
+  localStorage.getItem('merchant_token') ||
+  localStorage.getItem('token') ||
+  sessionStorage.getItem('token');
+
+async function cargarPrioridad() {
+  try {
+    const token = getAuthToken();
+    const res = await fetch('/api/gia/priority', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const { action } = await res.json();
+    renderPrioridad(action);
+  } catch (e) {
+    document.getElementById('prioritySkel').style.display = 'none';
+    console.warn('[merchant] prioridad no disponible:', e.message);
+  }
+}
+
+function renderPrioridad(action) {
+  document.getElementById('prioritySkel').style.display = 'none';
+  const card = document.getElementById('priorityCard');
+  card.style.display = 'block';
+  card.className = 'priority-card urgencia-' + action.urgencia;
+
+  const labels = { CRITICA:'Urgente', ALTA:'Importante', MEDIA:'Esta semana', BAJA:'Oportunidad' };
+  document.getElementById('pcUrgenciaLabel').textContent = labels[action.urgencia] || action.urgencia;
+  document.getElementById('pcTitulo').textContent = action.titulo;
+  document.getElementById('pcDesc').textContent = action.descripcion;
+
+  const expEl = document.getElementById('pcExplicacion');
+  if (action.explicacion) {
+    expEl.textContent = '💡 ' + action.explicacion;
+    expEl.classList.add('show');
+  } else { expEl.classList.remove('show'); }
+
+  const resEl = document.getElementById('pcResultado');
+  if (action.resultadoEsperado && action.resultadoEsperado.precioSugerido != null) {
+    const r = action.resultadoEsperado;
+    resEl.textContent = `📈 Precio sugerido: $${r.precioSugerido.toLocaleString('es-AR')} (${r.fuente})`;
+    resEl.classList.add('show');
+  } else { resEl.classList.remove('show'); }
+
+  const ctaEl = document.getElementById('pcCta');
+  if (action.cta) {
+    ctaEl.textContent = action.cta;
+    ctaEl.style.display = 'block';
+    ctaEl.onclick = () => {
+      const destinos = {
+        CATALOGO_VACIO: 'catalogo', SOLICITUDES_PENDIENTES: 'dashboard',
+        RENOVAR_CAMPANIA: 'boost', AUMENTAR_VISIBILIDAD: 'boost',
+        COMPLETAR_PERFIL_MERCHANT: 'perfil'
+      };
+      irSeccion(destinos[action.tipo] || 'dashboard');
+    };
+  } else { ctaEl.style.display = 'none'; }
+}
+
+/* ── GIA widget flotante (misma lógica funcional que comercio.html) ─────── */
+const GIA = (() => {
+  let _cid = null, _tab = 'act';
+  const ico = {info:'ℹ️',propuesta:'💡',automatico:'⚡',requiere_confirmacion:'⚠️'};
+  const lbl = {info:'Info',propuesta:'Propuesta',automatico:'Automático',requiere_confirmacion:'Requiere aprobación'};
+
+  function setComercioId(id){ _cid = id; }
+  function rel(ts){ const d=Date.now()-new Date(ts).getTime(),m=Math.floor(d/60000); return m<1?'ahora mismo':m<60?`hace ${m}m`:m<1440?`hace ${Math.floor(m/60)}h`:`hace ${Math.floor(m/1440)}d`; }
+
+  function abrir(){ document.getElementById('gia-panel').classList.add('open'); document.getElementById('gia-overlay').classList.add('open'); if(_tab==='act') cargar(); }
+  function cerrar(){ document.getElementById('gia-panel').classList.remove('open'); document.getElementById('gia-overlay').classList.remove('open'); }
+
+  function tab(t){
+    _tab=t;
+    document.querySelectorAll('.gia-tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='act')||(i===1&&t==='chat')));
+    document.getElementById('gia-tab-act').style.display  = t==='act'?'block':'none';
+    const chat = document.getElementById('gia-tab-chat');
+    chat.style.display = t==='chat'?'flex':'none';
+    if(t==='act') cargar();
+    else if(!document.getElementById('gia-messages').children.length) addMsg('Hola 👋 ¿En qué te puedo ayudar con tu comercio?','gia');
+  }
+
+  async function cargar(){
+    if(!_cid) return;
+    const list = document.getElementById('gia-act-list');
+    try{
+      const r = await fetch('/api/activity/'+_cid,{credentials:'include'});
+      const d = await r.json();
+      const badge = document.getElementById('gia-badge');
+      if(d.pendientes>0){badge.textContent=d.pendientes;badge.style.display='flex';}else{badge.style.display='none';}
+      list.innerHTML = d.eventos?.length ? d.eventos.map(renderEv).join('') : '<p style="color:var(--c-text2);font-size:13px;text-align:center;padding:20px">Sin actividad reciente.</p>';
+    }catch(e){ list.innerHTML='<p style="color:var(--c-danger);font-size:13px;padding:10px">Error de conexión.</p>'; }
+  }
+
+  function renderEv(e){
+    const nr = e.nivelRiesgo||'info';
+    const acs = (nr==='requiere_confirmacion'&&e.estado==='pendiente')
+      ? `<div class="act-actions"><button class="btn-ap" onclick="GIA.aprobar('${e._id}')">✓ Aprobar</button><button class="btn-re" onclick="GIA.rechazar('${e._id}')">✕ Rechazar</button></div>` : '';
+    return `<div class="act-item"><div class="act-icon ${nr}">${ico[nr]||'ℹ️'}</div><div style="flex:1"><div class="act-desc">${e.descripcion}</div><div class="act-meta">${rel(e.timestamp)} · ${e.actor?.nombre||'Sistema'}</div><span class="act-badge badge-${nr}">${lbl[nr]||nr}</span>${acs}</div></div>`;
+  }
+
+  async function aprobar(id){ await fetch('/api/activity/'+id+'/aprobar',{method:'PATCH',credentials:'include'}); cargar(); }
+  async function rechazar(id){ await fetch('/api/activity/'+id+'/rechazar',{method:'PATCH',credentials:'include'}); cargar(); }
+
+  function addMsg(html,role='gia'){
+    const msgs = document.getElementById('gia-messages');
+    const d = document.createElement('div');
+    d.className='gia-msg '+role;
+    d.innerHTML=`<div class="gia-bubble">${html}</div>`;
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  async function enviar(){
+    const input = document.getElementById('gia-input');
+    const txt = input.value.trim();
+    if(!txt) return;
+    addMsg(txt,'user'); input.value='';
+    try{
+      const r = await fetch('/api/gia/consulta',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({mensaje:txt,modulo:'merchant',comercioId:_cid})});
+      const d = await r.json();
+      addMsg(d.respuesta || 'No pude procesar la consulta.','gia');
+    }catch(e){ addMsg('Error de conexión con G.I.A.','gia'); }
+  }
+
+  return { setComercioId, abrir, cerrar, tab, aprobar, rechazar, enviar };
+})();
+window.GIA = GIA;
+
+/* ── Init de esta página (además del init propio de merchant-app.js) ────── */
+document.addEventListener('DOMContentLoaded', () => {
+  cargarPrioridad();
+});
+
+/* merchant-app.js emite este evento tras cargar el dashboard (ver patch) —
+   así el widget G.I.A. obtiene el merchantId sin polling ni acoplar
+   merchant-app.js a este script. */
+document.addEventListener('merchant:dashboard-loaded', (e) => {
+  if (e.detail && e.detail.merchantId) GIA.setComercioId(e.detail.merchantId);
+});
+</script>
+</body>
+</html>
