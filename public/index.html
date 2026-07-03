@@ -575,9 +575,10 @@ setTimeout(function(){var sp=document.getElementById("splash-screen");sp.style.t
         <p style="color:var(--muted);font-size:0.75rem;margin-top:8px;">Imprimí este QR y pegalo en tu local.</p>
         <div style="margin-top:12px;padding:10px 14px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:10px;">
           <p style="color:#FFD700;font-size:0.8rem;margin:0 0 8px;font-weight:700;">⭐ ¿Querés aparecer primero en el feed?</p>
-          <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 10px;">Activá Boost Destacado por ARS 2.500 y tu comercio aparece primero durante 7 días.</p>
-          <button class="btn-sm btn-sm-pri" style="width:100%;background:linear-gradient(135deg,#b8860b,#FFD700);color:#0f1117;" onclick="cerrarModals();abrirModal('boost-info')">Activar Boost ⭐</button>
+          <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 10px;">Destacá tu comercio por ARS 2.500 y aparecé primero durante 7 días.</p>
+          <button class="btn-sm btn-sm-pri" style="width:100%;background:linear-gradient(135deg,#b8860b,#FFD700);color:#0f1117;" onclick="cerrarModals();abrirModal('boost-info')">Destacar mi negocio ⭐</button>
         </div>
+        <button class="btn-sm btn-sm-sec" style="width:100%;margin-top:10px;" onclick="window.location.href='/merchant.html'">Listo, ir a mi panel →</button>
       </div>
       <div id="com-btns" style="display:flex;gap:10px;">
         <button class="btn-sm btn-sm-sec" onclick="wizGoTo(3)">← Atrás</button>
@@ -1631,7 +1632,7 @@ loadCommerceFeed();
   <div class="modal">
     <div style="text-align:center;margin-bottom:16px;">
       <div style="font-size:2.5rem;">⭐</div>
-      <div class="modal-title" style="color:#FFD700;margin-bottom:4px;">Boost Destacado</div>
+      <div class="modal-title" style="color:#FFD700;margin-bottom:4px;">Destacado ⭐</div>
       <div style="color:#64748b;font-size:0.8rem;">Tu comercio aparece primero en el feed durante 7 días</div>
     </div>
     <div style="background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:14px;margin-bottom:16px;">
@@ -1650,7 +1651,7 @@ loadCommerceFeed();
       <button class="btn-sm btn-sm-sec" onclick="cerrarModals()">Cancelar</button>
       <button class="btn-sm btn-sm-pri" id="boost-pay-btn"
         style="background:linear-gradient(135deg,#b8860b,#FFD700);color:#0f1117;flex:1;font-weight:700;"
-        onclick="activarBoost()">Activar Boost ⭐</button>
+        onclick="activarBoost()">Destacar mi negocio ⭐</button>
     </div>
   </div>
 </div>
