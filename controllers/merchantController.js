@@ -1,15 +1,7 @@
 const BusinessProfile = require('../models/BusinessProfile');
 const CatalogItem = require('../models/CatalogItem');
 const { projectMerchantState } = require('../services/merchantProjection');
-
-async function emit(tipo, payload) {
-  try {
-    const { emitEvent } = require('../services/sinapsisBusAdapter');
-    await emitEvent(tipo, payload);
-  } catch (e) {
-    console.warn(`[merchant] SINAPSIS emit ${tipo} falló (no crítico):`, e.message);
-  }
-}
+const { emitEvent } = require('../nexus/events/emitEvent');
 
 // ── PROFILE ────────────────────────────────────────────────────────────────
 exports.getProfile = async (req, res) => {
@@ -41,12 +33,24 @@ exports.createProfile = async (req, res) => {
       estado: 'DRAFT'
     }).save();
 
-    await emit('MERCHANT_PROFILE_CREATED', {
-      merchantId: profile._id,
-      usuarioId: req.userId,
-      rubroId: profile.rubroId,
-      zonaId: profile.zonaId
-    });
+    // Productor Nexus (ADR-00X: Merchant Domain Event Transport).
+    // No bloquea la respuesta HTTP si falla — mismo criterio que el resto
+    // de los dominios (market, job, finance) que ya usan este emisor.
+    try {
+      emitEvent({
+        entityType: 'merchant',
+        type: 'MERCHANT_PROFILE_CREATED',
+        aggregateId: String(profile._id),
+        payload: {
+          merchantId: String(profile._id),
+          usuarioId: String(req.userId),
+          rubroId: profile.rubroId,
+          zonaId: profile.zonaId
+        }
+      });
+    } catch (e) {
+      console.warn('[merchant] Nexus emitEvent falló (no crítico):', e.message);
+    }
 
     res.status(201).json({ profile });
   } catch (e) {
