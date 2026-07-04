@@ -131,14 +131,14 @@ function procesarLeadEvent(event, io) {
 // Sin socket.io — las projections se leen por polling desde el dashboard.
 function procesarMerchantEvent(event) {
   try {
-    const { procesarEvento } = require('../services/merchantProjectionReactor');
+    const { procesarEvento } = require('../../services/merchantProjectionReactor');
     procesarEvento({
       eventType:  event.type,
       hash:       event.eventId,  // usa eventId como clave de idempotencia
       payload:    event.payload || {},
       properties: event.payload || {}
     }).catch(e => {
-      console.error('[MerchantReactor] error procesando evento:', event.type, e.message);
+      console.error('[MerchantReactor] error procesando evento:', event.type, e);
     });
   } catch (e) {
     console.error('[MerchantReactor] require falló:', e.message);

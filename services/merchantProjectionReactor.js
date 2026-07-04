@@ -12,7 +12,7 @@
  */
 const BusinessProfile    = require('../models/BusinessProfile');
 const CatalogItem        = require('../models/CatalogItem');
-const MarketingEvent     = require('../models/MarketingEvent');
+const { MarketingEvent } = require('../models/MarketingEvent');
 const MerchantProjection = require('../models/MerchantProjection');
 
 // ── Eventos que este reactor maneja ────────────────────────────────────────
@@ -165,10 +165,19 @@ async function reconstruirProjection(merchantId, usuarioId, ultimoHash) {
     actualizadaEn: ahora
   };
 
-  await MerchantProjection.findOneAndUpdate(
+  const doc = await MerchantProjection.findOneAndUpdate(
     { merchantId: pid },
     { $set: proyeccion, $inc: { version: 1 } },
     { upsert: true, new: true }
+  );
+
+  console.log(
+    '[MerchantReactor] projection escrita:',
+    doc._id,
+    'merchantId:',
+    doc.merchantId,
+    'version:',
+    doc.version
   );
 }
 
