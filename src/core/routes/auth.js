@@ -249,8 +249,7 @@ router.post('/google', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    const needsOnboarding = !u.rol || u.estado === "PENDIENTE_VERIFICACION";
-    res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado, avatar: u.avatar }, needsOnboarding });
+    res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado, avatar: u.avatar } });
   } catch(e) {
     console.error('[Google Auth]', e.message);
     res.status(401).json({ ok: false, error: 'Token de Google inválido' });

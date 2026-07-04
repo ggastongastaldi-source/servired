@@ -1679,11 +1679,7 @@ function initGoogleSignIn() {
         cerrarModal("modal-login-gen");
         cerrarModal("modal-cliente-login");
         cerrarModal("modal-worker-login");
-        if (data.needsOnboarding) {
-          mostrarSeleccionRol(data.usuario);
-        } else {
-          location.reload();
-        }
+        await resolverSesionYNavegar(data.token);
       } catch(e) {
         alert("Error de conexion. Intenta de nuevo.");
       }
@@ -1751,6 +1747,19 @@ function renderHomeGoogleBtn() {
 </script>
 
 <script>
+// ── ORQUESTADOR ÚNICO DE SESIÓN (autoridad: /api/auth/me) ──
+// Toda decisión de onboarding/navegación post-login pasa por acá.
+async function resolverSesionYNavegar(token) {
+  try {
+    const r = await fetch("/api/auth/me", { headers: { "Authorization": "Bearer " + token } });
+    const data = await r.json();
+    if (!data.ok) { localStorage.removeItem("token"); location.reload(); return; }
+    if (data.snapshot.state === "BLOQUEADO") { document.body.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e1a;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1.2rem;'>Cuenta bloqueada. Contacta soporte.</div>"; return; }
+    if (data.snapshot.needsOnboarding) { mostrarSeleccionRol(data.snapshot); return; }
+    location.reload();
+  } catch(e) { console.warn("[Sesion]", e.message); location.reload(); }
+}
+
 async function initAppShell() {
   const token = localStorage.getItem("token");
   if (!token) return;
