@@ -32,8 +32,10 @@ authenticated -> validated) debe responder 409, no silenciarse.
    pending -> validated. Sin cambios de contrato.
 
 2. POST /api/onboarding/session/:sessionId/auth  (NUEVO)
-   Body: { } — usa req.userId del authMiddleware.
-   Precondicion: status === 'validated'.
+   Body: { } — usa req.userId del authMiddleware (agnostico al proveedor
+   de identidad: Google OAuth hoy, cualquier otro metodo futuro sin
+   cambiar este contrato).
+   Precondiciones: status === 'validated' AND req.userId presente.
    Efecto: session.usuarioId = req.userId; status = 'authenticated'.
    Publica evento SINAPSIS: ONBOARDING_SESSION_AUTHENTICATED.
 
@@ -46,7 +48,7 @@ authenticated -> validated) debe responder 409, no silenciarse.
    no pasan sessionId (login directo sin QR sigue funcionando igual).
 
 4. POST /api/onboarding/session/:sessionId/complete  (NUEVO)
-   Precondicion: status === 'profile_created'.
+   Precondiciones: status === 'profile_created' AND commerceId != null.
    Efecto: status = 'completed'; completedAt = now().
    Publica evento SINAPSIS: ONBOARDING_SESSION_COMPLETED.
 
@@ -62,6 +64,15 @@ dos fuentes de verdad sobre en que paso esta el wizard.
 
 commerceId ya existe en el modelo (ref BusinessProfile) — se reutiliza
 tal cual, sin cambios de tipo.
+
+## Independencia del proveedor de identidad
+
+El wizard no asume Google OAuth especificamente. La regla es: "requiere
+un usuario autenticado". Si no hay sesion valida, redirige al flujo de
+login configurado por la app (hoy Google, mañana potencialmente otro).
+Al volver, retoma el sessionId original via query param y continua la
+FSM en el estado que corresponda. Este desacople evita que la FSM deba
+modificarse si cambia el mecanismo de login.
 
 ## Reanudacion del wizard
 
