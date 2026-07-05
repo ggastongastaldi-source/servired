@@ -1689,8 +1689,7 @@ callback: async function(response) {
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuario", JSON.stringify(data.usuario || {}));
 
-    ["modal-login-gen", "modal-cliente-login", "modal-worker-login"]
-      .forEach(cerrarModal);
+    cerrarModals();
 
     await resolverSesionYNavegar(data.token);
 
@@ -1718,8 +1717,7 @@ callback: async function(response) {
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuario", JSON.stringify(data.usuario || {}));
 
-    ["modal-login-gen", "modal-cliente-login", "modal-worker-login"]
-      .forEach(cerrarModal);
+    cerrarModals();
 
     await resolverSesionYNavegar(data.token);
 
