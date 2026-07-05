@@ -17,7 +17,10 @@ Ultima actualizacion: 2026-07-05
   - STATE DRIFT CRITICAL reportado por ProviderStateReconciliator para
     dos providers (item abierto).
   - Integridad de paquete dotenv sin confirmar.
-  - Comercio domain: alta via QR no vincula Usuario (ver abajo).
+  - Comercio domain: alta via QR vincula Usuario via hook FSM
+    (commit 0b271f5, PENDIENTE validacion E2E: generar QR,
+    autenticar, completar onboarding, verificar usuarioId y
+    estado final de FSM).
 
 ## Ultimo hito completado
 
