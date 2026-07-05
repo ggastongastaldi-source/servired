@@ -1665,20 +1665,76 @@ function initGoogleSignIn() {
     client_id: clientId,
     use_fedcm_for_prompt: true,
     use_fedcm_for_button: true,
-    callback: async function(response) {
-      try {
-        const r = await fetch("/api/auth/google", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+callback: async function(response) {
+  try {
+    if (!response?.credential) {
+      alert("Google no devolvió credential");
+      return;
+    }
+
+    const r = await fetch("/api/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_token: response.credential })
+    });
+
+    const data = await r.json();
+
+    if (!data || !data.ok || !data.token) {
+      console.error("AUTH_FAIL:", data);
+      alert("Error al ingresar con Google");
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("usuario", JSON.stringify(data.usuario || {}));
+
+    ["modal-login-gen", "modal-cliente-login", "modal-worker-login"]
+      .forEach(cerrarModal);
+
+    await resolverSesionYNavegar(data.token);
+
+  } catch (e) {
+    console.error(e);
+    alert("AUTH_EXCEPTION: " + e.message);
+  }
+}
+
+
+    const r = await fetch("/api/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_token: response.credential })
+    });
+
+    const data = await r.json();
+
+    if (!data || !data.ok || !data.token) {
+      console.error("AUTH_FAIL:", data);
+      alert("Error al ingresar con Google");
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("usuario", JSON.stringify(data.usuario || {}));
+
+    ["modal-login-gen", "modal-cliente-login", "modal-worker-login"]
+      .forEach(cerrarModal);
+
+    await resolverSesionYNavegar(data.token);
+
+  } catch (e) {
+    console.error(e);
+    alert("AUTH_EXCEPTION: " + e.message);
+  }
+}
           body: JSON.stringify({ id_token: response.credential })
         });
         const data = await r.json();
         if (!data.ok) { alert("Error al ingresar con Google: " + data.error); return; }
         localStorage.setItem("token", data.token);
         localStorage.setItem("usuario", JSON.stringify(data.usuario));
-        cerrarModal("modal-login-gen");
-        cerrarModal("modal-cliente-login");
-        cerrarModal("modal-worker-login");
+        cerrarModals();
         await resolverSesionYNavegar(data.token);
       } catch(e) {
         alert("DEBUG: " + e.name + ": " + e.message);
