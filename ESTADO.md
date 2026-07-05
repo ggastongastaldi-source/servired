@@ -10,6 +10,10 @@ Ultima actualizacion: 2026-07-05
 - MVP: Auth/Onboarding via Google cerrado funcionalmente (pendiente
   E2E con 3 cuentas reales). Pricing Engine v1 con señales definidas.
 - Riesgos actuales:
+  - CRITICO: QR_TOKEN_SECRET debe setearse en Render (Environment
+    Variables) antes del proximo deploy. qrTokenService.js ahora hace
+    fail-fast si falta (ya no reusa JWT_SECRET como fallback inseguro).
+    Sin esta variable en Render, el servicio no arranca.
   - STATE DRIFT CRITICAL reportado por ProviderStateReconciliator para
     dos providers (item abierto).
   - Integridad de paquete dotenv sin confirmar.
