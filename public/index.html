@@ -1760,6 +1760,7 @@ async function resolverSesionYNavegar(token) {
   try {
     const r = await fetch("/api/auth/me", { headers: { "Authorization": "Bearer " + token } });
     const data = await r.json();
+    alert("SNAPSHOT DEBUG: " + JSON.stringify(data.snapshot || data));
     if (!data.ok) { localStorage.removeItem("token"); location.reload(); return; }
     if (data.snapshot.state === "BLOQUEADO") { document.body.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e1a;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1.2rem;'>Cuenta bloqueada. Contacta soporte.</div>"; return; }
     if (data.snapshot.needsRoleSelection) { mostrarSeleccionRol(data.snapshot); return; }
