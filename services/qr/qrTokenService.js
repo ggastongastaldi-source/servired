@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-const QR_SECRET = process.env.QR_TOKEN_SECRET || process.env.JWT_SECRET;
+const QR_SECRET = process.env.QR_TOKEN_SECRET;
+if (!QR_SECRET) {
+  throw new Error('QR_TOKEN_SECRET no esta definido. No se debe reusar JWT_SECRET para tokens QR (aislamiento criptografico entre dominios).');
+}
 
 function generateQRToken({ ref, campaign, region = 'AMBA', scope = 'onboarding_commerce', channel = 'offline_qr', ttlDays = 30, qrId = null }) {
   if (!ref || !campaign) throw new Error('ref y campaign son requeridos');
