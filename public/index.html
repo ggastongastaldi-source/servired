@@ -1755,7 +1755,7 @@ async function resolverSesionYNavegar(token) {
     const data = await r.json();
     if (!data.ok) { localStorage.removeItem("token"); location.reload(); return; }
     if (data.snapshot.state === "BLOQUEADO") { document.body.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e1a;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1.2rem;'>Cuenta bloqueada. Contacta soporte.</div>"; return; }
-    if (data.snapshot.needsOnboarding) { mostrarSeleccionRol(data.snapshot); return; }
+    if (data.snapshot.needsRoleSelection) { mostrarSeleccionRol(data.snapshot); return; }
     location.reload();
   } catch(e) { console.warn("[Sesion]", e.message); location.reload(); }
 }
@@ -1771,7 +1771,7 @@ async function initAppShell() {
     document.body.classList.add("authenticated");
     actualizarWelcomeCard(data.snapshot);
     if (data.snapshot.state === "BLOQUEADO") { document.body.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e1a;color:#ef4444;font-family:Rajdhani,sans-serif;font-size:1.2rem;'>Cuenta bloqueada. Contacta soporte.</div>"; return; }
-    if (data.snapshot.needsOnboarding) { mostrarSeleccionRol(data.snapshot); return; }
+    if (data.snapshot.needsRoleSelection) { mostrarSeleccionRol(data.snapshot); return; }
     const headerUser = document.getElementById("header-user");
     if (headerUser) { const n = data.snapshot.nombre ? data.snapshot.nombre.split(" ")[0] : ""; headerUser.innerHTML = data.snapshot.avatar ? "<img src='"+data.snapshot.avatar+"' style='width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:6px;'>"+n : n; }
   } catch(e) { console.warn("[AppShell]", e.message); }

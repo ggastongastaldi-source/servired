@@ -275,7 +275,9 @@ router.get("/me", async (req, res) => {
     else if (u.rol === "ADMIN") state = "APP_READY"; // Admins no pasan por onboarding de rol (cliente/trabajador/comercio) — ya tienen rol definido
     else if (!u.rol) state = "NUEVO";
     else if (profileCompletion < 1) state = "INCOMPLETO";
-    res.json({ ok: true, snapshot: { userId: u._id, state, role: u.rol||null, profileCompletion, needsOnboarding: state==="NUEVO"||state==="INCOMPLETO", onboardingStep: state==="APP_READY"?null:(u.onboardingStep||"rol"), avatar: u.avatar||null, nombre: u.nombre, lastTransitionAt: u.updatedAt?new Date(u.updatedAt).getTime():Date.now() }});
+    const needsRoleSelection = !u.rol;
+    const needsProfileCompletion = profileCompletion < 1;
+    res.json({ ok: true, snapshot: { userId: u._id, state, role: u.rol||null, profileCompletion, needsRoleSelection, needsProfileCompletion, onboardingStep: state==="APP_READY"?null:(u.onboardingStep||"rol"), avatar: u.avatar||null, nombre: u.nombre, lastTransitionAt: u.updatedAt?new Date(u.updatedAt).getTime():Date.now() }});
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
