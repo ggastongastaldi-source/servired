@@ -1681,7 +1681,7 @@ function initGoogleSignIn() {
         cerrarModal("modal-worker-login");
         await resolverSesionYNavegar(data.token);
       } catch(e) {
-        alert("Error de conexion. Intenta de nuevo.");
+        alert("DEBUG: " + e.name + ": " + e.message);
       }
     }
   });
