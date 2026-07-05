@@ -29,13 +29,36 @@ tres cuentas reales para dar por cerrada la fase completa.
 
 ## Proximo objetivo inmediato
 
-Convergencia SQOP↔Merchant. El flujo de onboarding QR
-(POST /api/commerce/register) crea un documento Commerce sin:
-- vinculo a un Usuario (Commerce.js no tiene campo userId/ref),
-- emision de JWT,
-- evento SINAPSIS.
-Clasificado como "Organo Conectado pero Enfermo". Los comercios que se
-registran via QR no tienen forma de autenticarse en merchant.html.
+Convergencia SQOP↔Merchant — diagnostico cerrado tras Discovery Pass
+completo (2026-07-05). Hallazgo confirmado:
+
+- El dominio Merchant SI esta implementado: BusinessProfile,
+  merchantController.createProfile, emision de MERCHANT_PROFILE_CREATED
+  via Nexus, todo funcional.
+- El flujo SQOP (GET /o) SI esta implementado: verifica QR, crea
+  OnboardingSession, publica eventos, redirige con 302 a
+  /qr/onboarding?session=...
+- La pieza faltante: no existe el wizard de /qr/onboarding en public/.
+  No hay HTML/JS que reciba el sessionId, autentique al usuario, cargue
+  el formulario del comercio, y llame a POST /api/merchant/profile.
+  El unico wizard existente (wizard-provider.js) es del onboarding de
+  Trabajador/Provider, no de Merchant.
+- Commerce.js (ruta vieja /api/commerce/register) queda confirmado como
+  legado/huerfano, no como fuente de verdad en competencia.
+
+Clasificacion: no es "Organo Conectado pero Enfermo" sino Organo
+No Conectado — falta construir la orquestacion, no reparar una conexion
+existente.
+
+Flujo objetivo a implementar:
+1. Usuario escanea QR.
+2. SQOP crea OnboardingSession (ya existe).
+3. Wizard /qr/onboarding autentica al usuario (o lo deriva a login).
+4. Formulario de datos del comercio.
+5. POST /api/merchant/profile (ya existe, no requiere cambios).
+6. Vincular BusinessProfile.commerceId si corresponde.
+7. Marcar OnboardingSession.status = 'completed'.
+8. Redirigir a merchant.html.
 
 ## Issues abiertos
 
