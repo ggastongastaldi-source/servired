@@ -2,6 +2,8 @@ const BusinessProfile = require('../models/BusinessProfile');
 const CatalogItem = require('../models/CatalogItem');
 const { projectMerchantState } = require('../services/merchantProjection');
 const { emitEvent } = require('../nexus/events/emitEvent');
+const OnboardingSession = require('../models/OnboardingSession');
+const { transition } = require('../services/onboarding/sessionFSM');
 
 // ── PROFILE ────────────────────────────────────────────────────────────────
 exports.getProfile = async (req, res) => {
@@ -51,6 +53,26 @@ exports.createProfile = async (req, res) => {
     } catch (e) {
       console.warn('[merchant] Nexus emitEvent falló (no crítico):', e.message);
     }
+
+      // Hook de convergencia SQOP<->Merchant (ver RFC en docs/).
+      // Si el request trae sessionId de una OnboardingSession en estado
+      // 'authenticated' perteneciente al mismo usuario, avanza la FSM a
+      // 'profile_created' y vincula el BusinessProfile recien creado.
+      // No bloquea la respuesta HTTP si falla.
+      if (req.body.sessionId) {
+        try {
+          const session = await OnboardingSession.findOne({ sessionId: req.body.sessionId });
+          if (session && session.status === 'authenticated' && String(session.usuarioId) === String(req.userId)) {
+            transition(session, 'profile_created');
+            session.commerceId = profile._id;
+            await session.save();
+          } else if (session) {
+            console.warn('[merchant] sessionId presente pero no aplica hook (status=%s)', session.status);
+          }
+        } catch (e) {
+          console.warn('[merchant] hook OnboardingSession fallo (no critico):', e.message);
+        }
+      }
 
     res.status(201).json({ profile });
   } catch (e) {
