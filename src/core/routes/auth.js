@@ -277,7 +277,17 @@ router.get("/me", async (req, res) => {
     else if (profileCompletion < 1) state = "INCOMPLETO";
     const needsRoleSelection = !u.rol;
     const needsProfileCompletion = profileCompletion < 1;
-    res.json({ ok: true, snapshot: { userId: u._id, state, role: u.rol||null, profileCompletion, needsRoleSelection, needsProfileCompletion, onboardingStep: state==="APP_READY"?null:(u.onboardingStep||"rol"), avatar: u.avatar||null, nombre: u.nombre, lastTransitionAt: u.updatedAt?new Date(u.updatedAt).getTime():Date.now() }});
+
+    // Merchant read model (existente, event-driven vía MerchantProjectionReactor)
+    let merchant = null;
+    try {
+      const { projectMerchantState } = require('../../../services/merchantProjection');
+      merchant = await projectMerchantState(u._id);
+    } catch (e) {
+      console.error('[auth/me] merchantProjection error (no critico):', e.message);
+    }
+
+    res.json({ ok: true, snapshot: { userId: u._id, state, role: u.rol||null, profileCompletion, needsRoleSelection, needsProfileCompletion, onboardingStep: state==="APP_READY"?null:(u.onboardingStep||"rol"), avatar: u.avatar||null, nombre: u.nombre, lastTransitionAt: u.updatedAt?new Date(u.updatedAt).getTime():Date.now(), merchant }});
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
