@@ -11,6 +11,30 @@ const usuarioSchema = new mongoose.Schema({
   roles:        { type: [String], enum: ['CLIENTE', 'TRABAJADOR', 'ADMIN', 'COMERCIO'], default: ['CLIENTE'] },
   // legacy - mantener para compatibilidad
   rol:          { type: String, enum: ['CLIENTE', 'TRABAJADOR', 'WORKER', 'ADMIN', 'COMERCIO'], default: 'CLIENTE' },
+
+  // ── CAPABILITIES ─────────────────────────────────────────────────────────
+  // Permisos derivados del actor, independientes del rol.
+  // Un Trabajador con PuedeVender puede operar como comercio sin cambiar de rol.
+  // Una Empresa con PuedeCentralizar puede gestionar múltiples sucursales.
+  // Catálogo canónico — no agregar valores sin actualizar este comentario:
+  //   PuedeVender          — puede publicar servicios/productos en el marketplace
+  //   PuedePresupuestar    — puede emitir presupuestos formales
+  //   PuedeContratar       — puede contratar Trabajadores en nombre del actor
+  //   PuedeCentralizar     — puede gestionar sucursales o sub-actores (PyME/Empresa)
+  //   PuedeFinanciar       — puede ofrecer financiamiento a Clientes (requiere aprobación)
+  //   PuedeAccederCredito  — habilitado para líneas de crédito basadas en historial
+  capabilities: {
+    type: [String],
+    enum: [
+      'PuedeVender',
+      'PuedePresupuestar',
+      'PuedeContratar',
+      'PuedeCentralizar',
+      'PuedeFinanciar',
+      'PuedeAccederCredito'
+    ],
+    default: []
+  },
   estado:       { type: String, enum: ['ACTIVO', 'INACTIVO', 'PENDIENTE_VERIFICACION'], default: 'ACTIVO' },
   disponible:   { type: Boolean, default: false },
   isOnline:     { type: Boolean, default: false },
