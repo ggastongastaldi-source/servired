@@ -1,23 +1,81 @@
 'use strict';
-const express  = require('express');
-const QRCode   = require('qrcode');
-const router   = express.Router();
-const Commerce = require('../models/Commerce');
-const BASE_URL = process.env.BASE_URL || 'https://servired.online';
+const express   = require('express');
+const QRCode    = require('qrcode');
+const bcrypt    = require('bcryptjs');
+const mongoose  = require('mongoose');
+const router    = express.Router();
+const Commerce  = require('../models/Commerce');
+const Usuario   = require('../models/Usuario');
+const BusinessProfile = require('../../../models/BusinessProfile');
+const { RUBROS } = require('../../../shared/catalogs/rubrosCatalog');
+const BASE_URL  = process.env.BASE_URL || 'https://servired.online';
 const { trackEvent } = require('../services/trackEvent');
+
+function normalizarTexto(str) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+function resolverRubroId(rubroInput) {
+  if (!rubroInput) return null;
+  const input = normalizarTexto(rubroInput);
+  const match = RUBROS.find(r =>
+    normalizarTexto(r.id) === input ||
+    normalizarTexto(r.nombre || '') === input
+  );
+  return match ? match.id : null;
+}
 
 // POST /api/commerce/register
 router.post('/register', async (req, res) => {
+  const { nombre, email, telefono, rubro, direccion, localidad, zona, password } = req.body;
+  if (!nombre || !email || !rubro || !direccion || !localidad || !password) {
+    return res.status(400).json({ ok: false, error: 'Faltan campos obligatorios' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ ok: false, error: 'La contraseña debe tener al menos 6 caracteres' });
+  }
+
+  const emailNormalizado = email.trim().toLowerCase();
+  const rubroId = resolverRubroId(rubro);
+  if (!rubroId) {
+    return res.status(400).json({ ok: false, error: `Rubro "${rubro}" no reconocido en el catálogo` });
+  }
+
+  const session = await mongoose.startSession();
   try {
-    const { nombre, email, telefono, rubro, direccion, localidad, zona } = req.body;
-    if (!nombre || !email || !rubro || !direccion || !localidad) {
-      return res.status(400).json({ ok: false, error: 'Faltan campos obligatorios' });
+    session.startTransaction();
+
+    const existente = await Usuario.findOne({ email: emailNormalizado }).session(session);
+    if (existente) {
+      await session.abortTransaction();
+      return res.status(409).json({ ok: false, error: 'Ya existe una cuenta con ese email' });
     }
 
-    const commerce = await Commerce.create({
-      nombre, email, telefono, rubro, direccion, localidad,
+    const hash = await bcrypt.hash(password, 10);
+    const [usuario] = await Usuario.create([{
+      nombre,
+      email: emailNormalizado,
+      password: hash,
+      rol: 'COMERCIO',
+      roles: ['COMERCIO'],
+      provider: 'local',
+      estado: 'ACTIVO'
+    }], { session });
+
+    const [commerce] = await Commerce.create([{
+      nombre, email: emailNormalizado, telefono, rubro, direccion, localidad,
       zona: zona || 'GBA',
-    });
+    }], { session });
+
+    const [businessProfile] = await BusinessProfile.create([{
+      usuarioId: usuario._id,
+      commerceId: commerce._id,
+      nombreComercial: nombre,
+      rubroId,
+      direccion,
+      localidad,
+      estado: 'DRAFT'
+    }], { session });
 
     // Generar QR que apunta al landing del comercio
     const qrUrl = `${BASE_URL}/?ref=COMERCIO_${commerce._id}`;
@@ -27,9 +85,28 @@ router.post('/register', async (req, res) => {
       color: { dark: '#00E5FF', light: '#0a0e1a' },
     });
 
-    commerce.qr_code     = qrDataUrl;
+    commerce.qr_code      = qrDataUrl;
     commerce.origin_qr_id = String(commerce._id);
-    await commerce.save();
+    await commerce.save({ session });
+
+    await session.commitTransaction();
+
+    try {
+      const { emitEvent } = require('../../../nexus/events/emitEvent');
+      emitEvent({
+        entityType: 'merchant',
+        type: 'MERCHANT_PROFILE_CREATED',
+        aggregateId: String(businessProfile._id),
+        payload: {
+          merchantId: String(businessProfile._id),
+          usuarioId: String(usuario._id),
+          rubroId: businessProfile.rubroId,
+        },
+      });
+    } catch (e) {
+      console.warn('[Commerce] Nexus emitEvent falló (no crítico):', e.message);
+    }
+
     try {
       const rtmil = require('../../../services/rtmilIngest');
       try {
@@ -39,7 +116,7 @@ router.post('/register', async (req, res) => {
       } catch (_) {}
     } catch (_) {}
 
-    console.log(`[Commerce] ✅ Registrado: ${nombre} | ${localidad} | id:${commerce._id}`);
+    console.log(`[Commerce] ✅ Registrado: ${nombre} | ${localidad} | id:${commerce._id} | usuarioId:${usuario._id}`);
 
     res.json({
       ok: true,
@@ -49,8 +126,11 @@ router.post('/register', async (req, res) => {
       mensaje:     `Comercio ${nombre} registrado correctamente`,
     });
   } catch (e) {
+    await session.abortTransaction();
     console.error('[Commerce] Error:', e.message);
     res.status(500).json({ ok: false, error: e.message });
+  } finally {
+    session.endSession();
   }
 });
 

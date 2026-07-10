@@ -2,15 +2,15 @@ const mongoose = require('mongoose');
 
 const usuarioSchema = new mongoose.Schema({
   nombre:       { type: String, required: true },
-  email:        { type: String, required: true, unique: true },
+  email:        { type: String, required: true, unique: true, trim: true, lowercase: true },
   password:     { type: String, default: null },
   googleId:     { type: String, default: null, index: true },
   avatar:       { type: String, default: null },
   provider:     { type: String, enum: ['local','google'], default: 'local' },
   emailVerified:{ type: Boolean, default: false },
-  roles:        { type: [String], enum: ['CLIENTE', 'TRABAJADOR', 'ADMIN'], default: ['CLIENTE'] },
+  roles:        { type: [String], enum: ['CLIENTE', 'TRABAJADOR', 'ADMIN', 'COMERCIO'], default: ['CLIENTE'] },
   // legacy - mantener para compatibilidad
-  rol:          { type: String, enum: ['CLIENTE', 'TRABAJADOR', 'WORKER', 'ADMIN'], default: 'CLIENTE' },
+  rol:          { type: String, enum: ['CLIENTE', 'TRABAJADOR', 'WORKER', 'ADMIN', 'COMERCIO'], default: 'CLIENTE' },
   estado:       { type: String, enum: ['ACTIVO', 'INACTIVO', 'PENDIENTE_VERIFICACION'], default: 'ACTIVO' },
   disponible:   { type: Boolean, default: false },
   isOnline:     { type: Boolean, default: false },

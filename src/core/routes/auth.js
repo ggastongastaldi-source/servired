@@ -2,6 +2,7 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
+const BusinessProfile = require('../../../models/BusinessProfile');
 const SECRET = process.env.JWT_SECRET;
 const { enviarBienvenidaWorker, enviarBienvenidaCliente } = require('../services/emailService');
 const Referido = require('../../models/Referido');
@@ -267,9 +268,17 @@ router.get("/me", async (req, res) => {
     try { payload = jwt.verify(token, process.env.JWT_SECRET); } catch(e) { return res.status(401).json({ ok: false, error: "Token invalido" }); }
     const u = await Usuario.findById(payload.id || payload.userId).lean();
     if (!u) return res.status(404).json({ ok: false, error: "Usuario no encontrado" });
-    const fields = ["nombre","email","rol"].filter(f => u[f]).length;
-    const optional = ["rubro","telefono","direccion"].filter(f => u[f]).length;
-    const profileCompletion = parseFloat(Math.min(1, (fields/3)*0.6 + (optional/3)*0.4).toFixed(2));
+
+    let profileCompletion;
+    if (u.rol === "COMERCIO") {
+      // Completitud de Comercio depende de BusinessProfile, no de campos de Usuario
+      const bp = await BusinessProfile.findOne({ usuarioId: u._id }).lean();
+      profileCompletion = !bp ? 0 : (bp.estado === "DRAFT" ? 0.5 : 1);
+    } else {
+      const fields = ["nombre","email","rol"].filter(f => u[f]).length;
+      const optional = ["rubro","telefono","direccion"].filter(f => u[f]).length;
+      profileCompletion = parseFloat(Math.min(1, (fields/3)*0.6 + (optional/3)*0.4).toFixed(2));
+    }
     let state = "APP_READY";
     if (u.estado === "BLOQUEADO") state = "BLOQUEADO";
     else if (u.rol === "ADMIN") state = "APP_READY"; // Admins no pasan por onboarding de rol (cliente/trabajador/comercio) — ya tienen rol definido

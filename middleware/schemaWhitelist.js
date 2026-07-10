@@ -40,4 +40,18 @@ const BUSINESS_PROFILE_FIELDS = [
   'instagram'
 ];
 
-module.exports = { whitelistBody, BUSINESS_PROFILE_FIELDS };
+// Whitelist de CatalogItem — segun models/CatalogItem.js
+// Campos PROTEGIDOS que nunca deben venir del cliente:
+// merchantId, usuarioId, metricas, activoDesde, ultimaVenta, creadoEn, actualizadoEn
+const CATALOG_ITEM_FIELDS = [
+  'nombre',
+  'descripcion',
+  'precioARS',
+  'rubroId',
+  'stock',
+  'estado',
+  'enPromocion',
+  'precioPromo'
+];
+
+module.exports = { whitelistBody, BUSINESS_PROFILE_FIELDS, CATALOG_ITEM_FIELDS };

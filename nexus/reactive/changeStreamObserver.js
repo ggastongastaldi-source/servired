@@ -17,7 +17,7 @@ async function iniciarObserver(io) {
 
   try {
     const col        = mongoose.connection.collection('events');
-    const checkpoint = await StreamCheckpoint.findOne({ streamId: 'universal_events_stream' })
+    const checkpoint = await StreamCheckpoint.findOne({ targetCollection: 'events' })
       .lean().catch(() => null);
 
     const options = {
@@ -37,7 +37,7 @@ async function iniciarObserver(io) {
 
       // Persistir resumeToken — async silencioso, nunca bloquea
       StreamCheckpoint.updateOne(
-        { streamId: 'universal_events_stream' },
+        { targetCollection: 'events' },
         { $set: { resumeToken: change._id, updatedAt: new Date() } },
         { upsert: true }
       ).catch(e => console.error('[Nexus-Checkpoint-Error]:', e.message));

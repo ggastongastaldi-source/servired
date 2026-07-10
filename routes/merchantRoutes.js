@@ -2,12 +2,15 @@ const express = require('express');
 const router  = express.Router();
 const mc      = require('../controllers/merchantController');
 const auth    = require('../middleware/authMiddleware');
-const { whitelistBody, BUSINESS_PROFILE_FIELDS } = require('../middleware/schemaWhitelist');
+const { whitelistBody, BUSINESS_PROFILE_FIELDS, CATALOG_ITEM_FIELDS } = require('../middleware/schemaWhitelist');
 const { rateGuard } = require('../middleware/rateGuard');
 
 // Security Kernel — Input Non-Trust (P-2) + Sybil Defense (T-1)
 // aplicado sobre las rutas que escriben BusinessProfile.
 const guardProfileWrite = [rateGuard({ windowMs: 15 * 60 * 1000, limit: 10 }), whitelistBody(BUSINESS_PROFILE_FIELDS)];
+// Mismo principio P-2 aplicado a CatalogItem — antes estas rutas no
+// filtraban el body en absoluto.
+const guardCatalogWrite = [rateGuard({ windowMs: 15 * 60 * 1000, limit: 30 }), whitelistBody(CATALOG_ITEM_FIELDS)];
 
 // Health
 router.get('/health', mc.health);
@@ -22,8 +25,8 @@ router.get('/dashboard', auth, mc.getDashboard);
 
 // Catalog CRUD
 router.get   ('/catalog',           auth, mc.listCatalog);
-router.post  ('/catalog',           auth, mc.createItem);
-router.patch ('/catalog/:itemId',   auth, mc.updateItem);
+router.post  ('/catalog',           auth, ...guardCatalogWrite, mc.createItem);
+router.patch ('/catalog/:itemId',   auth, ...guardCatalogWrite, mc.updateItem);
 router.delete('/catalog/:itemId',   auth, mc.deleteItem);
 
 // Analytics

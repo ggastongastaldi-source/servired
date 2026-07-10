@@ -1,6 +1,8 @@
 const BusinessProfile = require('../models/BusinessProfile');
 const CatalogItem = require('../models/CatalogItem');
+const MerchantProjection = require('../models/MerchantProjection');
 const { projectMerchantState } = require('../services/merchantProjection');
+const { reconstruirProjection } = require('../services/merchantProjectionReactor');
 const { emitEvent } = require('../nexus/events/emitEvent');
 const OnboardingSession = require('../models/OnboardingSession');
 const { transition } = require('../services/onboarding/sessionFSM');
@@ -91,27 +93,210 @@ exports.health = (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  res.status(501).json({ error: 'updateProfile no implementado aun' });
+  try {
+    if (!req.body || Object.keys(req.body).length === 0)
+      return res.status(400).json({ error: 'BODY_REQUIRED' });
+
+    const profile = await BusinessProfile.findOne({ usuarioId: req.userId });
+    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+
+    Object.assign(profile, req.body);
+    await profile.save();
+
+    // Mismo patron fire-and-forget que createProfile - no bloquea la
+    // respuesta HTTP si el emisor falla. MerchantProjectionReactor ya
+    // escucha MERCHANT_PROFILE_UPDATED (ver EVENTOS_RELEVANTES) y
+    // reconstruye la MerchantProjection completa desde este BusinessProfile
+    // - la projection nunca se toca directamente desde el controller.
+    try {
+      emitEvent({
+        entityType: 'merchant',
+        type: 'MERCHANT_PROFILE_UPDATED',
+        aggregateId: String(profile._id),
+        payload: {
+          merchantId: String(profile._id),
+          usuarioId: String(req.userId),
+          rubroId: profile.rubroId,
+          zonaId: profile.zonaId
+        }
+      });
+    } catch (e) {
+      console.warn('[merchant] Nexus emitEvent fallo (no critico):', e.message);
+    }
+
+    res.json({ profile });
+  } catch (e) {
+    console.error('[merchant] updateProfile:', e);
+    if (e.name === 'ValidationError') {
+      return res.status(400).json({ error: e.message });
+    }
+    res.status(500).json({ error: 'Error al actualizar perfil' });
+  }
 };
 
 exports.getDashboard = async (req, res) => {
-  res.status(501).json({ error: 'getDashboard no implementado aun (ver Merchant Projection Layer)' });
+  try {
+    let proj = await MerchantProjection.findOne({ usuarioId: req.userId }).lean();
+
+    if (!proj) {
+      // La projection puede no existir todavia si MERCHANT_PROFILE_CREATED
+      // no llego a procesarse (emision fire-and-forget, async) o si el
+      // perfil es anterior a la integracion de eventos. Reconstruccion
+      // sincrona bajo demanda, acotada a este usuario (mismo mecanismo
+      // que /admin/reconstruct, sin barrer todos los comercios).
+      const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
+      if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+
+      await reconstruirProjection(profile._id, req.userId, null);
+      proj = await MerchantProjection.findOne({ usuarioId: req.userId }).lean();
+      if (!proj) return res.status(500).json({ error: 'No se pudo construir el dashboard' });
+    }
+
+    // Adaptador: nombres del modelo (fuente de verdad del Reactor) ->
+    // nombres que espera merchant-app.js (contrato de frontend, no tocar
+    // sin revisar renderDashboard() en public/js/merchant-app.js).
+    res.json({
+      merchantId:      proj.merchantId,
+      nombreComercial: proj.nombreComercial,
+      estado:          proj.estado,
+      logo:            proj.logo,
+      actividad: {
+        vistasHoy:          proj.dashboard?.vistasHoy || 0,
+        solicitudesHoy:     proj.dashboard?.solicitudesHoy || 0,
+        pedidosConcretados: proj.dashboard?.pedidosConcretados || 0,
+        calificacion:       proj.dashboard?.calificacionPromedio || 0,
+      },
+      ingresos: {
+        estimadoMes: proj.dashboard?.ingresosEstimadoMes || 0,
+      },
+      campanias: {
+        activas: proj.campanias?.activas || 0,
+      },
+      tendencia: {
+        vistasUltimos7dias: proj.analytics?.vistasUltimos7diasSerie || [],
+      },
+    });
+  } catch (e) {
+    console.error('[merchant] getDashboard:', e);
+    res.status(500).json({ error: 'Error al obtener dashboard' });
+  }
 };
 
 exports.listCatalog = async (req, res) => {
-  res.status(501).json({ error: 'listCatalog no implementado aun' });
+  try {
+    const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
+    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+
+    const filter = { merchantId: profile._id };
+    const estado = req.query.estado;
+    if (estado && estado !== 'TODOS') filter.estado = estado;
+
+    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const items = await CatalogItem.find(filter).sort({ actualizadoEn: -1 }).limit(limit).lean();
+
+    res.json({ items });
+  } catch (e) {
+    console.error('[merchant] listCatalog:', e);
+    res.status(500).json({ error: 'Error al listar catalogo' });
+  }
 };
 
 exports.createItem = async (req, res) => {
-  res.status(501).json({ error: 'createItem no implementado aun' });
+  try {
+    if (!req.body || Object.keys(req.body).length === 0)
+      return res.status(400).json({ error: 'BODY_REQUIRED' });
+
+    const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
+    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+
+    // merchantId y usuarioId se asignan server-side — nunca del cliente.
+    // El whitelist ya descarto cualquier intento de inyeccion desde el body.
+    const item = await new CatalogItem({
+      ...req.body,
+      rubroId: req.body.rubroId || profile.rubroId,
+      merchantId: profile._id,
+      usuarioId: req.userId
+    }).save();
+
+    try {
+      emitEvent({
+        entityType: 'merchant',
+        type: 'CATALOG_ITEM_CREATED',
+        aggregateId: String(item._id),
+        payload: { merchantId: String(profile._id), usuarioId: String(req.userId), itemId: String(item._id) }
+      });
+    } catch (e) {
+      console.warn('[merchant] Nexus emitEvent fallo (no critico):', e.message);
+    }
+
+    res.status(201).json({ item });
+  } catch (e) {
+    console.error('[merchant] createItem:', e);
+    if (e.name === 'ValidationError') return res.status(400).json({ error: e.message });
+    res.status(500).json({ error: 'Error al crear producto' });
+  }
 };
 
 exports.updateItem = async (req, res) => {
-  res.status(501).json({ error: 'updateItem no implementado aun' });
+  try {
+    if (!req.body || Object.keys(req.body).length === 0)
+      return res.status(400).json({ error: 'BODY_REQUIRED' });
+
+    const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
+    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+
+    // Scoping por merchantId propio — nunca editar item de otro comercio.
+    const item = await CatalogItem.findOne({ _id: req.params.itemId, merchantId: profile._id });
+    if (!item) return res.status(404).json({ error: 'Producto no encontrado' });
+
+    // Object.assign es seguro aqui: el whitelist ya filtro el body antes de llegar al controller.
+    Object.assign(item, req.body);
+    await item.save();
+
+    try {
+      emitEvent({
+        entityType: 'merchant',
+        type: 'CATALOG_ITEM_UPDATED',
+        aggregateId: String(item._id),
+        payload: { merchantId: String(profile._id), usuarioId: String(req.userId), itemId: String(item._id) }
+      });
+    } catch (e) {
+      console.warn('[merchant] Nexus emitEvent fallo (no critico):', e.message);
+    }
+
+    res.json({ item });
+  } catch (e) {
+    console.error('[merchant] updateItem:', e);
+    if (e.name === 'ValidationError') return res.status(400).json({ error: e.message });
+    res.status(500).json({ error: 'Error al actualizar producto' });
+  }
 };
 
 exports.deleteItem = async (req, res) => {
-  res.status(501).json({ error: 'deleteItem no implementado aun' });
+  try {
+    const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
+    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+
+    // Scoping por merchantId propio — nunca borrar item de otro comercio.
+    const item = await CatalogItem.findOneAndDelete({ _id: req.params.itemId, merchantId: profile._id });
+    if (!item) return res.status(404).json({ error: 'Producto no encontrado' });
+
+    try {
+      emitEvent({
+        entityType: 'merchant',
+        type: 'CATALOG_ITEM_REMOVED',
+        aggregateId: String(item._id),
+        payload: { merchantId: String(profile._id), usuarioId: String(req.userId), itemId: String(item._id) }
+      });
+    } catch (e) {
+      console.warn('[merchant] Nexus emitEvent fallo (no critico):', e.message);
+    }
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[merchant] deleteItem:', e);
+    res.status(500).json({ error: 'Error al eliminar producto' });
+  }
 };
 
 exports.getAnalytics = async (req, res) => {
