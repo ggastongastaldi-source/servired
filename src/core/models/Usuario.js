@@ -52,9 +52,15 @@ const usuarioSchema = new mongoose.Schema({
   providerCategory: { type: String, default: null },
   serviceZone:      { type: String, default: null },
 
-  // ── WALLET ───────────────────────────────────────────────
+  // ── WALLET TRABAJADOR ───────────────────────────────────────────────
   wallet_pending:   { type: Number, default: 0 }, // fondos capturados, pendientes de liberacion
   wallet_available: { type: Number, default: 0 }, // fondos disponibles para retiro
+
+  // ── WALLET COMERCIO ──────────────────────────────────────────────────────
+  // Mismo modelo semántico que el wallet del Trabajador.
+  // Solo se modifican via financeEngine — nunca directamente desde controllers.
+  commerce_wallet_pending:   { type: Number, default: 0 },
+  commerce_wallet_available: { type: Number, default: 0 },
   client_origin_ref: { type: String, default: null },
   worker_origin_ref: { type: String, default: null },
 }, { timestamps: true });
