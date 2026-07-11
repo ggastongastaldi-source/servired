@@ -1,0 +1,141 @@
+function initGoogleSignIn() {
+  if (!window.google || !window.google.accounts) return;
+  const clientId = document.querySelector("meta[name=google-client-id]")?.content || "";
+  google.accounts.id.initialize({
+    client_id: clientId,
+    use_fedcm_for_prompt: true,
+    use_fedcm_for_button: true,
+callback: async function(response) {
+  try {
+    if (!response?.credential) {
+      alert("Google no devolvió credential");
+      return;
+    }
+
+    const r = await fetch("/api/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_token: response.credential })
+    });
+
+    const data = await r.json();
+
+    if (!data || !data.ok || !data.token) {
+      console.error("AUTH_FAIL:", data);
+      alert("Error al ingresar con Google");
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("usuario", JSON.stringify(data.usuario || {}));
+
+    cerrarModals();
+
+    await resolverSesionYNavegar(data.token);
+
+  } catch (e) {
+    console.error(e);
+    alert("AUTH_EXCEPTION: " + e.message);
+  }
+}
+
+
+    const r = await fetch("/api/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_token: response.credential })
+    });
+
+    const data = await r.json();
+
+    if (!data || !data.ok || !data.token) {
+      console.error("AUTH_FAIL:", data);
+      alert("Error al ingresar con Google");
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("usuario", JSON.stringify(data.usuario || {}));
+
+    cerrarModals();
+
+    await resolverSesionYNavegar(data.token);
+
+  } catch (e) {
+    console.error(e);
+    alert("AUTH_EXCEPTION: " + e.message);
+  }
+}
+          body: JSON.stringify({ id_token: response.credential })
+        });
+        const data = await r.json();
+        if (!data.ok) { alert("Error al ingresar con Google: " + data.error); return; }
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("usuario", JSON.stringify(data.usuario));
+        cerrarModals();
+        await resolverSesionYNavegar(data.token);
+      } catch(e) {
+        alert("DEBUG: " + e.name + ": " + e.message);
+      }
+    }
+  });
+  const btn = document.getElementById("google-signin-btn");
+  if (btn) {
+    google.accounts.id.renderButton(btn, {
+      theme: "filled_black",
+      size: "large",
+      text: "continue_with",
+      locale: "es_419",
+      width: 280
+    });
+  }
+}
+
+function mostrarSeleccionRol(usuario) {
+  const nombre = usuario.nombre ? usuario.nombre.split(" ")[0] : "vos";
+  const overlay = document.createElement("div");
+  overlay.id = "rol-selector-overlay";
+  overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,14,26,0.97);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;";
+  overlay.innerHTML = `
+    <div style="max-width:360px;width:100%;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:8px;">👋</div>
+      <h2 style="color:#00E5FF;font-family:Rajdhani,sans-serif;font-size:1.4rem;margin-bottom:6px;">Hola, ${nombre}</h2>
+      <p style="color:#64748b;font-size:0.85rem;margin-bottom:28px;">Bienvenido a ServiRed. ¿Qué querés hacer?</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button onclick="elegirRol(this,'CLIENTE')" style="background:#111827;border:1px solid #00E5FF;color:#00E5FF;padding:14px 20px;border-radius:10px;font-size:0.95rem;font-family:Rajdhani,sans-serif;cursor:pointer;text-align:left;">
+          🔍 Buscar un trabajador o servicio
+        </button>
+        <button onclick="elegirRol(this,'TRABAJADOR')" style="background:#111827;border:1px solid #FF6D00;color:#FF6D00;padding:14px 20px;border-radius:10px;font-size:0.95rem;font-family:Rajdhani,sans-serif;cursor:pointer;text-align:left;">
+          🔧 Ofrecer mis servicios
+        </button>
+        <button onclick="elegirRol(this,'COMERCIO')" style="background:#111827;border:1px solid #39ff14;color:#39ff14;padding:14px 20px;border-radius:10px;font-size:0.95rem;font-family:Rajdhani,sans-serif;cursor:pointer;text-align:left;">
+          🏪 Registrar mi comercio
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function elegirRol(btn, rol) {
+  document.querySelectorAll("#rol-selector-overlay button").forEach(b => b.disabled = true);
+  btn.textContent = "Cargando...";
+  if (rol === "CLIENTE") { location.reload(); }
+  else if (rol === "TRABAJADOR") { iniciarWizardProvider(document.getElementById("rol-selector-overlay")); }
+  else if (rol === "COMERCIO") { document.getElementById("rol-selector-overlay").remove(); abrirModal("onboarding-comercio"); }
+}
+
+window.addEventListener("load", function() {
+  if (window.google && window.google.accounts) { initGoogleSignIn(); }
+  else { document.addEventListener("googleAccountsReady", initGoogleSignIn); }
+  setTimeout(initGoogleSignIn, 2000);
+  setTimeout(renderHomeGoogleBtn, 2500);
+});
+
+function renderHomeGoogleBtn() {
+  if (!window.google || !window.google.accounts) { setTimeout(renderHomeGoogleBtn, 500); return; }
+  var el = document.getElementById("home-google-btn");
+  if (!el) return;
+  google.accounts.id.renderButton(el, { theme:"filled_black", size:"large", text:"continue_with", locale:"es_419", width:320 });
+}
+</script>

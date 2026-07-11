@@ -1,0 +1,875 @@
+◇ injected env (19) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+[ADR-005] Single Writer Guard OK - ejecucion monoproceso confirmada
+[RTG] ✅ DixieGate bridge activo
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+[CRON] scheduledConfirmations activo — check cada 5 min
+[PriceAnomalyObserver] Activo. Batch interval: 2000 ms
+[TrustDecayReactor] Activo.
+[AuctionOutcomeProjection] Activo.
+[AladdinIntelligenceReactor] Activo.
+[Shadow] ✅ RTG shadow monitor cargado
+[MerchantReactor] activo — conectado a Nexus changeStreamObserver
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+[Registry] ▶ NotificationService
+[Registry] ▶ AnalyticsService
+[Registry] ▶ ObserverService
+[Runtime] ServiRed OS Runtime v2 iniciado ✓
+[DB] Gate abierto — conexion lista para workers
+✅ MongoDB conectado
+[BOOST EXPIRY] Cron iniciado (intervalo: 1h)
+[ExternalHealthMonitor] Iniciado — chequeo cada 5 min (Google OAuth + Mercado Pago)
+[WAL] Iniciado — segmento wal_seg_00000000.log — modo SAFE
+[BACKPRESSURE] Iniciado — MAX_BUFFER=128MB MAX_QUEUE=250k
+[SPILL] Iniciado — dir=/data/data/com.termux/files/home/servired/wal_segments/spill MAX=512MB
+[RTMIL] Ingest Layer activo — WAL + Backpressure + Spill ensamblados
+[RTMIL] Pipeline activo — WAL + Backpressure + Spill
+[WATCHDOG] FinanceWatchdog iniciando — intervalo: 15 min
+[jobRequestedReactor] io inicializado
+[Nexus] 🚀 Iniciando runtime (sidecar)...
+[SINAPSIS] Projection Engine activo — escuchando sinapsis.events
+[DispatchEngine] Redis no disponible — modo degradado (sin BullMQ)
+[Nexus] 🛡️ EventStore listo — índices OK (events)
+[Nexus] 👁️  Observer v2.0 activo — events (desde ahora)
+[Outbox Dispatcher] ✅ Iniciado — intervalo 10s
+[Governance] 💓 Operational Pulse iniciado — intervalo 60s
+[Nexus] ✅ Ecosistema reactivo OK
+[Server] Nexus: ok
+[EventStore] ✅ Índices OCC creados
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"df831740-05c6-4d16-8cbb-068a96b4ed2e","scannedAt":"2026-07-07T01:28:11.802Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"FISCAL","pipelineRunId":"df831740-05c6-4d16-8cbb-068a96b4ed2e","casesCreated":1,"casesUpdated":0,"timestamp":"2026-07-07T01:28:15.600Z"}
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+{"level":"info","source":"DEFENSOR","pipelineRunId":"df831740-05c6-4d16-8cbb-068a96b4ed2e","processed":2,"resolved":0,"timestamp":"2026-07-07T01:28:15.780Z"}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"df831740-05c6-4d16-8cbb-068a96b4ed2e","status":"SUCCESS","durationMs":3980,"timings":{"scanMs":3542,"correlationMs":257,"defensorMs":181},"newFindings":0,"casesCreated":1,"casesResolved":0,"errors":[],"timestamp":"2026-07-07T01:28:15.781Z"}
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] 🔄 Rubro resuelto: pintura → pintura_interior
+[Geomesh] ⚠️  Rubro no resuelto: "peluqueria_canina" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: peluqueria_canina
+[Geomesh] ⚠️  Rubro no resuelto: "paneles_solares" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: instalacion_de_split → aire_acondicionado
+[Aladdín-Worker] 🔄 Rubro resuelto: kit_de_camaras → cctv
+[ODE] ✅ Observacion persistida: peluqueria_canina → peluqueria_canina
+[ODE-PW] ✅ observacion registrada: peluqueria_canina
+[ODE] ✅ Observacion persistida: paneles_solares → paneles_solares
+[ODE-PW] ✅ observacion registrada: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: servicio_domestico → limpieza
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Aladdín-Worker] 🔄 Rubro resuelto: limpieza_hogar → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: fletes_mudanzas → fletes
+[Aladdín-Worker] ✅ 10 rubros actualizados en MongoDB.
+[Governance] ✅ Sistema saludable
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-07T01:29:40.828Z 200
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"e440ffa8-c8d2-4a2a-95b2-e2abf3e9bef7","scannedAt":"2026-07-07T01:30:00.153Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"e440ffa8-c8d2-4a2a-95b2-e2abf3e9bef7","status":"SUCCESS","durationMs":1033,"timings":{"scanMs":858,"correlationMs":122,"defensorMs":53},"newFindings":0,"casesCreated":0,"casesResolved":0,"errors":[],"timestamp":"2026-07-07T01:30:01.186Z"}
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Commerce] ✅ Registrado: Test Comercio QA | Moron | id:6a4c56cd0c29c13bf9ed334f | usuarioId:6a4c56cd0c29c13bf9ed334e
+[KEEPALIVE] 2026-07-07T01:31:10.788Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-07T01:32:41.295Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-07T01:34:10.797Z 200
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-07T01:35:40.794Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-07T01:37:12.026Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+nohup: ignoring input
+◇ injected env (19) from .env // tip: ⌘ enable debugging { debug: true }
+[ADR-005] Single Writer Guard OK - ejecucion monoproceso confirmada
+[RTG] ✅ DixieGate bridge activo
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+[CRON] scheduledConfirmations activo — check cada 5 min
+[PriceAnomalyObserver] Activo. Batch interval: 2000 ms
+[TrustDecayReactor] Activo.
+[AuctionOutcomeProjection] Activo.
+[AladdinIntelligenceReactor] Activo.
+[Shadow] ✅ RTG shadow monitor cargado
+[MerchantReactor] activo — conectado a Nexus changeStreamObserver
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+[Registry] ▶ NotificationService
+[Registry] ▶ AnalyticsService
+[Registry] ▶ ObserverService
+[Runtime] ServiRed OS Runtime v2 iniciado ✓
+[DB] Gate abierto — conexion lista para workers
+✅ MongoDB conectado
+[BOOST EXPIRY] Cron iniciado (intervalo: 1h)
+[ExternalHealthMonitor] Iniciado — chequeo cada 5 min (Google OAuth + Mercado Pago)
+[WAL] Recuperado — seq=2 checksum=79ef4646007e...
+[WAL] Iniciado — segmento wal_seg_00000000.log — modo SAFE
+[BACKPRESSURE] Iniciado — MAX_BUFFER=128MB MAX_QUEUE=250k
+[SPILL] Iniciado — dir=/data/data/com.termux/files/home/servired/wal_segments/spill MAX=512MB
+[RTMIL] Ingest Layer activo — WAL + Backpressure + Spill ensamblados
+[RTMIL] Pipeline activo — WAL + Backpressure + Spill
+[WATCHDOG] FinanceWatchdog iniciando — intervalo: 15 min
+[jobRequestedReactor] io inicializado
+[Nexus] 🚀 Iniciando runtime (sidecar)...
+[SINAPSIS] Projection Engine activo — escuchando sinapsis.events
+[DispatchEngine] Redis no disponible — modo degradado (sin BullMQ)
+[Nexus] 🛡️ EventStore listo — índices OK (events)
+[Nexus] 👁️  Observer v2.0 activo — events (desde ahora)
+[Outbox Dispatcher] ✅ Iniciado — intervalo 10s
+[Governance] 💓 Operational Pulse iniciado — intervalo 60s
+[Nexus] ✅ Ecosistema reactivo OK
+[Server] Nexus: ok
+[EventStore] ✅ Índices OCC creados
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"3d6b5aa5-405b-437a-b345-68f179946eee","scannedAt":"2026-07-08T19:13:38.426Z","status":"CLEAN","newFindings":0,"openFindings":0}
+[Aladdín-Worker] 🔄 Rubro resuelto: pintura → pintura_interior
+{"level":"info","source":"FISCAL","pipelineRunId":"3d6b5aa5-405b-437a-b345-68f179946eee","casesCreated":1,"casesUpdated":0,"timestamp":"2026-07-08T19:13:48.898Z"}
+{"level":"info","source":"DEFENSOR","pipelineRunId":"3d6b5aa5-405b-437a-b345-68f179946eee","processed":1,"resolved":0,"timestamp":"2026-07-08T19:13:49.128Z"}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"3d6b5aa5-405b-437a-b345-68f179946eee","status":"SUCCESS","durationMs":10703,"timings":{"scanMs":10197,"correlationMs":276,"defensorMs":230},"newFindings":0,"casesCreated":1,"casesResolved":0,"errors":[],"timestamp":"2026-07-08T19:13:49.128Z"}
+[Geomesh] ⚠️  Rubro no resuelto: "peluqueria_canina" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: peluqueria_canina
+[Geomesh] ⚠️  Rubro no resuelto: "paneles_solares" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: instalacion_de_split → aire_acondicionado
+[Aladdín-Worker] 🔄 Rubro resuelto: kit_de_camaras → cctv
+[ODE] ✅ Observacion persistida: paneles_solares → paneles_solares
+[ODE-PW] ✅ observacion registrada: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: servicio_domestico → limpieza
+[ODE] ✅ Observacion persistida: peluqueria_canina → peluqueria_canina
+[ODE-PW] ✅ observacion registrada: peluqueria_canina
+[Aladdín-Worker] 🔄 Rubro resuelto: limpieza_hogar → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: fletes_mudanzas → fletes
+[Aladdín-Worker] ✅ 10 rubros actualizados en MongoDB.
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Commerce] ✅ Registrado: Test2 | Moron | id:6a4ea18dd55ad35c3561464a | usuarioId:6a4ea18dd55ad35c35614649
+[DixieGate] 🔍 Audit: MERCHANT_PROFILE_CREATED | 1 issue(s) | mode=observe
+[Nexus] 📥 MERCHANT:MERCHANT_PROFILE_CREATED | agg:6a4ea18dd55ad35c3561464b | 2026-07-08T19:14:22.568Z
+[Nexus-Checkpoint-Error]: Path "streamId" is not in schema, strict mode is `true`, and upsert is `true`.
+[Nexus] 📡 [merchant] MERCHANT_PROFILE_CREATED → 6a4ea18dd55ad35c3561464b | seq:0 | corr:87b97dc3
+[_appendEvent] llegando al tap: MERCHANT_PROFILE_CREATED
+[NexusTap] publicando: MERCHANT_PROFILE_CREATED
+[Observer] evento recibido: MERCHANT_PROFILE_CREATED
+(node:11108) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[MerchantReactor] projection escrita: new ObjectId('6a4ea190fa07ef31c668dd24') merchantId: new ObjectId('6a4ea18dd55ad35c3561464b') version: 1
+[Observer] snapshot | total:1 | tpm:1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-08T19:15:07.121Z 200
+[Observer] snapshot | total:1 | tpm:0.5 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.5 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[KEEPALIVE] 2026-07-08T19:16:37.015Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-08T19:18:06.958Z 200
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[KEEPALIVE] 2026-07-08T19:19:36.899Z 200
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+nohup: ignoring input
+◇ injected env (19) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+[ADR-005] Single Writer Guard OK - ejecucion monoproceso confirmada
+[RTG] ✅ DixieGate bridge activo
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+[CRON] scheduledConfirmations activo — check cada 5 min
+[PriceAnomalyObserver] Activo. Batch interval: 2000 ms
+[TrustDecayReactor] Activo.
+[AuctionOutcomeProjection] Activo.
+[AladdinIntelligenceReactor] Activo.
+[Shadow] ✅ RTG shadow monitor cargado
+[MerchantReactor] activo — conectado a Nexus changeStreamObserver
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+[Registry] ▶ NotificationService
+[Registry] ▶ AnalyticsService
+[Registry] ▶ ObserverService
+[Runtime] ServiRed OS Runtime v2 iniciado ✓
+[DB] Gate abierto — conexion lista para workers
+✅ MongoDB conectado
+[BOOST EXPIRY] Cron iniciado (intervalo: 1h)
+[ExternalHealthMonitor] Iniciado — chequeo cada 5 min (Google OAuth + Mercado Pago)
+[WAL] Recuperado — seq=3 checksum=2a20f2e5f162...
+[WAL] Iniciado — segmento wal_seg_00000000.log — modo SAFE
+[BACKPRESSURE] Iniciado — MAX_BUFFER=128MB MAX_QUEUE=250k
+[SPILL] Iniciado — dir=/data/data/com.termux/files/home/servired/wal_segments/spill MAX=512MB
+[RTMIL] Ingest Layer activo — WAL + Backpressure + Spill ensamblados
+[RTMIL] Pipeline activo — WAL + Backpressure + Spill
+[WATCHDOG] FinanceWatchdog iniciando — intervalo: 15 min
+[jobRequestedReactor] io inicializado
+[Nexus] 🚀 Iniciando runtime (sidecar)...
+[SINAPSIS] Projection Engine activo — escuchando sinapsis.events
+[DispatchEngine] Redis no disponible — modo degradado (sin BullMQ)
+[Nexus] 🛡️ EventStore listo — índices OK (events)
+[Nexus] 👁️  Observer v2.0 activo — events (desde ahora)
+[Outbox Dispatcher] ✅ Iniciado — intervalo 10s
+[Governance] 💓 Operational Pulse iniciado — intervalo 60s
+[Nexus] ✅ Ecosistema reactivo OK
+[Server] Nexus: ok
+[EventStore] ✅ Índices OCC creados
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"473387fa-d9db-4d20-a2b7-3f6df00be25c","scannedAt":"2026-07-08T23:57:26.879Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"FISCAL","pipelineRunId":"473387fa-d9db-4d20-a2b7-3f6df00be25c","casesCreated":1,"casesUpdated":0,"timestamp":"2026-07-08T23:57:33.010Z"}
+{"level":"info","source":"DEFENSOR","pipelineRunId":"473387fa-d9db-4d20-a2b7-3f6df00be25c","processed":1,"resolved":0,"timestamp":"2026-07-08T23:57:33.137Z"}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"473387fa-d9db-4d20-a2b7-3f6df00be25c","status":"SUCCESS","durationMs":6259,"timings":{"scanMs":5970,"correlationMs":164,"defensorMs":125},"newFindings":0,"casesCreated":1,"casesResolved":0,"errors":[],"timestamp":"2026-07-08T23:57:33.137Z"}
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] 🔄 Rubro resuelto: pintura → pintura_interior
+[Geomesh] ⚠️  Rubro no resuelto: "peluqueria_canina" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: peluqueria_canina
+[Geomesh] ⚠️  Rubro no resuelto: "paneles_solares" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: instalacion_split → aire_acondicionado
+[Aladdín-Worker] 🔄 Rubro resuelto: kit_camara → cctv
+[ODE] ✅ Observacion persistida: peluqueria_canina → peluqueria_canina
+[ODE-PW] ✅ observacion registrada: peluqueria_canina
+[ODE] ✅ Observacion persistida: paneles_solares → paneles_solares
+[ODE-PW] ✅ observacion registrada: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: servicio_domestico → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: limpieza_hogar → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: fletes_mudanzas → fletes
+[Aladdín-Worker] ✅ 10 rubros actualizados en MongoDB.
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-08T23:58:56.499Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"3a3be321-2480-470a-b257-a8bf127055e9","scannedAt":"2026-07-09T00:00:00.130Z","status":"CLEAN","newFindings":0,"openFindings":0}
+[Reconciliator] batch completo: {"total":4,"consistent":0,"drift":4,"errors":0}
+[STATE DRIFT] CRITICAL providers con drift detectado: 4 {"total":4,"consistent":0,"drift":4,"errors":0}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"3a3be321-2480-470a-b257-a8bf127055e9","status":"SUCCESS","durationMs":997,"timings":{"scanMs":804,"correlationMs":127,"defensorMs":64},"newFindings":0,"casesCreated":0,"casesResolved":0,"errors":[],"timestamp":"2026-07-09T00:00:01.127Z"}
+[KEEPALIVE] 2026-07-09T00:00:25.875Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T00:01:55.896Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T00:03:25.866Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+nohup: ignoring input
+◇ injected env (19) from .env // tip: ⌘ enable debugging { debug: true }
+[ADR-005] Single Writer Guard OK - ejecucion monoproceso confirmada
+[RTG] ✅ DixieGate bridge activo
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+[CRON] scheduledConfirmations activo — check cada 5 min
+[PriceAnomalyObserver] Activo. Batch interval: 2000 ms
+[TrustDecayReactor] Activo.
+[AuctionOutcomeProjection] Activo.
+[AladdinIntelligenceReactor] Activo.
+[Shadow] ✅ RTG shadow monitor cargado
+[MerchantReactor] activo — conectado a Nexus changeStreamObserver
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+[Registry] ▶ NotificationService
+[Registry] ▶ AnalyticsService
+[Registry] ▶ ObserverService
+[Runtime] ServiRed OS Runtime v2 iniciado ✓
+[DB] Gate abierto — conexion lista para workers
+✅ MongoDB conectado
+[BOOST EXPIRY] Cron iniciado (intervalo: 1h)
+[ExternalHealthMonitor] Iniciado — chequeo cada 5 min (Google OAuth + Mercado Pago)
+[WAL] Recuperado — seq=3 checksum=2a20f2e5f162...
+[WAL] Iniciado — segmento wal_seg_00000000.log — modo SAFE
+[BACKPRESSURE] Iniciado — MAX_BUFFER=128MB MAX_QUEUE=250k
+[SPILL] Iniciado — dir=/data/data/com.termux/files/home/servired/wal_segments/spill MAX=512MB
+[RTMIL] Ingest Layer activo — WAL + Backpressure + Spill ensamblados
+[RTMIL] Pipeline activo — WAL + Backpressure + Spill
+[WATCHDOG] FinanceWatchdog iniciando — intervalo: 15 min
+[jobRequestedReactor] io inicializado
+[Nexus] 🚀 Iniciando runtime (sidecar)...
+[SINAPSIS] Projection Engine activo — escuchando sinapsis.events
+[DispatchEngine] Redis no disponible — modo degradado (sin BullMQ)
+[Nexus] 🛡️ EventStore listo — índices OK (events)
+[Nexus] 👁️  Observer v2.0 activo — events (desde ahora)
+[Outbox Dispatcher] ✅ Iniciado — intervalo 10s
+[Governance] 💓 Operational Pulse iniciado — intervalo 60s
+[Nexus] ✅ Ecosistema reactivo OK
+[Server] Nexus: ok
+[EventStore] ✅ Índices OCC creados
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"7e780d80-635c-4b94-8116-1078610173dc","scannedAt":"2026-07-09T00:20:56.786Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"FISCAL","pipelineRunId":"7e780d80-635c-4b94-8116-1078610173dc","casesCreated":1,"casesUpdated":0,"timestamp":"2026-07-09T00:21:00.751Z"}
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+{"level":"info","source":"DEFENSOR","pipelineRunId":"7e780d80-635c-4b94-8116-1078610173dc","processed":1,"resolved":0,"timestamp":"2026-07-09T00:21:00.903Z"}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"7e780d80-635c-4b94-8116-1078610173dc","status":"SUCCESS","durationMs":4119,"timings":{"scanMs":3672,"correlationMs":295,"defensorMs":152},"newFindings":0,"casesCreated":1,"casesResolved":0,"errors":[],"timestamp":"2026-07-09T00:21:00.904Z"}
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] 🔄 Rubro resuelto: pintura → pintura_interior
+[Geomesh] ⚠️  Rubro no resuelto: "peluqueria_canina" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: peluqueria_canina
+[Geomesh] ⚠️  Rubro no resuelto: "paneles_solares" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: instalacion_de_split → aire_acondicionado
+[Aladdín-Worker] 🔄 Rubro resuelto: kit_de_camaras → cctv
+[ODE] ✅ Observacion persistida: peluqueria_canina → peluqueria_canina
+[ODE-PW] ✅ observacion registrada: peluqueria_canina
+[ODE] ✅ Observacion persistida: paneles_solares → paneles_solares
+[ODE-PW] ✅ observacion registrada: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: servicio_domestico → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: limpieza_hogar → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: fletes_mudanzas → fletes
+[Aladdín-Worker] ✅ 10 rubros actualizados en MongoDB.
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[DixieGate] 🔍 Audit: MERCHANT_PROFILE_UPDATED | 1 issue(s) | mode=observe
+[Nexus] 📡 [merchant] MERCHANT_PROFILE_UPDATED → 6a4ea18dd55ad35c3561464b | seq:1 | corr:babf952c
+[_appendEvent] llegando al tap: MERCHANT_PROFILE_UPDATED
+[NexusTap] publicando: MERCHANT_PROFILE_UPDATED
+[Observer] evento recibido: MERCHANT_PROFILE_UPDATED
+[Nexus] 📥 MERCHANT:MERCHANT_PROFILE_UPDATED | agg:6a4ea18dd55ad35c3561464b | 2026-07-09T00:21:42.855Z
+[Nexus-Checkpoint-Error]: Path "streamId" is not in schema, strict mode is `true`, and upsert is `true`.
+(node:23468) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[MerchantReactor] projection escrita: new ObjectId('6a4ea190fa07ef31c668dd24') merchantId: new ObjectId('6a4ea18dd55ad35c3561464b') version: 2
+[Observer] snapshot | total:1 | tpm:1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T00:22:25.610Z 200
+[Observer] snapshot | total:1 | tpm:0.5 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.5 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[KEEPALIVE] 2026-07-09T00:23:55.549Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T00:25:25.604Z 200
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[KEEPALIVE] 2026-07-09T00:26:55.539Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T00:28:25.532Z 200
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[KEEPALIVE] 2026-07-09T00:29:55.511Z 200
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"f2b2f2da-8a47-4d21-9307-6a8c5d737e95","scannedAt":"2026-07-09T00:30:00.242Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"f2b2f2da-8a47-4d21-9307-6a8c5d737e95","status":"SUCCESS","durationMs":1094,"timings":{"scanMs":886,"correlationMs":144,"defensorMs":64},"newFindings":0,"casesCreated":0,"casesResolved":0,"errors":[],"timestamp":"2026-07-09T00:30:01.337Z"}
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T00:31:25.524Z 200
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[KEEPALIVE] 2026-07-09T00:32:55.714Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T00:34:25.548Z 200
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[KEEPALIVE] 2026-07-09T00:35:55.537Z 200
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+nohup: ignoring input
+◇ injected env (19) from .env // tip: ⌘ enable debugging { debug: true }
+[ADR-005] Single Writer Guard OK - ejecucion monoproceso confirmada
+[RTG] ✅ DixieGate bridge activo
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+[CRON] scheduledConfirmations activo — check cada 5 min
+[PriceAnomalyObserver] Activo. Batch interval: 2000 ms
+[TrustDecayReactor] Activo.
+[AuctionOutcomeProjection] Activo.
+[AladdinIntelligenceReactor] Activo.
+[Shadow] ✅ RTG shadow monitor cargado
+[MerchantReactor] activo — conectado a Nexus changeStreamObserver
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+[Registry] ▶ NotificationService
+[Registry] ▶ AnalyticsService
+[Registry] ▶ ObserverService
+[Runtime] ServiRed OS Runtime v2 iniciado ✓
+[DB] Gate abierto — conexion lista para workers
+✅ MongoDB conectado
+[BOOST EXPIRY] Cron iniciado (intervalo: 1h)
+[ExternalHealthMonitor] Iniciado — chequeo cada 5 min (Google OAuth + Mercado Pago)
+[WAL] Recuperado — seq=3 checksum=2a20f2e5f162...
+[WAL] Iniciado — segmento wal_seg_00000000.log — modo SAFE
+[BACKPRESSURE] Iniciado — MAX_BUFFER=128MB MAX_QUEUE=250k
+[SPILL] Iniciado — dir=/data/data/com.termux/files/home/servired/wal_segments/spill MAX=512MB
+[RTMIL] Ingest Layer activo — WAL + Backpressure + Spill ensamblados
+[RTMIL] Pipeline activo — WAL + Backpressure + Spill
+[WATCHDOG] FinanceWatchdog iniciando — intervalo: 15 min
+[jobRequestedReactor] io inicializado
+[Nexus] 🚀 Iniciando runtime (sidecar)...
+[SINAPSIS] Projection Engine activo — escuchando sinapsis.events
+[DispatchEngine] Redis no disponible — modo degradado (sin BullMQ)
+[Nexus] 🛡️ EventStore listo — índices OK (events)
+[Nexus] 👁️  Observer v2.0 activo — events (desde ahora)
+[Outbox Dispatcher] ✅ Iniciado — intervalo 10s
+[Governance] 💓 Operational Pulse iniciado — intervalo 60s
+[Nexus] ✅ Ecosistema reactivo OK
+[Server] Nexus: ok
+[EventStore] ✅ Índices OCC creados
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"c79d8381-1816-40d0-b457-d523d54e24a0","scannedAt":"2026-07-09T22:05:08.775Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"FISCAL","pipelineRunId":"c79d8381-1816-40d0-b457-d523d54e24a0","casesCreated":1,"casesUpdated":0,"timestamp":"2026-07-09T22:05:12.645Z"}
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+{"level":"info","source":"DEFENSOR","pipelineRunId":"c79d8381-1816-40d0-b457-d523d54e24a0","processed":1,"resolved":0,"timestamp":"2026-07-09T22:05:12.897Z"}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"c79d8381-1816-40d0-b457-d523d54e24a0","status":"SUCCESS","durationMs":4123,"timings":{"scanMs":3620,"correlationMs":251,"defensorMs":252},"newFindings":0,"casesCreated":1,"casesResolved":0,"errors":[],"timestamp":"2026-07-09T22:05:12.898Z"}
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] 🔄 Rubro resuelto: pintura → pintura_interior
+[Geomesh] ⚠️  Rubro no resuelto: "peluqueria_canina" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: peluqueria_canina
+[Geomesh] ⚠️  Rubro no resuelto: "paneles_solares" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: instalacion_de_split → aire_acondicionado
+[Aladdín-Worker] 🔄 Rubro resuelto: kit_de_camaras → cctv
+[ODE] ✅ Observacion persistida: paneles_solares → paneles_solares
+[ODE-PW] ✅ observacion registrada: paneles_solares
+[ODE] ✅ Observacion persistida: peluqueria_canina → peluqueria_canina
+[ODE-PW] ✅ observacion registrada: peluqueria_canina
+[Aladdín-Worker] 🔄 Rubro resuelto: servicio_domestico → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: limpieza_hogar → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: fletes_mudanzas → fletes
+[Aladdín-Worker] ✅ 10 rubros actualizados en MongoDB.
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[DixieGate] 🔍 Audit: CATALOG_ITEM_CREATED | 1 issue(s) | mode=observe
+[Nexus] 📥 MERCHANT:CATALOG_ITEM_CREATED | agg:6a501b40384b0689e50cbf20 | 2026-07-09T22:05:53.012Z
+[Nexus-Checkpoint-Error]: Path "streamId" is not in schema, strict mode is `true`, and upsert is `true`.
+[Nexus] 📡 [merchant] CATALOG_ITEM_CREATED → 6a501b40384b0689e50cbf20 | seq:0 | corr:10bd8a88
+[_appendEvent] llegando al tap: CATALOG_ITEM_CREATED
+[NexusTap] publicando: CATALOG_ITEM_CREATED
+[Observer] evento recibido: CATALOG_ITEM_CREATED
+(node:4370) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[MerchantReactor] projection escrita: new ObjectId('6a4ea190fa07ef31c668dd24') merchantId: new ObjectId('6a4ea18dd55ad35c3561464b') version: 3
+[Observer] snapshot | total:1 | tpm:1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:06:37.700Z 200
+[Observer] snapshot | total:1 | tpm:0.5 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.5 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:08:07.619Z 200
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:09:37.625Z 200
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:11:07.620Z 200
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+nohup: ignoring input
+◇ injected env (19) from .env // tip: ⌘ override existing { override: true }
+[ADR-005] Single Writer Guard OK - ejecucion monoproceso confirmada
+[RTG] ✅ DixieGate bridge activo
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+[CRON] scheduledConfirmations activo — check cada 5 min
+[PriceAnomalyObserver] Activo. Batch interval: 2000 ms
+[TrustDecayReactor] Activo.
+[AuctionOutcomeProjection] Activo.
+[AladdinIntelligenceReactor] Activo.
+[Shadow] ✅ RTG shadow monitor cargado
+[MerchantReactor] activo — conectado a Nexus changeStreamObserver
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+[Registry] ▶ NotificationService
+[Registry] ▶ AnalyticsService
+[Registry] ▶ ObserverService
+[Runtime] ServiRed OS Runtime v2 iniciado ✓
+[DB] Gate abierto — conexion lista para workers
+✅ MongoDB conectado
+[BOOST EXPIRY] Cron iniciado (intervalo: 1h)
+[ExternalHealthMonitor] Iniciado — chequeo cada 5 min (Google OAuth + Mercado Pago)
+[WAL] Recuperado — seq=3 checksum=2a20f2e5f162...
+[WAL] Iniciado — segmento wal_seg_00000000.log — modo SAFE
+[BACKPRESSURE] Iniciado — MAX_BUFFER=128MB MAX_QUEUE=250k
+[SPILL] Iniciado — dir=/data/data/com.termux/files/home/servired/wal_segments/spill MAX=512MB
+[RTMIL] Ingest Layer activo — WAL + Backpressure + Spill ensamblados
+[RTMIL] Pipeline activo — WAL + Backpressure + Spill
+[WATCHDOG] FinanceWatchdog iniciando — intervalo: 15 min
+[jobRequestedReactor] io inicializado
+[Nexus] 🚀 Iniciando runtime (sidecar)...
+[SINAPSIS] Projection Engine activo — escuchando sinapsis.events
+[DispatchEngine] Redis no disponible — modo degradado (sin BullMQ)
+[Nexus] 🛡️ EventStore listo — índices OK (events)
+[Nexus] 👁️  Observer v2.0 activo — events (desde ahora)
+[Outbox Dispatcher] ✅ Iniciado — intervalo 10s
+[Governance] 💓 Operational Pulse iniciado — intervalo 60s
+[Nexus] ✅ Ecosistema reactivo OK
+[Server] Nexus: ok
+[EventStore] ✅ Índices OCC creados
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"5f6871f8-347e-45a7-a8cb-41b3ac72f1cd","scannedAt":"2026-07-09T22:28:49.728Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"FISCAL","pipelineRunId":"5f6871f8-347e-45a7-a8cb-41b3ac72f1cd","casesCreated":1,"casesUpdated":0,"timestamp":"2026-07-09T22:28:54.902Z"}
+{"level":"info","source":"DEFENSOR","pipelineRunId":"5f6871f8-347e-45a7-a8cb-41b3ac72f1cd","processed":2,"resolved":0,"timestamp":"2026-07-09T22:28:55.107Z"}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"5f6871f8-347e-45a7-a8cb-41b3ac72f1cd","status":"SUCCESS","durationMs":5380,"timings":{"scanMs":5024,"correlationMs":151,"defensorMs":205},"newFindings":0,"casesCreated":1,"casesResolved":0,"errors":[],"timestamp":"2026-07-09T22:28:55.107Z"}
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] 🔄 Rubro resuelto: pintura → pintura_interior
+[Geomesh] ⚠️  Rubro no resuelto: "peluqueria_canina" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: peluqueria_canina
+[Geomesh] ⚠️  Rubro no resuelto: "paneles_solares" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: kit_camara → cctv
+[Aladdín-Worker] 🔄 Rubro resuelto: instalacion_split → aire_acondicionado
+[ODE] ✅ Observacion persistida: paneles_solares → paneles_solares
+[ODE-PW] ✅ observacion registrada: paneles_solares
+[ODE] ✅ Observacion persistida: peluqueria_canina → peluqueria_canina
+[ODE-PW] ✅ observacion registrada: peluqueria_canina
+[Aladdín-Worker] 🔄 Rubro resuelto: servicio_domestico → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: limpieza_hogar → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: fletes_mudanzas → fletes
+[Aladdín-Worker] ✅ 10 rubros actualizados en MongoDB.
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"8f6bd923-0c4d-475d-8d60-6573d9885d7d","scannedAt":"2026-07-09T22:30:00.106Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"8f6bd923-0c4d-475d-8d60-6573d9885d7d","status":"SUCCESS","durationMs":4440,"timings":{"scanMs":4219,"correlationMs":154,"defensorMs":67},"newFindings":0,"casesCreated":0,"casesResolved":0,"errors":[],"timestamp":"2026-07-09T22:30:04.546Z"}
+[DixieGate] 🔍 Audit: CATALOG_ITEM_UPDATED | 1 issue(s) | mode=observe
+[Nexus] 📥 MERCHANT:CATALOG_ITEM_UPDATED | agg:6a501b40384b0689e50cbf20 | 2026-07-09T22:30:04.835Z
+[Nexus-Checkpoint-Error]: Path "streamId" is not in schema, strict mode is `true`, and upsert is `true`.
+[Nexus] 📡 [merchant] CATALOG_ITEM_UPDATED → 6a501b40384b0689e50cbf20 | seq:1 | corr:969088eb
+[_appendEvent] llegando al tap: CATALOG_ITEM_UPDATED
+[NexusTap] publicando: CATALOG_ITEM_UPDATED
+[Observer] evento recibido: CATALOG_ITEM_UPDATED
+[DixieGate] 🔍 Audit: CATALOG_ITEM_UPDATED | 1 issue(s) | mode=observe
+[Nexus] 📥 MERCHANT:CATALOG_ITEM_UPDATED | agg:6a501b40384b0689e50cbf20 | 2026-07-09T22:30:05.065Z
+[Nexus-Checkpoint-Error]: Path "streamId" is not in schema, strict mode is `true`, and upsert is `true`.
+[Nexus] 📡 [merchant] CATALOG_ITEM_UPDATED → 6a501b40384b0689e50cbf20 | seq:2 | corr:559981ff
+[_appendEvent] llegando al tap: CATALOG_ITEM_UPDATED
+[NexusTap] publicando: CATALOG_ITEM_UPDATED
+[Observer] evento recibido: CATALOG_ITEM_UPDATED
+(node:8846) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[MerchantReactor] projection escrita: new ObjectId('6a4ea190fa07ef31c668dd24') merchantId: new ObjectId('6a4ea18dd55ad35c3561464b') version: 4
+[DixieGate] 🔍 Audit: CATALOG_ITEM_REMOVED | 1 issue(s) | mode=observe
+(node:8846) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+[Nexus] 📥 MERCHANT:CATALOG_ITEM_REMOVED | agg:6a501b40384b0689e50cbf20 | 2026-07-09T22:30:05.437Z
+[Nexus-Checkpoint-Error]: Path "streamId" is not in schema, strict mode is `true`, and upsert is `true`.
+[Nexus] 📡 [merchant] CATALOG_ITEM_REMOVED → 6a501b40384b0689e50cbf20 | seq:3 | corr:d0ca6a46
+[_appendEvent] llegando al tap: CATALOG_ITEM_REMOVED
+[NexusTap] publicando: CATALOG_ITEM_REMOVED
+[Observer] evento recibido: CATALOG_ITEM_REMOVED
+[MerchantReactor] projection escrita: new ObjectId('6a4ea190fa07ef31c668dd24') merchantId: new ObjectId('6a4ea18dd55ad35c3561464b') version: 5
+(node:8846) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+[MerchantReactor] projection escrita: new ObjectId('6a4ea190fa07ef31c668dd24') merchantId: new ObjectId('6a4ea18dd55ad35c3561464b') version: 6
+[KEEPALIVE] 2026-07-09T22:30:18.741Z 200
+[Observer] snapshot | total:3 | tpm:1.5 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:1.5 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:1 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:1 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:31:48.696Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.8 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.8 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:33:18.708Z 200
+[Observer] snapshot | total:3 | tpm:0.6 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.6 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.5 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:34:48.689Z 200
+[Observer] snapshot | total:3 | tpm:0.5 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.4 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.4 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:36:19.177Z 200
+[Observer] snapshot | total:3 | tpm:0.4 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.4 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.3 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:37:48.687Z 200
+[Observer] snapshot | total:3 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:39:18.676Z 200
+[Observer] snapshot | total:3 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.3 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:40:48.710Z 200
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:42:18.710Z 200
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:43:48.696Z 200
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:45:18.712Z 200
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:46:48.677Z 200
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:48:18.722Z 200
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:49:48.678Z 200
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:51:18.705Z 200
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[KEEPALIVE] 2026-07-09T22:52:48.683Z 200
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:3 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-09T22:54:18.706Z 200
+nohup: ignoring input
+◇ injected env (19) from .env // tip: ⌘ override existing { override: true }
+[ADR-005] Single Writer Guard OK - ejecucion monoproceso confirmada
+[RTG] ✅ DixieGate bridge activo
+[WATCHDOG] Globulo Rojo v2.1 iniciado - patrol cada 3 min
+[CRON] scheduledConfirmations activo — check cada 5 min
+[PriceAnomalyObserver] Activo. Batch interval: 2000 ms
+[TrustDecayReactor] Activo.
+[AuctionOutcomeProjection] Activo.
+[AladdinIntelligenceReactor] Activo.
+[Shadow] ✅ RTG shadow monitor cargado
+[MerchantReactor] activo — conectado a Nexus changeStreamObserver
+🚀 ServiRed activo en puerto 3000
+📡 Socket.IO escuchando
+💰 Moneda: ARS
+[Registry] ▶ NotificationService
+[Registry] ▶ AnalyticsService
+[Registry] ▶ ObserverService
+[Runtime] ServiRed OS Runtime v2 iniciado ✓
+[DB] Gate abierto — conexion lista para workers
+✅ MongoDB conectado
+[BOOST EXPIRY] Cron iniciado (intervalo: 1h)
+[ExternalHealthMonitor] Iniciado — chequeo cada 5 min (Google OAuth + Mercado Pago)
+[WAL] Recuperado — seq=3 checksum=2a20f2e5f162...
+[WAL] Iniciado — segmento wal_seg_00000000.log — modo SAFE
+[BACKPRESSURE] Iniciado — MAX_BUFFER=128MB MAX_QUEUE=250k
+[SPILL] Iniciado — dir=/data/data/com.termux/files/home/servired/wal_segments/spill MAX=512MB
+[RTMIL] Ingest Layer activo — WAL + Backpressure + Spill ensamblados
+[RTMIL] Pipeline activo — WAL + Backpressure + Spill
+[WATCHDOG] FinanceWatchdog iniciando — intervalo: 15 min
+[jobRequestedReactor] io inicializado
+[Nexus] 🚀 Iniciando runtime (sidecar)...
+[SINAPSIS] Projection Engine activo — escuchando sinapsis.events
+[DispatchEngine] Redis no disponible — modo degradado (sin BullMQ)
+[Nexus] 🛡️ EventStore listo — índices OK (events)
+[Nexus] 👁️  Observer v2.0 activo — events (desde ahora)
+[Outbox Dispatcher] ✅ Iniciado — intervalo 10s
+[Governance] 💓 Operational Pulse iniciado — intervalo 60s
+[Nexus] ✅ Ecosistema reactivo OK
+[Server] Nexus: ok
+[EventStore] ✅ Índices OCC creados
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"c255ed6c-9f30-493c-8062-8d9bef9e97b5","scannedAt":"2026-07-10T04:28:54.795Z","status":"CLEAN","newFindings":0,"openFindings":0}
+[WATCHDOG] Ciclo completado — 0 issue(s) detectados
+{"level":"info","source":"FISCAL","pipelineRunId":"c255ed6c-9f30-493c-8062-8d9bef9e97b5","casesCreated":1,"casesUpdated":0,"timestamp":"2026-07-10T04:28:58.817Z"}
+{"level":"info","source":"DEFENSOR","pipelineRunId":"c255ed6c-9f30-493c-8062-8d9bef9e97b5","processed":1,"resolved":0,"timestamp":"2026-07-10T04:28:58.958Z"}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"c255ed6c-9f30-493c-8062-8d9bef9e97b5","status":"SUCCESS","durationMs":4165,"timings":{"scanMs":3742,"correlationMs":282,"defensorMs":140},"newFindings":0,"casesCreated":1,"casesResolved":0,"errors":[],"timestamp":"2026-07-10T04:28:58.959Z"}
+[Aladdín-Worker] 🔍 Consultando precios de mercado vía Groq...
+[Aladdín-Worker] 🔄 Rubro resuelto: pintura → pintura_interior
+[Geomesh] ⚠️  Rubro no resuelto: "peluqueria_canina" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: peluqueria_canina
+[Geomesh] ⚠️  Rubro no resuelto: "paneles_solares" → UNKNOWN_RUBRO
+[Aladdín-Worker] ⚠️  Rubro espurio ignorado: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: instalacion_de_split → aire_acondicionado
+[Aladdín-Worker] 🔄 Rubro resuelto: kit_de_camaras → cctv
+[ODE] ✅ Observacion persistida: peluqueria_canina → peluqueria_canina
+[ODE-PW] ✅ observacion registrada: peluqueria_canina
+[ODE] ✅ Observacion persistida: paneles_solares → paneles_solares
+[ODE-PW] ✅ observacion registrada: paneles_solares
+[Aladdín-Worker] 🔄 Rubro resuelto: servicio_domestico → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: limpieza_hogar → limpieza
+[Aladdín-Worker] 🔄 Rubro resuelto: fletes_mudanzas → fletes
+[Aladdín-Worker] ✅ 10 rubros actualizados en MongoDB.
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Governance] ✅ Sistema saludable
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+{"level":"info","source":"DIXIE_TERMINAL","pipelineRunId":"fd5da6dd-ff9f-4319-a517-e64fcacf88b4","scannedAt":"2026-07-10T04:30:00.123Z","status":"CLEAN","newFindings":0,"openFindings":0}
+{"level":"info","source":"SOC_PIPELINE","pipelineRunId":"fd5da6dd-ff9f-4319-a517-e64fcacf88b4","status":"SUCCESS","durationMs":1058,"timings":{"scanMs":891,"correlationMs":117,"defensorMs":50},"newFindings":0,"casesCreated":0,"casesResolved":0,"errors":[],"timestamp":"2026-07-10T04:30:01.182Z"}
+[KEEPALIVE] 2026-07-10T04:30:23.826Z 200
+[DixieGate] 🔍 Audit: CATALOG_ITEM_CREATED | 1 issue(s) | mode=observe
+[Nexus] 📥 MERCHANT:CATALOG_ITEM_CREATED | agg:6a5075777d747111e09581dc | 2026-07-10T04:30:47.270Z
+[Nexus] 📡 [merchant] CATALOG_ITEM_CREATED → 6a5075777d747111e09581dc | seq:0 | corr:629ac901
+[_appendEvent] llegando al tap: CATALOG_ITEM_CREATED
+[NexusTap] publicando: CATALOG_ITEM_CREATED
+[Observer] evento recibido: CATALOG_ITEM_CREATED
+(node:21347) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[MerchantReactor] projection escrita: new ObjectId('6a4ea190fa07ef31c668dd24') merchantId: new ObjectId('6a4ea18dd55ad35c3561464b') version: 9
+[Observer] snapshot | total:1 | tpm:0.5 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.5 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[KEEPALIVE] 2026-07-10T04:31:53.746Z 200
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.3 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-10T04:33:23.745Z 200
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[KEEPALIVE] 2026-07-10T04:34:53.734Z 200
+[Observer] snapshot | total:1 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-10T04:36:23.760Z 200
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[KEEPALIVE] 2026-07-10T04:37:53.740Z 200
+[Observer] snapshot | total:1 | tpm:0.1 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[DixieGate] 🔍 Audit: CATALOG_ITEM_CREATED | 1 issue(s) | mode=observe
+[Nexus] 📥 MERCHANT:CATALOG_ITEM_CREATED | agg:6a5077297d747111e09581e7 | 2026-07-10T04:38:02.067Z
+[Nexus] 📡 [merchant] CATALOG_ITEM_CREATED → 6a5077297d747111e09581e7 | seq:0 | corr:692bd46b
+[_appendEvent] llegando al tap: CATALOG_ITEM_CREATED
+[NexusTap] publicando: CATALOG_ITEM_CREATED
+[Observer] evento recibido: CATALOG_ITEM_CREATED
+(node:21347) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+[MerchantReactor] projection escrita: new ObjectId('6a4ea190fa07ef31c668dd24') merchantId: new ObjectId('6a4ea18dd55ad35c3561464b') version: 10
+[Observer] snapshot | total:2 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:2 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
+[KEEPALIVE] 2026-07-10T04:39:24.222Z 200
+[Observer] snapshot | total:2 | tpm:0.2 | latency pairs:0
+[Observer] snapshot | total:2 | tpm:0.2 | latency pairs:0
+[Governance] ✅ Sistema saludable
+[Shadow] 🌑 mult=1.000 drift=0.000 stress=false conv=0.00
