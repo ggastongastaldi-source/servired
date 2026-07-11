@@ -1,5 +1,6 @@
 'use strict';
 
+const assert         = require('node:assert/strict');
 const { Pedido }       = require('../../../src/domain/pedido/Pedido');
 const { Dinero }       = require('../../../src/domain/shared/value-objects/Dinero');
 const { EstadoPedido } = require('../../../src/domain/shared/value-objects/EstadoPedido');
@@ -93,7 +94,7 @@ p4.iniciarBusqueda();
 p4.expandirBusqueda();
 p4.asignarWorker('w1');
 p4.iniciarTrabajo();
-console.assert(p4.timeline.length === 2, 'timeline append-only ok');
+assert.equal(p4.timeline.length, 4, 'timeline append-only ok');
 console.log('  ✓ timeline');
 
 console.log('\n✅ Todos los tests del Bloque 2 pasaron');
