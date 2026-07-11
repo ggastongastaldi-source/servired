@@ -18,3 +18,22 @@ wal_segments/
 .env.local
 servired-eos/
 *.bak-*
+
+# Logs y temporales
+*.log
+*.log.old
+*.bak
+
+# Scripts de diagnóstico temporales
+check-*.js
+find-*.js
+list-*.js
+verify-*.js
+cross-check.js
+aplicar_*.sh
+aplicar_*.py
+fix_*.sh
+google_block_debug.txt
+
+# Repositorios embebidos no deseados
+servired-platform/
