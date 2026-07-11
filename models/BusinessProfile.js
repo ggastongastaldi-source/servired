@@ -47,6 +47,19 @@ const BusinessProfileSchema = new mongoose.Schema({
     index: true
   },
 
+  // ── Jerarquía para PyME/Empresa multi-sucursal (T-602) ──────────────────
+  // parentProfileId: apunta al BusinessProfile raíz (casa matriz).
+  // null = perfil raíz (comportamiento por defecto, sin cambio para actores existentes).
+  // Un perfil con parentProfileId es una sucursal — hereda rubroId del padre
+  // salvo que lo sobreescriba explícitamente.
+  // El actor con PuedeCentralizar puede crear y administrar perfiles hijo.
+  parentProfileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'BusinessProfile',
+    default: null,
+    index: true
+  },
+
   // ── Datos del negocio (complementan Commerce, no duplican) ─────────────
   nombreComercial: { type: String, required: true, trim: true },
   razonSocial:     { type: String, trim: true },
