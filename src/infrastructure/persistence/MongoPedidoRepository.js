@@ -39,6 +39,16 @@ class MongoPedidoRepository extends PedidoRepository {
     const doc = await getModel().findById(id).select('_id').lean();
     return !!doc;
   }
+
+  /**
+   * Devuelve el documento Mongoose crudo (no el Aggregate) buscando por jobId.
+   * Usado por el adapter de Etapa 1 para obtener el _id legacy después del swap.
+   * @param {string} jobId — UUID canónico del CreateJobCommandHandler
+   * @returns {Promise<object|null>} documento Mongoose con .toObject()
+   */
+  async findDocByJobId(jobId) {
+    return getModel().findOne({ jobId }).exec();
+  }
 }
 
 module.exports = { MongoPedidoRepository };
