@@ -76,6 +76,12 @@ const PedidoSchema = new mongoose.Schema({
   esProgramado:    { type: Boolean, default: false },
   notas:           { type: String,  default: '' },
 
+  // Puente dominio-legacy — jobId canónico (UUID) del CreateJobCommand
+  jobId:         { type: String, default: null, index: true },
+
+  // Puente dominio-legacy — jobId canónico (UUID) del CreateJobCommand
+  jobId:         { type: String, default: null, index: true },
+
   fechaCreacion: { type: Date, default: Date.now }
 });
 
