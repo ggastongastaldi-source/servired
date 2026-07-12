@@ -133,3 +133,19 @@ Etapa 4 — Migracion de consumidores:
 ---
 Documento generado tras Discovery Pass 2026-07-12.
 Proxima revision: al completar Etapa 2 del plan de migracion.
+
+---
+
+## 13. Actores del ecosistema — distinción canónica
+
+| Panel | Actores | Capacidades clave | Modelo |
+|---|---|---|---|
+| Admin Ecosistema | Operadores internos | Gobierno Kernel, SINAPSIS, métricas globales | Interno |
+| Panel Comercio | Comercios barriales | Perfil, catálogo, publicaciones básicas | Freemium |
+| Panel PyME/Fabricante | PyMEs y fabricantes | WhatsApp, sucursales, activos, garantías, trazabilidad, publicación masiva | Freemium → Premium |
+
+**Regla:** WhatsApp pertenece al contexto PyME/Fabricante, no a Panel Comercio.
+Los tres paneles son proyecciones del mismo Kernel y Event Bus SINAPSIS.
+Lo que cambia es la vista, los permisos y las capacidades expuestas — no la infraestructura.
+
+*Registrado en sesión 2026-07-12.*
