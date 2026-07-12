@@ -61,9 +61,16 @@ class Pedido {
   /** Factory — emite PedidoCreado */
   static crear({ id, clienteId, tipoServicio, zona, descripcion, ubicacion, precio, pagoWorker }) {
     const pedido = new Pedido({ id, clienteId, tipoServicio, zona, descripcion, ubicacion, precio, pagoWorker });
-    pedido._emitir(PedidoDomainEvents.pedidoCreado(pedido._id, {
-      clienteId, tipoServicio, zona, precio: precio.monto, pagoWorker: pagoWorker.monto
-    }));
+    // Si viene con id externo (pipeline Job) → emite JobCreated
+    // Si se construye internamente → emite PedidoCreado (legacy)
+    const evento = id
+      ? PedidoDomainEvents.jobCreated(pedido._id, {
+          clienteId, tipoServicio, zona, precio: precio.monto, pagoWorker: pagoWorker.monto
+        })
+      : PedidoDomainEvents.pedidoCreado(pedido._id, {
+          clienteId, tipoServicio, zona, precio: precio.monto, pagoWorker: pagoWorker.monto
+        });
+    pedido._emitir(evento);
     return pedido;
   }
 

@@ -20,6 +20,7 @@ function getNexusEmit() {
 
 // Mapeo tipo dominio → tipo SINAPSIS (uppercase, snake_case)
 const TIPO_MAP = {
+  JobCreated:        'JOB_CREATED',
   PedidoCreado:      'PEDIDO_CREADO',
   PedidoAsignado:    'PEDIDO_ASIGNADO',
   TrabajoIniciado:   'TRABAJO_INICIADO',

@@ -13,6 +13,8 @@ function crearEvento(type, aggregateId, payload = {}) {
 }
 
 const PedidoDomainEvents = {
+  // Evento canónico del pipeline Job (Etapa 0 — Strangler Fig)
+  jobCreated:     (id, p) => crearEvento('JobCreated',     id, p),
   pedidoCreado:   (id, p) => crearEvento('PedidoCreado',   id, p),
   pedidoAsignado: (id, p) => crearEvento('PedidoAsignado', id, p),
   trabajoIniciado:(id, p) => crearEvento('TrabajoIniciado',id, p),
