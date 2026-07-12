@@ -59,8 +59,8 @@ class Pedido {
   // ── Commands ────────────────────────────────────────────────────────
 
   /** Factory — emite PedidoCreado */
-  static crear({ clienteId, tipoServicio, zona, descripcion, ubicacion, precio, pagoWorker }) {
-    const pedido = new Pedido({ clienteId, tipoServicio, zona, descripcion, ubicacion, precio, pagoWorker });
+  static crear({ id, clienteId, tipoServicio, zona, descripcion, ubicacion, precio, pagoWorker }) {
+    const pedido = new Pedido({ id, clienteId, tipoServicio, zona, descripcion, ubicacion, precio, pagoWorker });
     pedido._emitir(PedidoDomainEvents.pedidoCreado(pedido._id, {
       clienteId, tipoServicio, zona, precio: precio.monto, pagoWorker: pagoWorker.monto
     }));
