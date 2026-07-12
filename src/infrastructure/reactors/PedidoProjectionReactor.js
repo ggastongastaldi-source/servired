@@ -23,7 +23,7 @@ function getModel() {
  * @returns {Promise<object>}   — documento Pedido guardado (lean)
  */
 async function proyectarPedido(domainEvent) {
-  if (domainEvent.type !== 'PedidoCreado') {
+  if (domainEvent.type !== 'PedidoCreado' && domainEvent.type !== 'JobCreated') {
     throw new Error(`PedidoProjectionReactor: evento inesperado "${domainEvent.type}"`);
   }
 
@@ -53,4 +53,9 @@ async function proyectarPedido(domainEvent) {
   return doc.toObject();
 }
 
-module.exports = { proyectarPedido };
+// Alias para compatibilidad con CreateJobAdapter
+async function reaccionar(domainEvent) {
+  return proyectarPedido(domainEvent);
+}
+
+module.exports = { proyectarPedido, reaccionar };
