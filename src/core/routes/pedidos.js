@@ -101,28 +101,24 @@ router.post('/', verificarToken, verificarRol('CLIENTE'), async (req, res) => {
 
     const { esProgramado, notas } = req.body;
     const tipoServicioNorm = normalizarRubro(tipoServicio);
-    const nuevoPedido = new Pedido({
-      cliente: req.user.userId,
+
+    // ── Strangler Fig — Etapa 1 ──────────────────────────────────────
+    // Reemplaza: new Pedido({...}).save()
+    // El adapter mantiene el mismo contrato de salida (doc Mongoose).
+    const { crearJobDesdeREST } = require('../../infrastructure/adapters/CreateJobAdapter');
+    const pedidoGuardado = await crearJobDesdeREST({
+      clienteId:    req.user.userId,
       tipoServicio: tipoServicioNorm,
       zona,
-      descripcion: descripcion || '',
-      direccion: direccion || '',
-      complejidad: complejidad || 'baja',
-      precio: total_estimado,
-      total_estimado: total_estimado,
-      pago_worker: pago_worker,
-      estado: 'PENDIENTE',
-      ubicacion: (lat && lng) ? {
-        type: 'Point',
-        coordinates: [parseFloat(lng), parseFloat(lat)]
-      } : {
-        type: 'Point',
-        coordinates: [-58.4, -34.6]
-      },
-      fechaCreacion: new Date()
+      descripcion:  descripcion || '',
+      direccion:    direccion   || '',
+      complejidad:  complejidad || 'baja',
+      precio:       total_estimado,
+      pagoWorker:   pago_worker,
+      ubicacion:    (lat && lng) ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null,
+      correlationId: req.headers['x-correlation-id'] || null,
     });
-
-    const pedidoGuardado = await nuevoPedido.save();
+    const nuevoPedido = pedidoGuardado; // alias — el resto del controlador no cambia
     try {
       const rtmil = require('../../../services/rtmilIngest');
       try {
