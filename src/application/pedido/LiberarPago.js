@@ -1,15 +1,18 @@
 'use strict';
 
 class LiberarPago {
-  constructor(uow) { this._uow = uow; }
+  constructor(repo) { this._repo = repo; }
 
-  async execute({ pedidoId, ctx }) {
-    const pedido = await this._uow._repo.findById(pedidoId);
+  async execute({ pedidoId }) {
+    const pedido = await this._repo.findById(pedidoId);
     if (!pedido) throw new Error(`LiberarPago: pedido ${pedidoId} no encontrado`);
 
     pedido.liberarPago();
-    await this._uow.commit(pedido, ctx);
-    return { pedidoId, monto: pedido.pagoWorker.monto };
+    await this._repo.save(pedido);
+
+    const eventos = pedido.eventos;
+    pedido.limpiarEventos();
+    return { pedidoId, monto: pedido.pagoWorker.monto, eventos };
   }
 }
 
