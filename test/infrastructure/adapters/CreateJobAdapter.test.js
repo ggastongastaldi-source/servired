@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const Module = require('module');
 
 // ── Stubs ─────────────────────────────────────────────────────────────
-const store = new Map();
+const mongoStore = new Map();
 let reactorLlamado = false;
 
 const originalLoad = Module._load.bind(Module);
@@ -12,15 +12,30 @@ Module._load = function(request, parent, isMain) {
   if (request.includes('MongoPedidoRepository')) {
     return {
       MongoPedidoRepository: class {
-        async save(p) { store.set(p.id, { _id: p.id, jobId: p.id, tipoServicio: p.tipoServicio, zona: p.zona, estado: 'PENDIENTE', toObject() { return this; } }); }
-        async findById(id) { return store.get(id) ?? null; }
-        async findDocByJobId(jobId) { return store.get(jobId) ?? null; }
-        async exists(id) { return store.has(id); }
+        async findDocByJobId(jobId) {
+          const doc = mongoStore.get(jobId);
+          return doc ?? null;
+        }
       }
     };
   }
   if (request.includes('PedidoProjectionReactor')) {
-    return { PedidoProjectionReactor: { reaccionar: async () => { reactorLlamado = true; } } };
+    return {
+      PedidoProjectionReactor: {
+        reaccionar: async (evento) => {
+          reactorLlamado = true;
+          // Simula lo que hace el reactor: persiste en mongoStore por jobId
+          mongoStore.set(evento.aggregateId, {
+            _id:          'mongo-oid-123',
+            jobId:        evento.aggregateId,
+            tipoServicio: evento.payload.tipoServicio,
+            zona:         evento.payload.zona,
+            estado:       'PENDIENTE',
+            toObject()    { return this; }
+          });
+        }
+      }
+    };
   }
   if (request.includes('SinapsisEventAdapter')) {
     return { publicarEventosDePedido: () => {} };
