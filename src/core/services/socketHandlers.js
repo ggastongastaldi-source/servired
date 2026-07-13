@@ -477,27 +477,25 @@ module.exports = (io) => {
           return;
         }
         const clienteId = decoded.userId || decoded.id;
-        const Pedido = require('../models/Pedido');
         const { iniciarFlujoBusqueda } = require('../controllers/notificationController');
         const cliente = await Usuario.findById(clienteId).lean();
         const zona = cliente?.zona || cliente?.zonaCobertura || 'la_matanza';
         console.log('[Socket] zona del cliente:', zona);
-        const nuevoPedido = new Pedido({
-          cliente: clienteId,
+
+        // ── Strangler Fig — Etapa 2 ──────────────────────────────────
+        // Reemplaza: new Pedido({...}).save() + emitEvent(JOB_CREATED)
+        const { crearJobDesdeREST } = require('../../infrastructure/adapters/CreateJobAdapter');
+        const pedidoGuardado = await crearJobDesdeREST({
+          clienteId,
           tipoServicio: servicio,
           zona,
-          descripcion: '',
-          direccion: direccion || '',
-          complejidad: 'baja',
-          precio: precio || 100000,
-          total_estimado: precio || 100000,
-          pago_worker: Math.round((precio || 100000) * 0.8),
-          estado: 'PENDIENTE',
-          ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] },
-          fechaCreacion: new Date()
+          descripcion:  '',
+          direccion:    direccion || '',
+          complejidad:  'baja',
+          precio:       precio || 100000,
+          pagoWorker:   Math.round((precio || 100000) * 0.8),
+          source:       'SOCKET',
         });
-        const pedidoGuardado = await nuevoPedido.save();
-        emitEvent({ entityType: 'job', type: 'JOB_CREATED', aggregateId: pedidoGuardado._id, payload: { clienteId: pedidoGuardado.cliente, rubro: pedidoGuardado.tipoServicio, zona: pedidoGuardado.zona || 'desconocida', precio: pedidoGuardado.precio } });
         socket.join('pedido_' + pedidoGuardado._id);
         socket.emit('pedido_creado', {
           pedidoId: pedidoGuardado._id,
