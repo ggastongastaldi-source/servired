@@ -1,0 +1,17 @@
+{
+  "name": "@servired/trust-risk",
+  "version": "0.1.0",
+  "description": "Trust & Risk Bounded Context — ServiRed OS",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node_modules/.bin/jest --runInBand",
+    "test:unit": "node_modules/.bin/jest tests/unit --runInBand"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/*.test.js"]
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}

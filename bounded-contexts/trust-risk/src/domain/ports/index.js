@@ -1,0 +1,11 @@
+const { ITrustEventStore }            = require('./ITrustEventStore');
+const { ITrustProfileRepository }     = require('./ITrustProfileRepository');
+const { IRiskCaseRepository }         = require('./IRiskCaseRepository');
+const { IPolicyRegistry }             = require('./IPolicyRegistry');
+const { IIntegrationEventPublisher }  = require('./IIntegrationEventPublisher');
+const { IClock }                      = require('./IClock');
+const { IUnitOfWork }                 = require('./IUnitOfWork');
+const { IEvidenceStore }              = require('./IEvidenceStore');
+const { IExplanationStore }           = require('./IExplanationStore');
+const { IOperationalAssessmentStore } = require('./IOperationalAssessmentStore');
+module.exports = { ITrustEventStore, ITrustProfileRepository, IRiskCaseRepository, IPolicyRegistry, IIntegrationEventPublisher, IClock, IUnitOfWork, IEvidenceStore, IExplanationStore, IOperationalAssessmentStore };
