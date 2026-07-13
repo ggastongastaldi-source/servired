@@ -22,17 +22,23 @@ const { MongoPedidoRepository }   = require('../persistence/MongoPedidoRepositor
 const { PedidoProjectionReactor } = require('../reactors/PedidoProjectionReactor');
 const { publicarEventosDePedido } = require('../events/SinapsisEventAdapter');
 
-// Singletons — se inicializan una vez
-let _handler = null;
-let _repo    = null;
+// Repositorio en memoria para el Aggregate — el Pedido legacy lo persiste el Reactor
+// MongoPedidoRepository solo se usa para findDocByJobId al final
+class InMemoryJobRepo {
+  constructor() { this._store = new Map(); }
+  async save(p)      { this._store.set(p.id, p); }
+  async findById(id) { return this._store.get(id) ?? null; }
+  async exists(id)   { return this._store.has(id); }
+}
+
+function getMongoRepo() {
+  return new MongoPedidoRepository();
+}
 
 function getHandler() {
-  if (!_handler) {
-    _repo    = new MongoPedidoRepository();
-    const uow = new UnitOfWork(_repo, publicarEventosDePedido);
-    _handler  = new CreateJobCommandHandler(uow);
-  }
-  return _handler;
+  const memRepo = new InMemoryJobRepo();
+  const uow     = new UnitOfWork(memRepo, publicarEventosDePedido);
+  return new CreateJobCommandHandler(uow);
 }
 
 /**
@@ -73,7 +79,7 @@ async function crearJobDesdeREST({
   await PedidoProjectionReactor.reaccionar(eventos[0]);
 
   // Recuperar doc Mongoose para que el resto de pedidos.js funcione igual
-  const doc = await _repo.findDocByJobId(jobId);
+  const doc = await getMongoRepo().findDocByJobId(jobId);
   if (!doc) throw new Error(`[CreateJobAdapter] Doc no encontrado para jobId ${jobId}`);
   return doc;
 }
