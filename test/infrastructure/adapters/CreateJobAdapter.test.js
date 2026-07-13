@@ -21,19 +21,17 @@ Module._load = function(request, parent, isMain) {
   }
   if (request.includes('PedidoProjectionReactor')) {
     return {
-      PedidoProjectionReactor: {
-        reaccionar: async (evento) => {
-          reactorLlamado = true;
-          // Simula lo que hace el reactor: persiste en mongoStore por jobId
-          mongoStore.set(evento.aggregateId, {
-            _id:          'mongo-oid-123',
-            jobId:        evento.aggregateId,
-            tipoServicio: evento.payload.tipoServicio,
-            zona:         evento.payload.zona,
-            estado:       'PENDIENTE',
-            toObject()    { return this; }
-          });
-        }
+      proyectarPedido: async () => {},
+      reaccionar: async (evento) => {
+        reactorLlamado = true;
+        mongoStore.set(evento.aggregateId, {
+          _id:          'mongo-oid-123',
+          jobId:        evento.aggregateId,
+          tipoServicio: evento.payload.tipoServicio,
+          zona:         evento.payload.zona,
+          estado:       'PENDIENTE',
+          toObject()    { return this; }
+        });
       }
     };
   }
