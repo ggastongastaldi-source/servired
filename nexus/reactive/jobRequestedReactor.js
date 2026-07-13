@@ -1,13 +1,17 @@
 /**
- * jobRequestedReactor — escucha JOB_REQUESTED y enruta al engine correcto
+ * jobRequestedReactor v2 — Etapa 3 Strangler Fig
  *
- * DISPATCH track → DispatchService.dispatchPedido()  → emite JOB_ASSIGNED
+ * Escucha DOS tipos de evento:
+ *   - 'JOB_REQUESTED' (legacy routes/jobs.js) → payload ya tiene track/zona/rubro
+ *   - 'JobCreated'    (dominio canónico)       → normalizar campos antes de dispatch
+ *
+ * DISPATCH track → DispatchService.dispatchPedido()
  * AUCTION  track → no hace nada (quoteService maneja su propio flujo)
- *
- * Se conecta al changeStreamObserver existente, mismo patrón que
- * procesarMarketFieldEvent y merchantProjectionReactor.
  */
 "use strict";
+
+const { classifyJob } = require('../../services/jobClassifier');
+const { analyze }     = require('../../services/marketField/marketFieldEngine');
 
 let _io = null;
 
@@ -17,47 +21,92 @@ function init(io) {
 
 async function jobRequestedReactor(event) {
   try {
-    if (event.type !== 'JOB_REQUESTED') return;
+    // ── Normalización: soporta ambos formatos ──────────────────────────
+    let payload;
 
-    const { track, clientId, rubro, zona, urgency, descripcion, ubicacion,
-            estimatedValue, pricingMultiplier } = event.payload || {};
+    if (event.type === 'JOB_REQUESTED') {
+      // Legacy: payload completo con track ya calculado
+      payload = event.payload || {};
 
-    if (track !== 'DISPATCH') return; // AUCTION se maneja solo
+    } else if (event.type === 'JobCreated') {
+      // Dominio canónico: normalizar y clasificar
+      const p = event.payload || {};
+      const classification = classifyJob({
+        rubro:            p.rubro,
+        urgency:          p.urgency,
+        estimatedValue:   p.estimatedValue,
+        clientWantsQuotes: p.clientWantsQuotes,
+      });
+
+      let pricingMultiplier = 1.0;
+      let marketPressure    = 'NORMAL';
+      try {
+        const mkt = await analyze({ zoneId: p.zona, rubro: p.rubro, jobLocation: p.ubicacion });
+        pricingMultiplier = mkt.pricingMultiplier ?? 1.0;
+        marketPressure    = mkt.marketPressure    ?? 'NORMAL';
+      } catch (e) {
+        console.warn('[jobRequestedReactor] marketField no disponible, usando defaults:', e.message);
+      }
+
+      payload = {
+        clientId:          p.clientId,
+        rubro:             p.rubro,
+        zona:              p.zona,
+        urgency:           p.urgency     || 'MEDIUM',
+        estimatedValue:    p.estimatedValue || 0,
+        descripcion:       p.descripcion || '',
+        ubicacion:         p.ubicacion,
+        track:             classification.track,
+        classifyReason:    classification.reason,
+        pricingMultiplier,
+        marketPressure,
+        sourceEventId:     event.eventId,
+        sourceType:        'JobCreated',
+      };
+
+    } else {
+      return; // evento no relevante
+    }
+
+    // ── Guard: solo DISPATCH track ─────────────────────────────────────
+    const { track, zona, rubro, clientId, descripcion, ubicacion,
+            estimatedValue, pricingMultiplier } = payload;
+
+    if (track !== 'DISPATCH') return;
 
     if (!zona || !rubro) {
       console.warn('[jobRequestedReactor] payload incompleto, skip', event.eventId);
       return;
     }
 
-    // Construir pedido compatible con DispatchService.dispatchPedido(io, pedido)
-    const pedido = {
-      _id:          event.eventId,   // eventId como correlación — no crea doc Mongo
-      tipoServicio: rubro,
-      zona,
-      urgency:      urgency || 'MEDIUM',
-      descripcion:  descripcion || '',
-      ubicacion,
-      estimatedValue: estimatedValue || 0,
-      pricingMultiplier: pricingMultiplier || 1.0,
-      clientId,
-      sourceEventId: event.eventId,
-    };
-
-    const { dispatchPedido } = require('../../src/dispatch/services/DispatchService');
-
-    const io = _io;
-    if (!io) {
+    if (!_io) {
       console.error('[jobRequestedReactor] io no inicializado — llamar init(io) en server.js');
       return;
     }
 
-    console.log(`[jobRequestedReactor] DISPATCH → zona:${zona} rubro:${rubro}`);
-    const result = await dispatchPedido(io, pedido);
+    // ── DTO compatible con DispatchService.dispatchPedido(io, pedido) ──
+    const pedido = {
+      _id:               event.eventId,
+      tipoServicio:      rubro,
+      zona,
+      urgency:           payload.urgency || 'MEDIUM',
+      descripcion:       descripcion || '',
+      ubicacion,
+      estimatedValue:    estimatedValue || 0,
+      pricingMultiplier: pricingMultiplier || 1.0,
+      clientId,
+      sourceEventId:     event.eventId,
+    };
+
+    const { dispatchPedido } = require('../../src/dispatch/services/DispatchService');
+
+    console.log(`[jobRequestedReactor] DISPATCH → zona:${zona} rubro:${rubro} src:${event.type}`);
+    const result = await dispatchPedido(_io, pedido);
 
     if (result?.success) {
-      console.log(`[jobRequestedReactor] JOB_ASSIGNED emitido offerId:${result.offerId}`);
+      console.log(`[jobRequestedReactor] ✅ JOB_ASSIGNED offerId:${result.offerId} workers:${result.workersNotified}`);
     } else {
-      console.warn(`[jobRequestedReactor] dispatch sin workers: ${result?.reason}`);
+      console.warn(`[jobRequestedReactor] ⚠️  sin workers: ${result?.reason}`);
     }
 
   } catch (err) {
