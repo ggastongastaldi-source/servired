@@ -19,7 +19,7 @@ const { CreateJobCommand }        = require('../../application/job/CreateJobComm
 const { CreateJobCommandHandler } = require('../../application/job/CreateJobCommandHandler');
 const { UnitOfWork }              = require('../../application/shared/UnitOfWork');
 const { MongoPedidoRepository }   = require('../persistence/MongoPedidoRepository');
-const { PedidoProjectionReactor } = require('../reactors/PedidoProjectionReactor');
+const { reaccionar: reaccionarPedido } = require('../reactors/PedidoProjectionReactor');
 const { publicarEventosDePedido } = require('../events/SinapsisEventAdapter');
 
 // Repositorio en memoria para el Aggregate — el Pedido legacy lo persiste el Reactor
@@ -76,7 +76,11 @@ async function crearJobDesdeREST({
     clienteId, tipoServicio, zona, descripcion, direccion,
     complejidad, precio, pagoWorker, ubicacion,
   }}];
-  await PedidoProjectionReactor.reaccionar(eventos[0]);
+  try {
+    await reaccionarPedido(eventos[0]);
+  } catch(reactorErr) {
+    throw new Error('[CreateJobAdapter] Reactor falló: ' + reactorErr.message + ' | stack: ' + (reactorErr.stack||'').split('\n').slice(0,3).join(' | '));
+  }
 
   // Recuperar doc Mongoose para que el resto de pedidos.js funcione igual
   const doc = await getMongoRepo().findDocByJobId(jobId);
