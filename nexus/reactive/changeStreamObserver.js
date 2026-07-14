@@ -51,18 +51,18 @@ async function iniciarObserver(io) {
         else if (event.entityType === 'lead')     procesarLeadEvent(event, io);
         else if (event.entityType === 'worker')   { /* Sprint 2 */ }
         else if (event.entityType === 'payment')  { /* Sprint 3 */ }
-
-      // Trust & Risk — Shadow Mode (no bloquea operaciones)
-      try {
-        const { procesarTrustEvent } = require('./trustRiskBridge');
-        procesarTrustEvent(event).catch(() => {});
-      } catch(_) {}
         else if (event.entityType === 'finance')  procesarFinanceEvent(event, io);
         else if (event.entityType === 'merchant' ||
                  event.entityType === 'catalog')  procesarMerchantEvent(event);
       } catch(e) {
         console.error('[Nexus-Routing-Error]:', e.message, '| event:', event.type);
       }
+
+      // Trust & Risk — Shadow Mode (nunca bloquea el observer)
+      try {
+        const { procesarTrustEvent } = require('./trustRiskBridge');
+        procesarTrustEvent(event).catch(() => {});
+      } catch(_) {}
     });
 
     activeStream.on('error', (err) => {
