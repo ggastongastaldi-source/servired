@@ -453,6 +453,15 @@ app.post('/api/presupuesto/analizar', presupuestoCtrl.analizarPresupuesto);
 app.get('/api/presupuesto/historial/:clienteId', presupuestoCtrl.obtenerHistorial);
 
 // SINAPSIS Health Dashboard
+app.get('/api/trust-risk/health', async (req, res) => {
+  try {
+    const { isReady, isShadowMode } = require('./nexus/reactive/trustRiskBridge');
+    res.json({ ok: isReady(), shadowMode: isShadowMode(), bc: 'trust-risk', version: 'v1.0.0' });
+  } catch(e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 app.get('/api/sinapsis/health', async (req, res) => {
   try {
     const { getHealth } = require('./src/sinapsis/logManagerV2');

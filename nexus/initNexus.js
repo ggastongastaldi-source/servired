@@ -29,6 +29,15 @@ async function initNexus(io) {
   await ensureEventStore();
   await iniciarObserver(io);
 
+  // Trust & Risk BC — inicializar en shadow mode
+  try {
+    const mongoose = require('mongoose');
+    const { initTrustRisk } = require('./reactive/trustRiskBridge');
+    await initTrustRisk(mongoose);
+  } catch(e) {
+    console.error('[TrustRisk] Init error (non-fatal):', e.message);
+  }
+
   initDispatcher(io);
   startPulse(io);
   // Registrar autopsia forense cuando circuit va a OPEN
