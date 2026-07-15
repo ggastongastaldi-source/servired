@@ -47,6 +47,21 @@ router.post('/session', authJWT, async (req, res) => {
     // Emitir nuevo reconnectToken (válido 8h)
     const { rawToken, version } = await Worker.issueReconnectToken(workerId);
 
+    // Telemetría: oferta del mercado — trabajador disponible
+    try {
+      const { emitEvent } = require('../../../nexus/events/emitEvent');
+      emitEvent({
+        entityType: 'worker',
+        type:       'WORKER_SESSION_STARTED',
+        aggregateId: workerId,
+        payload: {
+          rubros:    usuario.especialidades || [],
+          zona:      usuario.zona           || null,
+          channel:   'app',
+        }
+      });
+    } catch(_) {}
+
     res.json({ ok: true, workerId, reconnectToken: rawToken, reconnectTokenVersion: version });
   } catch (e) {
     console.error('[GR3] /api/workers/session error:', e.message);
