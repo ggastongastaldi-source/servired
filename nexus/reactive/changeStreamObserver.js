@@ -8,6 +8,23 @@ const { jobRequestedReactor, init: initJobReactor } = require('./jobRequestedRea
 let isReconnecting = false;
 let activeStream   = null;
 
+// Detecta si el error es de oplog expirado
+function isOplogExpiredError(err) {
+  const msg = err?.message || '';
+  return msg.includes('Resume of change stream was not possible') ||
+         msg.includes('resume point may no longer be in the oplog') ||
+         err?.code === 286 || err?.codeName === 'ChangeStreamHistoryLost';
+}
+
+async function limpiarCheckpoint() {
+  try {
+    await StreamCheckpoint.deleteOne({ targetCollection: 'events' });
+    console.warn('[Nexus] ⚠️  Checkpoint expirado eliminado — stream reiniciará desde ahora');
+  } catch(e) {
+    console.error('[Nexus-Checkpoint-Delete-Error]:', e.message);
+  }
+}
+
 async function iniciarObserver(io) {
   // Cerrar stream previo si existe (evitar zombies)
   if (activeStream) {
@@ -22,7 +39,7 @@ async function iniciarObserver(io) {
 
     const options = {
       fullDocument:   'updateLookup',
-      maxAwaitTimeMS: 10000, // evita hang silencioso
+      maxAwaitTimeMS: 10000,
       ...(checkpoint?.resumeToken ? { resumeAfter: checkpoint.resumeToken } : {})
     };
 
@@ -65,8 +82,11 @@ async function iniciarObserver(io) {
       } catch(_) {}
     });
 
-    activeStream.on('error', (err) => {
+    activeStream.on('error', async (err) => {
       console.error('[Nexus-Stream-Error]:', err.message);
+      if (isOplogExpiredError(err)) {
+        await limpiarCheckpoint();
+      }
       scheduleReconnect(io);
     });
 
@@ -77,6 +97,9 @@ async function iniciarObserver(io) {
 
   } catch(err) {
     console.error('[Nexus-Observer-Init-Error]:', err.message);
+    if (isOplogExpiredError(err)) {
+      await limpiarCheckpoint();
+    }
     scheduleReconnect(io);
   }
 }
@@ -121,7 +144,6 @@ function procesarJobEvent(event, io) {
 }
 
 function procesarLeadEvent(event, io) {
-  // LEAD_RECEIVED, LEAD_ASSIGNED — preparado para Sprint 2
   const { type, aggregateId, payload } = event;
   io.to('admins').emit('nexus:lead', {
     type, leadId: aggregateId, ...payload,
@@ -129,18 +151,12 @@ function procesarLeadEvent(event, io) {
   });
 }
 
-
-
-// ── Merchant Event Processor ──────────────────────────────────────────────
-// Conecta changeStreamObserver con MerchantProjectionReactor.
-// Procesa: MERCHANT_PROFILE_CREATED/UPDATED, CATALOG_ITEM_*
-// Sin socket.io — las projections se leen por polling desde el dashboard.
 function procesarMerchantEvent(event) {
   try {
     const { procesarEvento } = require('../../services/merchantProjectionReactor');
     procesarEvento({
       eventType:  event.type,
-      hash:       event.eventId,  // usa eventId como clave de idempotencia
+      hash:       event.eventId,
       payload:    event.payload || {},
       properties: event.payload || {}
     }).catch(e => {
@@ -151,28 +167,18 @@ function procesarMerchantEvent(event) {
   }
 }
 
-// ── Finance Event Processor ───────────────────────────────────────────────
-// Maneja eventos emitidos por financeEngine post-commit ACID.
-// NUNCA modifica estado directamente — solo notifica vía socket.
-// GIA StateReader leerá wallet_available desde Usuario (ya actualizado por ACID).
 function procesarFinanceEvent(event, io) {
   const { type, aggregateId, payload } = event;
   const base = { ...payload, _nexusTs: new Date().toISOString() };
 
   switch (type) {
-
     case 'WorkerFundsReleased': {
-      // Fondos liberados de PENDING → AVAILABLE
-      // El wallet ya fue actualizado por financeEngine en la misma transacción ACID.
-      // Solo notificamos al worker para que GIA Home refresque.
       const workerId = payload.workerId;
       if (workerId) {
-        // Socket directo al worker conectado (si está online)
         io.to('worker_' + workerId).emit('gia:priority:refresh', {
           reason:  'WorkerFundsReleased',
           payload: base
         });
-        // También al admin para trazabilidad
         io.to('admins').emit('nexus:finance:released', {
           workerId, amount: payload.amount, ...base
         });
@@ -180,9 +186,7 @@ function procesarFinanceEvent(event, io) {
       console.log(`[Finance] 💰 WorkerFundsReleased — worker:${workerId} amount:${payload.amount}`);
       break;
     }
-
     case 'WorkerWithdrawalCompleted': {
-      // Retiro completado — notificar confirmación al worker
       const workerId = payload.worker_id;
       if (workerId) {
         io.to('worker_' + workerId).emit('gia:priority:refresh', {
@@ -196,15 +200,13 @@ function procesarFinanceEvent(event, io) {
       console.log(`[Finance] 🏦 WithdrawalCompleted — worker:${workerId} amount:${payload.amount}`);
       break;
     }
-
     default:
-      // Eventos financieros sin handler específico — log silencioso
       console.log(`[Finance] Evento sin handler: ${type}`);
   }
 }
+
 module.exports = { iniciarObserver };
 
-// NarrativeObserver hook — evalúa cada evento con TRS
 async function _notifyNarrative(event) {
   try {
     const { observe } = require('../application/narrativeObserver');
