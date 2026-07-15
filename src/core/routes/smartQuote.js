@@ -228,6 +228,26 @@ router.post('/', async (req, res) => {
       big_mac_base: INDICES.bigMac,
     };
     cacheSet(cacheKey, respuesta);
+
+    // Telemetría: intención de compra — evento más valioso del ecosistema
+    try {
+      const { emitEvent } = require('../../../nexus/events/emitEvent');
+      emitEvent({
+        entityType: 'quote',
+        type:       'QUOTE_REQUESTED',
+        aggregateId: req.user?.userId || 'anonymous',
+        payload: {
+          rubro:          rubro || null,
+          zona:           zona  || null,
+          complejidad:    complejidad || null,
+          total_estimado: respuesta.total_estimado || null,
+          pago_worker:    respuesta.pago_worker    || null,
+          fuente:         respuesta.fuente         || 'local',
+          channel:        'web',
+        }
+      });
+    } catch(_) {}
+
     res.json(respuesta);
 
   } catch(e) {
