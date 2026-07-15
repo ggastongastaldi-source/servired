@@ -10,9 +10,7 @@
 const express       = require('express');
 const router        = express.Router();
 const requireAuth = require('../middleware/authMiddleware');
-const { classifyJob } = require('../services/jobClassifier');
-const { analyze }     = require('../services/marketField/marketFieldEngine');
-const emitEvent       = require('../nexus/events/emitEvent');
+const { crearJobDesdeREST } = require('../src/infrastructure/adapters/CreateJobAdapter');
 
 /**
  * POST /api/jobs/request
@@ -36,60 +34,40 @@ router.post('/request', requireAuth, async (req, res) => {
 
     const clientId = req.user._id?.toString() || req.user.id;
 
-    // 1. Clasificar el job
-    const classification = classifyJob({ rubro, urgency, estimatedValue, clientWantsQuotes });
-
-    // 2. Leer estado del mercado (no modifica nada)
-    const marketContext = await analyze({
-      zoneId:      zona,
+    // Etapa 4: flujo canónico — CreateJobAdapter emite JobCreated
+    const result = await crearJobDesdeREST({
+      clientId,
       rubro,
-      jobLocation: ubicacion,
+      zona,
+      urgency,
+      estimatedValue,
+      clientWantsQuotes,
+      descripcion,
+      ubicacion,
     });
 
-    // 3. Emitir JOB_REQUESTED (fuente de verdad)
-    await emitEvent({
-      type:    'JOB_REQUESTED',
-      actor:   clientId,
-      context: 'job_router',
-      payload: {
-        clientId,
-        rubro,
-        zona,
-        urgency,
-        estimatedValue,
-        descripcion,
-        ubicacion,
-        track:          classification.track,
-        classifyReason: classification.reason,
-        marketPressure: marketContext.marketPressure,
-        zoneState:      marketContext.zoneState,
-        pricingMultiplier: marketContext.pricingMultiplier,
-      },
-    });
-
-    // 4. Respuesta según track
-    if (classification.track === 'DISPATCH') {
+    // Respuesta según track (idéntica al legacy)
+    if (result.classification.track === 'DISPATCH') {
       return res.json({
         ok:    true,
         track: 'DISPATCH',
-        classification,
+        classification: result.classification,
         market: {
-          zoneState:        marketContext.zoneState,
-          pricingMultiplier: marketContext.pricingMultiplier,
-          availableWorkers:  marketContext.recommendedWorkers.length,
+          zoneState:         result.marketContext.zoneState,
+          pricingMultiplier: result.marketContext.pricingMultiplier,
+          availableWorkers:  result.marketContext.recommendedWorkers?.length ?? 0,
         },
         message: 'Tu solicitud fue recibida. Estamos asignando un profesional.',
       });
     }
 
-    // AUCTION track
     return res.json({
       ok:    true,
       track: 'AUCTION',
-      classification,
+      classification: result.classification,
       market: {
-        zoneState:        marketContext.zoneState,
-        pricingMultiplier: marketContext.pricingMultiplier,
+        zoneState:         result.marketContext.zoneState,
+        pricingMultiplier: result.marketContext.pricingMultiplier,
       },
       message: 'Tu solicitud fue recibida. Recibirás presupuestos de profesionales.',
       nextStep: 'POST /api/quotes con el requestId del evento emitido',
