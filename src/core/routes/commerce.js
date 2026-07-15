@@ -173,15 +173,62 @@ router.get('/', async (req, res) => {
 router.get('/feed', async (req, res) => {
   try {
     const { getCommerceFeed } = require('../../../services/commerceFeed');
-    const { locality, rubro } = req.query;
+    const { locality, rubro, actorId, sessionId } = req.query;
     const filter = {};
     if (locality) filter.localidad = locality;
     if (rubro) filter.rubro = new RegExp(rubro, 'i');
     const comercios = await getCommerceFeed(filter, 20);
+
+    // Telemetría: feed servido — fire and forget, nunca bloquea
+    try {
+      const { emitEvent } = require('../../../nexus/events/emitEvent');
+      emitEvent({
+        entityType: 'commerce',
+        type:       'COMMERCE_FEED_SERVED',
+        aggregateId: actorId || 'anonymous',
+        payload: {
+          rubroFilter:   rubro    || null,
+          localityFilter: locality || null,
+          resultCount:   comercios.length,
+          boostedCount:  comercios.filter(c => c.is_boosted).length,
+          sessionId:     sessionId || null,
+          channel:       'web',
+        }
+      });
+    } catch(_) {}
+
     res.json({ ok: true, comercios });
   } catch(e) {
     console.error('[commerce/feed] Error:', e.message);
     res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// POST /api/commerce/track-view — telemetría de interacción con card
+// Fire-and-forget desde el frontend. Nunca bloquea al usuario.
+router.post('/track-view', async (req, res) => {
+  try {
+    const { commerceId, nombre, rubro, actorId, sessionId, channel } = req.body;
+    if (!commerceId) return res.json({ ok: true }); // silencioso
+
+    const { emitEvent } = require('../../../nexus/events/emitEvent');
+    emitEvent({
+      entityType: 'commerce',
+      type:       'COMMERCE_CARD_VIEWED',
+      aggregateId: commerceId,
+      payload: {
+        nombre:    nombre  || null,
+        rubro:     rubro   || null,
+        actorId:   actorId || 'anonymous',
+        sessionId: sessionId || null,
+        channel:   channel || 'web',
+      }
+    });
+
+    res.json({ ok: true });
+  } catch(e) {
+    // Nunca exponer errores internos al cliente
+    res.json({ ok: true });
   }
 });
 

@@ -65,6 +65,19 @@
 }
 
 // ── Commerce Feed ──────────────────────────────────────
+// Telemetría de interacción con commerce-card
+function trackCommerceView(commerceId, nombre, rubro) {
+  try {
+    const actorId = window._sesion?.id || window._userId || null;
+    const sessionId = window._sessionId || null;
+    fetch('/api/commerce/track-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commerceId, nombre, rubro, actorId, sessionId, channel: 'web' })
+    }).catch(() => {});
+  } catch(_) {}
+}
+
 async function loadCommerceFeed(rubro) {
   try {
     const url = rubro ? '/api/commerce/feed?rubro=' + encodeURIComponent(rubro) : '/api/commerce/feed';
