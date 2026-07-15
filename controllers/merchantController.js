@@ -184,8 +184,9 @@ exports.getDashboard = async (req, res) => {
 
 exports.listCatalog = async (req, res) => {
   try {
-    const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
-    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+    const proj = await MerchantProjection.findOne({ usuarioId: req.userId }).lean();
+    if (!proj) return res.status(404).json({ error: 'Perfil no encontrado' });
+    const profile = { _id: proj.merchantId, rubroId: proj.rubroId };
 
     const filter = { merchantId: profile._id };
     const estado = req.query.estado;
@@ -206,8 +207,9 @@ exports.createItem = async (req, res) => {
     if (!req.body || Object.keys(req.body).length === 0)
       return res.status(400).json({ error: 'BODY_REQUIRED' });
 
-    const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
-    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+    const proj = await MerchantProjection.findOne({ usuarioId: req.userId }).lean();
+    if (!proj) return res.status(404).json({ error: 'Perfil no encontrado' });
+    const profile = { _id: proj.merchantId, rubroId: proj.rubroId };
 
     // merchantId y usuarioId se asignan server-side — nunca del cliente.
     // El whitelist ya descarto cualquier intento de inyeccion desde el body.
@@ -242,8 +244,9 @@ exports.updateItem = async (req, res) => {
     if (!req.body || Object.keys(req.body).length === 0)
       return res.status(400).json({ error: 'BODY_REQUIRED' });
 
-    const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
-    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+    const proj = await MerchantProjection.findOne({ usuarioId: req.userId }).lean();
+    if (!proj) return res.status(404).json({ error: 'Perfil no encontrado' });
+    const profile = { _id: proj.merchantId, rubroId: proj.rubroId };
 
     // Scoping por merchantId propio — nunca editar item de otro comercio.
     const item = await CatalogItem.findOne({ _id: req.params.itemId, merchantId: profile._id });
@@ -274,8 +277,9 @@ exports.updateItem = async (req, res) => {
 
 exports.deleteItem = async (req, res) => {
   try {
-    const profile = await BusinessProfile.findOne({ usuarioId: req.userId }).lean();
-    if (!profile) return res.status(404).json({ error: 'Perfil no encontrado' });
+    const proj = await MerchantProjection.findOne({ usuarioId: req.userId }).lean();
+    if (!proj) return res.status(404).json({ error: 'Perfil no encontrado' });
+    const profile = { _id: proj.merchantId, rubroId: proj.rubroId };
 
     // Scoping por merchantId propio — nunca borrar item de otro comercio.
     const item = await CatalogItem.findOneAndDelete({ _id: req.params.itemId, merchantId: profile._id });
