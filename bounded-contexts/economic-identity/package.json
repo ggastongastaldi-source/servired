@@ -1,0 +1,8 @@
+{
+  "name": "@servired/economic-identity",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --experimental-vm-modules ../../node_modules/.bin/jest tests/ --no-coverage"
+  }
+}
