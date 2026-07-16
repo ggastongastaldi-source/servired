@@ -1,5 +1,5 @@
 'use strict';
-const { MongoEventStore }                      = require('./eventStore/MongoEventStore');
+const { MongoEventStore }                      = require('../../shared/infrastructure/eventStore/MongoEventStore');
 const { MongoTerritorialSnapshotRepository }   = require('./repositories/MongoTerritorialSnapshotRepository');
 
 class TerritorialIntelligenceDB {
