@@ -32,7 +32,18 @@ const EVENT_TYPES = [
   'TrustScoreUpdated', 'EconomicScoreUpdated',
   'ZoneStateChanged', 'MarketStateChanged', 'DPIVelocitySpike',
   'MaterialReservationRequested', 'WorkProgressReported',
-  'ReservationConfirmed', 'ReservationRejected'
+  'ReservationConfirmed', 'ReservationRejected',
+  'TerritoryScalable',
+  'TerritoryConsolidated',
+  'TerritorialCETAssigned',
+  'TerritoryActivated',
+  'TerritoryMapped',
+  'TerritoryIdentified',
+  'ProspectContactLost',
+  'ProspectActorActivated',
+  'ProspectActorEducated',
+  'ProspectActorContacted',
+  'ProspectActorDiscovered'
 ];
 
 const EVENT_CLASS_MAP = {
@@ -58,7 +69,29 @@ const EVENT_CLASS_MAP = {
   MaterialReservationRequested: 'Operational',
   WorkProgressReported: 'Operational',
   ReservationConfirmed: 'Economic',
-  ReservationRejected: 'Operational'
+  ReservationRejected: 'Operational',
+  TerritoryScalable: 'Economic',
+  // placeholder: 'Operational',
+  TerritoryConsolidated: 'Economic',
+  // placeholder: 'Operational',
+  TerritorialCETAssigned: 'Operational',
+  // placeholder: 'Operational',
+  TerritoryActivated: 'Operational',
+  // placeholder: 'Operational',
+  TerritoryMapped: 'Operational',
+  // placeholder: 'Operational',
+  TerritoryIdentified: 'Operational',
+  // placeholder: 'Operational',
+  ProspectContactLost: 'Operational',
+  // placeholder: 'Operational',
+  ProspectActorActivated: 'Operational',
+  // placeholder: 'Operational',
+  ProspectActorEducated: 'Operational',
+  // placeholder: 'Operational',
+  ProspectActorContacted: 'Operational',
+  // placeholder: 'Operational',
+  ProspectActorDiscovered: 'Operational',
+  // placeholder: 'Operational'
 };
 
 EVENT_TYPES.forEach((type) => {
