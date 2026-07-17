@@ -1667,11 +1667,11 @@ const OS = (() => {
     } else {
       // Navegar al centro según rol
       const rolNav = {
-        'ADMIN': 'territorial', 'COMERCIO': 'comercial',
-        'TRABAJADOR': 'profesional', 'FABRICANTE': 'industrial',
-        'CLIENTE': 'home'
+        'admin': 'territorial', 'comercio': 'comercial',
+        'trabajador': 'profesional', 'fabricante': 'industrial',
+        'cliente': 'home'
       };
-      const destino = rolNav[sesion.role] || 'home';
+      const destino = rolNav[sesion.rol] || rolNav[sesion.role] || 'home';
       if (destino !== 'home') setTimeout(() => nav(destino), 100);
     }
 
