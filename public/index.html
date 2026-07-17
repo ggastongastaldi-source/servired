@@ -1895,17 +1895,10 @@ const OS = (() => {
 
     // Session
     setTimeout(() => _checkSession(), 2800);
-    // Safety: si en 6s el splash sigue visible, forzar hide
+    // Safety: si en 6s el splash sigue visible, forzar login
     setTimeout(() => {
       if (_sessionState !== 'PENDING') return; // ya resolvió, no interferir
-      const sp = document.getElementById('splash-screen');
-      if (sp) { sp.classList.add('fade-out'); setTimeout(() => sp.remove(), 500); }
-      const shell = document.getElementById('os-shell');
-      if (shell) shell.style.display = '';
-      const bn = document.getElementById('bottom-nav');
-      if (bn) bn.style.display = '';
-      const fab = document.getElementById('gia-fab');
-      if (fab) fab.style.display = '';
+      _showLogin();
     }, 6000);
   }
 
