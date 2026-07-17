@@ -1775,6 +1775,7 @@ const OS = (() => {
         console.error('[OS] Google login rejected:', d.error);
       }
     } catch(e) {
+      alert('[LOGIN ERROR] ' + e.message);
       console.error('[OS] Google login error:', e);
     }
   };
