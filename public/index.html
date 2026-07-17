@@ -1392,12 +1392,16 @@ const OS = (() => {
   // ── Auth ──────────────────────────────────
   async function _checkSession() {
     try {
-      const r = await fetch('/api/auth/me');
-      if (!r.ok) { _showLogin(); return; }
+      const token = localStorage.getItem('sr-token');
+      if (!token) { _showLogin(); return; }
+      const r = await fetch('/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!r.ok) { localStorage.removeItem('sr-token'); _showLogin(); return; }
       const d = await r.json();
-      if (!d.authenticated) { _showLogin(); return; }
-      _sesion = d;
-      _onAuthenticated(d);
+      if (!d.ok) { localStorage.removeItem('sr-token'); _showLogin(); return; }
+      _sesion = d.snapshot;
+      _onAuthenticated(d.snapshot);
     } catch(e) {
       console.warn('[OS] Session check failed:', e.message);
       _showLogin();
@@ -1413,7 +1417,7 @@ const OS = (() => {
     document.getElementById('modal-login').classList.remove('show');
 
     // Avatar / initials
-    const nombre = sesion.nombre || sesion.name || 'Actor';
+    const nombre = sesion.nombre || sesion.name || sesion.usuario?.nombre || 'Actor';
     const initials = nombre.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
     document.getElementById('avatar-initials').textContent = initials;
     document.getElementById('home-nombre').textContent = nombre.split(' ')[0];
@@ -1454,12 +1458,15 @@ const OS = (() => {
       const r = await fetch('/api/auth/google', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ credential: credential.credential })
+        body: JSON.stringify({ id_token: credential.credential })
       });
       const d = await r.json();
       if (d.ok) {
-        _sesion = d;
-        _onAuthenticated(d);
+        localStorage.setItem('sr-token', d.token);
+        _sesion = d.usuario;
+        _onAuthenticated(d.usuario);
+      } else {
+        console.error('[OS] Google login rejected:', d.error);
       }
     } catch(e) {
       console.error('[OS] Google login error:', e);
@@ -1481,6 +1488,7 @@ const OS = (() => {
   // ── Logout ────────────────────────────────
   async function logout() {
     try { await fetch('/api/auth/logout', { method:'POST' }); } catch(e) {}
+    localStorage.removeItem('sr-token');
     _sesion = null;
     location.reload();
   }
