@@ -1270,7 +1270,7 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
   <div class="modal">
     <div class="modal-title">Acceder a ServiRed OS</div>
     <div id="g_id_onload"
-      data-client_id="TU_CLIENT_ID"
+      data-client_id=""
       data-callback="onGoogleLogin"
       data-use_fedcm_for_prompt="true">
     </div>
@@ -1576,7 +1576,17 @@ const OS = (() => {
   return { nav, toggleTheme, toggleGIA, toggleGiaMobile, openDrawer, closeDrawer, selectRole, logout, _init };
 })();
 
-document.addEventListener('DOMContentLoaded', () => OS._init());
+document.addEventListener('DOMContentLoaded', () => {
+  // Leer GOOGLE_CLIENT_ID inyectado por server.js
+  const metaClientId = document.querySelector('meta[name="google-client-id"]');
+  if (metaClientId && metaClientId.content) {
+    const onload = document.getElementById('g_id_onload');
+    if (onload) onload.setAttribute('data-client_id', metaClientId.content);
+    const signin = document.querySelector('.g_id_signin');
+    if (signin) signin.setAttribute('data-client_id', metaClientId.content);
+  }
+  OS._init();
+});
 </script>
 </body>
 </html>
