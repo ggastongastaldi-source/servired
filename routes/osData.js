@@ -95,4 +95,65 @@ router.get('/gia/priority', async (req, res) => {
   }
 });
 
+
+// Dashboard del trabajador profesional
+router.get('/worker/dashboard', async (req, res) => {
+  try {
+    const user = getUser(req);
+    if (!user) return res.status(401).json({ ok: false, error: 'Token requerido' });
+
+    const Worker = require('../models/worker.model');
+    const Pedido = require('../models/Pedido');
+
+    const worker = await Worker.findOne({ usuarioId: user.id || user.userId }).lean();
+
+    // Pedidos del trabajador
+    let pedidosActivos = 0, pedidosCompletados = 0, ingresosMes = 0;
+    try {
+      const hoy = new Date();
+      const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      pedidosActivos    = await Pedido.countDocuments({ workerId: user.id || user.userId, estado: { $in: ['PENDING','EN_CURSO','ACEPTADO'] } });
+      pedidosCompletados= await Pedido.countDocuments({ workerId: user.id || user.userId, estado: 'COMPLETADO', updatedAt: { $gte: inicioMes } });
+      const pedidosMes  = await Pedido.find({ workerId: user.id || user.userId, estado: 'COMPLETADO', updatedAt: { $gte: inicioMes } }, 'monto').lean();
+      ingresosMes = pedidosMes.reduce((s, p) => s + (p.monto || 0), 0);
+    } catch(e) {}
+
+    // Zona y presión de mercado
+    let zonaInfo = null;
+    try {
+      const zona = worker?.dispatch?.zona;
+      if (zona) {
+        const ZoneState = require('../models/ZoneState');
+        zonaInfo = await ZoneState.findOne({ zoneId: zona }).lean();
+      }
+    } catch(e) {}
+
+    // Trabajadores online (socket rooms)
+    const trabajadoresOnline = 0; // Solo disponible via io, no aquí
+
+    res.json({
+      ok: true,
+      worker: {
+        disponibilidad: worker?.dispatch?.availability || 'DISPONIBLE',
+        zona:           worker?.dispatch?.zona || null,
+        rubros:         worker?.dispatch?.rubros || [],
+        online:         worker?.presence?.online || false,
+        ultimaVez:      worker?.presence?.lastSeen || null,
+      },
+      actividad: {
+        pedidosActivos,
+        pedidosCompletados,
+        ingresosMes,
+      },
+      zona: zonaInfo ? {
+        zoneId:         zonaInfo.zoneId,
+        zoneState:      zonaInfo.zoneState,
+        marketPressure: zonaInfo.marketPressure,
+      } : null,
+    });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
