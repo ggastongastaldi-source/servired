@@ -1684,11 +1684,17 @@ const OS = (() => {
   // ── Google Login callback ─────────────────
   window.onGoogleLogin = async function(credential) {
     try {
-      const r = await fetch('/api/auth/google', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ id_token: credential.credential })
-      });
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 12000);
+      let r;
+      try {
+        r = await fetch('/api/auth/google', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ id_token: credential.credential }),
+          signal: controller.signal
+        });
+      } finally { clearTimeout(tid); }
       const d = await r.json();
       if (d.ok) {
         localStorage.setItem('sr-token', d.token);
@@ -1696,9 +1702,11 @@ const OS = (() => {
         _onAuthenticated(d.usuario);
       } else {
         console.error('[OS] Google login rejected:', d.error);
+        _showLogin();
       }
     } catch(e) {
       console.error('[OS] Google login error:', e);
+      _showLogin();
     }
   };
 
