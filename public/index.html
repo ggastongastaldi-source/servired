@@ -1807,6 +1807,17 @@ const OS = (() => {
 
     // Session
     setTimeout(() => _checkSession(), 2800);
+    // Safety: si en 6s el splash sigue visible, forzar hide
+    setTimeout(() => {
+      const sp = document.getElementById('splash-screen');
+      if (sp) { sp.classList.add('fade-out'); setTimeout(() => sp.remove(), 500); }
+      const shell = document.getElementById('os-shell');
+      if (shell) shell.style.display = '';
+      const bn = document.getElementById('bottom-nav');
+      if (bn) bn.style.display = '';
+      const fab = document.getElementById('gia-fab');
+      if (fab) fab.style.display = '';
+    }, 6000);
   }
 
   return { nav, toggleTheme, toggleGIA, toggleGiaMobile, openDrawer, closeDrawer, selectRole, logout, _init };
