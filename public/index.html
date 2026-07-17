@@ -1706,7 +1706,8 @@ const OS = (() => {
       }
     } catch(e) {
       console.error('[OS] Google login error:', e);
-      _showLogin();
+      document.getElementById('sp-msg').textContent = 'Error: ' + e.message;
+      setTimeout(_showLogin, 2000);
     }
   };
 
