@@ -1125,20 +1125,149 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     </div>
 
 
-    <!-- VIEW: Comercial (placeholder) -->
+
+    <!-- VIEW: Comercial -->
     <div class="view" id="view-comercial">
+
       <div class="section-header">
         <div>
           <div class="section-title">🏪 Centro Comercial</div>
-          <div class="section-subtitle">Tu negocio · En construcción</div>
+          <div class="section-subtitle" id="com-subtitle">Cargando tu negocio...</div>
         </div>
-        <span class="badge badge-orange">COMERCIO</span>
+        <span class="badge badge-orange" id="com-estado-badge">COMERCIO</span>
       </div>
-      <div class="alert alert-info">
-        <span class="alert-icon">📊</span>
-        Dashboard comercial en preparación.
+
+      <!-- Sin perfil -->
+      <div id="com-sin-perfil" style="display:none;">
+        <div class="alert alert-info" style="margin-bottom:var(--sp-md);">
+          <span class="alert-icon">🏪</span>
+          <div>
+            <div style="font-weight:700;margin-bottom:4px;">Creá tu perfil comercial</div>
+            <div style="font-size:0.78rem;">Completá tu negocio para aparecer en ServiRed y empezar a recibir clientes.</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-full" onclick="COM.showCrearPerfil()">
+          + Crear perfil de comercio
+        </button>
       </div>
+
+      <!-- Dashboard -->
+      <div id="com-dashboard">
+
+        <!-- Bienvenida -->
+        <div class="home-welcome" style="margin-bottom:var(--sp-md);">
+          <div>
+            <h2 id="com-nombre-comercial" style="font-size:1.1rem;">Tu Comercio</h2>
+            <p id="com-rubro-label" style="font-size:0.75rem;color:var(--muted);margin-top:2px;"></p>
+          </div>
+          <div style="text-align:right;">
+            <div id="com-trust-badge" class="badge badge-green" style="font-size:0.8rem;padding:6px 10px;">
+              Trust —
+            </div>
+          </div>
+        </div>
+
+        <!-- KPIs actividad -->
+        <div class="grid-4" style="margin-bottom:var(--sp-md);">
+          <div class="kpi" style="background:var(--surface);border:1px solid rgba(0,229,255,0.2);border-radius:var(--r-lg);padding:var(--sp-md);">
+            <div class="kpi-icon">👁️</div>
+            <div class="kpi-label">Vistas Hoy</div>
+            <div class="kpi-value" id="com-vistas">—</div>
+          </div>
+          <div class="kpi" style="background:var(--surface);border:1px solid rgba(255,109,0,0.2);border-radius:var(--r-lg);padding:var(--sp-md);">
+            <div class="kpi-icon">📋</div>
+            <div class="kpi-label">Solicitudes</div>
+            <div class="kpi-value" id="com-solicitudes">—</div>
+          </div>
+          <div class="kpi" style="background:var(--surface);border:1px solid rgba(57,255,20,0.2);border-radius:var(--r-lg);padding:var(--sp-md);">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-label">Concretados</div>
+            <div class="kpi-value" id="com-concretados">—</div>
+          </div>
+          <div class="kpi" style="background:var(--surface);border:1px solid rgba(255,215,0,0.2);border-radius:var(--r-lg);padding:var(--sp-md);">
+            <div class="kpi-icon">⭐</div>
+            <div class="kpi-label">Calificación</div>
+            <div class="kpi-value" id="com-calificacion">—</div>
+          </div>
+        </div>
+
+        <!-- GIA Comercial -->
+        <div class="alert alert-info" id="com-gia-alert" style="margin-bottom:var(--sp-md);">
+          <span class="alert-icon">🧠</span>
+          <span id="com-gia-txt">GIA analizando tu negocio...</span>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:6px;margin-bottom:var(--sp-md);overflow-x:auto;padding-bottom:2px;">
+          <button class="btn btn-primary btn-sm com-tab active" data-tab="catalogo" onclick="COM.tab('catalogo')">Catálogo</button>
+          <button class="btn btn-ghost btn-sm com-tab" data-tab="pedidos" onclick="COM.tab('pedidos')">Pedidos</button>
+          <button class="btn btn-ghost btn-sm com-tab" data-tab="analitica" onclick="COM.tab('analitica')">Analítica</button>
+          <button class="btn btn-ghost btn-sm com-tab" data-tab="territorial" onclick="COM.tab('territorial')">Territorio</button>
+        </div>
+
+        <!-- Tab: Catálogo -->
+        <div id="com-tab-catalogo">
+          <div class="section-header">
+            <div>
+              <div class="section-title" style="font-size:0.95rem;">📦 Catálogo</div>
+              <div class="section-subtitle" id="com-cat-count">Cargando items...</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="COM.showAddItem()">+ Agregar</button>
+          </div>
+          <div id="com-catalogo-list">
+            <div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:var(--sp-md);">Cargando catálogo...</div>
+          </div>
+        </div>
+
+        <!-- Tab: Pedidos -->
+        <div id="com-tab-pedidos" style="display:none;">
+          <div class="section-header">
+            <div>
+              <div class="section-title" style="font-size:0.95rem;">📋 Pedidos Activos</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="COM.loadPedidos()">↻</button>
+          </div>
+          <div id="com-pedidos-list">
+            <div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:var(--sp-md);">Cargando pedidos...</div>
+          </div>
+        </div>
+
+        <!-- Tab: Analítica -->
+        <div id="com-tab-analitica" style="display:none;">
+          <div class="section-header">
+            <div><div class="section-title" style="font-size:0.95rem;">📊 Analítica</div></div>
+          </div>
+          <div id="com-analitica-content">
+            <div class="card" style="margin-bottom:8px;">
+              <div class="kpi-label">Ingresos estimados del mes</div>
+              <div class="kpi-value" id="com-ingresos" style="font-size:1.4rem;margin-top:4px;">—</div>
+            </div>
+            <div class="card" style="margin-bottom:8px;">
+              <div class="kpi-label">Campañas activas</div>
+              <div class="kpi-value" id="com-campanias" style="font-size:1.4rem;margin-top:4px;">—</div>
+            </div>
+            <div class="card">
+              <div class="kpi-label" style="margin-bottom:8px;">Vistas últimos 7 días</div>
+              <div id="com-trend-bars" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Territorio -->
+        <div id="com-tab-territorial" style="display:none;">
+          <div class="section-header">
+            <div><div class="section-title" style="font-size:0.95rem;">🗺️ Mi Territorio</div></div>
+          </div>
+          <div id="com-zona-info">
+            <div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:var(--sp-md);">Cargando datos territoriales...</div>
+          </div>
+        </div>
+
+      </div><!-- /com-dashboard -->
+
     </div>
+
 
     <!-- VIEW: Profesional (placeholder) -->
     <div class="view" id="view-profesional">
@@ -1668,7 +1797,7 @@ const OS = (() => {
 
     // Activar centros al navegar
     const _origNav = nav;
-    window._navHooks = { territorial: () => TER.init() };
+    window._navHooks = { territorial: () => TER.init(), comercial: () => COM.init() };
     document.querySelectorAll('[data-view]').forEach(el => {
       el.addEventListener('click', () => {
         const v = el.dataset.view;
@@ -1683,6 +1812,219 @@ const OS = (() => {
   return { nav, toggleTheme, toggleGIA, toggleGiaMobile, openDrawer, closeDrawer, selectRole, logout, _init };
 })();
 
+
+
+// ═══════════════════════════════════════════════
+//   CENTRO COMERCIAL — COM module
+// ═══════════════════════════════════════════════
+const COM = (() => {
+  let _token = null;
+  let _dashboard = null;
+  let _activeTab = 'catalogo';
+
+  function getToken() {
+    if (!_token) _token = localStorage.getItem('sr-token');
+    return _token;
+  }
+
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
+  }
+
+  async function init() {
+    _token = localStorage.getItem('sr-token');
+    await loadDashboard();
+  }
+
+  async function loadDashboard() {
+    try {
+      const r = await fetch('/api/merchant/dashboard', { headers: authHeaders() });
+      if (r.status === 404) {
+        document.getElementById('com-sin-perfil').style.display = '';
+        document.getElementById('com-dashboard').style.display = 'none';
+        return;
+      }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      _dashboard = await r.json();
+
+      document.getElementById('com-sin-perfil').style.display = 'none';
+      document.getElementById('com-dashboard').style.display = '';
+
+      document.getElementById('com-nombre-comercial').textContent = _dashboard.nombreComercial || 'Mi Comercio';
+      document.getElementById('com-subtitle').textContent = (_dashboard.estado || 'ACTIVO') + ' · ServiRed OS';
+      const estadoBadge = document.getElementById('com-estado-badge');
+      estadoBadge.textContent = _dashboard.estado || 'COMERCIO';
+      estadoBadge.className = 'badge ' + (_dashboard.estado === 'ACTIVE' ? 'badge-green' : 'badge-orange');
+
+      const a = _dashboard.actividad || {};
+      document.getElementById('com-vistas').textContent      = a.vistasHoy ?? '0';
+      document.getElementById('com-solicitudes').textContent  = a.solicitudesHoy ?? '0';
+      document.getElementById('com-concretados').textContent  = a.pedidosConcretados ?? '0';
+      document.getElementById('com-calificacion').textContent = a.calificacion ? a.calificacion.toFixed(1) : '—';
+
+      const ing = _dashboard.ingresos?.estimadoMes || 0;
+      document.getElementById('com-ingresos').textContent = ing > 0 ? '$ ' + ing.toLocaleString('es-AR') : '—';
+      document.getElementById('com-campanias').textContent = _dashboard.campanias?.activas ?? '0';
+
+      const serie = _dashboard.tendencia?.vistasUltimos7dias || [];
+      if (serie.length) {
+        const max = Math.max(...serie, 1);
+        document.getElementById('com-trend-bars').innerHTML = serie.map((v, i) => {
+          const h = Math.max(4, Math.round((v/max)*56));
+          const dias = ['L','M','X','J','V','S','D'];
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <div style="width:100%;height:${h}px;background:var(--cyan);border-radius:3px 3px 0 0;opacity:0.8;"></div>
+            <span style="font-size:0.55rem;color:var(--muted);">${dias[i]||i}</span>
+          </div>`;
+        }).join('');
+      }
+
+      const totalActividad = (a.vistasHoy||0) + (a.solicitudesHoy||0);
+      const giaMsg = totalActividad > 0
+        ? `Hoy tu negocio tuvo ${a.vistasHoy||0} vista(s) y ${a.solicitudesHoy||0} solicitud(es). ${a.pedidosConcretados||0} pedido(s) concretados.`
+        : 'GIA monitoreando tu negocio. Completá tu catálogo para atraer más clientes.';
+      document.getElementById('com-gia-txt').textContent = giaMsg;
+
+      loadTrust();
+      await loadCatalogo();
+
+    } catch(e) {
+      document.getElementById('com-subtitle').textContent = 'Error: ' + e.message;
+      console.error('[COM] dashboard:', e);
+    }
+  }
+
+  async function loadTrust() {
+    try {
+      const r = await fetch('/api/trust/me', { headers: authHeaders() });
+      if (r.ok) {
+        const d = await r.json();
+        const score = d.score ?? 100;
+        const badge = document.getElementById('com-trust-badge');
+        badge.textContent = 'Trust ' + score;
+        badge.className = 'badge ' + (score >= 80 ? 'badge-green' : score >= 60 ? 'badge-gold' : 'badge-orange');
+      }
+    } catch(e) {}
+  }
+
+  async function loadCatalogo() {
+    const el = document.getElementById('com-catalogo-list');
+    try {
+      const r = await fetch('/api/merchant/catalog', { headers: authHeaders() });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      const items = d.items || [];
+      document.getElementById('com-cat-count').textContent = items.length + ' item(s) en catálogo';
+
+      if (!items.length) {
+        el.innerHTML = '<div class="alert alert-info"><span class="alert-icon">📦</span>Tu catálogo está vacío. Agregá productos o servicios.</div>';
+        return;
+      }
+
+      el.innerHTML = items.map(item => {
+        const precio = item.precio ? '$ ' + item.precio.toLocaleString('es-AR') : '—';
+        const estadoColor = item.estado === 'ACTIVE' ? 'badge-green' : 'badge-muted';
+        return `<div class="card" style="margin-bottom:8px;padding:12px 16px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div style="flex:1;">
+              <div style="font-weight:700;font-size:0.92rem;">${item.nombre || '—'}</div>
+              ${item.descripcion ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:3px;">${item.descripcion.slice(0,80)}${item.descripcion.length>80?'...':'\'}</div>` : ''}
+              <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:0.85rem;font-weight:700;color:var(--cyan);font-family:var(--font-mono);">${precio}</span>
+                <span class="badge ${estadoColor}" style="font-size:0.6rem;">${item.estado||'—'}</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="alert alert-warn"><span class="alert-icon">⚠️</span>Error cargando catálogo.</div>';
+    }
+  }
+
+  async function loadPedidos() {
+    const el = document.getElementById('com-pedidos-list');
+    el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:16px;">Cargando...</div>';
+    try {
+      const r = await fetch('/api/pedidos?estado=PENDING,EN_CURSO&limit=20', { headers: authHeaders() });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      const pedidos = d.pedidos || d.data || d || [];
+      if (!pedidos.length) {
+        el.innerHTML = '<div class="alert alert-info"><span class="alert-icon">✅</span>No hay pedidos activos en este momento.</div>';
+        return;
+      }
+      el.innerHTML = pedidos.map(p => {
+        const fecha = p.createdAt ? new Date(p.createdAt).toLocaleDateString('es-AR') : '—';
+        const estadoColor = { PENDING:'badge-gold', EN_CURSO:'badge-cyan', COMPLETADO:'badge-green' }[p.estado] || 'badge-muted';
+        return `<div class="card" style="margin-bottom:8px;padding:12px 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:700;font-size:0.88rem;">${p.rubro||p.titulo||'Pedido'}</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">${p.zona||''} · ${fecha}</div>
+            </div>
+            <span class="badge ${estadoColor}">${p.estado||'—'}</span>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="alert alert-warn"><span class="alert-icon">⚠️</span>Error cargando pedidos.</div>';
+    }
+  }
+
+  async function loadZona() {
+    const el = document.getElementById('com-zona-info');
+    try {
+      if (!_dashboard) return;
+      const zona = _dashboard.zona || _dashboard.localidad;
+      if (!zona) {
+        el.innerHTML = '<div class="alert alert-info"><span class="alert-icon">📍</span>Completá tu zona en el perfil para ver datos territoriales.</div>';
+        return;
+      }
+      const zoneId = zona.toLowerCase().replace(/\s+/g,'_').replace(/[áéíóú]/g, c => ({á:'a',é:'e',í:'i',ó:'o',ú:'u'})[c]||c);
+      const r = await fetch('/api/zones/' + zoneId + '/pressure');
+      if (!r.ok) throw new Error('Sin datos para zona ' + zoneId);
+      const z = await r.json();
+      const stColor = { SHORTAGE:'var(--danger)', BALANCED:'var(--warning)', SURPLUS:'var(--cyan)' }[z.zoneState] || 'var(--muted)';
+      const pct = ((z.marketPressure||0)*100).toFixed(0);
+      el.innerHTML = `<div class="card">
+        <div style="font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);margin-bottom:8px;">ZONA · ${zoneId.replace(/_/g,' ').toUpperCase()}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:1.4rem;font-weight:700;color:${stColor};">${z.zoneState}</div>
+          <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-mono);">${pct}%</div>
+        </div>
+        <div style="background:var(--surface3);border-radius:4px;height:6px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:${stColor};border-radius:4px;"></div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:8px;">
+          ${z.zoneState === 'SHORTAGE' ? '🔥 Alta demanda en tu zona. Buena oportunidad para destacar tu negocio.' :
+            z.zoneState === 'SURPLUS' ? '🔵 Zona con mucha oferta. Diferenciá tu propuesta de valor.' :
+            '🟡 Zona equilibrada. Mantené tu servicio activo.'}
+        </div>
+      </div>`;
+    } catch(e) {
+      el.innerHTML = '<div class="alert alert-warn"><span class="alert-icon">⚠️</span>' + e.message + '</div>';
+    }
+  }
+
+  function tab(name) {
+    _activeTab = name;
+    ['catalogo','pedidos','analitica','territorial'].forEach(t => {
+      document.getElementById('com-tab-' + t).style.display = t === name ? '' : 'none';
+    });
+    document.querySelectorAll('.com-tab').forEach(btn => {
+      btn.className = 'btn btn-sm com-tab ' + (btn.dataset.tab === name ? 'btn-primary active' : 'btn-ghost');
+    });
+    if (name === 'pedidos') loadPedidos();
+    if (name === 'territorial') loadZona();
+  }
+
+  function showCrearPerfil() { alert('Creación de perfil comercial — próximamente.'); }
+  function showAddItem() { alert('Agregar item al catálogo — próximamente.'); }
+  function refresh() { loadDashboard(); }
+
+  return { init, refresh, tab, loadPedidos, showCrearPerfil, showAddItem };
+})();
 
 // ═══════════════════════════════════════════════
 //   CENTRO TERRITORIAL — TER module
