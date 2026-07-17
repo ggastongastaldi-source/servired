@@ -1269,20 +1269,97 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     </div>
 
 
-    <!-- VIEW: Profesional (placeholder) -->
+
+    <!-- VIEW: Profesional -->
     <div class="view" id="view-profesional">
+
       <div class="section-header">
         <div>
           <div class="section-title">👷 Centro Profesional</div>
-          <div class="section-subtitle">Tu carrera · En construcción</div>
+          <div class="section-subtitle" id="pro-subtitle">Cargando tu perfil profesional...</div>
         </div>
-        <span class="badge badge-green">TRABAJADOR</span>
+        <span class="badge badge-green" id="pro-disponibilidad-badge">DISPONIBLE</span>
       </div>
-      <div class="alert alert-info">
-        <span class="alert-icon">⚡</span>
-        Dashboard profesional en preparación.
+
+      <!-- GIA Profesional -->
+      <div class="alert alert-info" id="pro-gia-alert" style="margin-bottom:var(--sp-md);">
+        <span class="alert-icon">🧠</span>
+        <span id="pro-gia-txt">GIA analizando oportunidades en tu zona...</span>
       </div>
+
+      <!-- KPIs -->
+      <div class="grid-4" style="margin-bottom:var(--sp-md);">
+        <div class="kpi" style="background:var(--surface);border:1px solid rgba(0,229,255,0.2);border-radius:var(--r-lg);padding:var(--sp-md);">
+          <div class="kpi-icon">📋</div>
+          <div class="kpi-label">Activos</div>
+          <div class="kpi-value" id="pro-activos">—</div>
+          <div class="kpi-delta">Pedidos</div>
+        </div>
+        <div class="kpi" style="background:var(--surface);border:1px solid rgba(57,255,20,0.2);border-radius:var(--r-lg);padding:var(--sp-md);">
+          <div class="kpi-icon">✅</div>
+          <div class="kpi-label">Completados</div>
+          <div class="kpi-value" id="pro-completados">—</div>
+          <div class="kpi-delta">Este mes</div>
+        </div>
+        <div class="kpi" style="background:var(--surface);border:1px solid rgba(255,215,0,0.2);border-radius:var(--r-lg);padding:var(--sp-md);">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Ingresos</div>
+          <div class="kpi-value" id="pro-ingresos" style="font-size:1.1rem;">—</div>
+          <div class="kpi-delta">Este mes</div>
+        </div>
+        <div class="kpi" style="background:var(--surface);border:1px solid rgba(255,109,0,0.2);border-radius:var(--r-lg);padding:var(--sp-md);">
+          <div class="kpi-icon">🗺️</div>
+          <div class="kpi-label">Mi Zona</div>
+          <div class="kpi-value" id="pro-zona" style="font-size:0.9rem;">—</div>
+          <div class="kpi-delta" id="pro-zona-state">—</div>
+        </div>
+      </div>
+
+      <!-- Perfil del trabajador -->
+      <div class="card" style="margin-bottom:var(--sp-md);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-sm);">
+          <div style="font-weight:700;font-size:0.95rem;">Mi Perfil Profesional</div>
+          <span id="pro-online-badge" class="badge badge-muted">Offline</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="font-size:0.68rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rubros</div>
+          <div id="pro-rubros" style="display:flex;flex-wrap:wrap;gap:4px;">
+            <span class="badge badge-muted">Sin rubros configurados</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;gap:8px;margin-top:var(--sp-sm);">
+          <button class="btn btn-primary btn-sm" style="flex:1;" onclick="PRO.toggleDisponibilidad()">
+            Cambiar disponibilidad
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="PRO.refresh()">↻</button>
+        </div>
+      </div>
+
+      <!-- Zona territorial -->
+      <div class="section-header">
+        <div>
+          <div class="section-title" style="font-size:0.95rem;">🗺️ Mi Territorio</div>
+          <div class="section-subtitle">Presión de mercado en tu zona</div>
+        </div>
+      </div>
+      <div id="pro-zona-card" style="margin-bottom:var(--sp-md);">
+        <div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:var(--sp-md);">Cargando zona...</div>
+      </div>
+
+      <!-- Pedidos activos -->
+      <div class="section-header">
+        <div>
+          <div class="section-title" style="font-size:0.95rem;">📋 Pedidos Activos</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="PRO.loadPedidos()">↻</button>
+      </div>
+      <div id="pro-pedidos-list" style="margin-bottom:var(--sp-md);">
+        <div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:var(--sp-md);">Cargando...</div>
+      </div>
+
     </div>
+
 
     <!-- VIEW: Industrial (placeholder) -->
     <div class="view" id="view-industrial">
@@ -1836,6 +1913,173 @@ const OS = (() => {
 })();
 
 
+
+
+// ═══════════════════════════════════════════════
+//   CENTRO PROFESIONAL — PRO module
+// ═══════════════════════════════════════════════
+const PRO = (() => {
+  let _data = null;
+
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('sr-token') };
+  }
+
+  async function init() {
+    await loadDashboard();
+  }
+
+  async function loadDashboard() {
+    try {
+      const r = await fetch('/api/worker/dashboard', { headers: authHeaders() });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      _data = await r.json();
+      if (!_data.ok) throw new Error(_data.error || 'Error');
+
+      const w = _data.worker || {};
+      const a = _data.actividad || {};
+      const z = _data.zona;
+
+      // Badge disponibilidad
+      const dispBadge = document.getElementById('pro-disponibilidad-badge');
+      const dispColor = { DISPONIBLE:'badge-green', OCUPADO:'badge-orange', PAUSA:'badge-gold' }[w.disponibilidad] || 'badge-muted';
+      dispBadge.textContent = w.disponibilidad || 'DISPONIBLE';
+      dispBadge.className = 'badge ' + dispColor;
+
+      document.getElementById('pro-subtitle').textContent =
+        (w.zona ? w.zona.replace(/_/g,' ') : 'Sin zona') + ' · ServiRed OS';
+
+      // Online badge
+      const onlineBadge = document.getElementById('pro-online-badge');
+      onlineBadge.textContent = w.online ? '🟢 Online' : '⚪ Offline';
+      onlineBadge.className = 'badge ' + (w.online ? 'badge-green' : 'badge-muted');
+
+      // KPIs
+      document.getElementById('pro-activos').textContent     = a.pedidosActivos ?? '0';
+      document.getElementById('pro-completados').textContent  = a.pedidosCompletados ?? '0';
+      document.getElementById('pro-ingresos').textContent     = a.ingresosMes > 0 ? '$ ' + a.ingresosMes.toLocaleString('es-AR') : '—';
+
+      // Zona KPI
+      if (z) {
+        const pct = ((z.marketPressure||0)*100).toFixed(0);
+        document.getElementById('pro-zona').textContent       = z.zoneId.replace(/_/g,' ');
+        document.getElementById('pro-zona-state').textContent = z.zoneState + ' ' + pct + '%';
+        document.getElementById('pro-zona-state').style.color =
+          z.zoneState === 'SHORTAGE' ? 'var(--danger)' : z.zoneState === 'SURPLUS' ? 'var(--cyan)' : 'var(--warning)';
+      } else if (w.zona) {
+        document.getElementById('pro-zona').textContent = w.zona.replace(/_/g,' ');
+      }
+
+      // Rubros
+      if (w.rubros && w.rubros.length) {
+        document.getElementById('pro-rubros').innerHTML = w.rubros.map(r =>
+          `<span class="badge badge-cyan" style="font-size:0.65rem;">${r.replace(/_/g,' ')}</span>`
+        ).join('');
+      }
+
+      // GIA insight territorial
+      if (z && z.zoneState === 'SHORTAGE') {
+        document.getElementById('pro-gia-txt').textContent =
+          `🔥 Tu zona (${z.zoneId.replace(/_/g,' ')}) tiene ${((z.marketPressure||0)*100).toFixed(0)}% de presión. Alta demanda — activá tu disponibilidad para recibir más pedidos.`;
+      } else if (z && z.zoneState === 'SURPLUS') {
+        document.getElementById('pro-gia-txt').textContent =
+          `Tu zona tiene exceso de oferta. Considerá expandirte a zonas vecinas con mayor demanda.`;
+      } else {
+        document.getElementById('pro-gia-txt').textContent =
+          a.pedidosActivos > 0
+            ? `Tenés ${a.pedidosActivos} pedido(s) activo(s). Respondé rápido para mejorar tu ranking.`
+            : 'GIA monitoreando oportunidades en tu zona. Mantené tu disponibilidad activa.';
+      }
+
+      // Zona card
+      renderZonaCard(z, w.zona);
+
+      // Pedidos
+      await loadPedidos();
+
+    } catch(e) {
+      document.getElementById('pro-subtitle').textContent = 'Error: ' + e.message;
+      console.error('[PRO]', e);
+    }
+  }
+
+  function renderZonaCard(z, zonaId) {
+    const el = document.getElementById('pro-zona-card');
+    if (!z) {
+      el.innerHTML = '<div class="alert alert-info"><span class="alert-icon">📍</span>Configurá tu zona de trabajo para ver datos territoriales.</div>';
+      return;
+    }
+    const pct = ((z.marketPressure||0)*100).toFixed(0);
+    const stColor = { SHORTAGE:'var(--danger)', BALANCED:'var(--warning)', SURPLUS:'var(--cyan)' }[z.zoneState] || 'var(--muted)';
+    const msg = z.zoneState === 'SHORTAGE'
+      ? '🔥 Alta demanda. Es buen momento para estar disponible.'
+      : z.zoneState === 'SURPLUS'
+      ? '🔵 Mucha oferta en tu zona. Diferenciá tu servicio.'
+      : '🟡 Zona equilibrada.';
+    el.innerHTML = `<div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);">${z.zoneId.replace(/_/g,' ').toUpperCase()}</div>
+        <span class="badge" style="background:${stColor}22;color:${stColor};border:1px solid ${stColor}44;">${z.zoneState}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <div style="font-size:1.6rem;font-weight:700;color:${stColor};font-family:var(--font-mono);">${pct}%</div>
+        <div style="flex:1;background:var(--surface3);border-radius:4px;height:8px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:${stColor};border-radius:4px;"></div>
+        </div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--muted);">${msg}</div>
+    </div>`;
+  }
+
+  async function loadPedidos() {
+    const el = document.getElementById('pro-pedidos-list');
+    try {
+      const r = await fetch('/api/pedidos?limit=10', { headers: authHeaders() });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      const pedidos = d.pedidos || d.data || (Array.isArray(d) ? d : []);
+      if (!pedidos.length) {
+        el.innerHTML = '<div class="alert alert-info"><span class="alert-icon">✅</span>No hay pedidos activos. Mantené tu disponibilidad activa.</div>';
+        return;
+      }
+      el.innerHTML = pedidos.slice(0,5).map(p => {
+        const fecha = p.createdAt ? new Date(p.createdAt).toLocaleDateString('es-AR') : '—';
+        const stColor = { PENDING:'badge-gold', EN_CURSO:'badge-cyan', COMPLETADO:'badge-green', ACEPTADO:'badge-cyan' }[p.estado] || 'badge-muted';
+        return `<div class="card" style="margin-bottom:8px;padding:12px 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:700;font-size:0.88rem;">${p.rubro||p.titulo||'Pedido'}</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">${p.zona||''} · ${fecha}</div>
+            </div>
+            <span class="badge ${stColor}">${p.estado||'—'}</span>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="alert alert-warn"><span class="alert-icon">⚠️</span>Error cargando pedidos.</div>';
+    }
+  }
+
+  async function toggleDisponibilidad() {
+    try {
+      const actual = _data?.worker?.disponibilidad || 'DISPONIBLE';
+      const siguiente = actual === 'DISPONIBLE' ? 'PAUSA' : 'DISPONIBLE';
+      const r = await fetch('/api/worker/availability', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ availability: siguiente })
+      });
+      if (r.ok) await loadDashboard();
+      else alert('No se pudo cambiar disponibilidad en este momento.');
+    } catch(e) {
+      alert('Error: ' + e.message);
+    }
+  }
+
+  function refresh() { loadDashboard(); }
+
+  return { init, refresh, loadPedidos, toggleDisponibilidad };
+})();
 
 
 // ═══════════════════════════════════════════════
