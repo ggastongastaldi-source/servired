@@ -119,11 +119,16 @@ app.get('/api/gps/positions', (req, res) => {
 app.get("/", (req, res) => {
   const html = require("fs").readFileSync(require("path").join(__dirname, "public/index.html"), "utf8");
   const clientId = process.env.GOOGLE_CLIENT_ID || "";
-  const patched = html.replace(
-    "</head>",
-    `<meta name="google-client-id" content="${clientId}">
+  const patched = html
+    .replace(
+      "</head>",
+      `<meta name="google-client-id" content="${clientId}">
 </head>`
-  );
+    )
+    .replace(
+      'data-client_id=""',
+      `data-client_id="${clientId}"`
+    );
   res.send(patched);
 });
 
