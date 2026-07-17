@@ -1539,7 +1539,7 @@ const OS = (() => {
   let _sesion = null;
   let _tema = localStorage.getItem('sr-tema') || 'dark';
   let _giaCollapsed = false;
-  let _sessionResolved = false;
+  let _sessionState = 'PENDING'; // PENDING | AUTHENTICATED | LOGIN_REQUIRED
 
   // ── Splash ────────────────────────────────
   const SPLASH_MSGS = [
@@ -1626,14 +1626,14 @@ const OS = (() => {
   }
 
   function _showLogin() {
-    _sessionResolved = true;
+    _sessionState = 'LOGIN_REQUIRED';
     _hideSplash();
     document.getElementById('modal-login').classList.add('show');
   }
 
   function _onAuthenticated(sesion) {
-    if (_sessionResolved && document.getElementById('modal-login').classList.contains('show') === false) return;
-    _sessionResolved = true;
+    if (_sessionState === 'AUTHENTICATED') return; // evitar doble ejecución
+    _sessionState = 'AUTHENTICATED';
     document.getElementById('modal-login').classList.remove('show');
 
     // Avatar / initials
@@ -1820,7 +1820,7 @@ const OS = (() => {
     setTimeout(() => _checkSession(), 2800);
     // Safety: si en 6s el splash sigue visible, forzar hide
     setTimeout(() => {
-      if (_sessionResolved) return; // ya resolvió, no interferir
+      if (_sessionState !== 'PENDING') return; // ya resolvió, no interferir
       const sp = document.getElementById('splash-screen');
       if (sp) { sp.classList.add('fade-out'); setTimeout(() => sp.remove(), 500); }
       const shell = document.getElementById('os-shell');
