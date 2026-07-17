@@ -1603,9 +1603,16 @@ const OS = (() => {
     try {
       const token = localStorage.getItem('sr-token');
       if (!token) { _showLogin(); return; }
-      const r = await fetch('/api/auth/me', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
+      // Timeout de 12s para cold start de Render free tier
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 12000);
+      let r;
+      try {
+        r = await fetch('/api/auth/me', {
+          headers: { 'Authorization': 'Bearer ' + token },
+          signal: controller.signal
+        });
+      } finally { clearTimeout(tid); }
       if (!r.ok) { localStorage.removeItem('sr-token'); _showLogin(); return; }
       const d = await r.json();
       if (!d.ok) { localStorage.removeItem('sr-token'); _showLogin(); return; }
