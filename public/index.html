@@ -1686,6 +1686,7 @@ const OS = (() => {
 
   // ── Google Login callback ─────────────────
   window.onGoogleLogin = async function(credential) {
+    document.getElementById('sp-msg').textContent = 'LOGIN: token=' + (credential&&credential.credential?'OK':'VACIO');
     try {
       const controller = new AbortController();
       const tid = setTimeout(() => controller.abort(), 12000);
