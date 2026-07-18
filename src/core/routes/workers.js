@@ -27,7 +27,8 @@ router.post('/session', authJWT, async (req, res) => {
     // Leer datos del usuario para poblar el Worker
     const usuario = await Usuario.findById(userId);
     if (!usuario) return res.status(404).json({ ok: false, error: 'Usuario no encontrado' });
-    if (usuario.rol !== 'TRABAJADOR') return res.status(403).json({ ok: false, error: 'Solo trabajadores' });
+    const rolesUsuario = usuario.roles || [usuario.rol];
+    if (!rolesUsuario.includes('TRABAJADOR')) return res.status(403).json({ ok: false, error: 'Solo trabajadores' });
 
     const workerId = userId.toString();
 
