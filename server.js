@@ -152,6 +152,10 @@ app.use(express.static('public', {
 // /r/:ref_code - URL publica de QR de referidos (redirige al flujo existente ?ref=)
 app.get('/r/:ref_code', (req, res) => res.redirect('/?ref=' + req.params.ref_code.toUpperCase()));
 
+app.get('/clear', (req, res) => {
+  res.send('<html><body><script>localStorage.clear();sessionStorage.clear();window.location.href="/";<\/script><p>Limpiando...</p></body></html>');
+});
+
 
 // Estado global
 
