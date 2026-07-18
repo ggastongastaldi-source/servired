@@ -1414,30 +1414,7 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
 <!-- ══════════════════════════════════════════════
      BOTTOM NAV — mobile
 ══════════════════════════════════════════════ -->
-<nav class="bottom-nav" id="bottom-nav" style="display:none;">
-  <button class="bn-item active" data-view="home">
-    <span class="bn-icon">🏠</span>
-    <span class="bn-label">Inicio</span>
-  </button>
-  <button class="bn-item" data-view="territorial">
-    <span class="bn-icon">🗺️</span>
-    <span class="bn-label">Territorio</span>
-  </button>
-  <button class="bn-item bn-publish" data-view="comercial">
-    <div class="bn-publish-inner">
-      <span class="bn-icon">🏪</span>
-      <span class="bn-label">Comercio</span>
-    </div>
-  </button>
-  <button class="bn-item" data-view="profesional">
-    <span class="bn-icon">👷</span>
-    <span class="bn-label">Profesional</span>
-  </button>
-  <button class="bn-item" data-view="perfil">
-    <span class="bn-icon">👤</span>
-    <span class="bn-label">Perfil</span>
-  </button>
-</nav>
+<nav class="bottom-nav" id="bottom-nav" style="display:none;"></nav>
 
 <!-- ══════════════════════════════════════════════
      GIA WIDGET — Desktop permanente
@@ -1685,11 +1662,61 @@ const OS = (() => {
     nav('landing');
   }
 
+  // ── Nav dinámica por rol ─────────────────
+  const NAV_CONFIG = {
+    admin:      [
+      { view:'home',        icon:'🏠', label:'Inicio' },
+      { view:'territorial', icon:'🗺️', label:'Territorio' },
+      { view:'comercial',   icon:'🏪', label:'Comercial' },
+      { view:'perfil',      icon:'👤', label:'Perfil' }
+    ],
+    comercio:   [
+      { view:'home',      icon:'🏠', label:'Inicio' },
+      { view:'comercial', icon:'📦', label:'Pedidos', center:true },
+      { view:'perfil',    icon:'👤', label:'Perfil' }
+    ],
+    trabajador: [
+      { view:'home',        icon:'🏠', label:'Inicio' },
+      { view:'profesional', icon:'🔧', label:'Trabajos', center:true },
+      { view:'perfil',      icon:'👤', label:'Perfil' }
+    ],
+    cliente:    [
+      { view:'home',   icon:'🏠', label:'Inicio' },
+      { view:'cliente',icon:'🔍', label:'Buscar', center:true },
+      { view:'perfil', icon:'👤', label:'Perfil' }
+    ],
+    fabricante: [
+      { view:'home',       icon:'🏠', label:'Inicio' },
+      { view:'industrial', icon:'🏭', label:'Producción', center:true },
+      { view:'perfil',     icon:'👤', label:'Perfil' }
+    ]
+  };
+
+  function _buildNav(rol) {
+    const bn = document.getElementById('bottom-nav');
+    if (!bn) return;
+    const rolKey = (rol || 'cliente').toLowerCase();
+    const items = NAV_CONFIG[rolKey] || NAV_CONFIG.cliente;
+    bn.innerHTML = items.map(item => {
+      const isCenter = item.center;
+      const cls = isCenter ? 'bn-item bn-publish' : 'bn-item';
+      const inner = isCenter
+        ? `<div class="bn-publish-inner"><span class="bn-icon">${item.icon}</span><span class="bn-label">${item.label}</span></div>`
+        : `<span class="bn-icon">${item.icon}</span><span class="bn-label">${item.label}</span>`;
+      return `<button class="${cls}" data-view="${item.view}" onclick="OS.nav('${item.view}')">${inner}</button>`;
+    }).join('');
+    bn.style.display = 'flex';
+    // Marcar activo
+    bn.querySelectorAll('[data-view]').forEach(el => {
+      el.classList.toggle('active', el.dataset.view === 'home');
+    });
+  }
+
   function _onAuthenticated(sesion) {
     if (_sessionState === 'AUTHENTICATED') return; // evitar doble ejecución
     _sessionState = 'AUTHENTICATED';
     document.getElementById('modal-login').classList.remove('show');
-    const bnav = document.getElementById('bottom-nav'); if (bnav) bnav.style.display = 'flex';
+    _buildNav(sesion.rol || sesion.role);
 
     // Avatar / initials
     const nombre = sesion.nombre || sesion.name || sesion.usuario?.nombre || 'Actor';
