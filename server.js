@@ -28,6 +28,14 @@ require('./src/core/services/mensajeriaSocket')(io);
 
 app.use(cors());
 
+// Redirigir www a sin-www
+app.use((req, res, next) => {
+  if (req.headers.host && req.headers.host.startsWith('www.')) {
+    return res.redirect(301, 'https://' + req.headers.host.slice(4) + req.url);
+  }
+  next();
+});
+
 // Permissions-Policy: habilitar microfono y camara para la PWA
 app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'microphone=*, camera=*, geolocation=*');
