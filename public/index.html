@@ -1499,6 +1499,12 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     <p style="font-size:0.72rem;color:var(--muted);text-align:center;">
       Al continuar aceptás los términos de ServiRed OS
     </p>
+    <hr style="margin:12px 0;border-color:var(--muted);opacity:0.3;">
+    <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-bottom:8px;">O ingresá con email</div>
+    <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid var(--muted);background:var(--bg2);color:var(--fg);font-size:0.9rem;box-sizing:border-box;">
+    <input id="login-pass" type="password" placeholder="Contraseña" style="width:100%;padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid var(--muted);background:var(--bg2);color:var(--fg);font-size:0.9rem;box-sizing:border-box;">
+    <button onclick="loginEmail()" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;font-weight:700;">Ingresar</button>
+    <div id="login-error" style="color:red;font-size:0.8rem;text-align:center;margin-top:8px;"></div>
   </div>
 </div>
 
@@ -1683,6 +1689,33 @@ const OS = (() => {
     _loadGIA();
     _loadKPIs();
   }
+
+  // ── Email Login ──────────────────────────────
+  window.loginEmail = async function() {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    const err = document.getElementById('login-error');
+    err.textContent = 'Ingresando...';
+    try {
+      const r = await fetch('/api/auth/login', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password: pass })
+      });
+      const d = await r.json();
+      if (d.ok) {
+        localStorage.setItem('sr-token', d.token);
+        const r2 = await fetch('/api/auth/me', { headers:{'Authorization':'Bearer '+d.token} });
+        const d2 = await r2.json();
+        _sesion = d2.ok ? d2.snapshot : d.usuario;
+        _onAuthenticated(_sesion);
+      } else {
+        err.textContent = d.error || 'Error al ingresar';
+      }
+    } catch(e) {
+      err.textContent = 'Error: ' + e.message;
+    }
+  };
 
   // ── Google Login callback ─────────────────
   window.onGoogleLogin = async function(credential) {
