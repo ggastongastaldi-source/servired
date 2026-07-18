@@ -1558,14 +1558,16 @@ const OS = (() => {
   }, 520);
 
   function _hideSplash() {
-    clearInterval(_splashInterval);
-    const sp = document.getElementById('splash-screen');
-    if (!sp) return;
-    sp.classList.add('fade-out');
-    setTimeout(() => sp.remove(), 500);
-    document.getElementById('os-shell').style.display = '';
-    document.getElementById('bottom-nav').style.display = '';
-    document.getElementById('gia-fab').style.display = '';
+    try {
+      clearInterval(_splashInterval);
+      const sp = document.getElementById('splash-screen');
+      if (sp) { sp.classList.add('fade-out'); setTimeout(() => { if(sp.parentNode) sp.parentNode.removeChild(sp); }, 500); }
+      const shell = document.getElementById('os-shell'); if (shell) shell.style.display = '';
+      const bn = document.getElementById('bottom-nav'); if (bn) bn.style.display = '';
+      const fab = document.getElementById('gia-fab'); if (fab) fab.style.display = '';
+    } catch(e) {
+      document.getElementById('sp-msg').textContent = 'HIDE ERR: ' + e.message;
+    }
   }
 
   // ── Tema ──────────────────────────────────
