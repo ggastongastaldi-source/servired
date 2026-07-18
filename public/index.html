@@ -1615,7 +1615,7 @@ const OS = (() => {
       if (!token) { _showLogin(); return; }
       // Timeout de 12s para cold start de Render free tier
       const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 12000);
+      const tid = setTimeout(() => controller.abort(), 4000);
       let r;
       try {
         r = await fetch('/api/auth/me', {
@@ -1722,7 +1722,7 @@ const OS = (() => {
     document.getElementById('sp-msg').textContent = 'LOGIN: token=' + (credential&&credential.credential?'OK':'VACIO');
     try {
       const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 12000);
+      const tid = setTimeout(() => controller.abort(), 4000);
       let r;
       try {
         r = await fetch('/api/auth/google', {
@@ -1873,7 +1873,7 @@ const OS = (() => {
     setTimeout(() => {
       if (_sessionState !== 'PENDING') return;
       _showLogin();
-    }, 15000);
+    }, 5000);
   }
 
   return { nav, toggleTheme, toggleGIA, toggleGiaMobile, openDrawer, closeDrawer, selectRole, logout, _init };
