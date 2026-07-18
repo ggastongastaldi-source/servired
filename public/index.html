@@ -1612,7 +1612,7 @@ const OS = (() => {
   async function _checkSession() {
     try {
       const token = localStorage.getItem('sr-token');
-      if (!token) { _showLogin(); return; }
+      localStorage.removeItem('sr-token'); if (!token) { _showLogin(); return; }
       // Timeout de 12s para cold start de Render free tier
       const controller = new AbortController();
       const tid = setTimeout(() => controller.abort(), 12000);
