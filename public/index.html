@@ -791,6 +791,8 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
   transition: opacity 0.5s ease;
 }
 #splash-screen.fade-out { opacity: 0; pointer-events: none; display: none; }
+#splash-screen { animation: splash-auto-hide 0.5s ease 4s forwards; }
+@keyframes splash-auto-hide { to { opacity: 0; pointer-events: none; display: none; } }
 
 @keyframes sp-bg {
   0%   { background: radial-gradient(ellipse at 50% 45%, rgba(0,229,255,0.3) 0%, rgba(6,12,26,1) 55%); }
