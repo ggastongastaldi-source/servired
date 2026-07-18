@@ -958,7 +958,7 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
   <main class="main-content" id="app">
 
     <!-- VIEW: Home -->
-    <div class="view" id="view-landing">
+    <div class="view active" id="view-landing">
       <div style="text-align:center;padding:var(--sp-lg) var(--sp-md) var(--sp-md);">
         <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:100px;height:100px;display:block;margin:0 auto 12px;">
           <circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.1)" stroke-width="1"/>
@@ -1008,7 +1008,7 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
       </div>
     </div>
 
-    <div class="view active" id="view-home">
+    <div class="view" id="view-home">
       <div class="home-welcome">
         <div>
           <h2>Hola, <span id="home-nombre">Actor</span> 👋</h2>
@@ -1414,7 +1414,7 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
 <!-- ══════════════════════════════════════════════
      BOTTOM NAV — mobile
 ══════════════════════════════════════════════ -->
-<nav class="bottom-nav" id="bottom-nav" style="display:flex;">
+<nav class="bottom-nav" id="bottom-nav" style="display:none;">
   <button class="bn-item active" data-view="home">
     <span class="bn-icon">🏠</span>
     <span class="bn-label">Inicio</span>
@@ -1689,6 +1689,7 @@ const OS = (() => {
     if (_sessionState === 'AUTHENTICATED') return; // evitar doble ejecución
     _sessionState = 'AUTHENTICATED';
     document.getElementById('modal-login').classList.remove('show');
+    const bnav = document.getElementById('bottom-nav'); if (bnav) bnav.style.display = 'flex';
 
     // Avatar / initials
     const nombre = sesion.nombre || sesion.name || sesion.usuario?.nombre || 'Actor';
