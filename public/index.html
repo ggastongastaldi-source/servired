@@ -958,6 +958,56 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
   <main class="main-content" id="app">
 
     <!-- VIEW: Home -->
+    <div class="view" id="view-landing">
+      <div style="text-align:center;padding:var(--sp-lg) var(--sp-md) var(--sp-md);">
+        <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="width:100px;height:100px;display:block;margin:0 auto 12px;">
+          <circle cx="80" cy="80" r="68" fill="#060c1a" stroke="rgba(0,229,255,0.1)" stroke-width="1"/>
+          <path d="M 80 12 A 68 68 0 1 1 12.1 97" fill="none" stroke="#FF6D00" stroke-width="6" stroke-linecap="round" stroke-dasharray="320" style="animation:arc-a 4s linear infinite"/>
+          <path d="M 80 22 A 58 58 0 1 0 24.5 107" fill="none" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" stroke-dasharray="280" style="animation:arc-b 5s linear infinite"/>
+          <text x="80" y="97" text-anchor="middle" font-family="Rajdhani,sans-serif" font-size="78" font-weight="900" fill="#FF6D00">S</text>
+        </svg>
+        <div style="font-family:Rajdhani,sans-serif;font-size:1.8rem;font-weight:700;letter-spacing:3px;color:#fff;margin-bottom:4px;">SERVI<span style="color:#FF6D00">RED</span></div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:4px;">Sistema operativo de clientes, comercios y trabajadores</div>
+        <div style="font-size:0.75rem;color:var(--cyan);font-family:var(--font-mono);">Unidos por inteligencia artificial · AMBA</div>
+      </div>
+      <div style="padding:0 var(--sp-md);display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-sm);margin-bottom:var(--sp-sm);">
+        <div class="card interactive card-cyan" onclick="document.getElementById('modal-login').classList.add('show')" style="text-align:center;padding:20px 12px;">
+          <div style="font-size:2rem;margin-bottom:8px;">🔍</div>
+          <div style="font-weight:700;font-size:0.95rem;color:var(--cyan);">Buscar un servicio</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">Encontrá profesionales cerca tuyo</div>
+        </div>
+        <div class="card interactive card-orange" onclick="document.getElementById('modal-login').classList.add('show')" style="text-align:center;padding:20px 12px;">
+          <div style="font-size:2rem;margin-bottom:8px;">🔧</div>
+          <div style="font-weight:700;font-size:0.95rem;color:#FF6D00;">Ofrecer mis servicios</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">Mostrá tu trabajo y conseguí clientes</div>
+        </div>
+      </div>
+      <div style="padding:0 var(--sp-md);margin-bottom:var(--sp-md);">
+        <div class="card interactive card-green" onclick="document.getElementById('modal-login').classList.add('show')" style="display:flex;align-items:center;gap:16px;padding:16px;">
+          <div style="font-size:2rem;">🏪</div>
+          <div>
+            <div style="font-weight:700;font-size:0.95rem;color:#39FF14;">Registrar mi comercio</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Hacé crecer tu negocio y llegá a más clientes</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 var(--sp-md);margin-bottom:var(--sp-md);">
+        <div class="card interactive" onclick="document.getElementById('modal-login').classList.add('show')" style="display:flex;align-items:center;gap:16px;padding:16px;">
+          <div style="font-size:2rem;">🏭</div>
+          <div>
+            <div style="font-weight:700;font-size:0.95rem;">Registrar mi PyME o fábrica</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Conectá tu producción con la demanda real</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 var(--sp-md);">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button onclick="document.getElementById('modal-login').classList.add('show')" style="padding:12px;background:var(--surface);border:1px solid rgba(0,229,255,0.3);border-radius:var(--r-md);color:var(--cyan);font-size:0.85rem;cursor:pointer;">Iniciar sesión</button>
+          <button onclick="document.getElementById('modal-login').classList.add('show')" style="padding:12px;background:var(--accent);border:none;border-radius:var(--r-md);color:#fff;font-size:0.85rem;cursor:pointer;font-weight:700;">Registrarse gratis</button>
+        </div>
+      </div>
+    </div>
+
     <div class="view active" id="view-home">
       <div class="home-welcome">
         <div>
@@ -1632,7 +1682,7 @@ const OS = (() => {
   function _showLogin() {
     _sessionState = 'LOGIN_REQUIRED';
     _hideSplash();
-    document.getElementById('modal-login').classList.add('show');
+    nav('landing');
   }
 
   function _onAuthenticated(sesion) {
