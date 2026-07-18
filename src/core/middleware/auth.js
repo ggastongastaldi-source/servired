@@ -11,6 +11,7 @@ const verificarToken = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
         req.user.userId = decoded.userId || decoded.id || decoded._id;
+        req.user.hasRole = (role) => (req.user.roles || [req.user.rol]).includes(role);
         next();
     } catch (error) {
         return res.status(401).json({ ok: false, error: 'Token inválido' });
@@ -22,7 +23,10 @@ const verificarRol = (rolRequerido) => {
         if (!req.user) {
             return res.status(401).json({ ok: false, error: 'No autenticado' });
         }
-        if (req.user.rol !== rolRequerido && !(rolRequerido === "WORKER" && req.user.rol === "TRABAJADOR")) {
+        const roles = req.user.roles || [req.user.rol];
+        const autorizado = roles.includes(rolRequerido) ||
+            (rolRequerido === 'WORKER' && roles.includes('TRABAJADOR'));
+        if (!autorizado) {
             return res.status(403).json({ ok: false, error: 'Acceso denegado' });
         }
         next();
@@ -31,8 +35,8 @@ const verificarRol = (rolRequerido) => {
 
 const soloAdmin = (req, res, next) => {
     if (!req.user) return res.status(401).json({ ok: false, error: 'No autenticado' });
-    const rol = req.user.rol || (req.user.roles && req.user.roles[0]);
-    if (rol !== 'ADMIN') return res.status(403).json({ ok: false, error: 'Acceso restringido a administradores' });
+    const roles = req.user.roles || [req.user.rol];
+    if (!roles.includes('ADMIN')) return res.status(403).json({ ok: false, error: 'Acceso restringido a administradores' });
     next();
 };
 
