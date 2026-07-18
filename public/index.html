@@ -6,9 +6,6 @@
 <meta http-equiv="Expires" content="0">
 <meta name="build-id" content="shell-v1">
 <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ServiRed OS</title>
 <meta name="description" content="ServiRed — Sistema Operativo Económico del AMBA">
@@ -1484,7 +1481,7 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     <div id="g_id_onload"
       data-client_id=""
       data-callback="onGoogleLogin"
-      data-use_fedcm_for_prompt="false">
+      data-use_fedcm_for_prompt="true">
     </div>
     <div class="g_id_signin"
       data-type="standard"
@@ -1493,18 +1490,12 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
       data-text="continue_with"
       data-shape="rectangular"
       data-logo_alignment="left"
-      data-use_fedcm_for_button="false"
+      data-use_fedcm_for_button="true"
       style="margin-bottom:var(--sp-md);">
     </div>
     <p style="font-size:0.72rem;color:var(--muted);text-align:center;">
       Al continuar aceptás los términos de ServiRed OS
     </p>
-    <hr style="margin:12px 0;border-color:var(--muted);opacity:0.3;">
-    <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-bottom:8px;">O ingresá con email</div>
-    <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid var(--muted);background:var(--bg2);color:var(--fg);font-size:0.9rem;box-sizing:border-box;">
-    <input id="login-pass" type="password" placeholder="Contraseña" style="width:100%;padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid var(--muted);background:var(--bg2);color:var(--fg);font-size:0.9rem;box-sizing:border-box;">
-    <button onclick="loginEmail()" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;font-weight:700;">Ingresar</button>
-    <div id="login-error" style="color:red;font-size:0.8rem;text-align:center;margin-top:8px;"></div>
   </div>
 </div>
 
@@ -1615,7 +1606,7 @@ const OS = (() => {
       if (!token) { _showLogin(); return; }
       // Timeout de 12s para cold start de Render free tier
       const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 4000);
+      const tid = setTimeout(() => controller.abort(), 12000);
       let r;
       try {
         r = await fetch('/api/auth/me', {
@@ -1690,66 +1681,24 @@ const OS = (() => {
     _loadKPIs();
   }
 
-  // ── Email Login ──────────────────────────────
-  window.loginEmail = async function() {
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-pass').value;
-    const err = document.getElementById('login-error');
-    err.textContent = 'Ingresando...';
+  // ── Google Login callback ─────────────────
+  window.onGoogleLogin = async function(credential) {
     try {
-      const r = await fetch('/api/auth/login', {
+      const r = await fetch('/api/auth/google', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email, password: pass })
+        body: JSON.stringify({ id_token: credential.credential })
       });
       const d = await r.json();
       if (d.ok) {
         localStorage.setItem('sr-token', d.token);
-        const r2 = await fetch('/api/auth/me', { headers:{'Authorization':'Bearer '+d.token} });
-        const d2 = await r2.json();
-        _sesion = d2.ok ? d2.snapshot : d.usuario;
-        _onAuthenticated(_sesion);
+        _sesion = d.usuario;
+        _onAuthenticated(d.usuario);
       } else {
-        err.textContent = d.error || 'Error al ingresar';
+        console.error('[OS] Google login rejected:', d.error);
       }
     } catch(e) {
-      err.textContent = 'Error: ' + e.message;
-    }
-  };
-
-  // ── Google Login callback ─────────────────
-  window.onGoogleLogin = async function(credential) {
-    document.getElementById('sp-msg').textContent = 'LOGIN: token=' + (credential&&credential.credential?'OK':'VACIO');
-    try {
-      const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 4000);
-      let r;
-      try {
-        r = await fetch('/api/auth/google', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ id_token: credential.credential }),
-          signal: controller.signal
-        });
-      } finally { clearTimeout(tid); }
-      const d = await r.json();
-      document.getElementById('sp-msg').textContent = 'RESP: ok=' + d.ok + ' err=' + (d.error||'none');
-      if (d.ok) {
-        localStorage.setItem('sr-token', d.token);
-        const r2 = await fetch('/api/auth/me', {
-          headers: { 'Authorization': 'Bearer ' + d.token }
-        });
-        const d2 = await r2.json();
-        document.getElementById('sp-msg').textContent = 'ME: ok=' + d2.ok + ' state=' + (d2.snapshot&&d2.snapshot.state) + ' rol=' + (d2.snapshot&&d2.snapshot.role);
-        _sesion = d2.ok ? d2.snapshot : d.usuario;
-        _onAuthenticated(_sesion);
-      } else {
-        document.getElementById('sp-msg').textContent = 'ERROR: ' + d.error;
-        setTimeout(_showLogin, 3000);
-      }
-    } catch(e) {
-      document.getElementById('sp-msg').textContent = 'CATCH: ' + e.message;
-      setTimeout(_showLogin, 3000);
+      console.error('[OS] Google login error:', e);
     }
   };
 
@@ -1868,12 +1817,19 @@ const OS = (() => {
     });
 
     // Session
-    setTimeout(() => _checkSession(), 500);
-    // Safety: si en 15s el splash sigue visible, forzar showLogin
+    setTimeout(() => _checkSession(), 2800);
+    // Safety: si en 6s el splash sigue visible, forzar hide
     setTimeout(() => {
-      if (_sessionState !== 'PENDING') return;
-      _showLogin();
-    }, 5000);
+      if (_sessionState !== 'PENDING') return; // ya resolvió, no interferir
+      const sp = document.getElementById('splash-screen');
+      if (sp) { sp.classList.add('fade-out'); setTimeout(() => sp.remove(), 500); }
+      const shell = document.getElementById('os-shell');
+      if (shell) shell.style.display = '';
+      const bn = document.getElementById('bottom-nav');
+      if (bn) bn.style.display = '';
+      const fab = document.getElementById('gia-fab');
+      if (fab) fab.style.display = '';
+    }, 6000);
   }
 
   return { nav, toggleTheme, toggleGIA, toggleGiaMobile, openDrawer, closeDrawer, selectRole, logout, _init };
