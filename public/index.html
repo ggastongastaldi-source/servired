@@ -1618,7 +1618,7 @@ const OS = (() => {
           signal: controller.signal
         });
       } finally { clearTimeout(tid); }
-      if (!r.ok) { localStorage.removeItem('sr-token'); _showLogin(); return; }
+      if (!r || !r.ok) { localStorage.removeItem('sr-token'); _showLogin(); return; }
       const d = await r.json();
       if (!d.ok) { localStorage.removeItem('sr-token'); _showLogin(); return; }
       _sesion = d.snapshot;
