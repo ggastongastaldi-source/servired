@@ -81,7 +81,7 @@ router.post('/registro', async (req, res) => {
       registrarOrigenAtribucion(existe._id, nuevoRol, origin_ref).catch(()=>{});
       emitBusEventsForRegistro({ userId: existe._id, rol: nuevoRol, email, origin_ref, correlationId, causation }).catch(()=>{});
       const uActualizado = await Usuario.findById(existe._id);
-      const token = jwt.sign({ id: uActualizado._id, userId: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, rubro: uActualizado.rubro, especialidades: uActualizado.especialidades, zona: uActualizado.zona }, SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: uActualizado._id, userId: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, roles: uActualizado.roles || [uActualizado.rol], activeRole: uActualizado.rol, rubro: uActualizado.rubro, especialidades: uActualizado.especialidades, zona: uActualizado.zona }, SECRET, { expiresIn: '7d' });
       return res.json({ ok: true, token, usuario: { id: uActualizado._id, nombre: uActualizado.nombre, rol: uActualizado.rol, estado: uActualizado.estado }, mensaje: 'Rol agregado a tu cuenta existente' });
     }
 
@@ -90,7 +90,7 @@ router.post('/registro', async (req, res) => {
     const u = await Usuario.create({ nombre, email, password: hash, rol: nuevoRol, roles: [nuevoRol], especialidades: especialidades || [], telefono: telefono || '', estado, ubicacion: { type: 'Point', coordinates: [-58.4, -34.6] } });
     registrarOrigenAtribucion(u._id, nuevoRol, origin_ref).catch(()=>{});
     emitBusEventsForRegistro({ userId: u._id, rol: nuevoRol, email, origin_ref, correlationId, causation }).catch(()=>{});
-    const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, roles: u.roles || [u.rol], activeRole: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
     // Email de bienvenida (async, no bloquea el registro)
     try {
       if (nuevoRol === 'TRABAJADOR') {
@@ -111,7 +111,7 @@ router.post('/login', async (req, res) => {
     if (!u) return res.status(401).json({ ok: false, error: 'Credenciales incorrectas' });
     const ok = await bcrypt.compare(password, u.password);
     if (!ok) return res.status(401).json({ ok: false, error: 'Credenciales incorrectas' });
-    const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, roles: u.roles || [u.rol], activeRole: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona }, SECRET, { expiresIn: '7d' });
     // Email de bienvenida (async, no bloquea el registro)
     res.json({ ok: true, token, usuario: { id: u._id, nombre: u.nombre, rol: u.rol, estado: u.estado } });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
@@ -245,7 +245,7 @@ router.post('/google', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona },
+      { id: u._id, userId: u._id, nombre: u.nombre, rol: u.rol, roles: u.roles || [u.rol], activeRole: u.rol, rubro: u.rubro, especialidades: u.especialidades, zona: u.zona },
       SECRET,
       { expiresIn: '7d' }
     );
