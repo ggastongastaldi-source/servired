@@ -1557,17 +1557,6 @@ const OS = (() => {
     }
   }, 520);
 
-  function _debugOverlay(msg) {
-    let d = document.getElementById('_dbg');
-    if (!d) {
-      d = document.createElement('div');
-      d.id = '_dbg';
-      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;font-size:13px;padding:8px;z-index:99999;word-break:break-all;max-height:40vh;overflow:auto;';
-      document.body.appendChild(d);
-    }
-    d.innerHTML += '<div>' + new Date().toISOString().slice(11,19) + ' ' + msg + '</div>';
-  }
-
   function _hideSplash() {
     clearInterval(_splashInterval);
     const sp = document.getElementById('splash-screen');
@@ -1643,8 +1632,7 @@ const OS = (() => {
   }
 
   function _onAuthenticated(sesion) {
-    _debugOverlay('_onAuthenticated llamado state=' + _sessionState + ' rol=' + (sesion&&sesion.rol) + ' role=' + (sesion&&sesion.role) + ' needsRole=' + (sesion&&sesion.needsRoleSelection));
-    if (_sessionState === 'AUTHENTICATED') { _debugOverlay('GUARD: ya autenticado, saliendo'); return; }
+    if (_sessionState === 'AUTHENTICATED') return; // evitar doble ejecución
     _sessionState = 'AUTHENTICATED';
     document.getElementById('modal-login').classList.remove('show');
 
@@ -1679,11 +1667,11 @@ const OS = (() => {
     } else {
       // Navegar al centro según rol
       const rolNav = {
-        'admin': 'territorial', 'comercio': 'comercial',
-        'trabajador': 'profesional', 'fabricante': 'industrial',
-        'cliente': 'home'
+        'ADMIN': 'territorial', 'COMERCIO': 'comercial',
+        'TRABAJADOR': 'profesional', 'FABRICANTE': 'industrial',
+        'CLIENTE': 'home'
       };
-      const destino = rolNav[sesion.rol] || rolNav[sesion.role] || 'home';
+      const destino = rolNav[sesion.role] || 'home';
       if (destino !== 'home') setTimeout(() => nav(destino), 100);
     }
 
@@ -1708,22 +1696,10 @@ const OS = (() => {
         });
       } finally { clearTimeout(tid); }
       const d = await r.json();
-      _debugOverlay('google resp ok=' + d.ok + ' error=' + (d.error||'none'));
       if (d.ok) {
         localStorage.setItem('sr-token', d.token);
-        _debugOverlay('token guardado, llamando /api/auth/me');
-        const r2 = await fetch('/api/auth/me', {
-          headers: { 'Authorization': 'Bearer ' + d.token }
-        });
-        const d2 = await r2.json();
-        _debugOverlay('me resp ok=' + d2.ok + ' state=' + (d2.snapshot&&d2.snapshot.state) + ' rol=' + (d2.snapshot&&d2.snapshot.role));
-        if (d2.ok) {
-          _sesion = d2.snapshot;
-          _onAuthenticated(d2.snapshot);
-        } else {
-          _sesion = d.usuario;
-          _onAuthenticated(d.usuario);
-        }
+        _sesion = d.usuario;
+        _onAuthenticated(d.usuario);
       } else {
         console.error('[OS] Google login rejected:', d.error);
         _showLogin();
