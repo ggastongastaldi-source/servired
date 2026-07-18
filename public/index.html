@@ -1818,6 +1818,7 @@ const OS = (() => {
 
     // Session
     setTimeout(() => _checkSession(), 2800);
+    setTimeout(() => { if (_sessionState === 'PENDING') { _showLogin(); } }, 4000);
     // Safety: si en 6s el splash sigue visible, forzar hide
     setTimeout(() => {
       if (_sessionState !== 'PENDING') return; // ya resolvió, no interferir
