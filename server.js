@@ -47,6 +47,7 @@ app.get('/version', (req,res) => res.json({v:'f923f4d', built: new Date().toISOS
 // Rutas
 const seoRouter = require('./src/core/routes/seo');
 app.use('/servicio', seoRouter);
+app.use('/api/legal', require('./src/core/routes/legal'));
 const casosRouter = require('./src/core/routes/casos');
 app.use('/casos', casosRouter);
 const sitemapsRouter = require('./src/core/routes/sitemaps');
