@@ -2077,6 +2077,7 @@ const COM = (() => {
 
       loadTrust();
       await loadCatalogo();
+      if (_activeTab === 'analitica') await loadAnalytics();
 
     } catch(e) {
       document.getElementById('com-subtitle').textContent = 'Error: ' + e.message;
@@ -2212,6 +2213,60 @@ const COM = (() => {
   function showCrearPerfil() { alert('Creación de perfil comercial — próximamente.'); }
   function showAddItem() { alert('Agregar item al catálogo — próximamente.'); }
   function refresh() { loadDashboard(); }
+
+  async function loadAnalytics() {
+    const box = document.getElementById('com-analitica-content');
+    if (!box) return;
+    try {
+      const r = await fetch('/api/merchant/analytics', { headers: authHeaders() });
+      if (!r.ok) { box.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;text-align:center;">Sin datos disponibles.</p>'; return; }
+      const { analytics: an } = await r.json();
+      if (!an) return;
+      const act = an.actividad || {};
+      const cat = an.catalogo || {};
+      const cam = an.campanias || {};
+      const ing = an.ingresos || {};
+      const tend = an.tendencia || {};
+      box.innerHTML = `
+        <div class="grid-4" style="margin-bottom:var(--sp-md);">
+          <div class="kpi"><div class="kpi-icon">&#128065;</div><div class="kpi-label">Vistas hoy</div><div class="kpi-value">${act.vistasHoy??0}</div></div>
+          <div class="kpi"><div class="kpi-icon">&#128172;</div><div class="kpi-label">Solicitudes</div><div class="kpi-value">${act.solicitudesHoy??0}</div></div>
+          <div class="kpi"><div class="kpi-icon">&#9989;</div><div class="kpi-label">Concretados</div><div class="kpi-value">${act.pedidosConcretados??0}</div></div>
+          <div class="kpi"><div class="kpi-icon">&#11088;</div><div class="kpi-label">Calificaci&#243;n</div><div class="kpi-value">${act.calificacion?act.calificacion.toFixed(1):'&#8212;'}</div></div>
+        </div>
+        <div class="card" style="margin-bottom:var(--sp-sm);">
+          <div style="font-weight:700;font-size:0.85rem;margin-bottom:8px;">&#128200; Ingresos estimados del mes</div>
+          <div style="font-size:1.8rem;font-weight:700;color:var(--success);">$ ${(ing.estimadoMes||0).toLocaleString('es-AR')}</div>
+          <div style="font-size:0.72rem;color:var(--muted);">Moneda: ${ing.moneda||'ARS'}</div>
+        </div>
+        <div class="card" style="margin-bottom:var(--sp-sm);">
+          <div style="font-weight:700;font-size:0.85rem;margin-bottom:8px;">&#128230; Cat&#225;logo</div>
+          <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap;">
+            <span style="font-size:0.82rem;">&#128197; <b>${cat.totalItems??0}</b> productos</span>
+            <span style="font-size:0.82rem;">&#127991; <b>${cat.enPromocion??0}</b> en promoci&#243;n</span>
+            <span style="font-size:0.82rem;">&#9888;&#65039; <b>${cat.sinStock??0}</b> sin stock</span>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:var(--sp-sm);">
+          <div style="font-weight:700;font-size:0.85rem;margin-bottom:8px;">&#128227; Campa&#241;as</div>
+          <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap;">
+            <span style="font-size:0.82rem;">Activas: <b>${cam.activas??0}</b></span>
+            <span style="font-size:0.82rem;">Vistas: <b>${cam.vistasGeneradas??0}</b></span>
+            <span style="font-size:0.82rem;">Conversi&#243;n: <b>${cam.conversionRate??0}%</b></span>
+          </div>
+        </div>
+        ${tend.vistasUltimos7dias?.length ? `
+        <div class="card">
+          <div style="font-weight:700;font-size:0.85rem;margin-bottom:8px;">&#128200; Vistas &#250;ltimos 7 d&#237;as</div>
+          <div style="display:flex;align-items:flex-end;gap:4px;height:60px;">
+            ${(()=>{const s=tend.vistasUltimos7dias;const mx=Math.max(...s,1);const dias=['L','M','X','J','V','S','D'];return s.map((v,i)=>{const h=Math.max(4,Math.round((v/mx)*56));return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:'+h+'px;background:var(--cyan);border-radius:3px 3px 0 0;opacity:0.8;"></div><span style="font-size:0.55rem;color:var(--muted);">'+(dias[i]||i)+'</span></div>';}).join('');})()}
+          </div>
+        </div>` : ''}`;
+    } catch(e) {
+      const box2 = document.getElementById('com-analitica-content');
+      if (box2) box2.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;text-align:center;">Error cargando analítica.</p>';
+    }
+  }
 
   return { init, refresh, tab, loadPedidos, showCrearPerfil, showAddItem };
 })();
