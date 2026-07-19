@@ -949,6 +949,17 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     <button class="nav-item" data-view="perfil">
       <span class="nav-icon">👤</span> Mi Perfil
     </button>
+
+    <div class="sidebar-section">Legal</div>
+    <button class="nav-item" onclick="OS.viewLegalDoc('terms_of_use')">
+      <span class="nav-icon">📄</span> Términos y Condiciones
+    </button>
+    <button class="nav-item" onclick="OS.viewLegalDoc('privacy_policy')">
+      <span class="nav-icon">🔒</span> Política de Privacidad
+    </button>
+    <button class="nav-item" onclick="OS.viewLegalDoc('ai_policy')">
+      <span class="nav-icon">🧠</span> Política de IA
+    </button>
     <button class="nav-item" data-view="gia-full">
       <span class="nav-icon">🧠</span> GIA Intel
     </button>
@@ -1603,8 +1614,48 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
       style="margin-bottom:var(--sp-md);">
     </div>
     <p style="font-size:0.72rem;color:var(--muted);text-align:center;">
-      Al continuar aceptás los términos de ServiRed OS
+      Al continuar crearás una cuenta y aceptarás los documentos legales vigentes
     </p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     LEGAL COMPLIANCE MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-bg" id="modal-legal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-title" style="color:var(--cyan);">📋 Documentos legales</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:var(--sp-md);text-align:center;">
+      Para continuar, necesitamos que aceptes los siguientes documentos.
+    </p>
+    <div id="legal-docs-list" style="margin-bottom:var(--sp-md);display:flex;flex-direction:column;gap:10px;">
+      <!-- Se llena dinámicamente -->
+    </div>
+    <div id="legal-error" style="display:none;color:#ff4444;font-size:0.75rem;text-align:center;margin-bottom:8px;"></div>
+    <button id="legal-accept-btn"
+      onclick="OS.acceptLegal()"
+      style="width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;opacity:0.4;pointer-events:none;">
+      Aceptar y continuar
+    </button>
+    <p style="font-size:0.65rem;color:var(--muted);text-align:center;margin-top:8px;">
+      Podés leer cada documento completo tocando su nombre.
+    </p>
+  </div>
+</div>
+
+<!-- LEGAL VIEWER MODAL — muestra el contenido completo de un documento ──── -->
+<div class="modal-bg" id="modal-legal-viewer">
+  <div class="modal" style="max-width:600px;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-md);">
+      <div class="modal-title" id="legal-viewer-title" style="margin:0;font-size:1rem;"></div>
+      <button onclick="document.getElementById('modal-legal-viewer').classList.remove('show')"
+        style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div id="legal-viewer-version" style="font-size:0.7rem;color:var(--cyan);margin-bottom:var(--sp-md);font-family:var(--font-mono);"></div>
+    <div id="legal-viewer-content"
+      style="font-size:0.8rem;color:var(--text);line-height:1.7;white-space:pre-wrap;font-family:var(--font-mono);">
+    </div>
   </div>
 </div>
 
@@ -1826,8 +1877,11 @@ const OS = (() => {
     document.getElementById('home-role-label').textContent =
       roleMap[sesion.role] || 'Sistema Operativo Económico · AMBA';
 
-    // Onboarding
-    if (sesion.needsRoleSelection) {
+    // Onboarding + Legal compliance
+    const legalOk = await _checkLegalCompliance();
+    if (!legalOk && _pendingLegalDocs.length > 0) {
+      _showLegalModal(_pendingLegalDocs);
+    } else if (sesion.needsRoleSelection) {
       document.getElementById('modal-onboarding').classList.add('show');
     } else {
       // Navegar al centro según rol
@@ -1878,6 +1932,107 @@ const OS = (() => {
       });
     } catch(e) {}
     document.getElementById('modal-onboarding').classList.remove('show');
+  }
+
+  // ── Legal compliance ──────────────────────
+  let _pendingLegalDocs  = [];
+  let _checkedLegalTypes = new Set();
+
+  async function _checkLegalCompliance() {
+    try {
+      const r = await fetch('/api/legal/compliance');
+      if (!r.ok) return true; // fail-open
+      const d = await r.json();
+      if (d.ok) return true;
+      _pendingLegalDocs = d.pending || [];
+      return false;
+    } catch(e) {
+      return true; // fail-open ante error de red
+    }
+  }
+
+  function _showLegalModal(docs) {
+    const list = document.getElementById('legal-docs-list');
+    _checkedLegalTypes.clear();
+    list.innerHTML = docs.map(doc => {
+      const labels = {
+        terms_of_use:   'Términos y Condiciones',
+        privacy_policy: 'Política de Privacidad',
+        ai_policy:      'Política de Inteligencia Artificial',
+        merchant_agreement: 'Acuerdo de Comercio',
+        worker_agreement:   'Acuerdo de Profesional',
+        cookies_policy:     'Política de Cookies',
+        data_processing_policy: 'Política de Procesamiento de Datos',
+      };
+      const label = labels[doc.type] || doc.type;
+      return `
+        <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">
+          <input type="checkbox" id="chk-${doc.type}"
+            style="margin-top:3px;accent-color:var(--orange);width:16px;height:16px;flex-shrink:0;"
+            onchange="OS._onLegalCheck('${doc.type}', this.checked)">
+          <label for="chk-${doc.type}" style="font-size:0.82rem;color:var(--text);cursor:pointer;flex:1;">
+            He leído y acepto
+            <button onclick="OS.viewLegalDoc('${doc.type}')"
+              style="background:none;border:none;color:var(--cyan);cursor:pointer;font-size:0.82rem;text-decoration:underline;padding:0;">
+              ${label}
+            </button>
+            <span style="font-size:0.68rem;color:var(--muted);display:block;margin-top:2px;">${doc.version}</span>
+          </label>
+        </div>`;
+    }).join('');
+    document.getElementById('modal-legal').classList.add('show');
+    _updateLegalBtn();
+  }
+
+  function _onLegalCheck(type, checked) {
+    if (checked) _checkedLegalTypes.add(type);
+    else _checkedLegalTypes.delete(type);
+    _updateLegalBtn();
+  }
+
+  function _updateLegalBtn() {
+    const allChecked = _pendingLegalDocs.every(d => _checkedLegalTypes.has(d.type));
+    const btn = document.getElementById('legal-accept-btn');
+    if (!btn) return;
+    btn.style.opacity        = allChecked ? '1'    : '0.4';
+    btn.style.pointerEvents  = allChecked ? 'auto' : 'none';
+  }
+
+  async function acceptLegal() {
+    const btn = document.getElementById('legal-accept-btn');
+    const err = document.getElementById('legal-error');
+    if (btn) { btn.textContent = 'Registrando...'; btn.style.pointerEvents = 'none'; }
+    try {
+      const r = await fetch('/api/legal/consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentTypes: [..._checkedLegalTypes], context: 'registration' }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        document.getElementById('modal-legal').classList.remove('show');
+        if (_sesion) _onAuthenticated(_sesion); // retomar flujo
+      } else {
+        if (err) { err.style.display = 'block'; err.textContent = d.error || 'Error al registrar. Intentá nuevamente.'; }
+        if (btn) { btn.textContent = 'Aceptar y continuar'; btn.style.pointerEvents = 'auto'; }
+      }
+    } catch(e) {
+      if (err) { err.style.display = 'block'; err.textContent = 'Error de conexión. Intentá nuevamente.'; }
+      if (btn) { btn.textContent = 'Aceptar y continuar'; btn.style.pointerEvents = 'auto'; }
+    }
+  }
+
+  async function viewLegalDoc(type) {
+    try {
+      const r = await fetch('/api/legal/documents/' + type);
+      const d = await r.json();
+      if (!d.ok) return;
+      const doc = d.document;
+      document.getElementById('legal-viewer-title').textContent   = doc.title;
+      document.getElementById('legal-viewer-version').textContent = doc.version + ' · Vigente desde ' + new Date(doc.effectiveAt).toLocaleDateString('es-AR');
+      document.getElementById('legal-viewer-content').textContent = doc.content;
+      document.getElementById('modal-legal-viewer').classList.add('show');
+    } catch(e) { console.warn('[OS] viewLegalDoc error:', e); }
   }
 
   // ── Logout ────────────────────────────────
