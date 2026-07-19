@@ -304,5 +304,12 @@ exports.deleteItem = async (req, res) => {
 };
 
 exports.getAnalytics = async (req, res) => {
-  res.status(501).json({ error: 'getAnalytics no implementado aun (ver Merchant Projection Layer)' });
+  try {
+    const { projectMerchantState } = require('../services/merchantProjection');
+    const data = await projectMerchantState(req.user.id);
+    if (!data) return res.status(404).json({ ok: false, error: 'Sin proyeccion disponible' });
+    res.json({ ok: true, analytics: data });
+  } catch(e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
 };
