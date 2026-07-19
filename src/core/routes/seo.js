@@ -9,35 +9,86 @@ const express = require('express');
 const router  = express.Router();
 
 const RUBROS = {
-  electricista:       { label: 'Electricista',       categoria: 'Servicios Eléctricos' },
-  plomero:            { label: 'Plomero',             categoria: 'Servicios de Plomería' },
-  gasista:            { label: 'Gasista',             categoria: 'Servicios de Gas' },
-  pintor:             { label: 'Pintor',              categoria: 'Servicios de Pintura' },
-  albanil:            { label: 'Albañil',             categoria: 'Construcción y Reformas' },
-  carpintero:         { label: 'Carpintero',          categoria: 'Carpintería' },
-  cerrajero:          { label: 'Cerrajero',           categoria: 'Cerrajería' },
-  limpieza_hogar:     { label: 'Limpieza del Hogar',  categoria: 'Limpieza' },
-  servicio_domestico: { label: 'Servicio Doméstico',  categoria: 'Servicio Doméstico' },
-  aire_acondicionado: { label: 'Técnico A/C',         categoria: 'Climatización' },
-  fletes:             { label: 'Flete',               categoria: 'Mudanzas y Fletes' },
-  jardinero:          { label: 'Jardinero',           categoria: 'Jardinería' },
+  // Servicios del hogar
+  electricista:           { label: 'Electricista',                categoria: 'Servicios Eléctricos' },
+  plomero:                { label: 'Plomero',                     categoria: 'Servicios de Plomería' },
+  gasista:                { label: 'Gasista Matriculado',         categoria: 'Servicios de Gas' },
+  pintor:                 { label: 'Pintor',                      categoria: 'Servicios de Pintura' },
+  albanil:                { label: 'Albañil',                     categoria: 'Construcción y Reformas' },
+  carpintero:             { label: 'Carpintero',                  categoria: 'Carpintería' },
+  cerrajero:              { label: 'Cerrajero',                   categoria: 'Cerrajería' },
+  limpieza_hogar:         { label: 'Limpieza del Hogar',          categoria: 'Limpieza' },
+  servicio_domestico:     { label: 'Servicio Doméstico',          categoria: 'Servicio Doméstico' },
+  aire_acondicionado:     { label: 'Técnico en Aire Acondicionado', categoria: 'Climatización' },
+  fletes:                 { label: 'Flete y Mudanzas',            categoria: 'Mudanzas y Fletes' },
+  jardinero:              { label: 'Jardinero',                   categoria: 'Jardinería' },
+  // Tecnología y seguridad
+  camaras_seguridad:      { label: 'Instalación de Cámaras de Seguridad', categoria: 'Seguridad' },
+  paneles_solares:        { label: 'Instalación de Paneles Solares',       categoria: 'Energía Solar' },
+  redes_wifi:             { label: 'Instalación de Redes y WiFi',          categoria: 'Tecnología' },
+  alarmas:                { label: 'Instalación de Alarmas',               categoria: 'Seguridad' },
+  porteros_electricos:    { label: 'Porteros Eléctricos y Video Porteros', categoria: 'Seguridad' },
+  tecnico_pc:             { label: 'Técnico en Computadoras',              categoria: 'Tecnología' },
+  // Construcción y obra
+  impermeabilizacion:     { label: 'Impermeabilización de Terrazas',       categoria: 'Construcción' },
+  durlock:                { label: 'Construcción en Durlock',              categoria: 'Construcción en Seco' },
+  pisos_revestimientos:   { label: 'Colocación de Pisos y Revestimientos', categoria: 'Construcción' },
+  techista:               { label: 'Techista',                            categoria: 'Construcción' },
+  soldador:               { label: 'Soldador',                            categoria: 'Metalúrgica' },
+  herreria:               { label: 'Herrero',                             categoria: 'Herrería' },
+  // PyMEs y comercios
+  servicio_pyme:          { label: 'Servicios para PyMEs',                categoria: 'Empresas' },
+  servicio_comercio:      { label: 'Servicios para Comercios',            categoria: 'Comercios' },
+  mantenimiento_edilicio: { label: 'Mantenimiento Edilicio',              categoria: 'Empresas' },
+  limpieza_comercial:     { label: 'Limpieza Comercial e Industrial',     categoria: 'Limpieza' },
+  // Fabricantes y distribuidores
+  fabricante_muebles:     { label: 'Fabricantes de Muebles',             categoria: 'Fabricantes' },
+  fabricante_aberturas:   { label: 'Fabricantes de Aberturas',           categoria: 'Fabricantes' },
+  distribuidor_materiales:{ label: 'Distribuidores de Materiales',       categoria: 'Mayoristas' },
+  corralon:               { label: 'Corralón de Materiales',             categoria: 'Mayoristas' },
 };
 
 const LOCALIDADES = {
+  // AMBA sur/oeste (origen)
   la_matanza:             'La Matanza',
   lomas_de_zamora:        'Lomas de Zamora',
   quilmes:                'Quilmes',
   moreno:                 'Moreno',
   merlo:                  'Merlo',
-  tigre:                  'Tigre',
-  san_isidro:             'San Isidro',
   tres_de_febrero:        'Tres de Febrero',
   moron:                  'Morón',
   avellaneda:             'Avellaneda',
   lanus:                  'Lanús',
   florencio_varela:       'Florencio Varela',
   isidro_casanova:        'Isidro Casanova',
+  // Corredor norte — alto poder adquisitivo
+  san_isidro:             'San Isidro',
+  vicente_lopez:          'Vicente López',
+  olivos:                 'Olivos',
+  la_lucila:              'La Lucila',
+  martinez:               'Martínez',
+  acassuso:               'Acassuso',
+  tigre:                  'Tigre',
+  nordelta:               'Nordelta',
+  // CABA — barrios premium
+  palermo:                'Palermo',
+  belgrano:               'Belgrano',
+  nunez:                  'Núñez',
+  recoleta:               'Recoleta',
+  caballito:              'Caballito',
+  retiro:                 'Retiro',
+  puerto_madero:          'Puerto Madero',
+  las_canitas:            'Las Cañitas',
+  colegiales:             'Colegiales',
+  villa_urquiza:          'Villa Urquiza',
+  saavedra:               'Saavedra',
+  coghlan:                'Coghlan',
+  flores:                 'Flores',
+  almagro:                'Almagro',
+  villa_crespo:           'Villa Crespo',
+  // General
   ciudad_de_buenos_aires: 'Ciudad de Buenos Aires',
+  gran_buenos_aires:      'Gran Buenos Aires',
 };
 
 function buildJsonLd(rubro, localidad, meta, zona) {
@@ -165,3 +216,106 @@ router.get('/:oficio', (req, res) => {
 });
 
 module.exports = router;
+
+// ── Capa 2: Edificios y consorcios ─────────────────────────────
+const BARRIOS_PREMIUM = {
+  palermo:'Palermo', belgrano:'Belgrano', nunez:'Núñez',
+  recoleta:'Recoleta', caballito:'Caballito', retiro:'Retiro',
+  puerto_madero:'Puerto Madero', san_isidro:'San Isidro',
+  vicente_lopez:'Vicente López', olivos:'Olivos', martinez:'Martínez'
+};
+
+router.get('/edificios/:barrio', (req, res) => {
+  const zona = BARRIOS_PREMIUM[req.params.barrio];
+  if (!zona) return res.status(404).send('No encontrado');
+  res.send(`<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<title>Mantenimiento de Edificios en ${zona} — ServiRed</title>
+<meta name="description" content="ServiRed conecta administraciones de edificios en ${zona} con proveedores verificados: electricidad, impermeabilización, cámaras, limpieza y más.">
+<link rel="canonical" href="https://servired.online/edificios/${req.params.barrio}">
+<script type="application/ld+json">${JSON.stringify({"@context":"https://schema.org","@type":"Service","name":"Mantenimiento Edilicio en "+zona,"provider":{"@type":"Organization","name":"ServiRed","url":"https://servired.online"},"areaServed":{"@type":"City","name":zona},"description":"Servicios de mantenimiento para edificios y consorcios en "+zona+". Electricidad, impermeabilización, cámaras de seguridad, limpieza y más.","serviceType":"Mantenimiento Edilicio"})}</script>
+</head><body>
+<h1>Mantenimiento de Edificios en ${zona}</h1>
+<p>ServiRed conecta administraciones de consorcios y edificios en ${zona} con proveedores verificados para mantenimiento integral.</p>
+<ul>
+<li>Electricidad general y emergencias</li>
+<li>Impermeabilización de terrazas y azoteas</li>
+<li>Cámaras de seguridad y alarmas</li>
+<li>Limpieza comercial y de espacios comunes</li>
+<li>Plomería y desagües</li>
+<li>Pintura de consorcios</li>
+<li>Porteros eléctricos y video porteros</li>
+</ul>
+<p><a href="https://servired.online">Solicitar servicio en ${zona}</a></p>
+</body></html>`);
+});
+
+// ── Capa 3: Comercios y PyMEs por zona ─────────────────────────
+router.get('/comercios/:zona', (req, res) => {
+  const zona = BARRIOS_PREMIUM[req.params.zona] || req.params.zona.replace(/-/g,' ');
+  res.send(`<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<title>Servicios para Comercios y PyMEs en ${zona} — ServiRed</title>
+<meta name="description" content="ServiRed conecta comercios y PyMEs en ${zona} con proveedores, trabajadores y servicios profesionales verificados.">
+<link rel="canonical" href="https://servired.online/comercios/${req.params.zona}">
+<script type="application/ld+json">${JSON.stringify({"@context":"https://schema.org","@type":"Service","name":"Servicios para Comercios en "+zona,"provider":{"@type":"Organization","name":"ServiRed","url":"https://servired.online"},"areaServed":{"@type":"City","name":zona},"description":"ServiRed conecta comercios y PyMEs en "+zona+" con trabajadores verificados, proveedores y servicios profesionales.","serviceType":"Servicios Comerciales"})}</script>
+</head><body>
+<h1>Servicios para Comercios y PyMEs en ${zona}</h1>
+<p>ServiRed es la red económica que conecta negocios, comercios y PyMEs en ${zona} con trabajadores verificados y proveedores confiables.</p>
+<ul>
+<li>Instalaciones eléctricas comerciales</li>
+<li>Cámaras de seguridad para comercios</li>
+<li>Mantenimiento de locales</li>
+<li>Limpieza comercial</li>
+<li>Redes y tecnología</li>
+<li>Refrigeración y climatización</li>
+<li>Proveedores de materiales</li>
+</ul>
+<p><a href="https://servired.online">Registrar mi comercio en ServiRed</a></p>
+</body></html>`);
+});
+
+// ── Capa 4: Fabricantes y PyMEs Argentina ──────────────────────
+const FABRICANTES = {
+  muebles:      { label:'Fabricantes de Muebles',       desc:'Muebles a medida, amoblamiento, carpintería industrial' },
+  aberturas:    { label:'Fabricantes de Aberturas',      desc:'Ventanas, puertas, perfiles de aluminio y PVC' },
+  metalurgicas: { label:'PyMEs Metalúrgicas',            desc:'Estructuras metálicas, herrería, soldadura industrial' },
+  materiales:   { label:'Distribuidores de Materiales',  desc:'Corralones, ferreterías, materiales de construcción' },
+  seguridad:    { label:'Fabricantes de Seguridad',      desc:'Cámaras, alarmas, control de acceso' },
+  solares:      { label:'Proveedores de Energía Solar',  desc:'Paneles solares, inversores, instalaciones' },
+  textiles:     { label:'PyMEs Textiles',                desc:'Indumentaria, uniformes, ropa de trabajo' },
+  alimentos:    { label:'PyMEs Alimenticias',            desc:'Alimentos, bebidas, distribución gastronómica' },
+};
+
+router.get('/fabricantes-argentinos', (req, res) => {
+  const items = Object.entries(FABRICANTES).map(([k,v]) =>
+    `<li><a href="/fabricantes-argentinos/${k}">${v.label}</a> — ${v.desc}</li>`).join('');
+  res.send(`<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<title>Fabricantes y PyMEs Argentinas — ServiRed</title>
+<meta name="description" content="ServiRed conecta fabricantes, distribuidores y PyMEs argentinas con compradores, comercios y profesionales de todo el AMBA.">
+<link rel="canonical" href="https://servired.online/fabricantes-argentinos">
+<script type="application/ld+json">${JSON.stringify({"@context":"https://schema.org","@type":"Organization","name":"ServiRed — Red de Fabricantes Argentinos","url":"https://servired.online/fabricantes-argentinos","description":"ServiRed conecta fabricantes y PyMEs argentinas con compradores profesionales, comercios y distribuidores del AMBA."})}</script>
+</head><body>
+<h1>Fabricantes y PyMEs Argentinas en ServiRed</h1>
+<p>ServiRed es la red económica territorial que conecta fabricantes argentinos con compradores, comercios y profesionales del AMBA y todo el país.</p>
+<ul>${items}</ul>
+<p><a href="https://servired.online">Registrar mi PyME o fábrica en ServiRed</a></p>
+</body></html>`);
+});
+
+router.get('/fabricantes-argentinos/:categoria', (req, res) => {
+  const cat = FABRICANTES[req.params.categoria];
+  if (!cat) return res.status(404).send('No encontrado');
+  res.send(`<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<title>${cat.label} en Argentina — ServiRed</title>
+<meta name="description" content="${cat.label} conectados en ServiRed. ${cat.desc}. Encontrá proveedores verificados en el AMBA.">
+<link rel="canonical" href="https://servired.online/fabricantes-argentinos/${req.params.categoria}">
+<script type="application/ld+json">${JSON.stringify({"@context":"https://schema.org","@type":"Service","name":cat.label+" — ServiRed","description":cat.desc,"provider":{"@type":"Organization","name":"ServiRed"},"areaServed":{"@type":"Country","name":"Argentina"}})}</script>
+</head><body>
+<h1>${cat.label} en Argentina</h1>
+<p>${cat.desc}. ServiRed conecta fabricantes y PyMEs argentinas con compradores profesionales, comercios y distribuidores.</p>
+<p><a href="https://servired.online">Registrar mi empresa en ServiRed</a></p>
+</body></html>`);
+});
