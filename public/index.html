@@ -1371,14 +1371,46 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     <div class="view" id="view-industrial">
       <div class="section-header">
         <div>
-          <div class="section-title">🏭 Centro Industrial</div>
-          <div class="section-subtitle">Tu producción · En construcción</div>
+          <div class="section-title">&#127981; Centro Industrial</div>
+          <div class="section-subtitle" id="ind-subtitle">Tu producci&#243;n en la red</div>
         </div>
         <span class="badge badge-muted">FABRICANTE</span>
       </div>
-      <div class="alert alert-info">
-        <span class="alert-icon">🏗️</span>
-        Dashboard industrial en preparación.
+
+      <!-- Capacidad -->
+      <div class="card" style="background:linear-gradient(135deg,rgba(255,109,0,0.08),rgba(0,0,0,0));border:1px solid rgba(255,109,0,0.2);margin-bottom:var(--sp-md);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:4px;">Productos publicados</div>
+            <div style="font-size:2rem;font-weight:700;color:#ff6d00;" id="ind-total-productos">---</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px;">Consultas</div>
+            <div style="font-size:1.4rem;font-weight:700;" id="ind-consultas">---</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cat&#225;logo -->
+      <div style="margin-bottom:var(--sp-md);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-sm);">
+          <div style="font-weight:700;font-size:0.9rem;">&#128230; Mi cat&#225;logo</div>
+          <button onclick="IND.agregarProducto()" style="background:none;border:none;color:var(--accent);font-size:0.8rem;cursor:pointer;">+ Agregar</button>
+        </div>
+        <div id="ind-catalogo">
+          <div class="alert alert-info">
+            <span class="alert-icon">&#127981;</span>
+            <div>Pub&#237; tu producci&#243;n para conectarte con comercios y clientes de la zona.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Oportunidades B2B -->
+      <div>
+        <div style="font-weight:700;font-size:0.9rem;margin-bottom:var(--sp-sm);">&#127919; Oportunidades B2B</div>
+        <div id="ind-oportunidades">
+          <div style="text-align:center;padding:var(--sp-md);color:var(--muted);font-size:0.85rem;">Cargando demanda del territorio...</div>
+        </div>
       </div>
     </div>
 
@@ -1386,13 +1418,30 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     <div class="view" id="view-cliente">
       <div class="section-header">
         <div>
-          <div class="section-title">🛒 Centro del Cliente</div>
-          <div class="section-subtitle">Encontrá lo que necesitás</div>
+          <div class="section-title">&#128722; Centro del Cliente</div>
+          <div class="section-subtitle" id="cli-subtitle">&#191;Qu&#233; necesit&#225;s resolver hoy?</div>
         </div>
       </div>
-      <div class="alert alert-info">
-        <span class="alert-icon">🔍</span>
-        Buscador inteligente en preparación.
+
+      <!-- Solicitar servicio -->
+      <div class="card" style="margin-bottom:var(--sp-md);border:1px solid rgba(0,229,255,0.2);">
+        <div style="font-weight:700;margin-bottom:var(--sp-sm);">&#128269; Solicitar servicio</div>
+        <select id="cli-rubro" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:var(--surface);color:var(--text);margin-bottom:var(--sp-sm);">
+          <option value="">Seleccion&#225; una categor&#237;a...</option>
+        </select>
+        <input id="cli-desc" type="text" placeholder="Describ&#237; lo que necesit&#225;s..." style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:var(--surface);color:var(--text);margin-bottom:var(--sp-sm);box-sizing:border-box;">
+        <button onclick="CLI.solicitar()" class="btn btn-secondary btn-full">Buscar profesional</button>
+      </div>
+
+      <!-- Resultado matching -->
+      <div id="cli-resultado" style="display:none;margin-bottom:var(--sp-md);"></div>
+
+      <!-- Mis pedidos -->
+      <div>
+        <div style="font-weight:700;font-size:0.9rem;margin-bottom:var(--sp-sm);">&#128203; Mis pedidos</div>
+        <div id="cli-pedidos">
+          <div style="text-align:center;padding:var(--sp-md);color:var(--muted);font-size:0.85rem;">Cargando...</div>
+        </div>
       </div>
     </div>
 
@@ -1655,7 +1704,7 @@ const OS = (() => {
     if (history.pushState) history.pushState(null, '', '#' + view);
     window.scrollTo(0, 0);
     // Despachar init del modulo correspondiente
-    const _mods = { territorial: typeof TER!=='undefined'&&TER, comercial: typeof COM!=='undefined'&&COM, profesional: typeof PRO!=='undefined'&&PRO };
+    const _mods = { territorial: typeof TER!=='undefined'&&TER, comercial: typeof COM!=='undefined'&&COM, profesional: typeof PRO!=='undefined'&&PRO, cliente: typeof CLI!=='undefined'&&CLI, industrial: typeof IND!=='undefined'&&IND };
     if (_mods[view] && typeof _mods[view].init === 'function') _mods[view].init();
   }
 
@@ -2418,6 +2467,128 @@ const PRO = (() => {
   }
 
   return { init, cargarOportunidades, cargarWallet, cargarTrabajos };
+})();
+
+const CLI = (() => {
+  let _token = () => localStorage.getItem('sr-token');
+  async function _fetch(url, opts) {
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + _token() }, ...opts });
+    return r.ok ? r.json() : null;
+  }
+
+  async function _cargarRubros() {
+    const sel = document.getElementById('cli-rubro');
+    if (!sel) return;
+    const d = await _fetch('/api/matching/rubros');
+    if (!d || !d.rubros) return;
+    d.rubros.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r.slug || r.nombre;
+      o.textContent = r.nombre;
+      sel.appendChild(o);
+    });
+  }
+
+  async function solicitar() {
+    const rubro = document.getElementById('cli-rubro')?.value;
+    const desc = document.getElementById('cli-desc')?.value;
+    const res = document.getElementById('cli-resultado');
+    if (!rubro) { alert('Seleccioná una categoría'); return; }
+    if (res) { res.style.display='block'; res.innerHTML='<div style="text-align:center;color:var(--muted);padding:var(--sp-md);">Buscando profesionales...</div>'; }
+    const d = await _fetch('/api/matching/buscar?rubro=' + encodeURIComponent(rubro) + '&descripcion=' + encodeURIComponent(desc||''));
+    if (!d || !d.trabajadores || d.trabajadores.length === 0) {
+      if (res) res.innerHTML = '<div class="alert alert-info"><span class="alert-icon">&#128269;</span><div>No encontramos profesionales disponibles ahora. Reintentá en unos minutos.</div></div>';
+      return;
+    }
+    if (res) res.innerHTML = '<div style="font-weight:700;margin-bottom:var(--sp-sm);">&#127919; Mejores opciones</div>' +
+      d.trabajadores.slice(0,3).map(t => `
+        <div class="card" style="margin-bottom:var(--sp-sm);border-left:3px solid var(--accent);">
+          <div style="font-weight:700;">${t.nombre || 'Profesional'}</div>
+          <div style="font-size:0.78rem;color:var(--muted);margin:4px 0;">&#11088; ${t.rating || '5.0'} &nbsp;&#183;&nbsp; ${t.zona || 'AMBA'}</div>
+          <div style="font-size:0.85rem;color:var(--success);font-weight:700;">$ ${(t.presupuesto_estimado || 0).toLocaleString('es-AR')}</div>
+        </div>`).join('');
+  }
+
+  async function _cargarPedidos() {
+    const box = document.getElementById('cli-pedidos');
+    if (!box) return;
+    const d = await _fetch('/api/pedidos/mis-pedidos');
+    if (!d || !d.pedidos || d.pedidos.length === 0) {
+      box.innerHTML = '<div style="text-align:center;padding:var(--sp-md);color:var(--muted);font-size:0.85rem;">Todavía no hiciste pedidos.</div>';
+      return;
+    }
+    box.innerHTML = d.pedidos.slice(0,5).map(p => {
+      const col = p.estado==='COMPLETADO' ? 'var(--success)' : p.estado==='EN_CURSO' ? 'var(--accent)' : 'var(--muted)';
+      return `<div class="card" style="margin-bottom:var(--sp-sm);">
+        <div style="display:flex;justify-content:space-between;">
+          <div style="font-weight:700;font-size:0.85rem;">${p.rubro || p.categoria || 'Pedido'}</div>
+          <span style="font-size:0.72rem;color:${col};font-weight:700;">${p.estado||''}</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;">&#128205; ${p.zona || p.direccion || 'AMBA'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function init() {
+    await Promise.all([_cargarRubros(), _cargarPedidos()]);
+  }
+
+  return { init, solicitar };
+})();
+
+const IND = (() => {
+  let _token = () => localStorage.getItem('sr-token');
+  async function _fetch(url) {
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + _token() } });
+    return r.ok ? r.json() : null;
+  }
+
+  async function _cargarCatalogo() {
+    const box = document.getElementById('ind-catalogo');
+    const tot = document.getElementById('ind-total-productos');
+    if (!box) return;
+    const d = await _fetch('/api/commerce/catalogo');
+    if (!d || !d.productos || d.productos.length === 0) {
+      if (tot) tot.textContent = '0';
+      return;
+    }
+    if (tot) tot.textContent = d.productos.length;
+    box.innerHTML = d.productos.slice(0,5).map(p => `
+      <div class="card" style="margin-bottom:var(--sp-sm);">
+        <div style="font-weight:700;font-size:0.85rem;">${p.nombre || 'Producto'}</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <span style="font-size:0.78rem;color:var(--muted);">${p.categoria || ''}</span>
+          <span style="font-weight:700;color:#ff6d00;">$ ${(p.precio || 0).toLocaleString('es-AR')}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  async function _cargarOportunidades() {
+    const box = document.getElementById('ind-oportunidades');
+    if (!box) return;
+    const d = await _fetch('/api/pedidos/disponibles');
+    if (!d || !d.pedidos || d.pedidos.length === 0) {
+      box.innerHTML = '<div style="text-align:center;padding:var(--sp-md);color:var(--muted);font-size:0.85rem;">Sin demanda activa en tu categoría ahora.</div>';
+      return;
+    }
+    box.innerHTML = d.pedidos.slice(0,4).map(p => `
+      <div class="card" style="margin-bottom:var(--sp-sm);border-left:3px solid #ff6d00;">
+        <div style="font-weight:700;font-size:0.85rem;">${p.rubro || p.categoria || 'Demanda'}</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;">&#128205; ${p.zona || 'AMBA'} &nbsp;&#183;&nbsp; ${p.descripcion || ''}</div>
+      </div>`).join('');
+  }
+
+  function agregarProducto() {
+    alert('Funcionalidad de catálogo en desarrollo. Pronto podrás publicar tu producción.');
+  }
+
+  async function init() {
+    const sub = document.getElementById('ind-subtitle');
+    if (sub) { const s = OS.sesion(); sub.textContent = s ? (s.nombre||'Fabricante') + ' · Tu producción' : 'Tu producción en la red'; }
+    await Promise.all([_cargarCatalogo(), _cargarOportunidades()]);
+  }
+
+  return { init, agregarProducto };
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
