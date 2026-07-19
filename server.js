@@ -205,6 +205,7 @@ require('./services/boostExpiry').startBoostExpiryCron();
     rtmil.init({ durabilityMode: 'SAFE' });
     console.log('[RTMIL] Pipeline activo — WAL + Backpressure + Spill');
     require('./src/core/services/financeWatchdog').iniciar();
+    require('./src/core/services/seoIntelligenceReactor');
     // SOC Pipeline — Police -> Fiscal -> Defensor, corrida inicial y cron cada 30 minutos
     const { runSocPipeline } = require('./src/sinapsis/dixieTerminal/socPipeline');
     runSocPipeline().catch(e => console.error('[SocPipeline] corrida inicial:', e.message));
