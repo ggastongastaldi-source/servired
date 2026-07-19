@@ -22,6 +22,10 @@ const EVENT_TYPES = [
   // Wizard comercio
   'commerce_register_started',
   'commerce_register_completed',
+  // SEO / Market Intelligence
+  'SEO_SERVICE_VIEWED',
+  'ZONE_PAGE_VIEWED',
+  'ECONOMIC_NETWORK_VIEWED',
 ];
 
 const marketingEventSchema = new mongoose.Schema(
@@ -55,9 +59,25 @@ const marketingEventSchema = new mongoose.Schema(
     },
     actorRole: {
       type: String,
-      enum: ['cliente', 'trabajador', 'admin', 'sistema'],
+      enum: ['cliente', 'trabajador', 'admin', 'sistema', 'visitante'],
       default: 'sistema',
     },
+    // ── Campos territoriales (sensor MOS) ───────────────────────────────
+    economicCorridor: { type: String, trim: true, index: true },
+    municipality:     { type: String, trim: true, index: true },
+    neighborhood:     { type: String, trim: true },
+    province:         { type: String, trim: true },
+    region:           { type: String, trim: true, index: true },
+    priorityTier:     { type: Number, index: true },
+    economicNodeId:   { type: String, trim: true, index: true },
+    // ── Campos temporales ────────────────────────────────────────────────
+    sessionId:   { type: String, trim: true, index: true },
+    weekOfYear:  { type: Number },
+    dayOfWeek:   { type: String, trim: true },
+    hourBucket:  { type: String, trim: true, index: true },
+    year:        { type: Number },
+    month:       { type: Number },
+    intentType:  { type: String, trim: true, index: true },
     meta: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
@@ -82,7 +102,13 @@ marketingEventSchema.pre('updateMany', function () {
 
 const MarketingEvent = mongoose.model('MarketingEvent', marketingEventSchema);
 
-async function registrarEvento({ type, oficio, localidad, slug, actorId, actorRole, meta } = {}) {
+async function registrarEvento({
+  type, oficio, localidad, slug, actorId, actorRole, meta,
+  // Campos territoriales y temporales (seoEventEnricher)
+  economicCorridor, municipality, neighborhood, province,
+  region, priorityTier, economicNodeId,
+  sessionId, weekOfYear, dayOfWeek, hourBucket, year, month, intentType,
+} = {}) {
   try {
     const evento = await MarketingEvent.create({
       type,
@@ -91,6 +117,11 @@ async function registrarEvento({ type, oficio, localidad, slug, actorId, actorRo
       slug,
       actorId,
       actorRole,
+      // Campos territoriales (del enriquecedor)
+      economicCorridor, municipality, neighborhood, province,
+      region, priorityTier, economicNodeId,
+      // Campos temporales
+      sessionId, weekOfYear, dayOfWeek, hourBucket, year, month, intentType,
       meta: meta || {},
     });
     return { ok: true, id: evento._id };

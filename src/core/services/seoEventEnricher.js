@@ -60,6 +60,18 @@ function enrichSEOEvent({ localidad, oficio, intentType = 'service_search', req 
   // ── Contexto territorial ──────────────────────────────────────────────────
   const node = localidad ? getTerritoryNode(localidad) : null;
 
+  // economicNodeId: identificador jerárquico estable para joins entre BCs
+  // Formato: REGION:CORRIDOR:MUNICIPALITY[:NEIGHBORHOOD]
+  function buildNodeId(n) {
+    const parts = [
+      (n.region   || 'UNKNOWN').toUpperCase().replace(/\s+/g, '_'),
+      (n.corridor || 'UNKNOWN').toUpperCase().replace(/\s+/g, '_'),
+      (n.municipality || 'UNKNOWN').toUpperCase().replace(/\s+/g, '_'),
+    ];
+    if (n.neighborhood) parts.push(n.neighborhood.toUpperCase().replace(/\s+/g, '_'));
+    return parts.join(':');
+  }
+
   const territorial = node
     ? {
         economicCorridor: node.corridor,
@@ -68,6 +80,7 @@ function enrichSEOEvent({ localidad, oficio, intentType = 'service_search', req 
         province:         node.province,
         region:           node.region,
         priorityTier:     node.tier,
+        economicNodeId:   buildNodeId(node),
       }
     : {
         economicCorridor: 'unknown',
@@ -76,6 +89,7 @@ function enrichSEOEvent({ localidad, oficio, intentType = 'service_search', req 
         province:         null,
         region:           'unknown',
         priorityTier:     null,
+        economicNodeId:   'UNKNOWN:UNKNOWN:UNKNOWN',
       };
 
   // ── Contexto temporal ─────────────────────────────────────────────────────
