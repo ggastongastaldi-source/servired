@@ -26,6 +26,8 @@ const EVENT_TYPES = [
   'SEO_SERVICE_VIEWED',
   'ZONE_PAGE_VIEWED',
   'ECONOMIC_NETWORK_VIEWED',
+  'LEGAL_CONSENT_RECORDED',
+  'LEGAL_DOCUMENT_PUBLISHED',
 ];
 
 const marketingEventSchema = new mongoose.Schema(
