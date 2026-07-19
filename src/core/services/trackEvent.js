@@ -11,11 +11,19 @@ const { registrarEvento } = require('../marketing/MarketingEvent');
 
 async function trackEvent(type, {
   oficio, localidad, slug,
-  actorId, actorRole = 'sistema', meta = {}
+  actorId, actorRole = 'sistema', meta = {},
+  // Campos territoriales y temporales (seoEventEnricher)
+  economicCorridor, municipality, neighborhood, province,
+  region, priorityTier, economicNodeId,
+  sessionId, weekOfYear, dayOfWeek, hourBucket, year, month, intentType,
 } = {}) {
   // Fire-and-forget — no await en el caller
-  registrarEvento({ type, oficio, localidad, slug, actorId, actorRole, meta })
-    .catch(e => console.warn('[trackEvent] silenced:', e.message));
+  registrarEvento({
+    type, oficio, localidad, slug, actorId, actorRole, meta,
+    economicCorridor, municipality, neighborhood, province,
+    region, priorityTier, economicNodeId,
+    sessionId, weekOfYear, dayOfWeek, hourBucket, year, month, intentType,
+  }).catch(e => console.warn('[trackEvent] silenced:', e.message));
 }
 
 module.exports = { trackEvent };
