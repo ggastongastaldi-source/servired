@@ -2408,8 +2408,8 @@ const PRO = (() => {
     if (!d) return;
     const disp = document.getElementById('pro-wallet-disponible');
     const pend = document.getElementById('pro-wallet-pendiente');
-    if (disp) disp.textContent = '$ ' + (d.disponible ?? d.saldo_disponible ?? 0).toLocaleString('es-AR');
-    if (pend) pend.textContent = 'Pendiente: $ ' + (d.pendiente ?? d.saldo_pendiente ?? 0).toLocaleString('es-AR');
+    if (disp) disp.textContent = '$ ' + (d.wallet_available ?? 0).toLocaleString('es-AR');
+    if (pend) pend.textContent = 'Pendiente: $ ' + (d.wallet_pending ?? 0).toLocaleString('es-AR');
   }
 
   async function cargarOportunidades() {
@@ -2435,15 +2435,14 @@ const PRO = (() => {
     const box = document.getElementById('pro-trabajos');
     const tot = document.getElementById('pro-total-trabajos');
     if (!box) return;
-    const d = await _fetch('/api/pedidos/mis-trabajos');
-    if (!d || !d.trabajos || d.trabajos.length === 0) {
-      if (box) box.innerHTML = '<div style="text-align:center;padding:var(--sp-md);color:var(--muted);font-size:0.85rem;">Aun no tenes trabajos registrados.</div>';
+    const d = await _fetch('/api/pedidos/mi-pedido-activo');
+    if (!d || !d.pedido) {
+      if (box) box.innerHTML = '<div style="text-align:center;padding:var(--sp-md);color:var(--muted);font-size:0.85rem;">Sin trabajos activos ahora.</div>';
       if (tot) tot.textContent = '0';
       return;
     }
-    const completados = d.trabajos.filter(t => t.estado === 'COMPLETADO' || t.estado === 'completado');
-    if (tot) tot.textContent = completados.length;
-    const recientes = d.trabajos.slice(0, 5);
+    if (tot) tot.textContent = '1';
+    const recientes = [d.pedido];
     box.innerHTML = recientes.map(t => {
       const estadoColor = t.estado === 'COMPLETADO' ? 'var(--success)' : t.estado === 'EN_CURSO' ? 'var(--accent)' : 'var(--muted)';
       return `
@@ -2547,20 +2546,9 @@ const IND = (() => {
     const box = document.getElementById('ind-catalogo');
     const tot = document.getElementById('ind-total-productos');
     if (!box) return;
-    const d = await _fetch('/api/commerce/catalogo');
-    if (!d || !d.productos || d.productos.length === 0) {
-      if (tot) tot.textContent = '0';
-      return;
-    }
-    if (tot) tot.textContent = d.productos.length;
-    box.innerHTML = d.productos.slice(0,5).map(p => `
-      <div class="card" style="margin-bottom:var(--sp-sm);">
-        <div style="font-weight:700;font-size:0.85rem;">${p.nombre || 'Producto'}</div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">
-          <span style="font-size:0.78rem;color:var(--muted);">${p.categoria || ''}</span>
-          <span style="font-weight:700;color:#ff6d00;">$ ${(p.precio || 0).toLocaleString('es-AR')}</span>
-        </div>
-      </div>`).join('');
+    // endpoint catalogo pendiente - mostrar CTA
+    if (tot) tot.textContent = '0';
+    box.innerHTML = '<div class="alert alert-info"><span class="alert-icon">&#127981;</span><div>Public\u00e1 tu producci\u00f3n para conectarte con comercios y clientes de la zona. Funcionalidad disponible pr\u00f3ximamente.</div></div>';
   }
 
   async function _cargarOportunidades() {
