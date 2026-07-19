@@ -1325,14 +1325,45 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     <div class="view" id="view-profesional">
       <div class="section-header">
         <div>
-          <div class="section-title">👷 Centro Profesional</div>
-          <div class="section-subtitle">Tu carrera · En construcción</div>
+          <div class="section-title">&#128119; Centro Profesional</div>
+          <div class="section-subtitle" id="pro-subtitle">Cargando tu actividad...</div>
         </div>
         <span class="badge badge-green">TRABAJADOR</span>
       </div>
-      <div class="alert alert-info">
-        <span class="alert-icon">⚡</span>
-        Dashboard profesional en preparación.
+
+      <!-- Wallet -->
+      <div class="card" style="background:linear-gradient(135deg,rgba(57,255,20,0.08),rgba(0,0,0,0));border:1px solid rgba(57,255,20,0.2);margin-bottom:var(--sp-md);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:4px;">Mi Bolsillo</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--success);" id="pro-wallet-disponible">$ ---</div>
+            <div style="font-size:0.78rem;color:var(--muted);" id="pro-wallet-pendiente">Pendiente: $ ---</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px;">Trabajos</div>
+            <div style="font-size:1.4rem;font-weight:700;" id="pro-total-trabajos">---</div>
+            <div style="font-size:0.72rem;color:var(--muted);">completados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Oportunidades -->
+      <div style="margin-bottom:var(--sp-md);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-sm);">
+          <div style="font-weight:700;font-size:0.9rem;">&#128308; Oportunidades cerca</div>
+          <button onclick="PRO.cargarOportunidades()" style="background:none;border:none;color:var(--accent);font-size:0.8rem;cursor:pointer;">Actualizar</button>
+        </div>
+        <div id="pro-oportunidades">
+          <div style="text-align:center;padding:var(--sp-lg);color:var(--muted);font-size:0.85rem;">Buscando...</div>
+        </div>
+      </div>
+
+      <!-- Mis trabajos -->
+      <div>
+        <div style="font-weight:700;font-size:0.9rem;margin-bottom:var(--sp-sm);">&#128994; Mis trabajos</div>
+        <div id="pro-trabajos">
+          <div style="text-align:center;padding:var(--sp-md);color:var(--muted);font-size:0.85rem;">Cargando...</div>
+        </div>
       </div>
     </div>
 
@@ -1623,6 +1654,9 @@ const OS = (() => {
 
     if (history.pushState) history.pushState(null, '', '#' + view);
     window.scrollTo(0, 0);
+    // Despachar init del modulo correspondiente
+    const _mods = { territorial: typeof TER!=='undefined'&&TER, comercial: typeof COM!=='undefined'&&COM, profesional: typeof PRO!=='undefined'&&PRO };
+    if (_mods[view] && typeof _mods[view].init === 'function') _mods[view].init();
   }
 
   function _routeHash() {
@@ -2310,6 +2344,80 @@ const TER = (() => {
   function refresh() { init(); }
 
   return { init, refresh, loadGraph, selectZona };
+})();
+
+const PRO = (() => {
+  let _token = () => localStorage.getItem('sr-token');
+
+  async function _fetch(url) {
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + _token() } });
+    return r.ok ? r.json() : null;
+  }
+
+  async function cargarWallet() {
+    const d = await _fetch('/api/pagos/wallet');
+    if (!d) return;
+    const disp = document.getElementById('pro-wallet-disponible');
+    const pend = document.getElementById('pro-wallet-pendiente');
+    if (disp) disp.textContent = '$ ' + (d.disponible ?? d.saldo_disponible ?? 0).toLocaleString('es-AR');
+    if (pend) pend.textContent = 'Pendiente: $ ' + (d.pendiente ?? d.saldo_pendiente ?? 0).toLocaleString('es-AR');
+  }
+
+  async function cargarOportunidades() {
+    const box = document.getElementById('pro-oportunidades');
+    if (!box) return;
+    const d = await _fetch('/api/pedidos/disponibles');
+    if (!d || !d.pedidos || d.pedidos.length === 0) {
+      box.innerHTML = '<div style="text-align:center;padding:var(--sp-lg);color:var(--muted);font-size:0.85rem;">Sin oportunidades por ahora. Te avisamos cuando lleguen.</div>';
+      return;
+    }
+    box.innerHTML = d.pedidos.map(p => `
+      <div class="card" style="margin-bottom:var(--sp-sm);border-left:3px solid var(--success);">
+        <div style="font-weight:700;font-size:0.9rem;">${p.rubro || p.categoria || 'Trabajo'}</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin:4px 0;">${p.descripcion || ''}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.78rem;color:var(--muted);">&#128205; ${p.zona || p.direccion || 'AMBA'}</span>
+          <span style="font-weight:700;color:var(--success);">$ ${(p.presupuesto_estimado || p.precio || 0).toLocaleString('es-AR')}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  async function cargarTrabajos() {
+    const box = document.getElementById('pro-trabajos');
+    const tot = document.getElementById('pro-total-trabajos');
+    if (!box) return;
+    const d = await _fetch('/api/pedidos/mis-trabajos');
+    if (!d || !d.trabajos || d.trabajos.length === 0) {
+      if (box) box.innerHTML = '<div style="text-align:center;padding:var(--sp-md);color:var(--muted);font-size:0.85rem;">Aun no tenes trabajos registrados.</div>';
+      if (tot) tot.textContent = '0';
+      return;
+    }
+    const completados = d.trabajos.filter(t => t.estado === 'COMPLETADO' || t.estado === 'completado');
+    if (tot) tot.textContent = completados.length;
+    const recientes = d.trabajos.slice(0, 5);
+    box.innerHTML = recientes.map(t => {
+      const estadoColor = t.estado === 'COMPLETADO' ? 'var(--success)' : t.estado === 'EN_CURSO' ? 'var(--accent)' : 'var(--muted)';
+      return `
+      <div class="card" style="margin-bottom:var(--sp-sm);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-weight:700;font-size:0.85rem;">${t.rubro || t.categoria || 'Trabajo'}</div>
+          <span style="font-size:0.72rem;color:${estadoColor};font-weight:700;">${t.estado || ''}</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;">&#128205; ${t.zona || t.direccion || 'AMBA'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function init() {
+    const sub = document.getElementById('pro-subtitle');
+    if (sub) {
+      const s = OS.sesion();
+      sub.textContent = s ? (s.nombre || 'Profesional') + ' · Tu carrera' : 'Tu carrera';
+    }
+    await Promise.all([cargarWallet(), cargarOportunidades(), cargarTrabajos()]);
+  }
+
+  return { init, cargarOportunidades, cargarWallet, cargarTrabajos };
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
