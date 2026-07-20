@@ -6,9 +6,21 @@ const { computePriorityAction }  = require('../services/priorityEngine');
 // GET /api/gia/priority — retorna la priorityAction del usuario
 exports.getPriorityAction = async (req, res) => {
   try {
+    if (!req.userId) {
+      const Usuario = require('../models/Usuario');
+      const actores = await Usuario.countDocuments();
+      return res.json({
+        topInsight: 'ServiRed conecta trabajadores, comercios y clientes en el AMBA.',
+        recommendation: 'Registrate para acceder a inteligencia economica en tiempo real.',
+        oportunidades: 0,
+        riesgos: 0,
+        actores,
+        insights: 0,
+        kpiInsights: actores
+      });
+    }
     const state  = await buildUserState(req.userId);
     if (!state) return res.status(404).json({ error: 'Usuario no encontrado' });
-
     const action = computePriorityAction(state);
     res.json({ action, state: { rol: state.rol, ts: state.ts } });
   } catch (e) {
