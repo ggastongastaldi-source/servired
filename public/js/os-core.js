@@ -206,6 +206,11 @@ const OS = (() => {
   async function _onAuthenticated(sesion) {
     if (_sessionState === 'AUTHENTICATED') return; // evitar doble ejecución
     _sessionState = 'AUTHENTICATED';
+    // Normalizar contrato de sesion (snapshot usa role, usuario usa rol)
+    sesion.rol  = (sesion.rol  || sesion.role  || 'cliente').toLowerCase();
+    sesion.role = sesion.rol;
+    sesion.nombre = sesion.nombre || sesion.name || 'Usuario';
+    sesion.avatar = sesion.avatar || sesion.picture || null;
     document.getElementById('modal-login').classList.remove('show');
     _buildNav(sesion.rol || sesion.role);
     _buildDrawer(sesion.rol || sesion.role);
