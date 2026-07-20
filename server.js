@@ -90,7 +90,6 @@ app.use('/api/smart-quote', require('./src/core/routes/smartQuote'));
 app.use('/api/finanzas', require('./src/core/routes/finanzas'));
 app.use('/api/merchant', merchantRoutes);
 app.use('/api/gia', giaRoutes);
-app.use('/api/gia', require('./routes/gia'));
 
 
 
