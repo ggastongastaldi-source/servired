@@ -111,7 +111,7 @@ const OS = (() => {
       { view:'landing',  icon:'🏪', label:'Registrar mi comercio' },
       { section: 'ServiRed' },
       { view:'gia-full', icon:'🧠', label:'GIA Intelligence' },
-      { view:'landing',  icon:'ℹ️', label:'Quiénes somos' },
+      { view:'quienes',  icon:'ℹ️', label:'Quiénes somos' },
     ];
     container.innerHTML = items.map(item => {
       if (item.section) {
