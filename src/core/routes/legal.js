@@ -12,7 +12,7 @@ const router  = express.Router();
 const { LegalDocument, getActiveDocument }  = require('../models/LegalDocument');
 const { checkUserCompliance }               = require('../models/UserConsent');
 const { recordConsentBatch }                = require('../services/legalConsentService');
-const authMiddleware                        = require('../middleware/auth');
+const { verificarToken } = require("../middleware/auth");
 
 // ── GET /api/legal/documents — todos los activos (para menú hamburguesa) ─────
 router.get('/documents', async (req, res) => {
@@ -38,7 +38,7 @@ router.get('/documents/:type', async (req, res) => {
 });
 
 // ── POST /api/legal/consent — registrar aceptaciones ─────────────────────────
-router.post('/consent', authMiddleware, async (req, res) => {
+router.post("/consent", verificarToken, async (req, res) => {
   try {
     const userId       = req.user._id || req.user.id;
     const { documentTypes, context } = req.body;
@@ -69,7 +69,7 @@ router.post('/consent', authMiddleware, async (req, res) => {
 });
 
 // ── GET /api/legal/compliance — qué documentos le faltan al usuario ───────────
-router.get('/compliance', authMiddleware, async (req, res) => {
+router.get("/compliance", verificarToken, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const role   = req.user.role || req.user.actorRole || 'cliente';
