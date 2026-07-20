@@ -1562,33 +1562,22 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
       <span class="brand-s">SERVI</span><span class="brand-r">RED</span>
       <span class="brand-os">OS</span>
     </div>
-    <button class="drawer-close" onclick="OS.closeDrawer()">✕</button>
+    <button class="drawer-close" onclick="OS.closeDrawer()">&#10005;</button>
   </div>
-  <button class="nav-item" data-view="home" onclick="OS.closeDrawer()">
-    <span class="nav-icon">🏠</span> Inicio
+  <div id="drawer-nav-items">
+    <button class="nav-item" data-view="home" onclick="OS.closeDrawer()">
+      <span class="nav-icon">&#127968;</span> Inicio
+    </button>
+  </div>
+  <div style="margin-top:auto;padding:8px 8px 4px;font-size:0.62rem;font-family:var(--font-mono);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;">Legal</div>
+  <button class="nav-item" onclick="OS.viewLegalDoc('terms_of_use');OS.closeDrawer()">
+    <span class="nav-icon">&#128220;</span> T&#233;rminos de uso
   </button>
-  <div style="padding:8px 8px 4px;font-size:0.62rem;font-family:var(--font-mono);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;">Centros</div>
-  <button class="nav-item" data-view="territorial" onclick="OS.closeDrawer()">
-    <span class="nav-icon">🗺️</span> Territorial
+  <button class="nav-item" onclick="OS.viewLegalDoc('privacy_policy');OS.closeDrawer()">
+    <span class="nav-icon">&#128274;</span> Privacidad
   </button>
-  <button class="nav-item" data-view="comercial" onclick="OS.closeDrawer()">
-    <span class="nav-icon">🏪</span> Comercial
-  </button>
-  <button class="nav-item" data-view="profesional" onclick="OS.closeDrawer()">
-    <span class="nav-icon">👷</span> Profesional
-  </button>
-  <button class="nav-item" data-view="industrial" onclick="OS.closeDrawer()">
-    <span class="nav-icon">🏭</span> Industrial
-  </button>
-  <button class="nav-item" data-view="cliente" onclick="OS.closeDrawer()">
-    <span class="nav-icon">🛒</span> Cliente
-  </button>
-  <div style="padding:8px 8px 4px;font-size:0.62rem;font-family:var(--font-mono);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;">Sistema</div>
-  <button class="nav-item" data-view="gia-full" onclick="OS.closeDrawer()">
-    <span class="nav-icon">🧠</span> GIA Intel
-  </button>
-  <button class="nav-item" data-view="perfil" onclick="OS.closeDrawer()">
-    <span class="nav-icon">👤</span> Mi Perfil
+  <button class="nav-item" onclick="OS.viewLegalDoc('ai_policy');OS.closeDrawer()">
+    <span class="nav-icon">&#129504;</span> Pol&#237;tica IA
   </button>
 </nav>
 
@@ -1701,6 +1690,36 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
 document.addEventListener('DOMContentLoaded', () => {
   OS._init();
 });
+</script>
+
+<div id="install-banner" style="display:none;background:#0a0e1a;border:2px solid #00E5FF;padding:15px;text-align:center;border-radius:10px;margin:10px;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;width:90%;max-width:360px;box-shadow:0 0 20px rgba(0,229,255,0.3);">
+  <p style="color:#fff;font-family:var(--font-main,sans-serif);margin:0 0 10px;font-size:14px;">&#161;Sum&#225;te a la Red&#33; Instal&#225; la App para trabajar mejor.</p>
+  <button id="btn-install" style="background:#00E5FF;color:#000;border:none;padding:10px 24px;font-weight:bold;border-radius:5px;cursor:pointer;font-size:15px;">&#9889; INSTALAR SERVIRED</button>
+  <button onclick="document.getElementById('install-banner').style.display='none'" style="background:transparent;color:#666;border:none;padding:5px 10px;cursor:pointer;font-size:12px;display:block;margin:8px auto 0;">Ahora no</button>
+</div>
+<script>
+(function() {
+  let deferredPrompt;
+  const installBanner = document.getElementById('install-banner');
+  const btnInstall = document.getElementById('btn-install');
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBanner.style.display = 'block';
+  });
+  btnInstall.addEventListener('click', function() {
+    installBanner.style.display = 'none';
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(r) {
+      deferredPrompt = null;
+    });
+  });
+  window.addEventListener('appinstalled', function() {
+    installBanner.style.display = 'none';
+    deferredPrompt = null;
+  });
+})();
 </script>
 </body>
 </html>

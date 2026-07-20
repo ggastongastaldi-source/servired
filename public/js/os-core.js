@@ -149,11 +149,66 @@ const OS = (() => {
     });
   }
 
+
+  function _buildDrawer(rol) {
+    const container = document.getElementById('drawer-nav-items');
+    if (!container) return;
+    const rolKey = (rol || 'cliente').toLowerCase();
+
+    const DRAWER_CONFIG = {
+      admin: [
+        { view:'home',        icon:'🏠', label:'Inicio' },
+        { section: 'Centros' },
+        { view:'territorial', icon:'🗺️', label:'Territorial' },
+        { view:'comercial',   icon:'🏪', label:'Comercial' },
+        { view:'profesional', icon:'👷', label:'Profesional' },
+        { view:'industrial',  icon:'🏭', label:'Industrial' },
+        { view:'cliente',     icon:'🛒', label:'Cliente' },
+        { section: 'Sistema' },
+        { view:'gia-full',    icon:'🧠', label:'GIA Intel' },
+        { view:'perfil',      icon:'👤', label:'Mi Perfil' },
+      ],
+      comercio: [
+        { view:'home',      icon:'🏠', label:'Inicio' },
+        { section: 'Mi Centro' },
+        { view:'comercial', icon:'🏪', label:'Centro Comercial' },
+        { view:'perfil',    icon:'👤', label:'Mi Perfil' },
+      ],
+      trabajador: [
+        { view:'home',        icon:'🏠', label:'Inicio' },
+        { section: 'Mi Centro' },
+        { view:'profesional', icon:'👷', label:'Centro Profesional' },
+        { view:'perfil',      icon:'👤', label:'Mi Perfil' },
+      ],
+      cliente: [
+        { view:'home',   icon:'🏠', label:'Inicio' },
+        { section: 'Mi Centro' },
+        { view:'cliente',icon:'🛒', label:'Buscar servicios' },
+        { view:'perfil', icon:'👤', label:'Mi Perfil' },
+      ],
+      fabricante: [
+        { view:'home',       icon:'🏠', label:'Inicio' },
+        { section: 'Mi Centro' },
+        { view:'industrial', icon:'🏭', label:'Centro Industrial' },
+        { view:'perfil',     icon:'👤', label:'Mi Perfil' },
+      ],
+    };
+
+    const items = DRAWER_CONFIG[rolKey] || DRAWER_CONFIG.cliente;
+    container.innerHTML = items.map(item => {
+      if (item.section) {
+        return \`<div style="padding:8px 8px 4px;font-size:0.62rem;font-family:var(--font-mono);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;">\${item.section}</div>\`;
+      }
+      return \`<button class="nav-item" data-view="\${item.view}" onclick="OS.nav('\${item.view}');OS.closeDrawer()"><span class="nav-icon">\${item.icon}</span> \${item.label}</button>\`;
+    }).join('');
+  }
+
   async function _onAuthenticated(sesion) {
     if (_sessionState === 'AUTHENTICATED') return; // evitar doble ejecución
     _sessionState = 'AUTHENTICATED';
     document.getElementById('modal-login').classList.remove('show');
     _buildNav(sesion.rol || sesion.role);
+    _buildDrawer(sesion.rol || sesion.role);
 
     // Avatar / initials
     const nombre = sesion.nombre || sesion.name || sesion.usuario?.nombre || 'Actor';
