@@ -97,6 +97,28 @@ const OS = (() => {
     _sessionState = 'LOGIN_REQUIRED';
     _hideSplash();
     nav('landing');
+    _buildDrawerPublico();
+  }
+
+  function _buildDrawerPublico() {
+    const container = document.getElementById('drawer-nav-items');
+    if (!container) return;
+    const items = [
+      { view:'landing',  icon:'🏠', label:'Inicio' },
+      { section: 'Descubrir' },
+      { view:'landing',  icon:'🔍', label:'Buscar un servicio' },
+      { view:'landing',  icon:'🔧', label:'Ofrecer mis servicios' },
+      { view:'landing',  icon:'🏪', label:'Registrar mi comercio' },
+      { section: 'ServiRed' },
+      { view:'gia-full', icon:'🧠', label:'GIA Intelligence' },
+      { view:'landing',  icon:'ℹ️', label:'Quiénes somos' },
+    ];
+    container.innerHTML = items.map(item => {
+      if (item.section) {
+        return `<div style="padding:8px 8px 4px;font-size:0.62rem;font-family:var(--font-mono);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;">${item.section}</div>`;
+      }
+      return `<button class="nav-item" data-view="${item.view}" onclick="OS.nav('${item.view}');OS.closeDrawer()"><span class="nav-icon">${item.icon}</span> ${item.label}</button>`;
+    }).join('');
   }
 
   // ── Nav dinámica por rol ─────────────────
