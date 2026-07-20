@@ -540,7 +540,7 @@ const OS = (() => {
 
     // Activar centros al navegar
     const _origNav = nav;
-    window._navHooks = { territorial: () => TER.init(), comercial: () => COM.init() };
+    window._navHooks = { territorial: () => TER.init(), comercial: () => COM.init(), quienes: () => { if(window._qsObserverInit) window._qsObserverInit(); } };
     document.querySelectorAll('[data-view]').forEach(el => {
       el.addEventListener('click', () => {
         const v = el.dataset.view;
