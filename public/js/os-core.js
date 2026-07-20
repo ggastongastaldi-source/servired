@@ -197,9 +197,9 @@ const OS = (() => {
     const items = DRAWER_CONFIG[rolKey] || DRAWER_CONFIG.cliente;
     container.innerHTML = items.map(item => {
       if (item.section) {
-        return \`<div style="padding:8px 8px 4px;font-size:0.62rem;font-family:var(--font-mono);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;">\${item.section}</div>\`;
+        return `<div style="padding:8px 8px 4px;font-size:0.62rem;font-family:var(--font-mono);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;">\${item.section}</div>`;
       }
-      return \`<button class="nav-item" data-view="\${item.view}" onclick="OS.nav('\${item.view}');OS.closeDrawer()"><span class="nav-icon">\${item.icon}</span> \${item.label}</button>\`;
+      return `<button class="nav-item" data-view="\${item.view}" onclick="OS.nav('\${item.view}');OS.closeDrawer()"><span class="nav-icon">\${item.icon}</span> \${item.label}</button>`;
     }).join('');
   }
 
