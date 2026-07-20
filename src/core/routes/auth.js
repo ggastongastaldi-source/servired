@@ -296,7 +296,55 @@ router.get("/me", async (req, res) => {
       console.error('[auth/me] merchantProjection error (no critico):', e.message);
     }
 
-    res.json({ ok: true, snapshot: { userId: u._id, state, role: u.rol||null, profileCompletion, needsRoleSelection, needsProfileCompletion, onboardingStep: state==="APP_READY"?null:(u.onboardingStep||"rol"), avatar: u.avatar||null, nombre: u.nombre, lastTransitionAt: u.updatedAt?new Date(u.updatedAt).getTime():Date.now(), merchant }});
+    // OS Contract — única fuente de verdad para el frontend
+    const rol = (u.rol || 'cliente').toLowerCase();
+    const drawerMap = {
+      admin: [
+        { id:'home', label:'Inicio', icon:'🏠' },
+        { section:'Centros' },
+        { id:'territorial', label:'Centro Territorial', icon:'🗺️' },
+        { id:'comercial', label:'Centro Comercial', icon:'🏪' },
+        { id:'gia', label:'GIA Intelligence', icon:'🧠' },
+        { section:'Sistema' },
+        { id:'perfil', label:'Mi Perfil', icon:'👤' },
+      ],
+      comercio: [
+        { id:'home', label:'Inicio', icon:'🏠' },
+        { section:'Mi Negocio' },
+        { id:'comercial', label:'Centro Comercial', icon:'🏪' },
+        { id:'gia', label:'GIA Intelligence', icon:'🧠' },
+        { section:'Sistema' },
+        { id:'perfil', label:'Mi Perfil', icon:'👤' },
+      ],
+      trabajador: [
+        { id:'home', label:'Inicio', icon:'🏠' },
+        { section:'Mi Trabajo' },
+        { id:'trabajador', label:'Mi Panel', icon:'🔧' },
+        { id:'gia', label:'GIA Intelligence', icon:'🧠' },
+        { section:'Sistema' },
+        { id:'perfil', label:'Mi Perfil', icon:'👤' },
+      ],
+      cliente: [
+        { id:'home', label:'Inicio', icon:'🏠' },
+        { section:'Servicios' },
+        { id:'buscar', label:'Buscar Servicio', icon:'🔍' },
+        { id:'gia', label:'GIA Intelligence', icon:'🧠' },
+        { section:'Sistema' },
+        { id:'perfil', label:'Mi Perfil', icon:'👤' },
+      ],
+    };
+    const centersMap = {
+      admin:      ['territorial','comercial','gia'],
+      comercio:   ['comercial','gia'],
+      trabajador: ['trabajador','gia'],
+      cliente:    ['buscar','gia'],
+    };
+    const osContract = {
+      drawer: drawerMap[rol] || drawerMap.cliente,
+      centers: centersMap[rol] || centersMap.cliente,
+      gia: { enabled: true },
+    };
+    res.json({ ok: true, snapshot: { userId: u._id, state, role: u.rol||null, nombre: u.nombre, avatar: u.avatar||null, profileCompletion, needsRoleSelection, needsProfileCompletion, onboardingStep: state==="APP_READY"?null:(u.onboardingStep||"rol"), lastTransitionAt: u.updatedAt?new Date(u.updatedAt).getTime():Date.now(), merchant, os: osContract }});
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
