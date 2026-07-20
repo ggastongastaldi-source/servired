@@ -149,7 +149,7 @@ const OS = (() => {
     });
   }
 
-  function _onAuthenticated(sesion) {
+  async function _onAuthenticated(sesion) {
     if (_sessionState === 'AUTHENTICATED') return; // evitar doble ejecución
     _sessionState = 'AUTHENTICATED';
     document.getElementById('modal-login').classList.remove('show');
