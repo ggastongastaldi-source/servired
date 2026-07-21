@@ -860,7 +860,7 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
 .home-avatar-lg img { width:100%;height:100%;object-fit:cover; }
 </style>
 <style>
-        #view-quienes{overflow-y:auto;min-height:100vh;background:#0a0e1a;}
+        #view-quienes{overflow-y:auto;background:#0a0e1a;}
         .qs-hero{background:linear-gradient(135deg,#0a0e1a 0%,#0d1f2d 100%);padding:48px 24px 40px;text-align:center;display:flex;flex-direction:column;justify-content:center;}
         .qs-hero h1{font-size:1.6rem;font-weight:900;color:#fff;line-height:1.3;margin-bottom:16px;}
         .qs-hero p{color:var(--muted);font-size:0.92rem;line-height:1.7;margin-bottom:28px;}
@@ -1590,222 +1590,105 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
     <div class="view" id="view-quienes">
 <!-- qs styles moved to head -->
 
-      <div class="qs-hero qs-animate">
-        <div style="font-size:3.5rem;margin-bottom:20px;">🌐</div>
+      <!-- HERO -->
+      <div class="qs-hero">
+        <div style="font-size:3rem;margin-bottom:16px;">⚡</div>
         <span class="qs-tag">MARKET OPERATING SYSTEM</span>
-        <h1>La economía funciona mejor cuando las personas están conectadas.</h1>
-        <p>ServiRed conecta personas, trabajadores, comercios, empresas e industrias dentro de un mismo ecosistema inteligente.<br><br><strong style="color:#fff;">No somos un marketplace tradicional.</strong><br>Somos la infraestructura digital que permite que toda una economía territorial funcione de forma coordinada.</p>
-        <button class="qs-btn" onclick="document.getElementById('qs-s2').scrollIntoView({behavior:'smooth'})">Descubrir cómo funciona ↓</button>
+        <h1>La economía funciona mejor cuando está coordinada.</h1>
+        <p>ServiRed es la infraestructura inteligente que conecta personas, trabajadores, comercios, PyMEs e industrias dentro de un mismo ecosistema económico territorial.</p>
+        <button class="qs-btn" onclick="document.getElementById('qs-s2').scrollIntoView({behavior:'smooth'})">Conocer más ↓</button>
       </div>
 
-      <div class="qs-section qs-animate" id="qs-s2">
-        <span class="qs-tag">EL PROBLEMA</span>
-        <h2>¿Por qué nació ServiRed?</h2>
-        <ul>
-          <li>Los comercios no encuentran clientes.</li>
-          <li>Los trabajadores no encuentran oportunidades.</li>
-          <li>Las personas pierden tiempo buscando soluciones.</li>
-          <li>Las PyMEs trabajan desconectadas entre sí.</li>
-          <li>Cada actor usa aplicaciones que nunca colaboran.</li>
-          <li>Eso genera pérdidas económicas todos los días.</li>
-        </ul>
-        <p style="margin-top:20px;color:#fff;font-weight:700;font-size:1rem;">ServiRed nace para conectar todas esas piezas.</p>
+      <!-- POR QUÉ EXISTE -->
+      <div class="qs-section" id="qs-s2">
+        <span class="qs-tag">POR QUÉ EXISTE SERVIRED</span>
+        <h2>Todos los actores ya existen. Lo que falta es coordinación.</h2>
+        <p>Hoy hay personas que necesitan servicios, trabajadores que ofrecen capacidades, comercios que venden, PyMEs que producen e industrias que distribuyen.<br><br>Pero cada uno opera de forma aislada, con información fragmentada y sin inteligencia compartida.<br><br>Eso genera pérdidas económicas todos los días.</p>
+        <p style="margin-top:20px;color:#fff;font-weight:700;">ServiRed nace para convertirse en la infraestructura que los coordina.</p>
       </div>
 
-      <div class="qs-section qs-animate">
+      <!-- QUÉ ES -->
+      <div class="qs-section">
         <span class="qs-tag">QUÉ ES SERVIRED</span>
-        <h2>Mucho más que una aplicación.</h2>
-        <p>Así como un sistema operativo organiza una computadora, ServiRed organiza la actividad económica de un territorio.</p>
+        <h2>Un Sistema Operativo de Mercado.</h2>
+        <p>Así como un sistema operativo organiza los recursos de una computadora, ServiRed organiza la actividad económica de un territorio.<br><br>No es una app para pedir servicios.<br>No es un marketplace de transacciones.<br><br>Es una plataforma que convierte información económica en oportunidades reales.</p>
         <div class="qs-nodes">
           <div class="qs-node">👤 Personas</div>
-          <div class="qs-node">🔧 Profesionales</div>
+          <div class="qs-node">🔧 Trabajadores</div>
           <div class="qs-node">🏪 Comercios</div>
+          <div class="qs-node">🏢 PyMEs</div>
           <div class="qs-node">🏭 Industrias</div>
-          <div class="qs-node">🧠 IA</div>
           <div class="qs-node center">⚡ SERVIRED</div>
         </div>
       </div>
 
-      <div class="qs-section qs-animate">
-        <span class="qs-tag">MISIÓN Y VISIÓN</span>
-        <h2>Nuestra misión</h2>
-        <p>Aumentar la creación de valor dentro de la economía real. La tecnología debe ayudar a que existan más oportunidades, más trabajo y mejores decisiones para todos.</p>
-        <h2 style="margin-top:32px;">Nuestra visión</h2>
-        <p>Construir la infraestructura inteligente sobre la cual funcionará la economía local del futuro.</p>
-      </div>
-
-      <div class="qs-section qs-animate">
+      <!-- CÓMO FUNCIONA -->
+      <div class="qs-section">
         <span class="qs-tag">CÓMO FUNCIONA</span>
-        <h2>5 pasos que generan valor</h2>
+        <h2>De la información a la oportunidad económica.</h2>
         <div class="qs-steps">
-          <div class="qs-step"><div class="qs-step-icon">🙋</div><div class="qs-step-txt">Una persona necesita algo</div></div>
+          <div class="qs-step"><div class="qs-step-icon">🙋</div><div class="qs-step-txt">Un actor económico genera una necesidad</div></div>
           <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">📝</div><div class="qs-step-txt">Publica una necesidad</div></div>
+          <div class="qs-step"><div class="qs-step-icon">🧠</div><div class="qs-step-txt">SINAPSIS analiza la información en tiempo real</div></div>
           <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">🧠</div><div class="qs-step-txt">La plataforma analiza la información</div></div>
+          <div class="qs-step"><div class="qs-step-icon">🎯</div><div class="qs-step-txt">GIA detecta la mejor oportunidad disponible</div></div>
           <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">🎯</div><div class="qs-step-txt">Encuentra la mejor oferta disponible</div></div>
-          <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">⚡</div><div class="qs-step-txt">Se genera una nueva oportunidad económica</div></div>
+          <div class="qs-step"><div class="qs-step-icon">⚡</div><div class="qs-step-txt">Se genera valor económico real en el territorio</div></div>
         </div>
       </div>
 
-      <div class="qs-section qs-animate">
+      <!-- MISIÓN -->
+      <div class="qs-section">
+        <span class="qs-tag">MISIÓN</span>
+        <h2>Aumentar la creación de valor en la economía real.</h2>
+        <p>La inteligencia precede a la monetización.<br><br>ServiRed no optimiza ingresos por transacción. Optimiza el crecimiento inteligente de la red económica.<br><br>Cada interacción genera datos. Los datos generan conocimiento. El conocimiento mejora decisiones. Las mejores decisiones crean más valor para todos.</p>
+      </div>
+
+      <!-- IA -->
+      <div class="qs-section">
         <span class="qs-tag">INTELIGENCIA ARTIFICIAL</span>
-        <h2>La inteligencia detrás de ServiRed</h2>
-        <p>ServiRed incorpora IA para transformar datos en decisiones útiles.<br><br><strong style="color:#fff;">La inteligencia no reemplaza a las personas. Las potencia.</strong></p>
+        <h2>La IA potencia las decisiones humanas.</h2>
+        <p>GIA — la inteligencia de ServiRed — analiza el ecosistema en tiempo real, detecta oportunidades, anticipa riesgos y conecta actores que de otra forma no se encontrarían.<br><br><strong style="color:#fff;">No reemplaza a las personas. Las potencia.</strong></p>
       </div>
 
-      <div class="qs-section qs-animate">
-        <span class="qs-tag">NUESTRO COMPROMISO</span>
-        <h2>Los valores que nos guían</h2>
-        <div class="qs-cards">
-          <div class="qs-card"><div class="qs-card-icon">🔍</div><div class="qs-card-label">Transparencia</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🚀</div><div class="qs-card-label">Innovación</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🛡️</div><div class="qs-card-label">Confianza</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🤝</div><div class="qs-card-label">Colaboración</div></div>
-          <div class="qs-card"><div class="qs-card-icon">📈</div><div class="qs-card-label">Crecimiento</div></div>
-          <div class="qs-card"><div class="qs-card-icon">💡</div><div class="qs-card-label">Tecnología responsable</div></div>
-        </div>
-      </div>
-
-      <div class="qs-section qs-animate">
+      <!-- DIFERENCIA -->
+      <div class="qs-section">
         <span class="qs-tag">QUÉ NOS DIFERENCIA</span>
         <h2>No somos un marketplace.</h2>
         <table class="qs-table">
-          <thead><tr><th>Marketplace</th><th>ServiRed</th></tr></thead>
+          <thead><tr><th>Marketplace tradicional</th><th>ServiRed MOS</th></tr></thead>
           <tbody>
-            <tr><td>Conecta compra y venta</td><td>Coordina toda la economía</td></tr>
-            <tr><td>Busca transacciones</td><td>Genera valor económico</td></tr>
-            <tr><td>Usuarios aislados</td><td>Un mismo ecosistema</td></tr>
-            <tr><td>Reacciona</td><td>Anticipa oportunidades</td></tr>
+            <tr><td>Conecta oferta y demanda</td><td>Coordina toda la economía territorial</td></tr>
+            <tr><td>Optimiza transacciones</td><td>Aumenta el valor de la red</td></tr>
+            <tr><td>Actores aislados</td><td>Ecosistema integrado</td></tr>
+            <tr><td>Reacciona al mercado</td><td>Anticipa oportunidades con IA</td></tr>
+            <tr><td>Monetiza la fricción</td><td>Elimina la fricción para crecer</td></tr>
           </tbody>
         </table>
       </div>
 
-      <div class="qs-final qs-animate">
-        <div style="font-size:3rem;margin-bottom:20px;">⚡</div>
-        <h2>La economía del futuro se construye conectando personas.</h2>
-        <p>Cada comercio.<br>Cada profesional.<br>Cada empresa.<br>Cada industria.<br>Cada oportunidad.<br><strong style="color:#fff;">Forma parte de una misma red. Esa red es ServiRed.</strong></p>
-        <button class="qs-btn" onclick="OS.nav('landing')">Comenzar ahora →</button>
-      </div>
-
-      <div class="qs-hero qs-animate">
-        <div style="font-size:3.5rem;margin-bottom:20px;">🌐</div>
-        <span class="qs-tag">MARKET OPERATING SYSTEM</span>
-        <h1>La economía funciona mejor cuando las personas están conectadas.</h1>
-        <p>ServiRed conecta personas, trabajadores, comercios, empresas e industrias dentro de un mismo ecosistema inteligente.<br><br><strong style="color:#fff;">No somos un marketplace tradicional.</strong><br>Somos la infraestructura digital que permite que toda una economía territorial funcione de forma coordinada.</p>
-        <button class="qs-btn" onclick="document.getElementById('qs-s2').scrollIntoView({behavior:'smooth'})">Descubrir cómo funciona ↓</button>
-      </div>
-
-      <div class="qs-section qs-animate" id="qs-s2">
-        <span class="qs-tag">EL PROBLEMA</span>
-        <h2>¿Por qué nació ServiRed?</h2>
-        <ul>
-          <li>Los comercios no encuentran clientes.</li>
-          <li>Los trabajadores no encuentran oportunidades.</li>
-          <li>Las personas pierden tiempo buscando soluciones.</li>
-          <li>Las PyMEs trabajan desconectadas entre sí.</li>
-          <li>Cada actor usa aplicaciones que nunca colaboran.</li>
-          <li>Eso genera pérdidas económicas todos los días.</li>
-        </ul>
-        <p style="margin-top:20px;color:#fff;font-weight:700;font-size:1rem;">ServiRed nace para conectar todas esas piezas.</p>
-      </div>
-
-      <div class="qs-section qs-animate">
-        <span class="qs-tag">QUÉ ES SERVIRED</span>
-        <h2>Mucho más que una aplicación.</h2>
-        <p>Así como un sistema operativo organiza una computadora, ServiRed organiza la actividad económica de un territorio. Integra personas, profesionales, comercios, industrias, oferta, demanda e inteligencia artificial.</p>
-        <div class="qs-nodes">
-          <div class="qs-node">👤 Personas</div>
-          <div class="qs-node">🔧 Profesionales</div>
-          <div class="qs-node">🏪 Comercios</div>
-          <div class="qs-node">🏭 Industrias</div>
-          <div class="qs-node">🧠 IA</div>
-          <div class="qs-node center">⚡ SERVIRED</div>
-        </div>
-      </div>
-
-      <div class="qs-section qs-animate">
-        <span class="qs-tag">MISIÓN Y VISIÓN</span>
-        <h2>Nuestra misión</h2>
-        <p>Aumentar la creación de valor dentro de la economía real. La tecnología debe ayudar a que existan más oportunidades, más trabajo, más ventas y mejores decisiones para todos.</p>
-        <h2 style="margin-top:36px;">Nuestra visión</h2>
-        <p>Construir la infraestructura inteligente sobre la cual funcionará la economía local del futuro. Una plataforma que comprende cada territorio para ayudar a todos a crecer de forma coordinada.</p>
-      </div>
-
-      <div class="qs-section qs-animate">
-        <span class="qs-tag">CÓMO FUNCIONA</span>
-        <h2>5 pasos que generan valor</h2>
-        <div class="qs-steps">
-          <div class="qs-step"><div class="qs-step-icon">🙋</div><div class="qs-step-txt">Una persona necesita algo</div></div>
-          <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">📝</div><div class="qs-step-txt">Publica una necesidad</div></div>
-          <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">🧠</div><div class="qs-step-txt">La plataforma analiza la información</div></div>
-          <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">🎯</div><div class="qs-step-txt">Encuentra la mejor oferta disponible</div></div>
-          <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">⚡</div><div class="qs-step-txt">Se genera una nueva oportunidad económica</div></div>
-        </div>
-      </div>
-
-      <div class="qs-section qs-animate">
-        <span class="qs-tag">INTELIGENCIA ARTIFICIAL</span>
-        <h2>La inteligencia detrás de ServiRed</h2>
-        <p>ServiRed incorpora IA para transformar datos en decisiones útiles. La plataforma aprende continuamente del comportamiento del mercado para mejorar recomendaciones y conectar oportunidades.</p>
-        <p style="margin-top:20px;color:#fff;font-weight:700;font-size:1.05rem;">La inteligencia no reemplaza a las personas.<br>Las potencia.</p>
-      </div>
-
-      <div class="qs-section qs-animate">
+      <!-- COMPROMISO -->
+      <div class="qs-section">
         <span class="qs-tag">NUESTRO COMPROMISO</span>
-        <h2>Los valores que nos guían</h2>
+        <h2>Principios que no negociamos.</h2>
         <div class="qs-cards">
-          <div class="qs-card"><div class="qs-card-icon">🔍</div><div class="qs-card-label">Transparencia</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🚀</div><div class="qs-card-label">Innovación</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🛡️</div><div class="qs-card-label">Confianza</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🤝</div><div class="qs-card-label">Colaboración</div></div>
-          <div class="qs-card"><div class="qs-card-icon">📈</div><div class="qs-card-label">Crecimiento</div></div>
-          <div class="qs-card"><div class="qs-card-icon">💡</div><div class="qs-card-label">Tecnología responsable</div></div>
+          <div class="qs-card"><div class="qs-card-icon">🛡️</div><div class="qs-card-label">Confianza primero</div></div>
+          <div class="qs-card"><div class="qs-card-icon">🔍</div><div class="qs-card-label">Transparencia total</div></div>
+          <div class="qs-card"><div class="qs-card-icon">👤</div><div class="qs-card-label">Datos del usuario, del usuario</div></div>
+          <div class="qs-card"><div class="qs-card-icon">🚀</div><div class="qs-card-label">Innovación continua</div></div>
+          <div class="qs-card"><div class="qs-card-icon">📈</div><div class="qs-card-label">Valor económico real</div></div>
+          <div class="qs-card"><div class="qs-card-icon">🤝</div><div class="qs-card-label">Ecosistema colaborativo</div></div>
         </div>
       </div>
 
-      <div class="qs-section qs-animate">
-        <span class="qs-tag">QUÉ NOS DIFERENCIA</span>
-        <h2>No somos un marketplace.</h2>
-        <table class="qs-table">
-          <thead><tr><th>Marketplace</th><th>ServiRed</th></tr></thead>
-          <tbody>
-            <tr><td>Conecta compra y venta</td><td>Coordina toda la economía</td></tr>
-            <tr><td>Busca transacciones</td><td>Genera valor económico</td></tr>
-            <tr><td>Usuarios aislados</td><td>Un mismo ecosistema</td></tr>
-            <tr><td>Reacciona</td><td>Anticipa oportunidades</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="qs-section qs-animate">
-        <span class="qs-tag">HACIA DÓNDE VAMOS</span>
-        <h2>El futuro de ServiRed</h2>
-        <p>ServiRed comenzó como una plataforma para conectar servicios. Hoy evoluciona hacia un Sistema Operativo de Mercado capaz de integrar personas, comercios, PyMEs, industrias e inteligencia artificial dentro de una única infraestructura.<br><br>Nuestro objetivo es impulsar el desarrollo económico territorial, expandir este modelo a nuevas regiones y construir una red donde cada interacción genere más oportunidades para todos.</p>
-      </div>
-
-      <div class="qs-final qs-animate">
-        <div style="font-size:3rem;margin-bottom:20px;">⚡</div>
-        <h2>La economía del futuro se construye conectando personas.</h2>
-        <p>Cada comercio.<br>Cada profesional.<br>Cada empresa.<br>Cada industria.<br>Cada oportunidad.<br><strong style="color:#fff;">Forma parte de una misma red. Esa red es ServiRed.</strong></p>
+      <!-- CIERRE -->
+      <div class="qs-final">
+        <div style="font-size:3rem;margin-bottom:20px;">🌐</div>
+        <h2>La economía del futuro se construye coordinando personas.</h2>
+        <p>Cada trabajador.<br>Cada comercio.<br>Cada PyME.<br>Cada industria.<br>Cada oportunidad.<br><strong style="color:#fff;">Conectados por inteligencia. Esa red es ServiRed.</strong></p>
         <button class="qs-btn" onclick="OS.nav('landing')">Comenzar ahora →</button>
       </div>
 
-      <script>
-      window._qsObserverInit = function(){
-        var obs = new IntersectionObserver(function(entries){
-          entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
-        },{threshold:0.08});
-        document.querySelectorAll('#view-quienes .qs-animate').forEach(function(el){ obs.observe(el); });
-      };
-      if(document.getElementById('view-quienes').classList.contains('active')) window._qsObserverInit();
-      </script>
     </div>
 
     <!-- GIA FAB mobile -->
