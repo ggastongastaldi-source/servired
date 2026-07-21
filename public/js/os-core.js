@@ -462,7 +462,7 @@ const OS = (() => {
       const d = await r.json();
       const insight = d.topInsight || d.recommendation || d.mensaje || 'Sistema operativo activo.';
       document.getElementById('gia-insight-txt').textContent = insight;
-      document.getElementById('gia-status-txt').textContent = '🟢 Analizando economía';
+      document.getElementById('gia-status-txt').textContent = '🟢 Inteligencia territorial activa';
       if (d.oportunidades !== undefined) document.getElementById('gia-oportunidades').textContent = d.oportunidades;
       if (d.riesgos !== undefined)       document.getElementById('gia-riesgos').textContent = d.riesgos;
       if (d.actores !== undefined)       document.getElementById('gia-actores-act').textContent = d.actores;
