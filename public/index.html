@@ -861,40 +861,65 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
 .home-avatar-lg img { width:100%;height:100%;object-fit:cover; }
 </style>
 <style>
+        /* ── QS: view-quienes ── */
         #view-quienes{overflow-y:auto;background:#0a0e1a;}
-        .qs-hero{background:linear-gradient(135deg,#0a0e1a 0%,#0d1f2d 100%);padding:48px 24px 40px;text-align:center;display:flex;flex-direction:column;justify-content:center;}
-        .qs-hero h1{font-size:1.6rem;font-weight:900;color:#fff;line-height:1.3;margin-bottom:16px;}
-        .qs-hero p{color:var(--muted);font-size:0.92rem;line-height:1.7;margin-bottom:28px;}
-        .qs-btn{background:var(--accent);color:#000;border:none;padding:14px 32px;border-radius:50px;font-weight:700;font-size:1rem;cursor:pointer;display:inline-block;}
-        .qs-section{padding:48px 24px;border-bottom:1px solid rgba(255,255,255,0.06);}
-        .qs-section h2{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:16px;}
-        .qs-section p{color:var(--muted);font-size:0.9rem;line-height:1.7;}
-        .qs-section ul{list-style:none;padding:0;margin-top:12px;}
-        .qs-section ul li{color:var(--muted);font-size:0.9rem;line-height:1.8;padding-left:16px;}
-        .qs-section ul li::before{content:"• ";color:var(--accent);}
-        .qs-steps{display:flex;flex-direction:column;gap:12px;margin-top:20px;}
-        .qs-step{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;}
-        .qs-step-icon{font-size:1.5rem;min-width:40px;text-align:center;}
-        .qs-step-txt{color:#fff;font-size:0.92rem;font-weight:600;}
-        .qs-arrow{text-align:center;color:var(--accent);font-size:1.2rem;margin:4px 0;}
-        .qs-nodes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:24px;}
-        .qs-node{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:50px;padding:10px 20px;color:var(--accent);font-size:0.85rem;font-weight:600;}
-        .qs-node.center{background:var(--accent);color:#000;font-weight:900;font-size:1rem;padding:12px 28px;}
-        .qs-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
-        .qs-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px 12px;text-align:center;}
-        .qs-card-icon{font-size:2rem;margin-bottom:10px;}
-        .qs-card-label{color:#fff;font-size:0.88rem;font-weight:700;}
+
+        .qs-hero{background:linear-gradient(160deg,#060d1a 0%,#0c1829 100%);padding:56px 24px 48px;text-align:center;}
+        .qs-kicker{display:inline-block;background:rgba(255,100,0,0.12);color:var(--primary);border:1px solid rgba(255,100,0,0.3);border-radius:50px;padding:4px 14px;font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;}
+        .qs-hero h1{font-size:1.65rem;font-weight:900;color:#fff;line-height:1.25;margin-bottom:14px;}
+        .qs-hero .qs-mos{font-size:0.85rem;font-weight:700;color:var(--accent);margin-bottom:12px;}
+        .qs-hero p{color:var(--muted);font-size:0.88rem;line-height:1.7;margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto;}
+        .qs-btn{background:var(--accent);color:#000;border:none;padding:14px 32px;border-radius:50px;font-weight:700;font-size:0.95rem;cursor:pointer;display:inline-block;}
+        .qs-section{padding:44px 24px;border-bottom:1px solid rgba(255,255,255,0.06);}
+        .qs-tag{display:inline-block;background:rgba(255,100,0,0.12);color:var(--primary);border:1px solid rgba(255,100,0,0.25);border-radius:50px;padding:4px 14px;font-size:0.72rem;font-weight:700;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;}
+        .qs-section h2{font-size:1.25rem;font-weight:800;color:#fff;margin-bottom:14px;line-height:1.3;}
+        .qs-section p{color:var(--muted);font-size:0.88rem;line-height:1.7;}
+        .qs-analogy{background:rgba(255,255,255,0.04);border-left:3px solid var(--accent);border-radius:0 12px 12px 0;padding:16px 18px;font-size:0.88rem;color:var(--muted);line-height:1.7;margin-top:16px;}
+        .qs-analogy strong{color:#fff;}
+        .qs-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-top:20px;}
+        .qs-stat{background:#0a0e1a;padding:20px 10px;text-align:center;}
+        .qs-stat-icon{font-size:1.4rem;margin-bottom:6px;}
+        .qs-stat-label{font-size:0.72rem;color:var(--muted);line-height:1.4;}
+        .qs-flow{display:flex;flex-direction:column;gap:0;margin-top:20px;}
+        .qs-flow-step{display:grid;grid-template-columns:44px 1fr;gap:0 12px;}
+        .qs-flow-left{display:flex;flex-direction:column;align-items:center;}
+        .qs-flow-icon{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;position:relative;z-index:1;}
+        .qs-flow-icon.accent{background:rgba(255,100,0,0.12);border-color:rgba(255,100,0,0.3);}
+        .qs-flow-line{width:2px;flex:1;background:rgba(255,255,255,0.06);min-height:20px;}
+        .qs-flow-step:last-child .qs-flow-line{display:none;}
+        .qs-flow-body{padding:8px 0 20px;}
+        .qs-flow-title{font-weight:700;color:#fff;font-size:0.9rem;}
+        .qs-flow-desc{color:var(--muted);font-size:0.8rem;margin-top:3px;line-height:1.5;}
+        .qs-actors{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
+        .qs-actor{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 12px;text-align:center;}
+        .qs-actor-icon{font-size:1.6rem;margin-bottom:6px;}
+        .qs-actor-name{font-weight:700;font-size:0.82rem;color:#fff;}
+        .qs-actor-msg{font-size:0.72rem;color:var(--muted);margin-top:3px;line-height:1.4;}
+        .qs-actor-hub{grid-column:1/-1;background:rgba(255,100,0,0.07);border:1px solid rgba(255,100,0,0.25);border-radius:14px;padding:14px;text-align:center;}
+        .qs-actor-hub-name{font-weight:900;color:var(--primary);font-size:0.95rem;}
+        .qs-actor-hub-sub{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+        .qs-gia-list{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+        .qs-gia-item{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;}
+        .qs-gia-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px;}
+        .qs-gia-title{font-weight:700;color:#fff;font-size:0.85rem;}
+        .qs-gia-desc{font-size:0.78rem;color:var(--muted);margin-top:2px;line-height:1.4;}
         .qs-table{width:100%;border-collapse:collapse;margin-top:20px;border-radius:12px;overflow:hidden;}
-        .qs-table thead tr{background:rgba(0,229,255,0.08);}
-        .qs-table th{padding:12px;font-size:0.82rem;text-align:left;color:var(--accent);font-weight:700;}
+        .qs-table thead tr{background:rgba(0,229,255,0.06);}
+        .qs-table th{padding:12px;font-size:0.78rem;text-align:left;font-weight:700;}
         .qs-table th:first-child{color:var(--muted);}
-        .qs-table td{padding:12px;font-size:0.85rem;color:var(--muted);border-top:1px solid rgba(255,255,255,0.05);}
+        .qs-table th:last-child{color:var(--accent);}
+        .qs-table td{padding:11px 12px;font-size:0.82rem;border-top:1px solid rgba(255,255,255,0.05);}
+        .qs-table td:first-child{color:var(--muted);}
         .qs-table td:last-child{color:#fff;font-weight:600;}
-        .qs-final{background:linear-gradient(135deg,#051020,#0a0e1a);padding:60px 24px;text-align:center;}
-        .qs-final h2{font-size:1.5rem;font-weight:900;color:#fff;margin-bottom:20px;line-height:1.3;}
-        .qs-final p{color:var(--muted);font-size:1rem;line-height:2.2;margin-bottom:32px;}
+        .qs-principles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;}
+        .qs-principle{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 12px;display:flex;align-items:flex-start;gap:10px;}
+        .qs-principle-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px;}
+        .qs-principle-name{font-weight:700;color:#fff;font-size:0.82rem;}
+        .qs-principle-desc{font-size:0.72rem;color:var(--muted);margin-top:2px;line-height:1.4;}
+        .qs-final{background:linear-gradient(160deg,#051020,#0a0e1a);padding:60px 24px;text-align:center;}
+        .qs-final h2{font-size:1.35rem;font-weight:900;color:#fff;margin-bottom:16px;line-height:1.3;}
+        .qs-final p{color:var(--muted);font-size:0.88rem;line-height:1.7;margin-bottom:28px;max-width:440px;margin-left:auto;margin-right:auto;}
         .qs-animate{opacity:1;transform:translateY(0);transition:opacity 0.6s ease,transform 0.6s ease;}
-        .qs-tag{display:inline-block;background:rgba(255,100,0,0.15);color:var(--primary);border:1px solid rgba(255,100,0,0.3);border-radius:50px;padding:4px 14px;font-size:0.75rem;font-weight:700;margin-bottom:16px;letter-spacing:1px;}
       </style>
 </head>
 <body>
@@ -1589,104 +1614,127 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
 
     <!-- VIEW: QUIENES SOMOS -->
     <div class="view view-fullscreen" id="view-quienes">
-<!-- qs styles moved to head -->
 
       <!-- HERO -->
       <div class="qs-hero">
-        <div style="font-size:3rem;margin-bottom:16px;">⚡</div>
-        <span class="qs-tag">MARKET OPERATING SYSTEM</span>
-        <h1>La economía funciona mejor cuando está coordinada.</h1>
-        <p>ServiRed es la infraestructura inteligente que conecta personas, trabajadores, comercios, PyMEs e industrias dentro de un mismo ecosistema económico territorial.</p>
-        <button class="qs-btn" onclick="document.getElementById('qs-s2').scrollIntoView({behavior:'smooth'})">Conocer más ↓</button>
+        <div style="font-size:2.5rem;margin-bottom:14px;">⚡</div>
+        <div class="qs-kicker">Market Operating System</div>
+        <h1>La economía funciona mejor<br>cuando está coordinada.</h1>
+        <p class="qs-mos">Un Market Operating System (MOS) para coordinar la economía territorial mediante inteligencia.</p>
+        <p>ServiRed es la infraestructura que conecta personas, trabajadores, comercios, PyMEs e industrias — convirtiendo información fragmentada en oportunidades reales.</p>
+        <button class="qs-btn" onclick="document.getElementById('qs-problema').scrollIntoView({behavior:'smooth'})">Cómo funciona ↓</button>
       </div>
 
-      <!-- POR QUÉ EXISTE -->
-      <div class="qs-section" id="qs-s2">
-        <span class="qs-tag">POR QUÉ EXISTE SERVIRED</span>
-        <h2>Todos los actores ya existen. Lo que falta es coordinación.</h2>
-        <p>Hoy hay personas que necesitan servicios, trabajadores que ofrecen capacidades, comercios que venden, PyMEs que producen e industrias que distribuyen.<br><br>Pero cada uno opera de forma aislada, con información fragmentada y sin inteligencia compartida.<br><br>Eso genera pérdidas económicas todos los días.</p>
-        <p style="margin-top:20px;color:#fff;font-weight:700;">ServiRed nace para convertirse en la infraestructura que los coordina.</p>
-      </div>
-
-      <!-- QUÉ ES -->
-      <div class="qs-section">
-        <span class="qs-tag">QUÉ ES SERVIRED</span>
-        <h2>Un Sistema Operativo de Mercado.</h2>
-        <p>Así como un sistema operativo organiza los recursos de una computadora, ServiRed organiza la actividad económica de un territorio.<br><br>No es una app para pedir servicios.<br>No es un marketplace de transacciones.<br><br>Es una plataforma que convierte información económica en oportunidades reales.</p>
-        <div class="qs-nodes">
-          <div class="qs-node">👤 Personas</div>
-          <div class="qs-node">🔧 Trabajadores</div>
-          <div class="qs-node">🏪 Comercios</div>
-          <div class="qs-node">🏢 PyMEs</div>
-          <div class="qs-node">🏭 Industrias</div>
-          <div class="qs-node center">⚡ SERVIRED</div>
+      <!-- PROBLEMA -->
+      <div class="qs-section" id="qs-problema">
+        <span class="qs-tag">El problema</span>
+        <h2>La economía ya existe.<br>La coordinación, no.</h2>
+        <p>Millones de personas producen, venden, compran y trabajan todos los días. Sin embargo, la información permanece fragmentada entre actores que operan de forma aislada. Esa desconexión genera capacidad ociosa, tiempo perdido y oportunidades que nunca llegan a concretarse.</p>
+        <div class="qs-stats">
+          <div class="qs-stat"><div class="qs-stat-icon">🧩</div><div class="qs-stat-label">Información<br>fragmentada</div></div>
+          <div class="qs-stat"><div class="qs-stat-icon">🔌</div><div class="qs-stat-label">Actores<br>desconectados</div></div>
+          <div class="qs-stat"><div class="qs-stat-icon">💸</div><div class="qs-stat-label">Oportunidades<br>perdidas</div></div>
         </div>
       </div>
 
-      <!-- CÓMO FUNCIONA -->
+      <!-- SOLUCIÓN -->
       <div class="qs-section">
-        <span class="qs-tag">CÓMO FUNCIONA</span>
-        <h2>De la información a la oportunidad económica.</h2>
-        <div class="qs-steps">
-          <div class="qs-step"><div class="qs-step-icon">🙋</div><div class="qs-step-txt">Un actor económico genera una necesidad</div></div>
-          <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">🧠</div><div class="qs-step-txt">SINAPSIS analiza la información en tiempo real</div></div>
-          <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">🎯</div><div class="qs-step-txt">GIA detecta la mejor oportunidad disponible</div></div>
-          <div class="qs-arrow">↓</div>
-          <div class="qs-step"><div class="qs-step-icon">⚡</div><div class="qs-step-txt">Se genera valor económico real en el territorio</div></div>
+        <span class="qs-tag">La solución</span>
+        <h2>Un Sistema Operativo<br>de Mercado.</h2>
+        <div class="qs-analogy">Así como un sistema operativo coordina los recursos de una computadora, <strong>ServiRed coordina los recursos económicos de un territorio.</strong> No reemplaza a los actores existentes: los conecta, sincroniza y potencia.</div>
+      </div>
+
+      <!-- FLUJO -->
+      <div class="qs-section" id="qs-flujo">
+        <span class="qs-tag">Cómo funciona</span>
+        <h2>De la necesidad<br>a la oportunidad.</h2>
+        <div class="qs-flow">
+          <div class="qs-flow-step">
+            <div class="qs-flow-left"><div class="qs-flow-icon">🙋</div><div class="qs-flow-line"></div></div>
+            <div class="qs-flow-body"><div class="qs-flow-title">Un actor genera una necesidad</div><div class="qs-flow-desc">Una persona busca un servicio. Un comercio necesita insumos. Una PyME busca trabajadores.</div></div>
+          </div>
+          <div class="qs-flow-step">
+            <div class="qs-flow-left"><div class="qs-flow-icon accent">🧠</div><div class="qs-flow-line"></div></div>
+            <div class="qs-flow-body"><div class="qs-flow-title">La inteligencia territorial analiza el contexto</div><div class="qs-flow-desc">Se procesan señales de zona, historial y oferta disponible en tiempo real.</div></div>
+          </div>
+          <div class="qs-flow-step">
+            <div class="qs-flow-left"><div class="qs-flow-icon accent">🎯</div><div class="qs-flow-line"></div></div>
+            <div class="qs-flow-body"><div class="qs-flow-title">Se identifica la mejor oportunidad disponible</div><div class="qs-flow-desc">El sistema determina qué actor, a qué precio y en qué momento representa la mejor asignación.</div></div>
+          </div>
+          <div class="qs-flow-step">
+            <div class="qs-flow-left"><div class="qs-flow-icon">⚡</div><div class="qs-flow-line"></div></div>
+            <div class="qs-flow-body"><div class="qs-flow-title">Se crea valor económico real</div><div class="qs-flow-desc">La oportunidad llega al actor correcto. La transacción se concreta.</div></div>
+          </div>
+          <div class="qs-flow-step">
+            <div class="qs-flow-left"><div class="qs-flow-icon">📈</div><div class="qs-flow-line"></div></div>
+            <div class="qs-flow-body"><div class="qs-flow-title">La red aprende y mejora</div><div class="qs-flow-desc">Cada interacción fortalece el ecosistema. Más datos, mejores decisiones, más valor para todos.</div></div>
+          </div>
         </div>
       </div>
 
-      <!-- MISIÓN -->
+      <!-- ECOSISTEMA -->
       <div class="qs-section">
-        <span class="qs-tag">MISIÓN</span>
-        <h2>Aumentar la creación de valor en la economía real.</h2>
-        <p>La inteligencia precede a la monetización.<br><br>ServiRed no optimiza ingresos por transacción. Optimiza el crecimiento inteligente de la red económica.<br><br>Cada interacción genera datos. Los datos generan conocimiento. El conocimiento mejora decisiones. Las mejores decisiones crean más valor para todos.</p>
+        <span class="qs-tag">El ecosistema</span>
+        <h2>Todos los actores.<br>Un solo sistema.</h2>
+        <p>ServiRed no crea nuevos actores. Coordina los que ya existen.</p>
+        <div class="qs-actors">
+          <div class="qs-actor"><div class="qs-actor-icon">👤</div><div class="qs-actor-name">Personas</div><div class="qs-actor-msg">Encontrá la solución correcta con confianza.</div></div>
+          <div class="qs-actor"><div class="qs-actor-icon">🔧</div><div class="qs-actor-name">Trabajadores</div><div class="qs-actor-msg">Tu capacidad conectada con oportunidades reales.</div></div>
+          <div class="qs-actor"><div class="qs-actor-icon">🏪</div><div class="qs-actor-name">Comercios</div><div class="qs-actor-msg">Más clientes compatibles, menos incertidumbre.</div></div>
+          <div class="qs-actor"><div class="qs-actor-icon">🏢</div><div class="qs-actor-name">PyMEs</div><div class="qs-actor-msg">Conectá tu producción con la demanda real.</div></div>
+          <div class="qs-actor" style="grid-column:1/-1;"><div class="qs-actor-icon">🏭</div><div class="qs-actor-name">Industrias</div><div class="qs-actor-msg">Observabilidad inteligente de la economía productiva territorial.</div></div>
+          <div class="qs-actor-hub"><div class="qs-actor-hub-name">⚡ ServiRed MOS</div><div class="qs-actor-hub-sub">Infraestructura de coordinación económica territorial</div></div>
+        </div>
       </div>
 
-      <!-- IA -->
+      <!-- INTELIGENCIA -->
       <div class="qs-section">
-        <span class="qs-tag">INTELIGENCIA ARTIFICIAL</span>
-        <h2>La IA potencia las decisiones humanas.</h2>
-        <p>GIA — la inteligencia de ServiRed — analiza el ecosistema en tiempo real, detecta oportunidades, anticipa riesgos y conecta actores que de otra forma no se encontrarían.<br><br><strong style="color:#fff;">No reemplaza a las personas. Las potencia.</strong></p>
+        <span class="qs-tag">Inteligencia territorial</span>
+        <h2>La inteligencia es la infraestructura.<br>No el producto.</h2>
+        <p>ServiRed aprende cómo funciona una economía local y ayuda a que cada oportunidad encuentre la capacidad correcta.</p>
+        <div class="qs-gia-list">
+          <div class="qs-gia-item"><div class="qs-gia-icon">🔍</div><div><div class="qs-gia-title">Detecta oportunidades</div><div class="qs-gia-desc">Identifica en tiempo real qué actores necesitan conectarse y cuándo.</div></div></div>
+          <div class="qs-gia-item"><div class="qs-gia-icon">📡</div><div><div class="qs-gia-title">Anticipa la demanda</div><div class="qs-gia-desc">Analiza patrones y señales de zona para anticipar necesidades antes de que se expresen.</div></div></div>
+          <div class="qs-gia-item"><div class="qs-gia-icon">⚡</div><div><div class="qs-gia-title">Reduce fricción</div><div class="qs-gia-desc">Elimina los pasos innecesarios entre la necesidad y la solución.</div></div></div>
+          <div class="qs-gia-item"><div class="qs-gia-icon">📈</div><div><div class="qs-gia-title">Mejora con cada ciclo</div><div class="qs-gia-desc">Cada transacción fortalece el conocimiento del sistema para toda la red.</div></div></div>
+        </div>
       </div>
 
-      <!-- DIFERENCIA -->
+      <!-- COMPARACIÓN -->
       <div class="qs-section">
-        <span class="qs-tag">QUÉ NOS DIFERENCIA</span>
-        <h2>No somos un marketplace.</h2>
+        <span class="qs-tag">Por qué no somos un marketplace</span>
+        <h2>Una categoría distinta.</h2>
         <table class="qs-table">
           <thead><tr><th>Marketplace tradicional</th><th>ServiRed MOS</th></tr></thead>
           <tbody>
-            <tr><td>Conecta oferta y demanda</td><td>Coordina toda la economía territorial</td></tr>
-            <tr><td>Optimiza transacciones</td><td>Aumenta el valor de la red</td></tr>
-            <tr><td>Actores aislados</td><td>Ecosistema integrado</td></tr>
-            <tr><td>Reacciona al mercado</td><td>Anticipa oportunidades con IA</td></tr>
-            <tr><td>Monetiza la fricción</td><td>Elimina la fricción para crecer</td></tr>
+            <tr><td>Conecta oferta y demanda puntuales</td><td>Coordina ecosistemas económicos completos</td></tr>
+            <tr><td>Optimiza transacciones individuales</td><td>Optimiza el valor de toda la red</td></tr>
+            <tr><td>Actores aislados entre sí</td><td>Ecosistema integrado con inteligencia compartida</td></tr>
+            <tr><td>Reacciona al mercado</td><td>Anticipa oportunidades antes de que surjan</td></tr>
+            <tr><td>Monetiza la fricción</td><td>Elimina la fricción para crecer más rápido</td></tr>
           </tbody>
         </table>
       </div>
 
-      <!-- COMPROMISO -->
+      <!-- PRINCIPIOS -->
       <div class="qs-section">
-        <span class="qs-tag">NUESTRO COMPROMISO</span>
-        <h2>Principios que no negociamos.</h2>
-        <div class="qs-cards">
-          <div class="qs-card"><div class="qs-card-icon">🛡️</div><div class="qs-card-label">Confianza primero</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🔍</div><div class="qs-card-label">Transparencia total</div></div>
-          <div class="qs-card"><div class="qs-card-icon">👤</div><div class="qs-card-label">Datos del usuario, del usuario</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🚀</div><div class="qs-card-label">Innovación continua</div></div>
-          <div class="qs-card"><div class="qs-card-icon">📈</div><div class="qs-card-label">Valor económico real</div></div>
-          <div class="qs-card"><div class="qs-card-icon">🤝</div><div class="qs-card-label">Ecosistema colaborativo</div></div>
+        <span class="qs-tag">Nuestros principios</span>
+        <h2>Lo que no negociamos.</h2>
+        <div class="qs-principles">
+          <div class="qs-principle"><div class="qs-principle-icon">🛡️</div><div><div class="qs-principle-name">Confianza primero</div><div class="qs-principle-desc">Cada interacción se basa en reputación verificada y transparencia.</div></div></div>
+          <div class="qs-principle"><div class="qs-principle-icon">🔍</div><div><div class="qs-principle-name">Transparencia total</div><div class="qs-principle-desc">Los actores saben cómo funciona el sistema.</div></div></div>
+          <div class="qs-principle"><div class="qs-principle-icon">👤</div><div><div class="qs-principle-name">Datos del usuario, del usuario</div><div class="qs-principle-desc">La información pertenece a quien la genera.</div></div></div>
+          <div class="qs-principle"><div class="qs-principle-icon">📈</div><div><div class="qs-principle-name">Valor económico real</div><div class="qs-principle-desc">La inteligencia precede a la monetización.</div></div></div>
+          <div class="qs-principle"><div class="qs-principle-icon">🤝</div><div><div class="qs-principle-name">Ecosistema colaborativo</div><div class="qs-principle-desc">El éxito de un actor fortalece a todos los demás.</div></div></div>
+          <div class="qs-principle"><div class="qs-principle-icon">🚀</div><div><div class="qs-principle-name">Innovación continua</div><div class="qs-principle-desc">El sistema aprende y mejora con cada ciclo económico.</div></div></div>
         </div>
       </div>
 
       <!-- CIERRE -->
       <div class="qs-final">
-        <div style="font-size:3rem;margin-bottom:20px;">🌐</div>
-        <h2>La economía del futuro se construye coordinando personas.</h2>
-        <p>Cada trabajador.<br>Cada comercio.<br>Cada PyME.<br>Cada industria.<br>Cada oportunidad.<br><strong style="color:#fff;">Conectados por inteligencia. Esa red es ServiRed.</strong></p>
+        <div style="font-size:2.5rem;margin-bottom:16px;">🌐</div>
+        <h2>La inteligencia económica empieza cuando las personas dejan de operar aisladas.</h2>
+        <p>ServiRed construye la infraestructura que permite coordinar la economía real para generar más oportunidades, mayor productividad y crecimiento sostenible para todo el ecosistema.</p>
         <button class="qs-btn" onclick="OS.nav('landing')">Comenzar ahora →</button>
       </div>
 
