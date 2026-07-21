@@ -238,7 +238,7 @@ const OS = (() => {
         { view:'home',    icon:'🏪', label:'Registrar comercio' },
         { view:'home',    icon:'🏭', label:'Registrar PyME/Fábrica' },
         { section: 'ServiRed' },
-        { view:'gia-full',icon:'🧠', label:'GIA Asistente' },
+        { view:'gia-full',icon:'🧠', label:'GIA Intel' },
       ],
     };
 
