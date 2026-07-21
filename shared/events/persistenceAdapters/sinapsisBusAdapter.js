@@ -39,7 +39,12 @@ const BusLogSchema = new mongoose.Schema({
   metadata:      { type: mongoose.Schema.Types.Mixed },
   prevHash:      { type: String, required: true },
   entryHash:     { type: String, required: true },
-  sealedAt:      { type: Date,   required: true }
+  sealedAt:      { type: Date,   required: true },
+  // SR-NEURO-005: Synaptic Atom -- campos opcionales (capa evolutiva)
+  confidence:    { type: Number, default: null },
+  synthesis:     { type: mongoose.Schema.Types.Mixed, default: null },
+  dce:           { type: mongoose.Schema.Types.Mixed, default: null },
+  plasticity:    { type: mongoose.Schema.Types.Mixed, default: null }
 }, { collection: 'sinapsis_bus_log' });
 
 BusLogSchema.index({ sequence: 1  }, { unique: true });
@@ -155,7 +160,12 @@ function createSinapsisBusAdapter(opts = {}) {
           payload:       eventEnvelope.payload,
           metadata:      eventEnvelope.metadata,
           prevHash,
-          sealedAt
+          sealedAt,
+          // SR-NEURO-005: Synaptic Atom -- campos evolutivos opcionales
+          confidence:  eventEnvelope.confidence  ?? null,
+          synthesis:   eventEnvelope.synthesis   ?? null,
+          dce:         eventEnvelope.dce         ?? null,
+          plasticity:  eventEnvelope.plasticity  ?? null
         };
 
         entry.entryHash = computeHash(entry);
