@@ -90,18 +90,22 @@ async function crearJobDesdeREST({
   } catch(reactorErr) {
     throw new Error('[CreateJobAdapter] Reactor falló: ' + reactorErr.message + ' | stack: ' + (reactorErr.stack||'').split('\n').slice(0,3).join(' | '));
   }
-  // SR-NEURO-005: re-publicar JOB_CREATED enriquecido con Synaptic Atom fields
-  // El UnitOfWork ya publicó el evento base; aqui emitimos el atomo enriquecido
-  // si hay datos de sintesis disponibles — el bus es idempotente por eventId
+  // SR-NEURO-005: persistir Synaptic Atom en sinapsis_bus_log (no en Nexus/events)
+  // osData.js consulta SinapsisBusLog — el atomo debe estar en esa coleccion
   if (synapticCtx.synthesis) {
     try {
-      const { emitEvent } = require('../../../nexus/events/emitEvent');
-      emitEvent({
-        entityType:    'pedido',
-        type:          'JOB_ATOM_SYNTHESIZED',
-        aggregateId:   jobId,
+      const { createSinapsisBusAdapter } = require('../../../shared/events/persistenceAdapters/sinapsisBusAdapter');
+      const busAdapter = createSinapsisBusAdapter();
+      const { randomUUID } = require('crypto');
+      await busAdapter.persist({
+        event_id:      randomUUID(),
+        event_type:    'JOB_ATOM_SYNTHESIZED',
+        correlation_id: correlationId ?? jobId,
+        causation:     { jobId },
+        actor:         { clienteId },
+        context:       { entityType: 'pedido', aggregateId: jobId },
         payload:       { clienteId, tipoServicio, zona, precio },
-        correlationId: correlationId ?? jobId,
+        metadata:      { source: 'CreateJobAdapter', version: '1.0' },
         confidence:    synapticCtx.confidence ?? null,
         synthesis:     synapticCtx.synthesis  ?? null,
       });
