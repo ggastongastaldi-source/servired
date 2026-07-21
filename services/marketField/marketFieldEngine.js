@@ -105,6 +105,30 @@ async function analyze({ zoneId, rubro, jobLocation }) {
   const pricingMultiplier  = computePricingMultiplier(pressure, zoneState);
   const recommendedWorkers = await rankWorkersForJob({ zoneId, rubro, jobLocation });
 
+  // SR-NEURO-005: sintetizar campos del Synaptic Atom
+  // confidence: derivado de la presencia de ZoneState real vs default
+  // synthesis:  patron territorial detectado con evidencia
+  const hasRealZoneData = !!zone;
+  const confidence = hasRealZoneData
+    ? Math.min(0.95, 0.5 + Math.abs(pressure) * 0.45)
+    : 0.3;
+
+  const synthesis = {
+    pattern:  zoneState === 'SHORTAGE' ? 'territorial_shortage'
+              : zoneState === 'SURPLUS'  ? 'territorial_surplus'
+              : 'territorial_balanced',
+    evidence: {
+      zoneId,
+      marketPressure: pressure,
+      zoneState,
+      demand,
+      supply,
+      pricingMultiplier,
+      workerCount: recommendedWorkers.length,
+      hasRealZoneData,
+    },
+  };
+
   return {
     zoneId,
     marketPressure:     pressure,
@@ -114,6 +138,9 @@ async function analyze({ zoneId, rubro, jobLocation }) {
     pricingMultiplier,
     recommendedWorkers,
     timestamp:          new Date().toISOString(),
+    // SR-NEURO-005: campos Synaptic Atom listos para el envelope
+    confidence,
+    synthesis,
   };
 }
 
