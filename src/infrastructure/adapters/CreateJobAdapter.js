@@ -21,6 +21,8 @@ const { UnitOfWork }              = require('../../application/shared/UnitOfWork
 const { MongoPedidoRepository }   = require('../persistence/MongoPedidoRepository');
 const { reaccionar: reaccionarPedido } = require('../reactors/PedidoProjectionReactor');
 const { publicarEventosDePedido } = require('../events/SinapsisEventAdapter');
+// SR-NEURO-005: enriquecer envelope con synthesis y confidence del Nodo-C
+const { analyze: marketFieldAnalyze } = require('../../../services/marketField/marketFieldEngine');
 
 // Repositorio en memoria para el Aggregate — el Pedido legacy lo persiste el Reactor
 // MongoPedidoRepository solo se usa para findDocByJobId al final
@@ -57,6 +59,13 @@ async function crearJobDesdeREST({
   ubicacion    = null,
   correlationId = null,
 }) {
+  // SR-NEURO-005: sintetizar inteligencia territorial antes de emitir
+  let synapticCtx = {};
+  try {
+    const mf = await marketFieldAnalyze({ zoneId: zona, rubro: tipoServicio });
+    synapticCtx = { confidence: mf.confidence, synthesis: mf.synthesis };
+  } catch(_) { /* degradacion segura: sin enriquecimiento */ }
+
   const cmd = new CreateJobCommand({
     clienteId,
     tipoServicio,
@@ -80,6 +89,23 @@ async function crearJobDesdeREST({
     await reaccionarPedido(eventos[0]);
   } catch(reactorErr) {
     throw new Error('[CreateJobAdapter] Reactor falló: ' + reactorErr.message + ' | stack: ' + (reactorErr.stack||'').split('\n').slice(0,3).join(' | '));
+  }
+  // SR-NEURO-005: re-publicar JOB_CREATED enriquecido con Synaptic Atom fields
+  // El UnitOfWork ya publicó el evento base; aqui emitimos el atomo enriquecido
+  // si hay datos de sintesis disponibles — el bus es idempotente por eventId
+  if (synapticCtx.synthesis) {
+    try {
+      const { emitEvent } = require('../../../nexus/events/emitEvent');
+      emitEvent({
+        entityType:    'pedido',
+        type:          'JOB_ATOM_SYNTHESIZED',
+        aggregateId:   jobId,
+        payload:       { clienteId, tipoServicio, zona, precio },
+        correlationId: correlationId ?? jobId,
+        confidence:    synapticCtx.confidence ?? null,
+        synthesis:     synapticCtx.synthesis  ?? null,
+      });
+    } catch(_) { /* degradacion segura */ }
   }
 
   // Recuperar doc Mongoose para que el resto de pedidos.js funcione igual

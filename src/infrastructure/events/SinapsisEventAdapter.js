@@ -56,6 +56,9 @@ function publicarEventosDePedido(domainEvents, ctx = {}) {
       correlationId: ctx.correlationId ?? null,
       causationId:   de.eventId,        // el eventId del dominio es la causa
       rootCauseId:   ctx.rootCauseId ?? null,
+      // SR-NEURO-005: campos Synaptic Atom opcionales desde ctx
+      confidence:    ctx.confidence ?? null,
+      synthesis:     ctx.synthesis  ?? null,
     });
   }
 }
