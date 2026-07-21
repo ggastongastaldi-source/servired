@@ -64,7 +64,10 @@ async function crearJobDesdeREST({
   try {
     const mf = await marketFieldAnalyze({ zoneId: zona, rubro: tipoServicio });
     synapticCtx = { confidence: mf.confidence, synthesis: mf.synthesis };
-  } catch(_) { /* degradacion segura: sin enriquecimiento */ }
+    console.log('[SR-NEURO] marketFieldAnalyze OK zona:', zona, 'confidence:', mf.confidence, 'pattern:', mf.synthesis?.pattern);
+  } catch(mfErr) {
+    console.error('[SR-NEURO] marketFieldAnalyze FAIL:', mfErr.message);
+  }
 
   const cmd = new CreateJobCommand({
     clienteId,
@@ -109,7 +112,10 @@ async function crearJobDesdeREST({
         confidence:    synapticCtx.confidence ?? null,
         synthesis:     synapticCtx.synthesis  ?? null,
       });
-    } catch(_) { /* degradacion segura */ }
+      console.log('[SR-NEURO] JOB_ATOM_SYNTHESIZED persistido en sinapsis_bus_log jobId:', jobId);
+    } catch(atomErr) {
+      console.error('[SR-NEURO] busAdapter.persist FAIL jobId:', jobId, 'error:', atomErr.message);
+    }
   }
 
   // Recuperar doc Mongoose para que el resto de pedidos.js funcione igual
