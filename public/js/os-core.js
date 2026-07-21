@@ -195,7 +195,7 @@ const OS = (() => {
         { view:'cliente', icon:'🔍', label:'Buscar servicios' },
         { view:'cliente', icon:'📋', label:'Mis solicitudes' },
         { section: 'ServiRed' },
-        { view:'gia-full',icon:'🧠', label:'GIA Asistente' },
+        { view:'gia-full',icon:'🧠', label:'GIA Intel' },
         { view:'perfil',  icon:'👤', label:'Mi Perfil' },
       ],
       trabajador: [
@@ -206,7 +206,7 @@ const OS = (() => {
         { view:'profesional', icon:'⭐', label:'Mi reputación' },
         { view:'perfil',      icon:'💰', label:'Mi billetera' },
         { section: 'ServiRed' },
-        { view:'gia-full',    icon:'🧠', label:'GIA Asistente' },
+        { view:'gia-full',    icon:'🧠', label:'GIA Intel' },
         { view:'perfil',      icon:'👤', label:'Mi Perfil' },
       ],
       comercio: [
@@ -217,7 +217,7 @@ const OS = (() => {
         { view:'comercial', icon:'📋', label:'Pedidos' },
         { view:'comercial', icon:'📊', label:'Analítica' },
         { section: 'Crecimiento' },
-        { view:'gia-full',  icon:'🧠', label:'GIA Asistente' },
+        { view:'gia-full',  icon:'🧠', label:'GIA Intel' },
         { view:'perfil',    icon:'👤', label:'Perfil comercial' },
       ],
       fabricante: [
@@ -227,7 +227,7 @@ const OS = (() => {
         { view:'industrial', icon:'📦', label:'Catálogo producción' },
         { view:'industrial', icon:'📊', label:'Demandas recibidas' },
         { section: 'Herramientas' },
-        { view:'gia-full',   icon:'🧠', label:'GIA Asistente' },
+        { view:'gia-full',   icon:'🧠', label:'GIA Intel' },
         { view:'perfil',     icon:'👤', label:'Mi Perfil' },
       ],
       publico: [
