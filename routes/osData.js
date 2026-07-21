@@ -79,15 +79,40 @@ router.get('/gia/priority', async (req, res) => {
       insights = await AladinInsight.countDocuments({});
     } catch(e) {}
 
-    const recomendaciones = [
-      'El sistema está operativo y procesando eventos en tiempo real.',
-      'SINAPSIS activo — hash-chain íntegro.',
-      'Trust & Risk en shadow mode — sin alertas activas.',
-      'Oportunidades detectadas en el AMBA.'
-    ];
-    const topInsight = oportunidades > 0
-      ? `Hay ${oportunidades} pedidos activos en el ecosistema. GIA monitoreando demanda en tiempo real.`
-      : recomendaciones[Math.floor(Date.now()/60000) % recomendaciones.length];
+    // SR-NEURO Paso 3: consumir synthesis.pattern del ultimo Synaptic Atom
+    // Criterio: ultimo atomo con synthesis != null, ordenado por sequence DESC
+    // Fallback: comportamiento previo si no hay atomos con synthesis
+    let topInsight = null;
+    try {
+      const { SinapsisBusLog } = require('../shared/events/persistenceAdapters/sinapsisBusAdapter');
+      const lastAtom = await SinapsisBusLog
+        .findOne({ synthesis: { $ne: null } })
+        .sort({ sequence: -1 })
+        .select('synthesis confidence eventType sequence')
+        .lean();
+      if (lastAtom?.synthesis?.pattern) {
+        const p = lastAtom.synthesis.pattern;
+        const conf = lastAtom.confidence ? ` (confianza ${Math.round(lastAtom.confidence * 100)}%)` : '';
+        const patternMsg = {
+          territorial_shortage: `Demanda territorial supera oferta disponible${conf}. GIA recomienda activar capacidad en zonas con shortage.`,
+          territorial_surplus:  `Oferta territorial supera demanda actual${conf}. GIA detecta oportunidad de estimulacion de demanda.`,
+          territorial_balanced: `Ecosistema territorial balanceado${conf}. SINAPSIS procesando eventos en tiempo real.`,
+        };
+        topInsight = patternMsg[p] || `Inteligencia territorial activa${conf}. Patron: ${p}.`;
+      }
+    } catch(_) { /* bus no disponible -- continua con fallback */ }
+
+    if (!topInsight) {
+      const recomendaciones = [
+        'El sistema está operativo y procesando eventos en tiempo real.',
+        'SINAPSIS activo — hash-chain íntegro.',
+        'Trust & Risk en shadow mode — sin alertas activas.',
+        'Oportunidades detectadas en el AMBA.'
+      ];
+      topInsight = oportunidades > 0
+        ? `Hay ${oportunidades} pedidos activos en el ecosistema. GIA monitoreando demanda en tiempo real.`
+        : recomendaciones[Math.floor(Date.now()/60000) % recomendaciones.length];
+    }
 
     res.json({ ok: true, actores, oportunidades, riesgos, insights, topInsight, kpiInsights: insights || '—' });
   } catch(e) {
