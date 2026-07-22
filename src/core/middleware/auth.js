@@ -42,3 +42,4 @@ const soloAdmin = (req, res, next) => {
 };
 
 module.exports = { verificarToken, verificarRol, soloAdmin };
+// cache-bust 1784722705
