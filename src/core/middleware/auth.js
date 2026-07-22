@@ -8,8 +8,8 @@ const verificarToken = (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
     try {
-        const decoded =   console.log('[JWT-DBG]', process.env.JWT_SECRET ? process.env.JWT_SECRET.slice(0,8) : 'NO_SECRET');
-  jwt.verify(token, process.env.JWT_SECRET);
+        console.log('[JWT-DBG]', process.env.JWT_SECRET ? process.env.JWT_SECRET.slice(0,8) : 'NO_SECRET');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
         req.user.userId = decoded.userId || decoded.id || decoded._id;
         req.user.hasRole = (role) => (req.user.roles || [req.user.rol]).includes(role);
