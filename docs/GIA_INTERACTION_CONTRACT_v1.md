@@ -215,3 +215,44 @@ La identidad no cambia. La perspectiva si.
 ---
 
 GIA_INTERACTION_CONTRACT_v1.0 | ServiRed MOS | 2026-07-22
+
+
+---
+
+## Principio de Recuperacion Arquitectonica
+
+El objetivo de la evolucion de GIA no es agregar inteligencia nueva,
+sino recuperar y expresar correctamente la inteligencia que ServiRed ya posee.
+
+Este principio evita el riesgo mas comun: agregar modulos cuando el verdadero
+problema es que las capacidades existentes dejaron de estar representadas
+en la experiencia de usuario.
+
+---
+
+## Pregunta rectora de diseno
+
+Ante cualquier cambio futuro -- de frontend, backend o modelo de IA --
+la pregunta de evaluacion es una sola:
+
+  Este cambio hace que GIA represente mejor la inteligencia de ServiRed
+  o la oculta detras de una interfaz tecnica?
+
+Si la respuesta es la segunda, el cambio no esta alineado con la Constitucion GIA.
+
+---
+
+## Secuencia de validacion
+
+El orden correcto para validar cualquier iteracion de GIA:
+
+  1. Identidad      Se siente que estoy hablando con GIA? La interfaz transmite ServiRed?
+  2. Comportamiento GIA interpreta antes de mostrar datos? Habla segun el rol activo?
+  3. Economico      Una necesidad genera multiples oportunidades? Se refleja la red economica?
+  4. Tecnico        Eventos, SINAPSIS, estado, narrativa, render, E2E.
+
+El backend existe para sostener la experiencia. No al reves.
+
+---
+
+Appendix | 2026-07-22 | ServiRed MOS
