@@ -311,3 +311,17 @@ La segunda pregunta tiene mas peso que la primera.
 ---
 
 Appendix II | 2026-07-22 | ServiRed MOS
+
+---
+
+## Frase de cierre
+
+La interfaz no es la inteligencia.
+La interfaz es la expresion de la inteligencia.
+
+Cuando ambas dejan de coincidir, la solucion no es agregar mas IA,
+sino volver a representar correctamente la inteligencia existente.
+
+---
+
+GIA_INTERACTION_CONTRACT_v1.0 | SELLADO | 2026-07-22 | ServiRed MOS
