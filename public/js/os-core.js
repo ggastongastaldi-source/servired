@@ -262,6 +262,55 @@ const OS = (() => {
     document.getElementById('modal-login').classList.remove('show');
     _buildNav(sesion.rol || sesion.role);
     _buildDrawer(sesion.rol || sesion.role);
+    // GIA Drawer — saludo personalizado
+    const drawerName = document.getElementById('gia-drawer-name');
+    const drawerRole = document.getElementById('gia-drawer-role');
+    const drawerActions = document.getElementById('gia-drawer-actions');
+    const primerNombre = (sesion.nombre || 'Usuario').split(' ')[0];
+    if (drawerName) drawerName.textContent = 'Hola, ' + primerNombre + '.';
+    const ROLE_LABELS = {
+      admin:'Administrador ServiRed', cliente:'Cliente', trabajador:'Profesional',
+      comercio:'Comercio', fabricante:'Industria / Fabricante'
+    };
+    if (drawerRole) drawerRole.textContent = ROLE_LABELS[sesion.rol] || 'ServiRed OS';
+    const ROLE_ACTIONS = {
+      admin: [
+        { icon:'🗺️', label:'Centro Territorial', view:'territorial' },
+        { icon:'👷', label:'Centro Profesional', view:'profesional' },
+        { icon:'🏪', label:'Centro Comercial',   view:'comercial' },
+        { icon:'🧠', label:'GIA Intelligence',   view:'gia-full' },
+      ],
+      cliente: [
+        { icon:'🔍', label:'Buscar servicios',   view:'cliente' },
+        { icon:'📋', label:'Mis solicitudes',    view:'cliente' },
+        { icon:'🧠', label:'GIA Intel',          view:'gia-full' },
+      ],
+      trabajador: [
+        { icon:'⚡', label:'Ver oportunidades',  view:'profesional' },
+        { icon:'📋', label:'Solicitudes activas',view:'profesional' },
+        { icon:'⭐', label:'Mi reputación',      view:'profesional' },
+        { icon:'🧠', label:'GIA Intel',          view:'gia-full' },
+      ],
+      comercio: [
+        { icon:'📦', label:'Mis productos',      view:'comercial' },
+        { icon:'📋', label:'Pedidos',            view:'comercial' },
+        { icon:'📊', label:'Analítica',          view:'comercial' },
+        { icon:'🧠', label:'GIA Intel',          view:'gia-full' },
+      ],
+      fabricante: [
+        { icon:'🏭', label:'Mi producción',      view:'industrial' },
+        { icon:'📊', label:'Demandas recibidas', view:'industrial' },
+        { icon:'🧠', label:'GIA Intel',          view:'gia-full' },
+      ],
+    };
+    const actions = ROLE_ACTIONS[sesion.rol] || ROLE_ACTIONS.cliente;
+    if (drawerActions) {
+      drawerActions.innerHTML = actions.map(a =>
+        `<button class="gia-drawer-action-btn" onclick="OS.nav('${a.view}');OS.closeDrawer()">
+          <span>${a.icon}</span> ${a.label}
+        </button>`
+      ).join('');
+    }
 
     // Avatar / initials
     const nombre = sesion.nombre || sesion.name || sesion.usuario?.nombre || 'Actor';
@@ -461,6 +510,7 @@ const OS = (() => {
       if (!r.ok) return;
       const d = await r.json();
       const insight = d.topInsight || d.recommendation || d.mensaje || 'Sistema operativo activo.';
+      // Widget desktop
       document.getElementById('gia-insight-txt').textContent = insight;
       document.getElementById('gia-status-txt').textContent = '🟢 Inteligencia territorial activa';
       if (d.oportunidades !== undefined) document.getElementById('gia-oportunidades').textContent = d.oportunidades;
@@ -468,8 +518,18 @@ const OS = (() => {
       if (d.actores !== undefined)       document.getElementById('gia-actores-act').textContent = d.actores;
       if (d.insights !== undefined)      document.getElementById('gia-insights-n').textContent = d.insights;
       if (d.kpiInsights)                 document.getElementById('kpi-gia').textContent = d.kpiInsights;
+      // GIA Drawer — sincronizar insight y KPIs
+      const drawerInsight = document.getElementById('gia-drawer-insight-txt');
+      if (drawerInsight) drawerInsight.textContent = insight;
+      const setD = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.textContent = v; };
+      setD('gia-drawer-actores',      d.actores);
+      setD('gia-drawer-oportunidades', d.oportunidades);
+      setD('gia-drawer-riesgos',       d.riesgos);
+      setD('gia-drawer-insights',      d.insights);
     } catch(e) {
       document.getElementById('gia-insight-txt').textContent = 'SINAPSIS conectado. Esperando eventos.';
+      const drawerInsight = document.getElementById('gia-drawer-insight-txt');
+      if (drawerInsight) drawerInsight.textContent = 'SINAPSIS conectado. Esperando eventos.';
     }
   }
 
