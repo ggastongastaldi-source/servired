@@ -1969,6 +1969,109 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
 </div>
 
 <!-- ══════════════════════════════════════════════
+<div class="modal-bg" id="modal-soporte">
+  <div class="modal" style="max-width:440px;padding:0;display:flex;flex-direction:column;height:72vh;max-height:560px;">
+    <div style="padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.3rem;">🤖</span>
+        <div>
+          <div style="color:#00E5FF;font-size:0.92rem;font-weight:700;">Asistente ServiRed</div>
+          <div style="color:#64748b;font-size:0.72rem;">Powered by IA · Siempre disponible</div>
+        </div>
+      </div>
+      <button onclick="cerrarModals()" style="background:none;border:none;color:#64748b;font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div class="chat-msg chat-bot">¡Hola! Soy el <strong>Asistente Beta de ServiRed</strong> 🤖<br>¿En qué te puedo ayudar hoy?</div>
+    </div>
+    <div class="intent-chips" id="intent-chips">
+      <button class="chip chip-orange" onclick="enviarChip('Necesito un técnico')">🔍 Necesito un técnico</button>
+      <button class="chip" onclick="enviarChip('¿Cómo me registro como profesional?')">🔧 Registrarme como técnico</button>
+      <button class="chip chip-green" onclick="enviarChip('Quiero registrar mi comercio')">🏪 Registrar comercio</button>
+      <button class="chip chip-gold" onclick="enviarChip('¿Qué es el Boost y cuánto cuesta?')">⭐ Boost Destacado</button>
+      <button class="chip" onclick="enviarChip('¿Cómo funciona ServiRed?')">❓ Cómo funciona</button>
+    </div>
+    <div id="voice-status" style="display:none;text-align:center;padding:4px 0;font-size:0.75rem;color:#00E5FF;letter-spacing:1px;">🎤 Escuchando...</div>
+    <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,0.08);display:flex;gap:8px;align-items:center;">
+      <button id="voice-button"
+        onmousedown="VA.start()" onmouseup="VA.stop()"
+        ontouchstart="VA.start();event.preventDefault()" ontouchend="VA.stop();event.preventDefault()"
+        style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:all 0.15s;"
+        title="Mantené presionado para hablar">🎤</button>
+      <input id="chat-input" type="text" placeholder="Escribí tu consulta..." onkeydown="if(event.key==='Enter')enviarChat()"
+        style="flex:1;padding:10px 14px;background:#1a2236;border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#e2e8f0;font-family:Rajdhani,sans-serif;font-size:0.95rem;outline:none;">
+      <button onclick="enviarChat()" id="chat-send"
+        style="background:#00E5FF;color:#0a0e1a;border:none;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:0.95rem;">→</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.chat-msg{padding:10px 14px;border-radius:12px;font-size:0.88rem;line-height:1.5;max-width:88%;word-break:break-word;}
+.chat-bot{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.15);color:#e2e8f0;align-self:flex-start;}
+.chat-user{background:rgba(255,109,0,0.15);border:1px solid rgba(255,109,0,0.25);color:#e2e8f0;align-self:flex-end;text-align:right;}
+.chat-typing{color:#64748b;font-size:0.8rem;align-self:flex-start;padding:6px 10px;}
+</style>
+
+<script>
+let chatHistory = [];
+
+async function enviarChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  agregarMensaje(msg, 'user');
+  chatHistory.push({ role: 'user', content: msg });
+
+  const typing = document.createElement('div');
+  typing.className = 'chat-msg chat-typing';
+  typing.id = 'chat-typing';
+  typing.textContent = 'Escribiendo...';
+  document.getElementById('chat-messages').appendChild(typing);
+  scrollChat();
+
+  try {
+    const r = await fetch('/api/asistente', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: chatHistory,
+        appMode: typeof AppMode !== 'undefined' ? AppMode.get() : null,
+        correlationId: typeof SessionContext !== 'undefined' ? SessionContext.getCorrelationId() : null
+      })
+    });
+    const data = await r.json();
+    document.getElementById('chat-typing')?.remove();
+    const reply = data.reply || 'No pude responder en este momento.';
+    chatHistory.push({ role: 'assistant', content: reply });
+    agregarMensaje(reply, 'bot');
+  } catch(e) {
+    document.getElementById('chat-typing')?.remove();
+    agregarMensaje('Error de conexión. Intentá de nuevo.', 'bot');
+  }
+}
+
+function agregarMensaje(texto, tipo) {
+  const div = document.createElement('div');
+  div.className = 'chat-msg chat-' + (tipo === 'user' ? 'user' : 'bot');
+  div.textContent = texto;
+  document.getElementById('chat-messages').appendChild(div);
+  scrollChat();
+}
+
+function scrollChat() {
+  const c = document.getElementById('chat-messages');
+  if (c) c.scrollTop = c.scrollHeight;
+}
+</script>
+
+<script>
+function toggleDrawer(){
+  const drawer = document.getElementById('drawer');
+
+
      ONBOARDING MODAL
 ══════════════════════════════════════════════ -->
 <div class="modal-bg" id="modal-onboarding">
@@ -2040,6 +2143,190 @@ document.addEventListener('DOMContentLoaded', () => {
     deferredPrompt = null;
   });
 })();
+
+
+    }).catch(() => {}); // fire-and-forget
+  } catch(e) {}
+}
+
+// ── VOICE ASSISTANT V3 ─────────────────────────────────────────────
+const VA = (() => {
+  const STATES = { IDLE:'IDLE', LISTENING:'LISTENING', PROCESSING:'PROCESSING', SPEAKING:'SPEAKING', ERROR:'ERROR' };
+  let state = STATES.IDLE;
+  let recognition = null;
+  let sessionMemory = { intents:[], entities:[], actions:[] };
+
+  const NAV_KEYWORDS  = ['explorar','inicio','perfil','volver','buscar'];
+  const STOP_KEYWORDS = ['parar','silencio','basta','stop'];
+  const BUSI_KEYWORDS = ['registrar comercio','crear comercio','alta de local','abrir comercio','sumar negocio'];
+
+  function setState(s) {
+    state = s;
+    const btn = document.getElementById('voice-button');
+    const status = document.getElementById('voice-status');
+    if (!btn) return;
+    if (s === STATES.LISTENING) {
+      btn.style.background = 'rgba(255,0,0,0.25)';
+      btn.style.borderColor = '#ef4444';
+      btn.textContent = '🔴';
+      if (status) status.style.display = 'block';
+    } else if (s === STATES.PROCESSING) {
+      btn.style.background = 'rgba(0,229,255,0.15)';
+      btn.style.borderColor = '#00E5FF';
+      btn.textContent = '⏳';
+      if (status) { status.textContent = '⏳ Procesando...'; }
+    } else if (s === STATES.SPEAKING) {
+      btn.style.background = 'rgba(57,255,20,0.1)';
+      btn.style.borderColor = '#39ff14';
+      btn.textContent = '🔊';
+      if (status) { status.textContent = '🔊 Respondiendo...'; }
+    } else {
+      btn.style.background = 'rgba(255,255,255,0.06)';
+      btn.style.borderColor = 'rgba(255,255,255,0.15)';
+      btn.textContent = '🎤';
+      if (status) status.style.display = 'none';
+    }
+  }
+
+  function pushMemory(entry) {
+    sessionMemory.intents.push(entry);
+    if (sessionMemory.intents.length > 10) sessionMemory.intents.shift();
+  }
+
+  function classifyIntent(text) {
+    const t = text.toLowerCase();
+    if (STOP_KEYWORDS.some(k => t.includes(k))) return 'stop';
+    if (BUSI_KEYWORDS.some(k => t.includes(k))) return 'business';
+    if (NAV_KEYWORDS.some(k => t.includes(k))) return 'navigation';
+    return 'chat';
+  }
+
+  function speak(text) {
+    window.speechSynthesis.cancel();
+    setState(STATES.SPEAKING);
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'es-AR';
+    utt.rate = 1.05;
+    utt.onend = () => setState(STATES.IDLE);
+    utt.onerror = () => setState(STATES.IDLE);
+    window.speechSynthesis.speak(utt);
+  }
+
+  async function handleIntent(text) {
+    if (!text || text.trim().length < 2) { setState(STATES.IDLE); return; }
+    const intent = classifyIntent(text);
+    pushMemory({ text, intent, timestamp: Date.now() });
+
+    if (intent === 'stop') {
+      speak('De acuerdo, hasta luego.');
+      return;
+    }
+
+    if (intent === 'navigation') {
+      const t = text.toLowerCase();
+      setState(STATES.IDLE);
+      if (t.includes('explorar')) { irAExplorar(); speak('Mostrando actividad económica local.'); }
+      else if (t.includes('inicio')) { window.scrollTo({top:0,behavior:'smooth'}); speak('Volviendo al inicio.'); }
+      else if (t.includes('perfil')) { bnAbrirPerfil(); speak('Abriendo tu perfil.'); }
+      return;
+    }
+
+    if (intent === 'business') {
+      setState(STATES.IDLE);
+      cerrarModals();
+      abrirModal('onboarding-comercio');
+      speak('Abriendo el registro de comercio. Completá los datos para sumarte a la red.');
+      return;
+    }
+
+    // DEFAULT: chat con Groq
+    setState(STATES.PROCESSING);
+    const input = document.getElementById('chat-input');
+    if (input) input.value = text;
+    try {
+      const r = await fetch('/api/asistente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: text }] })
+      });
+      const d = await r.json();
+      const reply = d.reply || d.message || d.respuesta || 'No pude procesar tu consulta.';
+      agregarMensaje(reply, 'bot');
+      speak(reply);
+    } catch(e) {
+      speak('Hubo un error al conectar. Intentá de nuevo.');
+      setState(STATES.IDLE);
+    }
+  }
+
+  function initRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return null;
+    const r = new SR();
+    r.lang = 'es-AR';
+    r.continuous = false;
+    r.interimResults = false;
+    r.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      agregarMensaje(text, 'user');
+      handleIntent(text);
+    };
+    r.onerror = (e) => {
+      console.warn('[VA] STT error:', e.error);
+      setState(STATES.IDLE);
+    };
+    r.onend = () => {
+      if (state === STATES.LISTENING) setState(STATES.IDLE);
+    };
+    return r;
+  }
+
+  return {
+    start() {
+      if (state !== STATES.IDLE) return;
+      if (!recognition) recognition = initRecognition();
+      if (!recognition) {
+        speak('Tu navegador no soporta reconocimiento de voz.');
+        return;
+      }
+      try {
+        recognition.abort();
+        setTimeout(() => {
+          recognition.start();
+          setState(STATES.LISTENING);
+        }, 100);
+      } catch(e) { setState(STATES.IDLE); }
+    },
+    stop() {
+      if (state !== STATES.LISTENING) return;
+      try { recognition.stop(); } catch(e) {}
+    }
+  };
+})();
+// ── FIN VOICE ASSISTANT V3 ─────────────────────────────────────────
+
+// Tracking integrado directamente (sin wrappers en cadena)
+// srTrack se llama desde loadCommerceFeed, enviarChip y abrirModal nativamente
+
+</script>
+
+
+<nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Navegación principal">
+  <button class="bn-item active" id="bn-inicio" onclick="bnActivate('inicio');window.scrollTo({top:0,behavior:'smooth'})" aria-label="Inicio">
+    <span class="bn-icon">🏠</span>
+    <span class="bn-label">Inicio</span>
+  </button>
+  <button class="bn-item" id="bn-explorar" onclick="irAExplorar()" aria-label="Explorar">
+    <span class="bn-icon">🔍</span>
+    <span class="bn-label">Explorar</span>
+  </button>
+  <button class="bn-item bn-publish" id="bn-publicar" onclick="bnActivate('publicar');handleCTAPrimaria()" aria-label="Publicar">
+    <div class="bn-publish-inner">
+      <span class="bn-icon">＋</span>
+      <span class="bn-label">Publicar</span>
+    </div>
+  </button>
+
 </script>
 </body>
 </html>
