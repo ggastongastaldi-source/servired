@@ -93,7 +93,7 @@ const OS = (() => {
           '<div style="font-size:0.9rem;color:var(--text);line-height:1.65;">' + insight + '</div>'+
         '</div>'+
         (action
-          ? '<button onclick="OS.nav('' + action.view + '');" style="width:100%;padding:12px;background:rgba(255,109,0,0.1);border:1px solid rgba(255,109,0,0.3);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;font-weight:700;text-align:left;cursor:pointer;margin-bottom:14px;">⚡ ' + action.label + ' →</button>'
+          ? '<button onclick="OS.nav(\'' + action.view + '\');" style="width:100%;padding:12px;background:rgba(255,109,0,0.1);border:1px solid rgba(255,109,0,0.3);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;font-weight:700;text-align:left;cursor:pointer;margin-bottom:14px;">&#9889; ' + action.label + ' &rarr;</button>'
           : '')+
         (evidencia
           ? '<div style="font-size:0.7rem;color:var(--muted);padding:8px 4px;border-top:1px solid var(--border);">Evidencia: ' + evidencia + '</div>'
