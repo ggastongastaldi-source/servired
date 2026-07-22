@@ -58,8 +58,9 @@ async function buildUserState(userId) {
 
 // ── Detección de rol ───────────────────────────────────────────────────────
 function detectarRol(usuario) {
-  if (usuario.rol === 'comercio' || usuario.tipo === 'comercio') return 'merchant';
-  if (usuario.rol === 'tecnico'  || usuario.tipo === 'tecnico')  return 'worker';
+  if (usuario.rol === 'COMERCIO' || usuario.tipo === 'COMERCIO') return 'merchant';
+  if (usuario.rol === 'TRABAJADOR' || usuario.tipo === 'TRABAJADOR') return 'worker';
+  if (usuario.rol === 'ADMIN' || usuario.tipo === 'ADMIN') return 'admin';
   return 'cliente';
 }
 
