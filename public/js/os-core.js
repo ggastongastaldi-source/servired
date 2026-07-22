@@ -73,18 +73,32 @@ const OS = (() => {
       if (!r.ok) { el.textContent = 'Error conectando con SINAPSIS.'; return; }
       const d = await r.json();
       const insight = d.topInsight || 'Sistema operativo activo.';
+      const actors  = d.actores      || 0;
+      const ops     = d.oportunidades || 0;
+      const risks   = d.riesgos      || 0;
+      const state   = d.state        || 'IDLE';
+      const action  = d.action;
+
+      // Evidencia cuantitativa — soporte del razonamiento, nunca protagonista
+      const partes = [];
+      if (actors > 0) partes.push(actors + ' actor' + (actors !== 1 ? 'es' : '') + ' activo' + (actors !== 1 ? 's' : ''));
+      if (ops > 0)    partes.push(ops + ' oportunidad' + (ops !== 1 ? 'es' : '') + ' disponible' + (ops !== 1 ? 's' : ''));
+      if (risks > 0)  partes.push(risks + ' riesgo' + (risks !== 1 ? 's' : '') + ' activo' + (risks !== 1 ? 's' : ''));
+      const evidencia = partes.join(' · ');
+
+      // GIA interpreta — flujo: mensaje → recomendación → acción → evidencia
       el.innerHTML =
-        '<div style="margin-bottom:12px;">'+
-          '<div style="font-size:0.65rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">⚡ Top Insight</div>'+
-          '<div style="font-size:0.88rem;color:var(--text);line-height:1.6;">' + insight + '</div>'+
+        '<div style="background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:14px 16px;margin-bottom:14px;">'+
+          '<div style="font-size:0.65rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">🧠 GIA</div>'+
+          '<div style="font-size:0.9rem;color:var(--text);line-height:1.65;">' + insight + '</div>'+
         '</div>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
-          _giaStatCard('Actores', d.actores)+
-          _giaStatCard('Oportunidades', d.oportunidades)+
-          _giaStatCard('Riesgos', d.riesgos)+
-          _giaStatCard('Insights', d.insights)+
-        '</div>'+
-        (d.state ? '<div style="margin-top:12px;font-size:0.65rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;">Estado: ' + d.state + '</div>' : '');
+        (action
+          ? '<button onclick="OS.nav('' + action.view + '');" style="width:100%;padding:12px;background:rgba(255,109,0,0.1);border:1px solid rgba(255,109,0,0.3);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;font-weight:700;text-align:left;cursor:pointer;margin-bottom:14px;">⚡ ' + action.label + ' →</button>'
+          : '')+
+        (evidencia
+          ? '<div style="font-size:0.7rem;color:var(--muted);padding:8px 4px;border-top:1px solid var(--border);">Evidencia: ' + evidencia + '</div>'
+          : '')+
+        '<div style="margin-top:8px;font-size:0.62rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;">Sistema: ' + state + '</div>';
     } catch(e) {
       el.textContent = 'SINAPSIS conectado. Esperando eventos.';
     }
