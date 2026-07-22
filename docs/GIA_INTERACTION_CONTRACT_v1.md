@@ -256,3 +256,58 @@ El backend existe para sostener la experiencia. No al reves.
 ---
 
 Appendix | 2026-07-22 | ServiRed MOS
+
+---
+
+## Principio de Continuidad Cognitiva
+
+GIA conserva el contexto y la intencion del participante
+durante toda su experiencia en ServiRed.
+
+No importa si el usuario:
+  - entra por el Shell sin sesion
+  - completa el registro
+  - cambia de rol
+  - publica un servicio
+  - compra, vende o contrata
+  - vuelve una semana despues
+
+La experiencia debe sentirse como una unica conversacion continua.
+No como pantallas aisladas conectadas por menus.
+
+Ese es el criterio de coherencia de GIA a lo largo del tiempo.
+
+---
+
+## Los tres niveles de ServiRed
+
+Nivel 1 -- Tecnologia (intercambiable)
+  LLM, backend, Event Store, SINAPSIS, Nexus, Aladin, frontend.
+  Puede evolucionar o reemplazarse.
+
+Nivel 2 -- Arquitectura (estable)
+  Constitucion ServiRed, GIA Interaction Contract,
+  modelo economico, logica territorial, coordinacion entre actores.
+  Cambia muy poco.
+
+Nivel 3 -- Identidad (inmutable)
+  Como piensa ServiRed.
+  No depende de Claude, ChatGPT, Gemini ni ningun modelo especifico.
+  Si cambia el motor de IA, GIA sigue sintiendose como GIA.
+  Esa independencia es una fortaleza arquitectonica.
+
+---
+
+## La pregunta de evaluacion final
+
+Ante cualquier cambio, dos preguntas:
+
+  1. Funciona el codigo?
+  2. Este cambio hace que ServiRed piense, hable
+     y acompane mejor a sus participantes?
+
+La segunda pregunta tiene mas peso que la primera.
+
+---
+
+Appendix II | 2026-07-22 | ServiRed MOS
