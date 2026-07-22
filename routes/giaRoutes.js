@@ -3,9 +3,10 @@
 const express = require('express');
 const router  = express.Router();
 const gia     = require('../controllers/giaController');
-const auth    = require('../middleware/authMiddleware');
+const auth    = require('../src/core/middleware/auth');
 
-router.get('/health',   gia.health);
-router.get('/priority', gia.getPriorityAction);
+router.get('/health',            gia.health);
+router.get('/priority',          gia.getPriorityAction);
+router.get('/priority/personal', auth, gia.getPriorityAction);
 
 module.exports = router;

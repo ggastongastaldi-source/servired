@@ -389,7 +389,7 @@ const getAuthToken = () =>
 async function cargarPrioridad() {
   try {
     const token = getAuthToken();
-    const res = await fetch('/api/gia/priority', {
+    const res = await fetch('/api/gia/priority/personal', {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);

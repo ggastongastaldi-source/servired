@@ -266,7 +266,7 @@ const getToken = () =>
 // ── API ──────────────────────────────────────────────────────────────────────
 async function fetchPriority() {
   const token = getToken();
-  const res = await fetch('/api/gia/priority', {
+  const res = await fetch('/api/gia/priority/personal', {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

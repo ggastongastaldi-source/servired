@@ -6,7 +6,8 @@ const { computePriorityAction }  = require('../services/priorityEngine');
 // GET /api/gia/priority — retorna la priorityAction del usuario
 exports.getPriorityAction = async (req, res) => {
   try {
-    if (!req.userId) {
+    const userId = req.user && (req.user.userId || req.user.id);
+  if (!userId) {
       const Usuario = require('../models/Usuario');
       const actores = await Usuario.countDocuments();
       return res.json({
@@ -19,7 +20,7 @@ exports.getPriorityAction = async (req, res) => {
         kpiInsights: actores
       });
     }
-    const state  = await buildUserState(req.userId);
+    const state  = await buildUserState(userId);
     if (!state) return res.status(404).json({ error: 'Usuario no encontrado' });
     const action = computePriorityAction(state);
     res.json({ action, state: { rol: state.rol, ts: state.ts } });
