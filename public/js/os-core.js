@@ -60,6 +60,41 @@ const OS = (() => {
     // Despachar init del modulo correspondiente
     const _mods = { territorial: typeof TER!=='undefined'&&TER, comercial: typeof COM!=='undefined'&&COM, profesional: typeof PRO!=='undefined'&&PRO, cliente: typeof CLI!=='undefined'&&CLI, industrial: typeof IND!=='undefined'&&IND };
     if (_mods[view] && typeof _mods[view].init === 'function') _mods[view].init();
+    // GIA Full: cargar datos reales al navegar
+    if (view === 'gia-full') _loadGIAFull();
+  }
+
+  async function _loadGIAFull() {
+    const el = document.getElementById('gia-full-content');
+    if (!el) return;
+    el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;text-align:center;">Conectando...</div>';
+    try {
+      const r = await fetch('/api/gia/priority');
+      if (!r.ok) { el.textContent = 'Error conectando con SINAPSIS.'; return; }
+      const d = await r.json();
+      const insight = d.topInsight || 'Sistema operativo activo.';
+      el.innerHTML =
+        '<div style="margin-bottom:12px;">'+
+          '<div style="font-size:0.65rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">⚡ Top Insight</div>'+
+          '<div style="font-size:0.88rem;color:var(--text);line-height:1.6;">' + insight + '</div>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
+          _giaStatCard('Actores', d.actores)+
+          _giaStatCard('Oportunidades', d.oportunidades)+
+          _giaStatCard('Riesgos', d.riesgos)+
+          _giaStatCard('Insights', d.insights)+
+        '</div>'+
+        (d.state ? '<div style="margin-top:12px;font-size:0.65rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;">Estado: ' + d.state + '</div>' : '');
+    } catch(e) {
+      el.textContent = 'SINAPSIS conectado. Esperando eventos.';
+    }
+  }
+
+  function _giaStatCard(label, val) {
+    return '<div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center;">'+
+      '<div style="font-size:1.2rem;font-weight:700;color:var(--cyan);font-family:var(--font-mono);">' + (val !== undefined ? val : '—') + '</div>'+
+      '<div style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">' + label + '</div>'+
+    '</div>';
   }
 
   function _routeHash() {
