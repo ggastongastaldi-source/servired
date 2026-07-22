@@ -518,14 +518,33 @@ const OS = (() => {
       if (d.actores !== undefined)       document.getElementById('gia-actores-act').textContent = d.actores;
       if (d.insights !== undefined)      document.getElementById('gia-insights-n').textContent = d.insights;
       if (d.kpiInsights)                 document.getElementById('kpi-gia').textContent = d.kpiInsights;
-      // GIA Drawer — sincronizar insight y KPIs
+      // GIA Drawer — responde al contrato de estado (no infiere comportamiento)
+      const setD = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.textContent = v; };
       const drawerInsight = document.getElementById('gia-drawer-insight-txt');
       if (drawerInsight) drawerInsight.textContent = insight;
-      const setD = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.textContent = v; };
-      setD('gia-drawer-actores',      d.actores);
+      setD('gia-drawer-actores',       d.actores);
       setD('gia-drawer-oportunidades', d.oportunidades);
       setD('gia-drawer-riesgos',       d.riesgos);
       setD('gia-drawer-insights',      d.insights);
+      // Aplicar estado cognitivo desde el contrato
+      const drawerEl = document.getElementById('drawer');
+      if (drawerEl && d.state) {
+        drawerEl.dataset.giaState = d.state;
+      }
+      // Accion recomendada desde el backend
+      const actionsEl = document.getElementById('gia-drawer-actions');
+      if (actionsEl && d.action && d.state !== 'IDLE') {
+        const existing = actionsEl.querySelector('[data-gia-action]');
+        if (!existing) {
+          const btn = document.createElement('button');
+          btn.className = 'gia-drawer-action-btn';
+          btn.dataset.giaAction = 'primary';
+          btn.style.cssText = 'background:rgba(255,109,0,0.15);border-color:rgba(255,109,0,0.4);font-weight:700;';
+          btn.innerHTML = '<span>⚡</span> ' + d.action.label;
+          btn.onclick = () => { OS.nav(d.action.view); OS.closeDrawer(); };
+          actionsEl.insertBefore(btn, actionsEl.firstChild);
+        }
+      }
     } catch(e) {
       document.getElementById('gia-insight-txt').textContent = 'SINAPSIS conectado. Esperando eventos.';
       const drawerInsight = document.getElementById('gia-drawer-insight-txt');

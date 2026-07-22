@@ -114,7 +114,36 @@ router.get('/gia/priority', async (req, res) => {
         : recomendaciones[Math.floor(Date.now()/60000) % recomendaciones.length];
     }
 
-    res.json({ ok: true, actores, oportunidades, riesgos, insights, topInsight, kpiInsights: insights || '—' });
+    // SR-NEURO: derivar estado cognitivo desde datos del ecosistema
+    // El Drawer responde al estado, no infiere comportamiento desde los datos
+    let giaState = 'IDLE';
+    let giaAction = null;
+
+    if (riesgos >= 3) {
+      giaState = 'ALERT';
+      giaAction = { label: 'Ver riesgos del sistema', view: 'territorial' };
+    } else if (topInsight && topInsight.includes('shortage')) {
+      giaState = 'RECOMMENDATION';
+      giaAction = { label: 'Ver Centro Territorial', view: 'territorial' };
+    } else if (topInsight && topInsight.includes('surplus')) {
+      giaState = 'RECOMMENDATION';
+      giaAction = { label: 'Estimular demanda', view: 'comercial' };
+    } else if (topInsight && topInsight.includes('balanceado')) {
+      giaState = 'RECOMMENDATION';
+      giaAction = { label: 'Ver estado del ecosistema', view: 'territorial' };
+    } else if (oportunidades > 0) {
+      giaState = 'RECOMMENDATION';
+      giaAction = { label: 'Ver oportunidades', view: 'profesional' };
+    }
+
+    res.json({
+      ok: true,
+      state: giaState,
+      actores, oportunidades, riesgos, insights,
+      topInsight,
+      kpiInsights: insights || '—',
+      action: giaAction,
+    });
   } catch(e) {
     res.json({ ok: false, topInsight: 'SINAPSIS conectado. Sistema operativo.', actores:0, oportunidades:0, riesgos:0, insights:0 });
   }
