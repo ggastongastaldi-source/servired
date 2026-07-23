@@ -65,9 +65,13 @@ const OS = (() => {
       _loadGIAFull();
       const w = document.getElementById('gia-widget');
       if (w) w.style.display = 'none';
+      const fab = document.getElementById('gia-fab');
+      if (fab) fab.style.display = 'none';
     } else {
       const w = document.getElementById('gia-widget');
       if (w) w.style.display = '';
+      const fab = document.getElementById('gia-fab');
+      if (fab) fab.style.display = '';
     }
   }
 
@@ -75,59 +79,50 @@ const OS = (() => {
     const el = document.getElementById('gia-full-content');
     if (!el) return;
 
-    // Saludo inicial — prioridad: parámetro > sesion > DOM > fallback
     const nombre = nombreParam
       || (typeof sesion !== 'undefined' && sesion && sesion.nombre ? sesion.nombre.split(' ')[0] : null)
       || 'vos';
 
-    // Inicializar historial si no existe
     if (!window.giaHistory) window.giaHistory = [];
 
-    // Render inicial con avatar + speech box + input
+    const avatarHTML =
+      '<img class="gia-avatar-img" src="/assets/gia-avatar.png" alt="GIA" ' +
+        'onerror="this.onerror=null;this.outerHTML=\'' +
+        '<div style=&quot;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#ff6d00,#ff9a00);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px rgba(255,109,0,0.25);&quot;>' +
+        '<svg width=&quot;40&quot; height=&quot;40&quot; viewBox=&quot;0 0 40 40&quot; fill=&quot;none&quot;>' +
+        '<circle cx=&quot;20&quot; cy=&quot;20&quot; r=&quot;20&quot; fill=&quot;rgba(0,0,0,0.15)&quot;/>' +
+        '<path d=&quot;M20 8 L26 16 L20 14 L14 16 Z&quot; fill=&quot;white&quot; opacity=&quot;0.9&quot;/>' +
+        '<circle cx=&quot;20&quot; cy=&quot;22&quot; r=&quot;7&quot; fill=&quot;white&quot; opacity=&quot;0.95&quot;/>' +
+        '<circle cx=&quot;17&quot; cy=&quot;21&quot; r=&quot;1.5&quot; fill=&quot;#ff6d00&quot;/>' +
+        '<circle cx=&quot;23&quot; cy=&quot;21&quot; r=&quot;1.5&quot; fill=&quot;#ff6d00&quot;/>' +
+        '<path d=&quot;M17 25 Q20 27 23 25&quot; stroke=&quot;#ff6d00&quot; stroke-width=&quot;1.2&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot;/>' +
+        '</svg></div>\';" />';
+
     el.innerHTML =
-      '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0;">' +
-
-        // Avatar GIA
-        '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;">' +
-          '<div id="gia-avatar-ring" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#ff6d00,#ff9a00);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px rgba(255,109,0,0.25);">' +
-            '<svg width="40" height="40" viewBox="0 0 40 40" fill="none">' +
-              '<circle cx="20" cy="20" r="20" fill="rgba(0,0,0,0.15)"/>' +
-              '<path d="M20 8 L26 16 L20 14 L14 16 Z" fill="white" opacity="0.9"/>' +
-              '<circle cx="20" cy="22" r="7" fill="white" opacity="0.95"/>' +
-              '<circle cx="17" cy="21" r="1.5" fill="#ff6d00"/>' +
-              '<circle cx="23" cy="21" r="1.5" fill="#ff6d00"/>' +
-              '<path d="M17 25 Q20 27 23 25" stroke="#ff6d00" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
-            '</svg>' +
-          '</div>' +
-          '<div style="text-align:center;">' +
-            '<div style="font-size:0.75rem;font-weight:700;color:var(--text);letter-spacing:1px;">GIA</div>' +
-            '<div style="font-size:0.6rem;color:var(--muted);font-family:var(--font-mono);">Inteligencia cognitiva · ServiRed OS</div>' +
-            '<div id="gia-estado-lbl" style="font-size:0.6rem;color:var(--primary);font-family:var(--font-mono);margin-top:2px;">● Observando</div>' +
-          '</div>' +
+      '<div class="gia-full-header" style="display:flex;flex-direction:column;align-items:center;gap:8px;">' +
+        avatarHTML +
+        '<div style="text-align:center;">' +
+          '<div style="font-size:0.75rem;font-weight:700;color:var(--text);letter-spacing:1px;">GIA</div>' +
+          '<div style="font-size:0.6rem;color:var(--muted);font-family:var(--font-mono);">Inteligencia cognitiva · ServiRed OS</div>' +
+          '<div id="gia-estado-lbl" style="font-size:0.6rem;color:var(--primary);font-family:var(--font-mono);margin-top:2px;">● Observando</div>' +
         '</div>' +
-
-        // Speech box inicial
-        '<div id="gia-bubbles" style="width:100%;display:flex;flex-direction:column;gap:10px;">' +
-          '<div style="background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:14px 16px;">' +
-            '<div style="font-size:0.62rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">GIA</div>' +
-            '<div style="font-size:0.88rem;color:var(--text);line-height:1.65;">Hola ' + nombre + ', soy GIA, la inteligencia cognitiva de ServiRed.<br><br>Estoy observando el ecosistema. Podés preguntarme sobre oportunidades, actores, territorio u operación.</div>' +
-          '</div>' +
+      '</div>' +
+      '<div id="gia-bubbles" class="gia-full-messages">' +
+        '<div style="background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:14px 16px;align-self:flex-start;max-width:92%;">' +
+          '<div style="font-size:0.62rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">GIA</div>' +
+          '<div style="font-size:0.88rem;color:var(--text);line-height:1.65;">Hola ' + nombre + ', soy GIA, la inteligencia cognitiva de ServiRed.<br><br>Estoy observando el ecosistema. Podés preguntarme sobre oportunidades, actores, territorio u operación.</div>' +
         '</div>' +
-
-        // Input de consulta
-        '<div style="width:100%;display:flex;gap:8px;margin-top:4px;">' +
-          '<button onmousedown="VA&&VA.start();giaVATarget=true" onmouseup="VA&&VA.stop()" ontouchstart="VA&&VA.start();giaVATarget=true;event.preventDefault()" ontouchend="VA&&VA.stop();event.preventDefault()" ' +
-            'style="padding:10px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);font-size:1rem;cursor:pointer;flex-shrink:0;" title="Mantené presionado para hablar">🎤</button>' +
-          '<input id="gia-chat-input" type="text" placeholder="Preguntale a GIA..." ' +
-            'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
-            'style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;outline:none;" />' +
-          '<button onclick="_giaEnviar()" ' +
-            'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:white;font-size:0.85rem;font-weight:700;cursor:pointer;">→</button>' +
-        '</div>' +
-
+      '</div>' +
+      '<div class="gia-full-inputrow">' +
+        '<button onmousedown="VA&&VA.start();giaVATarget=true" onmouseup="VA&&VA.stop()" ontouchstart="VA&&VA.start();giaVATarget=true;event.preventDefault()" ontouchend="VA&&VA.stop();event.preventDefault()" ' +
+          'style="padding:10px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);font-size:1rem;cursor:pointer;flex-shrink:0;" title="Mantené presionado para hablar">🎤</button>' +
+        '<input id="gia-chat-input" type="text" placeholder="Preguntale a GIA..." ' +
+          'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
+          'style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;outline:none;" />' +
+        '<button onclick="_giaEnviar()" ' +
+          'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:white;font-size:0.85rem;font-weight:700;cursor:pointer;flex-shrink:0;">→</button>' +
       '</div>';
 
-    // Cargar topInsight real en segundo plano
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('sr_token');
       const headers = { 'Content-Type': 'application/json' };
@@ -805,15 +800,15 @@ function _giaBurbuja(rol, texto) {
   const div = document.createElement('div');
   const esGia = rol === 'gia';
   div.style.cssText = esGia
-    ? 'background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 14px;'
-    : 'background:rgba(255,109,0,0.08);border-right:3px solid var(--primary);border-radius:var(--r-sm) 0 0 var(--r-sm);padding:12px 14px;text-align:right;';
+    ? 'background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 14px;max-width:92%;align-self:flex-start;'
+    : 'background:rgba(255,109,0,0.08);border-right:3px solid var(--primary);border-radius:var(--r-sm) 0 0 var(--r-sm);padding:12px 14px;text-align:right;max-width:92%;align-self:flex-end;';
   div.innerHTML =
     '<div style="font-size:0.6rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">' +
       (esGia ? 'GIA' : 'Vos') +
     '</div>' +
     '<div style="font-size:0.86rem;color:var(--text);line-height:1.6;">' + texto + '</div>';
   box.appendChild(div);
-  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  box.scrollTop = box.scrollHeight;
 }
 
 async function _giaEnviar() {

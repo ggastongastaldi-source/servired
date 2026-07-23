@@ -456,6 +456,29 @@ button { cursor: pointer; font-family: var(--font-main); }
 .view { display: none; animation: viewIn 0.2s ease; }
 .view.active { display: block; }
 .view-fullscreen { position:fixed;top:0;left:0;right:0;bottom:0;z-index:10;overflow-y:auto; }
+
+/* ── GIA FULL — layout fijo tipo chat (header + scroll + input) ── */
+#view-gia-full.active {
+  position: fixed;
+  top: var(--topbar-h);
+  left: 0; right: 0;
+  bottom: var(--bottomnav-h);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+  background: var(--bg);
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  #view-gia-full.active { left: var(--sidebar-w); bottom: 0; }
+}
+#gia-insights-full { display:flex; flex-direction:column; height:100%; overflow:hidden; }
+#gia-full-content { display:flex; flex-direction:column; height:100%; overflow:hidden; padding:0 !important; }
+.gia-full-header { flex-shrink:0; padding: var(--sp-md) var(--sp-md) 8px; }
+.gia-full-messages { flex:1; overflow-y:auto; padding: 0 var(--sp-md); display:flex; flex-direction:column; gap:10px; }
+.gia-full-inputrow { flex-shrink:0; padding: 10px var(--sp-md) calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--bg); display:flex; gap:8px; }
+.gia-avatar-img { width:72px; height:72px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 3px rgba(255,109,0,0.25); }
 @keyframes viewIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }

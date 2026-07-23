@@ -76,6 +76,7 @@ app.use('/api/payment', require('./src/engine/paymentRoutes'));
 const gatewayRoutes = require('./routes/gatewayRoutes');
 const merchantRoutes = require('./routes/merchantRoutes');
 const giaRoutes = require('./routes/giaRoutes');
+const giaChatRoutes = require('./routes/gia');
 const cobroRoutes = require('./routes/cobroRoutes');
 const { procesarEvento: merchantReactorHandle } = require('./services/merchantProjectionReactor');
 const simulationRoutes = require('./routes/simulationRoutes');
@@ -90,6 +91,7 @@ app.use('/api/smart-quote', require('./src/core/routes/smartQuote'));
 app.use('/api/finanzas', require('./src/core/routes/finanzas'));
 app.use('/api/merchant', merchantRoutes);
 app.use('/api/gia', giaRoutes);
+app.use('/api/gia', giaChatRoutes);
 
 
 
