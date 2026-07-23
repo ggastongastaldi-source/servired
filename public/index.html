@@ -2230,7 +2230,16 @@ const VA = (() => {
 
     // DEFAULT: chat con Groq
     setState(STATES.PROCESSING);
-    const input = document.getElementById('gia-chat-input') && document.getElementById('gia-chat-input').offsetParent !== null ? document.getElementById('gia-chat-input') : document.getElementById('chat-input');
+    const giaInput = document.getElementById('gia-chat-input');
+    const giaActivo = giaInput && giaInput.offsetParent !== null;
+    if (giaActivo) {
+      // GIA Full visible — delegar al flujo unificado
+      giaInput.value = text;
+      setState(STATES.IDLE);
+      if (typeof _giaEnviar === 'function') _giaEnviar();
+      return;
+    }
+    const input = document.getElementById('chat-input');
     if (input) input.value = text;
     try {
       const r = await fetch('/api/asistente', {
