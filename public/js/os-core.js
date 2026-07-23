@@ -71,14 +71,14 @@ const OS = (() => {
     }
   }
 
-  async function _loadGIAFull() {
+  async function _loadGIAFull(nombreParam) {
     const el = document.getElementById('gia-full-content');
     if (!el) return;
 
-    // Saludo inicial
-    const nombre = (typeof sesion !== 'undefined' && sesion && sesion.nombre)
-      ? sesion.nombre.split(' ')[0]
-      : 'Usuario';
+    // Saludo inicial — prioridad: parámetro > sesion > DOM > fallback
+    const nombre = nombreParam
+      || (typeof sesion !== 'undefined' && sesion && sesion.nombre ? sesion.nombre.split(' ')[0] : null)
+      || 'vos';
 
     // Inicializar historial si no existe
     if (!window.giaHistory) window.giaHistory = [];
@@ -355,6 +355,10 @@ const OS = (() => {
     const drawerRole = document.getElementById('gia-drawer-role');
     const drawerActions = document.getElementById('gia-drawer-actions');
     const primerNombre = (sesion.nombre || 'Usuario').split(' ')[0];
+    // Si GIA Full ya está visible, recargar con nombre real
+    if (document.getElementById('view-gia-full') && document.getElementById('view-gia-full').classList.contains('active')) {
+      _loadGIAFull(primerNombre);
+    }
     if (drawerName) drawerName.textContent = 'Hola, ' + primerNombre + '.';
     const ROLE_LABELS = {
       admin:'Administrador ServiRed', cliente:'Cliente', trabajador:'Profesional',
