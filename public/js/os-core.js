@@ -695,3 +695,62 @@ const OS = (() => {
 
   return { nav, toggleTheme, toggleGIA, toggleGiaMobile, openDrawer, closeDrawer, selectRole, logout, acceptLegal, viewLegalDoc, _onLegalCheck, _init };
 })();
+
+
+// ── BOTTOM NAV GLOBAL HELPERS ─────────────────────────────────
+function bnActivate(id) {
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('bn-' + id);
+  if (btn) btn.classList.add('active');
+}
+
+function irAExplorar() {
+  bnActivate('explorar');
+  const v = document.getElementById('view-explorar') ||
+            document.getElementById('view-territorial') ||
+            document.getElementById('view-comercial');
+  if (v) v.scrollIntoView({ behavior: 'smooth' });
+  else window.scrollTo({ top: 400, behavior: 'smooth' });
+}
+
+function handleCTAPrimaria() {
+  const modal = document.getElementById('modal-nuevo-pedido') ||
+                document.getElementById('modal-pedido') ||
+                document.getElementById('modal-soporte');
+  if (modal) { modal.style.display = 'flex'; modal.classList.add('active'); }
+}
+
+// ── GIA WIDGET HYDRATION ──────────────────────────────────────
+async function giaHydrate() {
+  try {
+    const token = localStorage.getItem('token') || localStorage.getItem('sr_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const endpoint = token ? '/api/gia/priority/personal' : '/api/gia/priority';
+    const r = await fetch(endpoint, { headers });
+    if (!r.ok) throw new Error('status ' + r.status);
+    const d = await r.json();
+    if (!d.ok) throw new Error('ok=false');
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = (val !== null && val !== undefined) ? String(val) : '0'; };
+    set('gia-oportunidades', d.oportunidades);
+    set('gia-riesgos',       d.riesgos);
+    set('gia-actores-act',   d.actores);
+    set('gia-insights-n',    d.insights);
+    const insightEl = document.getElementById('gia-insight-txt');
+    if (insightEl && d.topInsight) insightEl.textContent = d.topInsight;
+    const statusEl = document.getElementById('gia-status-txt');
+    if (statusEl) { const m = { IDLE:'Sistema operativo', ALERT:'⚠ Alerta activa', RECOMMENDATION:'💡 Recomendación disponible' }; statusEl.textContent = m[d.state] || 'Inteligencia territorial activa'; }
+    const drawerEl = document.getElementById('gia-drawer-insight-txt');
+    if (drawerEl && d.topInsight) drawerEl.textContent = d.topInsight;
+  } catch(e) {
+    console.warn('[GIA] hydrate:', e.message);
+    const insightEl = document.getElementById('gia-insight-txt');
+    if (insightEl) insightEl.textContent = 'Sistema operativo. Inteligencia territorial activa.';
+  }
+}
+
+// Auto-hydrate GIA al cargar y cada 60s
+document.addEventListener('DOMContentLoaded', () => {
+  giaHydrate();
+  setInterval(giaHydrate, 60000);
+});
