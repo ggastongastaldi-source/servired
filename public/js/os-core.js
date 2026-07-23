@@ -61,7 +61,14 @@ const OS = (() => {
     const _mods = { territorial: typeof TER!=='undefined'&&TER, comercial: typeof COM!=='undefined'&&COM, profesional: typeof PRO!=='undefined'&&PRO, cliente: typeof CLI!=='undefined'&&CLI, industrial: typeof IND!=='undefined'&&IND };
     if (_mods[view] && typeof _mods[view].init === 'function') _mods[view].init();
     // GIA Full: cargar datos reales al navegar
-    if (view === 'gia-full') _loadGIAFull();
+    if (view === 'gia-full') {
+      _loadGIAFull();
+      const w = document.getElementById('gia-widget');
+      if (w) w.style.display = 'none';
+    } else {
+      const w = document.getElementById('gia-widget');
+      if (w) w.style.display = '';
+    }
   }
 
   async function _loadGIAFull() {
