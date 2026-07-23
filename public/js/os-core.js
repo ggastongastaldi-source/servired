@@ -67,41 +67,71 @@ const OS = (() => {
   async function _loadGIAFull() {
     const el = document.getElementById('gia-full-content');
     if (!el) return;
-    el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;text-align:center;">Conectando...</div>';
+
+    // Saludo inicial
+    const nombre = (typeof sesion !== 'undefined' && sesion && sesion.nombre)
+      ? sesion.nombre.split(' ')[0]
+      : 'Usuario';
+
+    // Inicializar historial si no existe
+    if (!window.giaHistory) window.giaHistory = [];
+
+    // Render inicial con avatar + speech box + input
+    el.innerHTML =
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0;">' +
+
+        // Avatar GIA
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;">' +
+          '<div id="gia-avatar-ring" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#ff6d00,#ff9a00);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px rgba(255,109,0,0.25);">' +
+            '<svg width="40" height="40" viewBox="0 0 40 40" fill="none">' +
+              '<circle cx="20" cy="20" r="20" fill="rgba(0,0,0,0.15)"/>' +
+              '<path d="M20 8 L26 16 L20 14 L14 16 Z" fill="white" opacity="0.9"/>' +
+              '<circle cx="20" cy="22" r="7" fill="white" opacity="0.95"/>' +
+              '<circle cx="17" cy="21" r="1.5" fill="#ff6d00"/>' +
+              '<circle cx="23" cy="21" r="1.5" fill="#ff6d00"/>' +
+              '<path d="M17 25 Q20 27 23 25" stroke="#ff6d00" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+            '</svg>' +
+          '</div>' +
+          '<div style="text-align:center;">' +
+            '<div style="font-size:0.75rem;font-weight:700;color:var(--text);letter-spacing:1px;">GIA</div>' +
+            '<div style="font-size:0.6rem;color:var(--muted);font-family:var(--font-mono);">Inteligencia cognitiva · ServiRed OS</div>' +
+            '<div id="gia-estado-lbl" style="font-size:0.6rem;color:var(--primary);font-family:var(--font-mono);margin-top:2px;">● Observando</div>' +
+          '</div>' +
+        '</div>' +
+
+        // Speech box inicial
+        '<div id="gia-bubbles" style="width:100%;display:flex;flex-direction:column;gap:10px;">' +
+          '<div style="background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:14px 16px;">' +
+            '<div style="font-size:0.62rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">GIA</div>' +
+            '<div style="font-size:0.88rem;color:var(--text);line-height:1.65;">Hola ' + nombre + ', soy GIA, la inteligencia cognitiva de ServiRed.<br><br>Estoy observando el ecosistema. Podés preguntarme sobre oportunidades, actores, territorio u operación.</div>' +
+          '</div>' +
+        '</div>' +
+
+        // Input de consulta
+        '<div style="width:100%;display:flex;gap:8px;margin-top:4px;">' +
+          '<input id="gia-chat-input" type="text" placeholder="Preguntale a GIA..." ' +
+            'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
+            'style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;outline:none;" />' +
+          '<button onclick="_giaEnviar()" ' +
+            'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:white;font-size:0.85rem;font-weight:700;cursor:pointer;">Enviar</button>' +
+        '</div>' +
+
+      '</div>';
+
+    // Cargar topInsight real en segundo plano
     try {
-      const r = await fetch('/api/gia/priority');
-      if (!r.ok) { el.textContent = 'Error conectando con SINAPSIS.'; return; }
-      const d = await r.json();
-      const insight = d.topInsight || 'Sistema operativo activo.';
-      const actors  = d.actores      || 0;
-      const ops     = d.oportunidades || 0;
-      const risks   = d.riesgos      || 0;
-      const state   = d.state        || 'IDLE';
-      const action  = d.action;
-
-      // Evidencia cuantitativa — soporte del razonamiento, nunca protagonista
-      const partes = [];
-      if (actors > 0) partes.push(actors + ' actor' + (actors !== 1 ? 'es' : '') + ' activo' + (actors !== 1 ? 's' : ''));
-      if (ops > 0)    partes.push(ops + ' oportunidad' + (ops !== 1 ? 'es' : '') + ' disponible' + (ops !== 1 ? 's' : ''));
-      if (risks > 0)  partes.push(risks + ' riesgo' + (risks !== 1 ? 's' : '') + ' activo' + (risks !== 1 ? 's' : ''));
-      const evidencia = partes.join(' · ');
-
-      // GIA interpreta — flujo: mensaje → recomendación → acción → evidencia
-      el.innerHTML =
-        '<div style="background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:14px 16px;margin-bottom:14px;">'+
-          '<div style="font-size:0.65rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">🧠 GIA</div>'+
-          '<div style="font-size:0.9rem;color:var(--text);line-height:1.65;">' + insight + '</div>'+
-        '</div>'+
-        (action
-          ? '<button onclick="OS.nav(\'' + action.view + '\');" style="width:100%;padding:12px;background:rgba(255,109,0,0.1);border:1px solid rgba(255,109,0,0.3);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;font-weight:700;text-align:left;cursor:pointer;margin-bottom:14px;">&#9889; ' + action.label + ' &rarr;</button>'
-          : '')+
-        (evidencia
-          ? '<div style="font-size:0.7rem;color:var(--muted);padding:8px 4px;border-top:1px solid var(--border);">Evidencia: ' + evidencia + '</div>'
-          : '')+
-        '<div style="margin-top:8px;font-size:0.62rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;">Sistema: ' + state + '</div>';
-    } catch(e) {
-      el.textContent = 'SINAPSIS conectado. Esperando eventos.';
-    }
+      const token = localStorage.getItem('token') || localStorage.getItem('sr_token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      const endpoint = token ? '/api/gia/priority/personal' : '/api/gia/priority';
+      const r = await fetch(endpoint, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        if (d.ok && d.topInsight) {
+          _giaBurbuja('gia', d.topInsight);
+        }
+      }
+    } catch(e) { /* silencioso */ }
   }
 
   function _giaStatCard(label, val) {
@@ -754,3 +784,65 @@ document.addEventListener('DOMContentLoaded', () => {
   giaHydrate();
   setInterval(giaHydrate, 60000);
 });
+
+// ── GIA COPILOTO — funciones de conversación ─────────────────
+function _giaBurbuja(rol, texto) {
+  const box = document.getElementById('gia-bubbles');
+  if (!box) return;
+  const div = document.createElement('div');
+  const esGia = rol === 'gia';
+  div.style.cssText = esGia
+    ? 'background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 14px;'
+    : 'background:rgba(255,109,0,0.08);border-right:3px solid var(--primary);border-radius:var(--r-sm) 0 0 var(--r-sm);padding:12px 14px;text-align:right;';
+  div.innerHTML =
+    '<div style="font-size:0.6rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">' +
+      (esGia ? 'GIA' : 'Vos') +
+    '</div>' +
+    '<div style="font-size:0.86rem;color:var(--text);line-height:1.6;">' + texto + '</div>';
+  box.appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function _giaEnviar() {
+  const input = document.getElementById('gia-chat-input');
+  if (!input) return;
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  if (!window.giaHistory) window.giaHistory = [];
+  window.giaHistory.push({ role: 'user', content: msg });
+  _giaBurbuja('user', msg);
+
+  // Estado: analizando
+  const estadoEl = document.getElementById('gia-estado-lbl');
+  if (estadoEl) estadoEl.textContent = '● Analizando...';
+  input.disabled = true;
+
+  try {
+    const token = localStorage.getItem('token') || localStorage.getItem('sr_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    const r = await fetch('/api/asistente', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        messages: window.giaHistory,
+        appMode: typeof AppMode !== 'undefined' ? AppMode.get() : null,
+        correlationId: typeof SessionContext !== 'undefined' ? SessionContext.getCorrelationId() : null
+      })
+    });
+    const d = await r.json();
+    const reply = d.reply || 'No pude procesar tu consulta en este momento.';
+    window.giaHistory.push({ role: 'assistant', content: reply });
+    _giaBurbuja('gia', reply);
+    if (estadoEl) estadoEl.textContent = '● Observando';
+  } catch(e) {
+    _giaBurbuja('gia', 'Error de conexión. Intentá de nuevo.');
+    if (estadoEl) estadoEl.textContent = '● Observando';
+  } finally {
+    input.disabled = false;
+    input.focus();
+  }
+}
