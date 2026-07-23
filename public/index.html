@@ -2230,7 +2230,7 @@ const VA = (() => {
 
     // DEFAULT: chat con Groq
     setState(STATES.PROCESSING);
-    const input = document.getElementById('chat-input');
+    const input = document.getElementById('gia-chat-input') && document.getElementById('gia-chat-input').offsetParent !== null ? document.getElementById('gia-chat-input') : document.getElementById('chat-input');
     if (input) input.value = text;
     try {
       const r = await fetch('/api/asistente', {
