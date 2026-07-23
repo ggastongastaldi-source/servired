@@ -109,11 +109,13 @@ const OS = (() => {
 
         // Input de consulta
         '<div style="width:100%;display:flex;gap:8px;margin-top:4px;">' +
+          '<button onmousedown="VA&&VA.start();giaVATarget=true" onmouseup="VA&&VA.stop()" ontouchstart="VA&&VA.start();giaVATarget=true;event.preventDefault()" ontouchend="VA&&VA.stop();event.preventDefault()" ' +
+            'style="padding:10px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);font-size:1rem;cursor:pointer;flex-shrink:0;" title="Mantené presionado para hablar">🎤</button>' +
           '<input id="gia-chat-input" type="text" placeholder="Preguntale a GIA..." ' +
             'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
             'style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;outline:none;" />' +
           '<button onclick="_giaEnviar()" ' +
-            'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:white;font-size:0.85rem;font-weight:700;cursor:pointer;">Enviar</button>' +
+            'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:white;font-size:0.85rem;font-weight:700;cursor:pointer;">→</button>' +
         '</div>' +
 
       '</div>';
@@ -837,6 +839,7 @@ async function _giaEnviar() {
     const reply = d.reply || 'No pude procesar tu consulta en este momento.';
     window.giaHistory.push({ role: 'assistant', content: reply });
     _giaBurbuja('gia', reply);
+    if (typeof speak === 'function') speak(reply);
     if (estadoEl) estadoEl.textContent = '● Observando';
   } catch(e) {
     _giaBurbuja('gia', 'Error de conexión. Intentá de nuevo.');
