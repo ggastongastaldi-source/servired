@@ -110,7 +110,7 @@ const OS = (() => {
       '<div id="gia-bubbles" class="gia-full-messages">' +
         '<div style="background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:14px 16px;align-self:flex-start;max-width:92%;">' +
           '<div style="font-size:0.62rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">GIA</div>' +
-          '<div style="font-size:0.88rem;color:var(--text);line-height:1.65;">Hola ' + nombre + ', soy GIA, la inteligencia cognitiva de ServiRed.<br><br>Estoy observando el ecosistema. Podés preguntarme sobre oportunidades, actores, territorio u operación.</div>' +
+          '<div style="font-size:1rem;color:var(--text);line-height:1.7;font-weight:400;">Hola ' + nombre + ', soy GIA, la inteligencia cognitiva de ServiRed.<br><br>Estoy observando el ecosistema. Podés preguntarme sobre oportunidades, actores, territorio u operación.</div>' +
         '</div>' +
       '</div>' +
       '<div class="gia-full-inputrow">' +
@@ -118,9 +118,9 @@ const OS = (() => {
           'style="padding:10px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);font-size:1rem;cursor:pointer;flex-shrink:0;" title="Mantené presionado para hablar">🎤</button>' +
         '<input id="gia-chat-input" type="text" placeholder="Preguntale a GIA..." ' +
           'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
-          'style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;outline:none;" />' +
+          'style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:1rem;outline:none;" />' +
         '<button onclick="_giaEnviar()" ' +
-          'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:var(--bg);font-size:0.85rem;font-weight:700;cursor:pointer;flex-shrink:0;">→</button>' +
+          'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:var(--bg);font-size:1.1rem;font-weight:700;cursor:pointer;flex-shrink:0;">→</button>' +
       '</div>';
 
     try {
@@ -838,10 +838,10 @@ function _giaBurbuja(rol, texto) {
     ? 'background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 14px;max-width:92%;align-self:flex-start;'
     : 'background:rgba(255,109,0,0.15);border-right:3px solid var(--primary);border-radius:var(--r-sm) 0 0 var(--r-sm);padding:12px 14px;text-align:right;max-width:92%;align-self:flex-end;color:var(--text);';
   div.innerHTML =
-    '<div style="font-size:0.6rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">' +
+    '<div style="font-size:0.72rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">' +
       (esGia ? 'GIA' : 'Vos') +
     '</div>' +
-    '<div style="font-size:0.86rem;color:var(--text);line-height:1.6;">' + texto + '</div>';
+    '<div style="font-size:1rem;color:var(--text);line-height:1.7;font-weight:400;">' + texto + '</div>';
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
