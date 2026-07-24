@@ -114,7 +114,7 @@ const OS = (() => {
         '</div>' +
       '</div>' +
       '<div class="gia-full-inputrow">' +
-        '<button id="gia-voice-btn" onmousedown="GIA_VA&&GIA_VA.start()" onmouseup="GIA_VA&&GIA_VA.stop()" ontouchstart="GIA_VA&&GIA_VA.start();event.preventDefault()" ontouchend="GIA_VA&&GIA_VA.stop();event.preventDefault()" ' +
+        '<button id="gia-voice-btn" onclick="GIA_VA&&GIA_VA.toggle()" ' +
           'style="padding:10px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);font-size:1rem;cursor:pointer;flex-shrink:0;" title="Mantené presionado para hablar">🎤</button>' +
         '<input id="gia-chat-input" type="text" placeholder="Preguntale a GIA..." ' +
           'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
@@ -822,7 +822,7 @@ const GIA_VA = (function() {
       if (estadoEl) estadoEl.textContent = '● Error mic: ' + e.error;
       _giaBurbuja('gia', 'Micrófono: ' + e.error + '. Verificá permisos en Chrome → Configuración del sitio.');
     };
-    rec.onend = function() { console.log('[GIA_VA] onend'); stop(); };
+    rec.onend = function() { console.log('[GIA_VA] onend'); _active = false; stop(); };
     rec.start();
     console.log('[GIA_VA] iniciado');
   }
@@ -833,7 +833,12 @@ const GIA_VA = (function() {
     if (btn) btn.style.background = 'rgba(255,255,255,0.06)';
     if (status) status.textContent = '● Observando';
   }
-  return { start, stop };
+  let _active = false;
+  function toggle() {
+    if (_active) { _active = false; stop(); }
+    else { _active = true; start(); }
+  }
+  return { start, stop, toggle };
 })();
 
 function _giaBurbuja(rol, texto) {
