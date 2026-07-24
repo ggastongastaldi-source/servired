@@ -17,5 +17,6 @@ register(require('./tools/ActivityLogTool'));
 register(require('./tools/AladdinTool'));
 register(require('./tools/PulseTool'));
 register(require('./tools/CommerceTool'));
+register(require('./tools/KnowledgeBaseTool'));
 
 module.exports = { register, getRelevant };

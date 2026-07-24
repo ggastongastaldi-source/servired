@@ -804,6 +804,16 @@ function speak(text) {
   window.speechSynthesis.speak(utt);
 }
 
+// ── speak() — síntesis de voz autónoma ──────────────
+function speak(text) {
+  if (!text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'es-AR';
+  utt.rate = 1.05;
+  window.speechSynthesis.speak(utt);
+}
+
 // ── GIA Voice Assistant ──────────────────────────────
 const GIA_VA = (function() {
   let rec = null;
