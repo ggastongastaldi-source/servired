@@ -114,7 +114,7 @@ const OS = (() => {
         '</div>' +
       '</div>' +
       '<div class="gia-full-inputrow">' +
-        '<button onmousedown="VA&&VA.start();giaVATarget=true" onmouseup="VA&&VA.stop()" ontouchstart="VA&&VA.start();giaVATarget=true;event.preventDefault()" ontouchend="VA&&VA.stop();event.preventDefault()" ' +
+        '<button id="gia-voice-btn" onmousedown="GIA_VA&&GIA_VA.start()" onmouseup="GIA_VA&&GIA_VA.stop()" ontouchstart="GIA_VA&&GIA_VA.start();event.preventDefault()" ontouchend="GIA_VA&&GIA_VA.stop();event.preventDefault()" ' +
           'style="padding:10px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);font-size:1rem;cursor:pointer;flex-shrink:0;" title="Mantené presionado para hablar">🎤</button>' +
         '<input id="gia-chat-input" type="text" placeholder="Preguntale a GIA..." ' +
           'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
