@@ -814,7 +814,14 @@ const GIA_VA = (function() {
       const input = document.getElementById('gia-chat-input');
       if (input) { input.value = texto; _giaEnviar(); }
     };
-    rec.onerror = function(e) { console.log('[GIA_VA] error:', e.error); stop(); };
+    rec.onerror = function(e) {
+      console.log('[GIA_VA] error:', e.error);
+      stop();
+      // Mostrar error visible en pantalla para debug mobile
+      const estadoEl = document.getElementById('gia-estado-lbl');
+      if (estadoEl) estadoEl.textContent = '● Error mic: ' + e.error;
+      _giaBurbuja('gia', 'Micrófono: ' + e.error + '. Verificá permisos en Chrome → Configuración del sitio.');
+    };
     rec.onend = function() { console.log('[GIA_VA] onend'); stop(); };
     rec.start();
     console.log('[GIA_VA] iniciado');
