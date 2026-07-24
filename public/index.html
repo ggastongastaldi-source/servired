@@ -1654,8 +1654,8 @@ input:-webkit-autofill, input:-webkit-autofill:focus {
         <div class="gia-full-inputrow">
           <div id="voice-status-gia" style="display:none;text-align:center;padding:4px 0;font-size:0.75rem;color:#00E5FF;letter-spacing:1px;position:absolute;bottom:70px;left:0;right:0;">🎤 Escuchando...</div>
           <button id="gia-voice-btn"
-            ontouchstart="GIA_VA.start();event.preventDefault()" ontouchend="GIA_VA.stop();event.preventDefault()"
-            onmousedown="GIA_VA.start()" onmouseup="GIA_VA.stop()"
+            ontouchstart="if(typeof GIA_VA!=='undefined')GIA_VA.start();event.preventDefault()" ontouchend="if(typeof GIA_VA!=='undefined')GIA_VA.stop();event.preventDefault()"
+            onmousedown="if(typeof GIA_VA!=='undefined')GIA_VA.start()" onmouseup="if(typeof GIA_VA!=='undefined')GIA_VA.stop()"
             style="background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.3);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:all 0.15s;"
             title="Mantené presionado para hablar">🎤</button>
           <input id="gia-chat-input" type="text" placeholder="Preguntale a GIA..."
@@ -2375,114 +2375,4 @@ const VA = (() => {
   </button>
 
 </script>
-<script>
-// ══════════════════════════════════════════
-// GIA_VA — Voice Assistant dedicado GIA Full
-// ══════════════════════════════════════════
-const GIA_VA = (function() {
-  let rec = null;
-  const btn = () => document.getElementById('gia-voice-btn');
-  const status = () => document.getElementById('voice-status-gia');
-
-  function start() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert('Tu navegador no soporta reconocimiento de voz.'); return; }
-    rec = new SpeechRecognition();
-    rec.lang = 'es-AR';
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
-    if (btn()) { btn().style.background = 'rgba(255,107,53,0.4)'; btn().style.borderColor = '#FF6B35'; }
-    if (status()) status().style.display = 'block';
-    rec.onresult = function(e) {
-      const texto = e.results[0][0].transcript;
-      const input = document.getElementById('gia-chat-input');
-      if (input) { input.value = texto; _giaEnviar(); }
-    };
-    rec.onerror = function() { stop(); };
-    rec.onend = function() { stop(); };
-    rec.start();
-  }
-
-  function stop() {
-    if (rec) { try { rec.stop(); } catch(e){} rec = null; }
-    if (btn()) { btn().style.background = 'rgba(255,107,53,0.12)'; btn().style.borderColor = 'rgba(255,107,53,0.3)'; }
-    if (status()) status().style.display = 'none';
-  }
-
-  return { start, stop };
-})();
-
-// ══════════════════════════════════════════
-// _giaEnviar — envía mensaje al backend /api/asistente
-// ══════════════════════════════════════════
-async function _giaEnviar() {
-  const input = document.getElementById('gia-chat-input');
-  if (!input) return;
-  const texto = input.value.trim();
-  if (!texto) return;
-  input.value = '';
-  _giaBurbuja('user', texto);
-  try {
-    const res = await fetch('/api/asistente', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mensaje: texto })
-    });
-    const data = await res.json();
-    const reply = data.reply || data.respuesta || 'Sin respuesta';
-    _giaBurbuja('gia', reply);
-    if (typeof speak === 'function') speak(reply);
-  } catch(err) {
-    _giaBurbuja('gia', 'Error de conexión con GIA.');
-  }
-}
-
-// ══════════════════════════════════════════
-// _giaBurbuja — agrega mensaje al chat
-// ══════════════════════════════════════════
-function _giaBurbuja(rol, texto) {
-  const lista = document.getElementById('gia-messages-list');
-  if (!lista) return;
-  const div = document.createElement('div');
-  div.style.cssText = rol === 'user'
-    ? 'align-self:flex-end;background:#FF6B35;color:#fff;padding:10px 14px;border-radius:16px 16px 4px 16px;max-width:80%;font-size:0.92rem;'
-    : 'align-self:flex-start;background:var(--card);border:1px solid var(--border);padding:10px 14px;border-radius:16px 16px 16px 4px;max-width:85%;font-size:0.92rem;';
-  if (rol === 'gia') {
-    const lbl = document.createElement('div');
-    lbl.style.cssText = 'font-size:0.68rem;font-weight:700;letter-spacing:1px;color:#FF6B35;margin-bottom:4px;';
-    lbl.textContent = 'GIA';
-    div.appendChild(lbl);
-  }
-  const p = document.createElement('p');
-  p.style.margin = '0';
-  p.textContent = texto;
-  div.appendChild(p);
-  lista.appendChild(div);
-  lista.scrollTop = lista.scrollHeight;
-}
-
-// ══════════════════════════════════════════
-// _loadGIAFull — hidrata vista al entrar
-// ══════════════════════════════════════════
-async function _loadGIAFull(nombreParam) {
-  const lista = document.getElementById('gia-messages-list');
-  if (!lista || lista.dataset.loaded) return;
-  lista.dataset.loaded = '1';
-  const nombre = nombreParam || (window._sesion && (window._sesion.nombre || window._sesion.name)) || '';
-  const saludo = nombre
-    ? 'Hola ' + nombre + ', soy GIA. Estoy observando el ecosistema. Podés preguntarme sobre oportunidades, actores, territorio u operación.'
-    : 'Hola, soy GIA, la inteligencia cognitiva de ServiRed. Estoy observando el ecosistema. Podés preguntarme sobre oportunidades, actores, territorio u operación.';
-  _giaBurbuja('gia', saludo);
-  try {
-    const res = await fetch('/api/gia/priority/personal', {
-      headers: { 'Authorization': 'Bearer ' + (window._token || '') }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.topInsight) _giaBurbuja('gia', data.topInsight);
-    }
-  } catch(e) {}
-}
-</script>
 </body>
-</html>
