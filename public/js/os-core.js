@@ -120,7 +120,7 @@ const OS = (() => {
           'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
           'style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:0.85rem;outline:none;" />' +
         '<button onclick="_giaEnviar()" ' +
-          'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:white;font-size:0.85rem;font-weight:700;cursor:pointer;flex-shrink:0;">→</button>' +
+          'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:var(--bg);font-size:0.85rem;font-weight:700;cursor:pointer;flex-shrink:0;">→</button>' +
       '</div>';
 
     try {
@@ -810,11 +810,14 @@ const GIA_VA = (function() {
     if (status) status.textContent = '● Escuchando...';
     rec.onresult = function(e) {
       const texto = e.results[0][0].transcript;
+      console.log('[GIA_VA] transcripción:', texto);
       const input = document.getElementById('gia-chat-input');
       if (input) { input.value = texto; _giaEnviar(); }
     };
-    rec.onerror = rec.onend = function() { stop(); };
+    rec.onerror = function(e) { console.log('[GIA_VA] error:', e.error); stop(); };
+    rec.onend = function() { console.log('[GIA_VA] onend'); stop(); };
     rec.start();
+    console.log('[GIA_VA] iniciado');
   }
   function stop() {
     if (rec) { try { rec.stop(); } catch(e){} rec = null; }
@@ -833,7 +836,7 @@ function _giaBurbuja(rol, texto) {
   const esGia = rol === 'gia';
   div.style.cssText = esGia
     ? 'background:var(--surface2);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 14px;max-width:92%;align-self:flex-start;'
-    : 'background:rgba(255,109,0,0.08);border-right:3px solid var(--primary);border-radius:var(--r-sm) 0 0 var(--r-sm);padding:12px 14px;text-align:right;max-width:92%;align-self:flex-end;';
+    : 'background:rgba(255,109,0,0.15);border-right:3px solid var(--primary);border-radius:var(--r-sm) 0 0 var(--r-sm);padding:12px 14px;text-align:right;max-width:92%;align-self:flex-end;color:var(--text);';
   div.innerHTML =
     '<div style="font-size:0.6rem;color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">' +
       (esGia ? 'GIA' : 'Vos') +
