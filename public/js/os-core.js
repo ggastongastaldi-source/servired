@@ -794,6 +794,38 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── GIA COPILOTO — funciones de conversación ─────────────────
+// ── GIA Voice Assistant ──────────────────────────────
+const GIA_VA = (function() {
+  let rec = null;
+  function start() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Tu navegador no soporta reconocimiento de voz.'); return; }
+    const btn = document.getElementById('gia-voice-btn');
+    const status = document.getElementById('gia-estado-lbl');
+    rec = new SR();
+    rec.lang = 'es-AR';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    if (btn) btn.style.background = 'rgba(255,107,53,0.4)';
+    if (status) status.textContent = '● Escuchando...';
+    rec.onresult = function(e) {
+      const texto = e.results[0][0].transcript;
+      const input = document.getElementById('gia-chat-input');
+      if (input) { input.value = texto; _giaEnviar(); }
+    };
+    rec.onerror = rec.onend = function() { stop(); };
+    rec.start();
+  }
+  function stop() {
+    if (rec) { try { rec.stop(); } catch(e){} rec = null; }
+    const btn = document.getElementById('gia-voice-btn');
+    const status = document.getElementById('gia-estado-lbl');
+    if (btn) btn.style.background = 'rgba(255,255,255,0.06)';
+    if (status) status.textContent = '● Observando';
+  }
+  return { start, stop };
+})();
+
 function _giaBurbuja(rol, texto) {
   const box = document.getElementById('gia-bubbles');
   if (!box) return;
