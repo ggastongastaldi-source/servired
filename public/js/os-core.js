@@ -812,7 +812,10 @@ const GIA_VA = (function() {
       const texto = e.results[0][0].transcript;
       console.log('[GIA_VA] transcripción:', texto);
       const input = document.getElementById('gia-chat-input');
-      if (input) { input.value = texto; _giaEnviar(); }
+      if (input) { input.value = texto; }
+      _active = false;
+      stop();
+      _giaEnviar();
     };
     rec.onerror = function(e) {
       console.log('[GIA_VA] error:', e.error);
