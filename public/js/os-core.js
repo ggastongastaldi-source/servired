@@ -120,7 +120,7 @@ const OS = (() => {
           'onkeydown="if(event.key==\'Enter\')_giaEnviar()" ' +
           'style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:1rem;outline:none;" />' +
         '<button onclick="_giaEnviar()" ' +
-          'style="padding:10px 16px;background:var(--primary);border:none;border-radius:var(--r-sm);color:var(--bg);font-size:1.1rem;font-weight:700;cursor:pointer;flex-shrink:0;">→</button>' +
+          'style="padding:10px 16px;background:transparent;border:2px solid var(--primary);border-radius:var(--r-sm);color:var(--primary);font-size:1.1rem;font-weight:700;cursor:pointer;flex-shrink:0;">→</button>' +
       '</div>';
 
     try {
