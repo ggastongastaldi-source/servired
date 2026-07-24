@@ -86,6 +86,22 @@ router.post('/', giaRouterMiddleware, rateLimiter, contextInjector, async (req, 
     .join('\n');
   const systemPromptFinal = SYSTEM_PROMPT.replace('[[RUBRO_KEYWORDS_INJECTED]]', rubroKeywords);
 
+  // Knowledge Base — consultar base institucional de GIA
+  let knowledgeContext = '';
+  try {
+    const { search } = require('../../../services/gia/knowledge/KnowledgeRepository');
+    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+    if (lastUserMsg) {
+      const result = search(lastUserMsg.content);
+      if (result.found && result.sources.length > 0) {
+        const fragments = result.sources
+          .map(s => `[${s.title}]\n${s.fragment}`)
+          .join('\n\n');
+        knowledgeContext = `\n\n[BASE DE CONOCIMIENTO INSTITUCIONAL]\n${fragments}\nFuente verificada. Priorizá esta información sobre conocimiento general.`;
+      }
+    }
+  } catch (_) {}
+
   // Intent Enforcement Layer — clasificar último mensaje del usuario
   let intentContext = '';
   try {
@@ -116,7 +132,7 @@ router.post('/', giaRouterMiddleware, rateLimiter, contextInjector, async (req, 
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: 'system', content: systemPromptFinal + roleContext + intentContext },
+          { role: 'system', content: systemPromptFinal + roleContext + knowledgeContext + intentContext },
           ...messages.slice(-10) // ventana de 10 turnos máximo
         ],
         max_tokens: 512,
